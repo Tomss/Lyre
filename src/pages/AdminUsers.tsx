@@ -92,45 +92,62 @@ const AdminUsers = () => {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    console.log('=== DÉBUT CRÉATION UTILISATEUR ===');
+    console.log('Form data:', formData);
     setLoading(true);
 
     try {
+      console.log('Variables d\'environnement:');
+      console.log('VITE_SUPABASE_URL:', import.meta.env.VITE_SUPABASE_URL);
+      console.log('VITE_SUPABASE_ANON_KEY présente:', !!import.meta.env.VITE_SUPABASE_ANON_KEY);
+      
       // Appeler la Edge Function
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
       
       if (!supabaseUrl || !supabaseKey) {
+        console.error('Variables manquantes:', { supabaseUrl: !!supabaseUrl, supabaseKey: !!supabaseKey });
         throw new Error('Variables d\'environnement Supabase manquantes');
       }
 
-      const response = await fetch(`${supabaseUrl}/functions/v1/create-user`, {
+      const requestUrl = `${supabaseUrl}/functions/v1/create-user`;
+      console.log('URL de la requête:', requestUrl);
+      
+      const requestBody = {
+        email: formData.email,
+        password: formData.password,
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        role: formData.role
+      };
+      console.log('Corps de la requête:', requestBody);
+
+      console.log('Envoi de la requête...');
+      const response = await fetch(requestUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${supabaseKey}`,
         },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          role: formData.role
-        })
+        body: JSON.stringify(requestBody)
       });
 
+      console.log('Réponse reçue. Status:', response.status);
+      console.log('Headers de réponse:', Object.fromEntries(response.headers.entries()));
+      
       const result = await response.json();
-
-      console.log('Response status:', response.status);
-      console.log('Response result:', result);
+      console.log('Contenu de la réponse:', result);
 
       if (!response.ok) {
-        console.error("Erreur lors de la création:", result);
+        console.error('=== ERREUR LORS DE LA CRÉATION ===');
+        console.error('Status:', response.status);
+        console.error('Result:', result);
         alert(`Erreur lors de la création : ${result.error || 'Erreur inconnue'}`);
         return;
       }
 
+      console.log('=== SUCCÈS ===');
       alert('Utilisateur créé avec succès !');
-      console.log('User created successfully:', result);
       
       // Réinitialiser le formulaire
       setFormData({
@@ -144,9 +161,10 @@ const AdminUsers = () => {
       // Rafraîchir la liste
       fetchUsers();
     } catch (error) {
-      console.error('Error creating user:', error);
+      console.error('=== ERREUR CATCH ===', error);
       alert('Erreur lors de la création de l\'utilisateur');
     } finally {
+      console.log('=== FIN CRÉATION UTILISATEUR ===');
       setLoading(false);
     }
   };
