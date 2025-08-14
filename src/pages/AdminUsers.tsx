@@ -42,6 +42,7 @@ const AdminUsers = () => {
   const [userInstruments, setUserInstruments] = useState<{[key: string]: Instrument[]}>({});
   const [userOrchestras, setUserOrchestras] = useState<{[key: string]: Orchestra[]}>({});
   const [searchTerm, setSearchTerm] = useState('');
+  const [roleFilter, setRoleFilter] = useState<string[]>(['Admin', 'Gestionnaire', 'Membre']);
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingUser, setEditingUser] = useState<UserData | null>(null);
@@ -494,7 +495,7 @@ const AdminUsers = () => {
   // Filtrer les utilisateurs selon le terme de recherche
   const filteredUsers = users.filter(user => {
     const searchLower = searchTerm.toLowerCase();
-    return (
+    const matchesSearch = (
       user.first_name.toLowerCase().includes(searchLower) ||
       user.last_name.toLowerCase().includes(searchLower) ||
       user.email.toLowerCase().includes(searchLower) ||
@@ -506,11 +507,31 @@ const AdminUsers = () => {
         orc.name.toLowerCase().includes(searchLower)
       ))
     );
+    
+    const matchesRole = roleFilter.includes(user.role);
+    
+    return matchesSearch && matchesRole;
   });
 
   if (profile && profile.role !== 'Admin') {
     return <Navigate to="/dashboard" />;
   }
+
+  const toggleRoleFilter = (role: string) => {
+    setRoleFilter(prev => 
+      prev.includes(role) 
+        ? prev.filter(r => r !== role)
+        : [...prev, role]
+    );
+  };
+
+  const selectAllRoles = () => {
+    setRoleFilter(['Admin', 'Gestionnaire', 'Membre']);
+  };
+
+  const clearAllRoles = () => {
+    setRoleFilter([]);
+  };
 
   return (
     <div className="font-inter pt-20 pb-20 min-h-screen bg-gray-50">
@@ -562,6 +583,12 @@ const AdminUsers = () => {
               <Users className="h-4 w-4" />
               <span>{filteredUsers.length} utilisateur{filteredUsers.length > 1 ? 's' : ''} {searchTerm && `sur ${users.length}`}</span>
             </span>
+            {roleFilter.length < 3 && (
+              <span className="flex items-center space-x-1">
+                <Shield className="h-4 w-4" />
+                <span>Filtré par: {roleFilter.join(', ')}</span>
+              </span>
+            )}
           </div>
         </div>
 
@@ -781,7 +808,7 @@ const AdminUsers = () => {
         {/* Liste des utilisateurs */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="p-6 border-b border-gray-100">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mb-4">
               <h3 className="font-poppins font-semibold text-lg text-dark">
                 Liste des utilisateurs
               </h3>
@@ -806,6 +833,64 @@ const AdminUsers = () => {
                 )}
               </div>
             </div>
+            
+            {/* Filtres par rôle */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <span className="text-sm font-medium text-gray-700">Filtrer par rôle :</span>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => toggleRoleFilter('Admin')}
+                    className={`inline-flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
+                      roleFilter.includes('Admin')
+                        ? 'bg-red-100 text-red-800 border border-red-200'
+                        : 'bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200'
+                    }`}
+                  >
+                    <Shield className="h-3 w-3" />
+                    <span>Admin</span>
+                  </button>
+                  <button
+                    onClick={() => toggleRoleFilter('Gestionnaire')}
+                    className={`inline-flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
+                      roleFilter.includes('Gestionnaire')
+                        ? 'bg-blue-100 text-blue-800 border border-blue-200'
+                        : 'bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200'
+                    }`}
+                  >
+                    <User className="h-3 w-3" />
+                    <span>Gestionnaire</span>
+                  </button>
+                  <button
+                    onClick={() => toggleRoleFilter('Membre')}
+                    className={`inline-flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
+                      roleFilter.includes('Membre')
+                        ? 'bg-gray-100 text-gray-800 border border-gray-300'
+                        : 'bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200'
+                    }`}
+                  >
+                    <Users className="h-3 w-3" />
+                    <span>Membre</span>
+                  </button>
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={selectAllRoles}
+                  className="text-xs text-primary hover:text-primary/80 font-medium transition-colors"
+                >
+                  Tout sélectionner
+                </button>
+                <span className="text-gray-300">|</span>
+                <button
+                  onClick={clearAllRoles}
+                  className="text-xs text-gray-500 hover:text-gray-700 font-medium transition-colors"
+                >
+                  Tout désélectionner
+                </button>
+              </div>
+            </div>
           </div>
           
           {loading ? (
@@ -818,6 +903,11 @@ const AdminUsers = () => {
               <Search className="h-12 w-12 text-gray-300 mx-auto mb-4" />
               <p>Aucun utilisateur trouvé pour "{searchTerm}"</p>
               <button onClick={() => setSearchTerm('')} className="text-primary hover:text-primary/80 mt-2">Effacer la recherche</button>
+            </div>
+          ) : filteredUsers.length === 0 && roleFilter.length === 0 ? (
+            <div className="p-8 text-center text-gray-500">
+              <Shield className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+              <p>Aucun rôle sélectionné</p>
             </div>
           ) : users.length === 0 ? (
             <div className="p-8 text-center text-gray-500">
