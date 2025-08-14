@@ -32,7 +32,7 @@ const AdminUsers = () => {
     setLoading(true);
     const { data, error } = await supabase.functions.invoke('get-all-users');
     if (error) {
-      alert(`Erreur lors du chargement des utilisateurs: ${error.message}`);
+      alert(`Erreur lors du chargement des utilisateurs: ${error.message || error.toString() || 'une erreur inconnue est survenue'}`);
     } else {
       setUsers(data);
     }
@@ -69,7 +69,7 @@ const AdminUsers = () => {
     setLoading(false);
 
     if (error) {
-      alert(`Erreur lors de la création de l'utilisateur: ${error.message}`);
+      alert(`Erreur lors de la création de l'utilisateur: ${error.message || error.toString() || 'une erreur inconnue est survenue'}`);
     } else {
       alert('Utilisateur créé avec succès !');
       cancelEdit(); // Réinitialise le formulaire
@@ -108,7 +108,7 @@ const AdminUsers = () => {
     setLoading(false);
   
     if (error) {
-      alert(`Erreur lors de la mise à jour: ${error.message}`);
+      alert(`Erreur lors de la mise à jour: ${error.message || error.toString() || 'une erreur inconnue est survenue'}`);
     } else {
       alert('Utilisateur mis à jour avec succès !');
       cancelEdit();
@@ -128,7 +128,7 @@ const AdminUsers = () => {
     setLoading(false);
 
     if (error) {
-      alert(`Erreur lors de la suppression: ${error.message}`);
+      alert(`Erreur lors de la suppression: ${error.message || error.toString() || 'une erreur inconnue est survenue'}`);
     } else {
       alert('Utilisateur supprimé avec succès.');
       fetchUsers();
