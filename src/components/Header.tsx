@@ -51,14 +51,15 @@ const Header = () => {
             ))}
           </div>
 
+          {/* --- MODIFICATION ICI --- */}
           {/* Member Space Button */}
           <div className="hidden lg:block">
-            <a
-              href="#"
+            <Link
+              to="/connexion"
               className="bg-accent hover:bg-accent/90 text-white font-inter font-semibold px-6 py-3 rounded-full transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
             >
               Espace Membre
-            </a>
+            </Link>
           </div>
 
           {/* Mobile Menu Button */}
@@ -86,12 +87,14 @@ const Header = () => {
                   {link.label}
                 </Link>
               ))}
-              <a
-                href="#"
+              {/* --- MODIFICATION ICI --- */}
+              <Link
+                to="/connexion"
                 className="inline-block bg-accent hover:bg-accent/90 text-white font-inter font-semibold px-6 py-3 rounded-full transition-all duration-300"
+                onClick={() => setIsMobileMenuOpen(false)}
               >
                 Espace Membre
-              </a>
+              </Link>
             </div>
           </div>
         )}
