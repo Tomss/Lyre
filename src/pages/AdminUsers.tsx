@@ -86,48 +86,31 @@ const AdminUsers = () => {
     }));
   };
 
+  // Dans src/pages/AdminUsers.tsx
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
-    try {
-      // Create user in auth
-      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-        email: formData.email,
-        password: formData.password,
-        email_confirm: true
-      });
-
-      if (authError) {
-        console.error('Auth error:', authError);
-        alert('Erreur lors de la création du compte: ' + authError.message);
-        return;
-      }
-
-      if (!authData.user) {
-        alert('Erreur: Utilisateur non créé');
-        return;
-      }
-
-      // Create profile
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert({
-          id: authData.user.id,
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          role: formData.role
-        });
-
-      if (profileError) {
-        console.error('Profile error:', profileError);
-        alert('Erreur lors de la création du profil: ' + profileError.message);
-        return;
-      }
-
-      alert('Utilisateur créé avec succès!');
-      
-      // Reset form
+  
+    // Appel sécurisé à la Edge Function au lieu de l'appel admin direct
+    const { error } = await supabase.functions.invoke('create-user', {
+      body: { 
+        email: formData.email, 
+        password: formData.password, 
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        role: formData.role 
+      },
+    });
+  
+    setLoading(false);
+  
+    if (error) {
+      console.error("Erreur lors de l'invocation de la fonction:", error);
+      alert(`Erreur lors de la création : ${error.message}`);
+    } else {
+      alert('Utilisateur créé avec succès !');
+      // Réinitialiser le formulaire
       setFormData({
         firstName: '',
         lastName: '',
@@ -135,14 +118,8 @@ const AdminUsers = () => {
         password: '',
         role: 'Membre'
       });
-
-      // Refresh users list
+      // Rafraîchir la liste
       fetchUsers();
-    } catch (error) {
-      console.error('Error creating user:', error);
-      alert('Erreur lors de la création de l\'utilisateur');
-    } finally {
-      setLoading(false);
     }
   };
 
