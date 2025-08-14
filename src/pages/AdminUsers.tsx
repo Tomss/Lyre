@@ -671,21 +671,16 @@ const AdminUsers = () => {
                     <label className="block text-sm font-medium text-dark mb-3">
                       Orchestres
                     </label>
-                    <div className="space-y-2 max-h-40 overflow-y-auto border border-gray-200 rounded-lg p-3">
+                    <div className="grid grid-cols-1 gap-2 max-h-40 overflow-y-auto border border-gray-200 rounded-lg p-3">
                       {orchestras.map((orchestra) => (
-                        <label key={orchestra.id} className="flex items-start space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <label key={orchestra.id} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
                           <input
                             type="checkbox"
                             checked={formData.orchestras.includes(orchestra.id)}
                             onChange={(e) => handleOrchestraChange(orchestra.id, e.target.checked)}
-                            className="rounded border-gray-300 text-primary focus:ring-primary mt-1"
+                            className="rounded border-gray-300 text-primary focus:ring-primary"
                           />
-                          <div className="flex-1">
-                            <span className="text-sm font-medium text-gray-700">{orchestra.name}</span>
-                            {orchestra.description && (
-                              <p className="text-xs text-gray-500 mt-1">{orchestra.description}</p>
-                            )}
-                          </div>
+                          <span className="text-sm text-gray-700">{orchestra.name}</span>
                         </label>
                       ))}
                     </div>
