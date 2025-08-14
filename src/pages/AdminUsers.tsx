@@ -1,5 +1,5 @@
 import React, { useState, useEffect, FormEvent } from 'react';
-import { Edit, Trash2, Plus, Users, Mail, User, Shield, X, UserPlus, CheckCircle, Music } from 'lucide-react';
+import { Edit, Trash2, Plus, Users, Mail, User, Shield, X, UserPlus, CheckCircle, Music, Search } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import { useAuth } from '../context/AuthContext';
 import { Navigate } from 'react-router-dom';
@@ -33,6 +33,7 @@ const AdminUsers = () => {
   const [users, setUsers] = useState<UserData[]>([]);
   const [instruments, setInstruments] = useState<Instrument[]>([]);
   const [userInstruments, setUserInstruments] = useState<{[key: string]: Instrument[]}>({});
+  const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingUser, setEditingUser] = useState<UserData | null>(null);
@@ -386,6 +387,20 @@ const AdminUsers = () => {
     }
   };
 
+  // Filtrer les utilisateurs selon le terme de recherche
+  const filteredUsers = users.filter(user => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      user.first_name.toLowerCase().includes(searchLower) ||
+      user.last_name.toLowerCase().includes(searchLower) ||
+      user.email.toLowerCase().includes(searchLower) ||
+      user.role.toLowerCase().includes(searchLower) ||
+      (userInstruments[user.id] && userInstruments[user.id].some(inst => 
+        inst.name.toLowerCase().includes(searchLower)
+      ))
+    );
+  });
+
   if (profile && profile.role !== 'Admin') {
     return <Navigate to="/dashboard" />;
   }
@@ -438,7 +453,7 @@ const AdminUsers = () => {
           <div className="flex items-center space-x-4 text-sm text-gray-500 mt-4">
             <span className="flex items-center space-x-1">
               <Users className="h-4 w-4" />
-              <span>{users.length} utilisateur{users.length > 1 ? 's' : ''}</span>
+              <span>{filteredUsers.length} utilisateur{filteredUsers.length > 1 ? 's' : ''} {searchTerm && `sur ${users.length}`}</span>
             </span>
           </div>
         </div>
@@ -637,9 +652,31 @@ const AdminUsers = () => {
         {/* Liste des utilisateurs */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="p-6 border-b border-gray-100">
-            <h3 className="font-poppins font-semibold text-lg text-dark">
-              Liste des utilisateurs
-            </h3>
+            <div className="flex items-center justify-between">
+              <h3 className="font-poppins font-semibold text-lg text-dark">
+                Liste des utilisateurs
+              </h3>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Search className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Rechercher un utilisateur..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary w-64"
+                />
+                {searchTerm && (
+                  <button
+                    onClick={() => setSearchTerm('')}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  >
+                    <X className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
           
           {loading ? (
@@ -647,13 +684,19 @@ const AdminUsers = () => {
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
               <p className="mt-2 text-gray-600">Chargement...</p>
             </div>
+          ) : filteredUsers.length === 0 && searchTerm ? (
+            <div className="p-8 text-center text-gray-500">
+              <Search className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+              <p>Aucun utilisateur trouvé pour "{searchTerm}"</p>
+              <button onClick={() => setSearchTerm('')} className="text-primary hover:text-primary/80 mt-2">Effacer la recherche</button>
+            </div>
           ) : users.length === 0 ? (
             <div className="p-8 text-center text-gray-500">
               Aucun utilisateur trouvé
             </div>
           ) : (
             <div className="divide-y divide-gray-200">
-              {users.map((user) => {
+              {filteredUsers.map((user) => {
                 const RoleIcon = getRoleIcon(user.role);
                 return (
                   <div key={user.id} className="p-6 hover:bg-gray-50 transition-colors">
