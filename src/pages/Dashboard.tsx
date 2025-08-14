@@ -1,11 +1,63 @@
 import React from 'react';
 import { Link, Navigate } from 'react-router-dom';
-import { Settings, LogOut, Users, Music } from 'lucide-react';
+import { Settings, LogOut, Users, Music, Music2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const Dashboard = () => {
   const { user, profile, logout } = useAuth();
+  const [userInstruments, setUserInstruments] = React.useState([]);
+  const [userOrchestras, setUserOrchestras] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
 
+  // Récupérer les instruments de l'utilisateur
+  const fetchUserInstruments = async () => {
+    if (!user) return;
+    try {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-user-instruments?userId=${user.id}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setUserInstruments(data || []);
+      }
+    } catch (err) {
+      console.error('Erreur lors de la récupération des instruments:', err);
+    }
+  };
+
+  // Récupérer les orchestres de l'utilisateur
+  const fetchUserOrchestras = async () => {
+    if (!user) return;
+    try {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-user-orchestras?userId=${user.id}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setUserOrchestras(data || []);
+      }
+    } catch (err) {
+      console.error('Erreur lors de la récupération des orchestres:', err);
+    }
+  };
+
+  React.useEffect(() => {
+    if (user) {
+      Promise.all([fetchUserInstruments(), fetchUserOrchestras()]).finally(() => {
+        setLoading(false);
+      });
+    }
+  }, [user]);
   if (!user) {
     return <Navigate to="/connexion" />;
   }
@@ -90,7 +142,7 @@ const Dashboard = () => {
         )}
 
         {/* Main Dashboard Content */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
             <div className="flex items-center space-x-3 mb-4">
               <div className="bg-primary/10 p-2 rounded-lg">
@@ -123,6 +175,76 @@ const Dashboard = () => {
             <button className="text-primary hover:text-primary/80 font-medium text-sm transition-colors">
               Voir mes cours →
             </button>
+          </div>
+        </div>
+
+        {/* User Instruments and Orchestras */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* My Instruments */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="bg-accent/10 p-2 rounded-lg">
+                <Music className="h-6 w-6 text-accent" />
+              </div>
+              <h3 className="font-poppins font-semibold text-lg text-dark">
+                Mes Instruments
+              </h3>
+            </div>
+            {loading ? (
+              <div className="flex items-center justify-center py-4">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+              </div>
+            ) : userInstruments.length > 0 ? (
+              <div className="space-y-2">
+                {userInstruments.map((instrument, index) => (
+                  <div key={index} className="flex items-center space-x-2 p-2 bg-gray-50 rounded-lg">
+                    <Music2 className="h-4 w-4 text-accent" />
+                    <span className="font-inter text-gray-700">{instrument.name}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="font-inter text-gray-500 text-sm">
+                Aucun instrument assigné pour le moment.
+              </p>
+            )}
+          </div>
+
+          {/* My Orchestras */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="bg-primary/10 p-2 rounded-lg">
+                <Users className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="font-poppins font-semibold text-lg text-dark">
+                Mes Orchestres
+              </h3>
+            </div>
+            {loading ? (
+              <div className="flex items-center justify-center py-4">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+              </div>
+            ) : userOrchestras.length > 0 ? (
+              <div className="space-y-2">
+                {userOrchestras.map((orchestra, index) => (
+                  <div key={index} className="p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center space-x-2 mb-1">
+                      <Users className="h-4 w-4 text-primary" />
+                      <span className="font-inter font-medium text-gray-800">{orchestra.name}</span>
+                    </div>
+                    {orchestra.description && (
+                      <p className="font-inter text-xs text-gray-500 ml-6">
+                        {orchestra.description}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="font-inter text-gray-500 text-sm">
+                Aucun orchestre assigné pour le moment.
+              </p>
+            )}
           </div>
         </div>
       </div>
