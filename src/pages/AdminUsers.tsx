@@ -77,8 +77,8 @@ const AdminUsers = () => {
         body: JSON.stringify({
           email: formData.email,
           password: formData.password,
-          firstName: formData.firstName,
-          lastName: formData.lastName,
+          first_name: formData.firstName,
+          last_name: formData.lastName,
           role: formData.role,
         }),
       });
@@ -118,9 +118,9 @@ const AdminUsers = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          userId: editingUser.id,
-          firstName: formData.firstName,
-          lastName: formData.lastName,
+          id: editingUser.id,
+          first_name: formData.firstName,
+          last_name: formData.lastName,
           role: formData.role,
           password: formData.password || undefined,
         }),
@@ -133,12 +133,12 @@ const AdminUsers = () => {
 
       const result = await response.json();
       
-      if (result.success) {
+      if (response.ok && result.message) {
         alert('Utilisateur mis à jour !');
         cancelEdit();
         fetchUsers();
       } else {
-        alert(`Erreur de mise à jour: ${result.error}`);
+        alert(`Erreur de mise à jour: ${result.error || 'Erreur inconnue'}`);
       }
     } catch (err) {
       console.error('Erreur de mise à jour:', err);
@@ -160,7 +160,7 @@ const AdminUsers = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          userId: userId,
+          id: userId,
         }),
       });
 
@@ -171,11 +171,11 @@ const AdminUsers = () => {
 
       const result = await response.json();
       
-      if (result.success) {
+      if (response.ok && result.message) {
         alert('Utilisateur supprimé');
         fetchUsers();
       } else {
-        alert(`Erreur de suppression: ${result.error}`);
+        alert(`Erreur de suppression: ${result.error || 'Erreur inconnue'}`);
       }
     } catch (err) {
       console.error('Erreur de suppression:', err);
