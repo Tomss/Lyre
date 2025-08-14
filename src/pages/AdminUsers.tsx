@@ -1,5 +1,5 @@
 import React, { useState, useEffect, FormEvent } from 'react';
-import { Edit, Trash2, Plus, Users, Mail, User, Shield, X, UserPlus, CheckCircle } from 'lucide-react';
+import { Edit, Trash2, Plus, Users, Mail, User, Shield, X, UserPlus, CheckCircle, Music } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import { useAuth } from '../context/AuthContext';
 import { Navigate } from 'react-router-dom';
@@ -12,6 +12,11 @@ interface UserData {
   role: 'Membre' | 'Gestionnaire' | 'Admin';
 }
 
+interface Instrument {
+  id: string;
+  name: string;
+}
+
 interface DeleteConfirmation {
   isOpen: boolean;
   user: UserData | null;
@@ -22,9 +27,12 @@ interface Notification {
   message: string;
   type: 'success' | 'error';
 }
+
 const AdminUsers = () => {
   const { profile } = useAuth();
   const [users, setUsers] = useState<UserData[]>([]);
+  const [instruments, setInstruments] = useState<Instrument[]>([]);
+  const [userInstruments, setUserInstruments] = useState<{[key: string]: Instrument[]}>({});
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingUser, setEditingUser] = useState<UserData | null>(null);
@@ -43,6 +51,7 @@ const AdminUsers = () => {
     email: '',
     password: '',
     role: 'Membre' as 'Membre' | 'Gestionnaire' | 'Admin',
+    instruments: [] as string[],
   });
 
   // Fonction pour afficher une notification
@@ -52,6 +61,64 @@ const AdminUsers = () => {
       setNotification({ show: false, message: '', type: 'success' });
     }, 3000);
   };
+
+  // Récupérer tous les instruments
+  const fetchInstruments = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-instruments`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setInstruments(data || []);
+    } catch (err) {
+      console.error('Erreur lors de la récupération des instruments:', err);
+    }
+  };
+
+  // Récupérer les instruments d'un utilisateur
+  const fetchUserInstruments = async (userId: string) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-user-instruments?userId=${userId}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data || [];
+    } catch (err) {
+      console.error('Erreur lors de la récupération des instruments utilisateur:', err);
+      return [];
+    }
+  };
+
+  // Récupérer les instruments de tous les utilisateurs
+  const fetchAllUserInstruments = async () => {
+    const instrumentsMap: {[key: string]: Instrument[]} = {};
+    
+    for (const user of users) {
+      const userInsts = await fetchUserInstruments(user.id);
+      instrumentsMap[user.id] = userInsts;
+    }
+    
+    setUserInstruments(instrumentsMap);
+  };
+
   // Récupérer tous les utilisateurs
   const fetchUsers = async () => {
     setLoading(true);
@@ -80,12 +147,28 @@ const AdminUsers = () => {
   useEffect(() => {
     if (profile?.role === 'Admin') {
       fetchUsers();
+      fetchInstruments();
     }
   }, [profile]);
+
+  useEffect(() => {
+    if (users.length > 0) {
+      fetchAllUserInstruments();
+    }
+  }, [users]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleInstrumentChange = (instrumentId: string, checked: boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      instruments: checked 
+        ? [...prev.instruments, instrumentId]
+        : prev.instruments.filter(id => id !== instrumentId)
+    }));
   };
 
   // Créer un utilisateur (sans se connecter dessus)
@@ -118,6 +201,12 @@ const AdminUsers = () => {
       
       if (result.success) {
         showNotification('Utilisateur créé avec succès !');
+        
+        // Gérer les instruments si sélectionnés
+        if (formData.instruments.length > 0) {
+          await manageUserInstruments(result.user.id, formData.instruments);
+        }
+        
         cancelEdit();
         fetchUsers();
       } else {
@@ -128,6 +217,31 @@ const AdminUsers = () => {
       showNotification('Erreur de création: ' + (err instanceof Error ? err.message : 'Erreur inconnue'), 'error');
     }
     setLoading(false);
+  };
+
+  // Gérer les instruments d'un utilisateur
+  const manageUserInstruments = async (userId: string, instrumentIds: string[]) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-user-instruments`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId,
+          instrumentIds,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
+    } catch (err) {
+      console.error('Erreur lors de la gestion des instruments:', err);
+      throw err;
+    }
   };
 
   // Mettre à jour un utilisateur
@@ -161,6 +275,10 @@ const AdminUsers = () => {
       
       if (response.ok && result.message) {
         showNotification('Utilisateur mis à jour avec succès !');
+        
+        // Gérer les instruments
+        await manageUserInstruments(editingUser.id, formData.instruments);
+        
         cancelEdit();
         fetchUsers();
       } else {
@@ -226,6 +344,7 @@ const AdminUsers = () => {
 
   // Préparer l'édition
   const handleEdit = (user: UserData) => {
+    const userInsts = userInstruments[user.id] || [];
     setEditingUser(user);
     setFormData({
       firstName: user.first_name,
@@ -233,6 +352,7 @@ const AdminUsers = () => {
       email: user.email,
       password: '',
       role: user.role,
+      instruments: userInsts.map(inst => inst.id),
     });
     setShowAddForm(true);
   };
@@ -246,6 +366,7 @@ const AdminUsers = () => {
       email: '',
       password: '',
       role: 'Membre',
+      instruments: [],
     });
   };
 
@@ -403,6 +524,28 @@ const AdminUsers = () => {
                   </div>
 
                   <div>
+                    <label className="block text-sm font-medium text-dark mb-3">
+                      Instruments
+                    </label>
+                    <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto border border-gray-200 rounded-lg p-3">
+                      {instruments.map((instrument) => (
+                        <label key={instrument.id} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
+                          <input
+                            type="checkbox"
+                            checked={formData.instruments.includes(instrument.id)}
+                            onChange={(e) => handleInstrumentChange(instrument.id, e.target.checked)}
+                            className="rounded border-gray-300 text-primary focus:ring-primary"
+                          />
+                          <span className="text-sm text-gray-700">{instrument.name}</span>
+                        </label>
+                      ))}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Sélectionnez un ou plusieurs instruments (optionnel)
+                    </p>
+                  </div>
+
+                  <div>
                     <label className="block text-sm font-medium text-dark mb-2">
                       Rôle
                     </label>
@@ -523,7 +666,7 @@ const AdminUsers = () => {
                           <div className="font-semibold text-dark text-lg">
                             {user.first_name} {user.last_name}
                           </div>
-                          <div className="flex items-center space-x-3 text-sm text-gray-600">
+                          <div className="flex items-center space-x-3 text-sm text-gray-600 mb-1">
                             <span className="flex items-center space-x-1">
                               <Mail className="h-4 w-4" />
                               <span>{user.email}</span>
@@ -533,7 +676,13 @@ const AdminUsers = () => {
                               {user.role}
                             </span>
                           </div>
-                        </div>
+                          {userInstruments[user.id] && userInstruments[user.id].length > 0 && (
+                            <div className="flex items-center space-x-1 text-xs text-gray-500">
+                              <Music className="h-3 w-3" />
+                              <span>{userInstruments[user.id].map(inst => inst.name).join(', ')}</span>
+                            </div>
+                          )}
+                          </div>
                       </div>
                       <div className="flex items-center space-x-2">
                         <button
