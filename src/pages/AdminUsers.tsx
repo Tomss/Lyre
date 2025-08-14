@@ -12,12 +12,20 @@ interface UserData {
   role: 'Membre' | 'Gestionnaire' | 'Admin';
 }
 
+interface DeleteConfirmation {
+  isOpen: boolean;
+  user: UserData | null;
+}
 const AdminUsers = () => {
   const { profile } = useAuth();
   const [users, setUsers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingUser, setEditingUser] = useState<UserData | null>(null);
+  const [deleteConfirmation, setDeleteConfirmation] = useState<DeleteConfirmation>({
+    isOpen: false,
+    user: null,
+  });
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -148,9 +156,17 @@ const AdminUsers = () => {
   };
 
   // Supprimer un utilisateur
-  const handleDelete = async (userId: string, userName: string) => {
-    if (!confirm(`Supprimer ${userName} ?`)) return;
+  const confirmDelete = (user: UserData) => {
+    setDeleteConfirmation({
+      isOpen: true,
+      user: user,
+    });
+  };
+
+  const handleDelete = async () => {
+    if (!deleteConfirmation.user) return;
     
+    const userId = deleteConfirmation.user.id;
     console.log('Attempting to delete user:', userId);
     try {
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-user`, {
@@ -175,6 +191,7 @@ const AdminUsers = () => {
       if (result.message) {
         alert('Utilisateur supprimé');
         fetchUsers();
+        setDeleteConfirmation({ isOpen: false, user: null });
       } else {
         console.error('Unexpected response format:', result);
         alert(`Erreur de suppression: ${result.error || 'Format de réponse inattendu'}`);
@@ -185,6 +202,9 @@ const AdminUsers = () => {
     }
   };
 
+  const cancelDelete = () => {
+    setDeleteConfirmation({ isOpen: false, user: null });
+  };
   // Préparer l'édition
   const handleEdit = (user: UserData) => {
     setEditingUser(user);
@@ -383,6 +403,56 @@ const AdminUsers = () => {
           </div>
         )}
 
+        {/* Modal de confirmation de suppression */}
+        {deleteConfirmation.isOpen && deleteConfirmation.user && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
+              <div className="p-6">
+                <div className="flex items-center space-x-3 mb-6">
+                  <div className="bg-red-100 p-3 rounded-full">
+                    <Trash2 className="h-6 w-6 text-red-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-poppins font-semibold text-lg text-dark">
+                      Confirmer la suppression
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      Cette action est irréversible
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="mb-6">
+                  <p className="text-gray-700">
+                    Êtes-vous sûr de vouloir supprimer l'utilisateur{' '}
+                    <span className="font-semibold text-dark">
+                      {deleteConfirmation.user.first_name} {deleteConfirmation.user.last_name}
+                    </span>{' '}
+                    ?
+                  </p>
+                  <p className="text-sm text-gray-500 mt-2">
+                    Email: {deleteConfirmation.user.email}
+                  </p>
+                </div>
+                
+                <div className="flex space-x-3">
+                  <button
+                    onClick={handleDelete}
+                    className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
+                  >
+                    Supprimer définitivement
+                  </button>
+                  <button
+                    onClick={cancelDelete}
+                    className="flex-1 bg-gray-200 hover:bg-gray-300 text-dark font-semibold py-3 px-4 rounded-lg transition-all duration-200"
+                  >
+                    Annuler
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
         {/* Liste des utilisateurs */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="p-6 border-b border-gray-100">
@@ -437,6 +507,8 @@ const AdminUsers = () => {
                         </button>
                         <button
                           onClick={() => handleDelete(user.id, `${user.first_name} ${user.last_name}`)}
+                        <button
+                          onClick={() => confirmDelete(user)}
                           className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-all duration-200"
                           title="Supprimer"
                         >
