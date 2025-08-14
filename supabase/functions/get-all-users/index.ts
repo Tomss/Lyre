@@ -15,13 +15,17 @@ Deno.serve(async (req: Request) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const { data: { users }, error: authError } = await supabaseAdmin.auth.admin.listUsers();
-    if (authError) throw authError;
+    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.listUsers();
+    if (authError) throw new Error(`Auth error: ${authError.message || 'Unknown auth error'}`);
+    if (!authData || !authData.users) throw new Error('No auth data returned from Supabase');
+    
+    const users = authData.users;
 
     const { data: profiles, error: profilesError } = await supabaseAdmin
       .from('profiles')
       .select('*');
-    if (profilesError) throw profilesError;
+    if (profilesError) throw new Error(`Profiles error: ${profilesError.message || 'Unknown profiles error'}`);
+    if (!profiles) throw new Error('No profiles data returned from Supabase');
 
     const combinedData = profiles.map(profile => {
       const authUser = users.find(u => u.id === profile.id);
@@ -36,7 +40,11 @@ Deno.serve(async (req: Request) => {
       status: 200,
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
+    const errorMessage = error instanceof Error ? error.message : 
+                        typeof error === 'string' ? error : 
+                        'Unknown error occurred';
+    
+    return new Response(JSON.stringify({ error: errorMessage }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 400,
     });
