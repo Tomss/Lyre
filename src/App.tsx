@@ -10,6 +10,7 @@ import Media from './pages/Media';
 import Contact from './pages/Contact';
 import Connexion from './pages/Connexion'; // Importer la page de connexion
 import Dashboard from './pages/Dashboard'; // Importer le dashboard
+import AdminUsers from './pages/AdminUsers'; // Importer la page d'administration des utilisateurs
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
             <Route path="/contact" element={<Contact />} />
             <Route path="/connexion" element={<Connexion />} /> {/* Route pour la connexion */}
             <Route path="/dashboard" element={<Dashboard />} /> {/* Route (non protégée pour l'instant) */}
+            <Route path="/admin/users" element={<AdminUsers />} /> {/* Route pour l'administration des utilisateurs */}
           </Routes>
         </main>
         <Footer />
