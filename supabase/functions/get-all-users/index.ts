@@ -10,6 +10,11 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
+    console.log('Environment check:', {
+      hasUrl: !!Deno.env.get('SUPABASE_URL'),
+      hasServiceKey: !!Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+    });
+
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''

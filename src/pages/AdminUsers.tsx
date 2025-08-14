@@ -32,6 +32,7 @@ const AdminUsers = () => {
     setLoading(true);
     const { data, error } = await supabase.functions.invoke('get-all-users');
     if (error) {
+      console.error('Full error object:', error);
       alert(`Erreur lors du chargement des utilisateurs: ${error.message || error.toString() || 'une erreur inconnue est survenue'}`);
     } else {
       setUsers(data);
