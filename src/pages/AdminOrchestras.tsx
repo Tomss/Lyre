@@ -1,7 +1,7 @@
 import React, { useState, useEffect, FormEvent } from 'react';
-import { Edit, Trash2, Plus, Users, Search, X, CheckCircle } from 'lucide-react';
+import { Edit, Trash2, Plus, Users, Search, X, CheckCircle, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Link } from 'react-router-dom';
 
 interface Orchestra {
   id: string;
@@ -256,6 +256,13 @@ const AdminOrchestras = () => {
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 mb-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
+              <Link
+                to="/dashboard"
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors mr-2"
+                title="Retour au dashboard"
+              >
+                <ArrowLeft className="h-6 w-6 text-gray-600" />
+              </Link>
               <div className="bg-primary/10 p-3 rounded-lg">
                 <Users className="h-8 w-8 text-primary" />
               </div>
@@ -473,9 +480,6 @@ const AdminOrchestras = () => {
                             {orchestra.description}
                           </div>
                         )}
-                        <div className="text-sm text-gray-500 mt-1">
-                          Créé le {new Date(orchestra.created_at).toLocaleDateString('fr-FR')}
-                        </div>
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
