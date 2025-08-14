@@ -95,12 +95,19 @@ const AdminUsers = () => {
     setLoading(true);
 
     try {
-      // Appeler la Edge Function via fetch
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-user`, {
+      // Appeler la Edge Function
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+      
+      if (!supabaseUrl || !supabaseKey) {
+        throw new Error('Variables d\'environnement Supabase manquantes');
+      }
+
+      const response = await fetch(`${supabaseUrl}/functions/v1/create-user`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Authorization': `Bearer ${supabaseKey}`,
         },
         body: JSON.stringify({
           email: formData.email,
@@ -113,6 +120,9 @@ const AdminUsers = () => {
 
       const result = await response.json();
 
+      console.log('Response status:', response.status);
+      console.log('Response result:', result);
+
       if (!response.ok) {
         console.error("Erreur lors de la création:", result);
         alert(`Erreur lors de la création : ${result.error || 'Erreur inconnue'}`);
@@ -120,6 +130,7 @@ const AdminUsers = () => {
       }
 
       alert('Utilisateur créé avec succès !');
+      console.log('User created successfully:', result);
       
       // Réinitialiser le formulaire
       setFormData({
