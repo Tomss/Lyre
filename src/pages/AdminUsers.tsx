@@ -436,11 +436,7 @@ const AdminUsers = () => {
                           <Edit className="h-5 w-5" />
                         </button>
                         <button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleDelete(user.id, `${user.first_name} ${user.last_name}`);
-                          }}
+                          onClick={() => handleDelete(user.id, `${user.first_name} ${user.last_name}`)}
                           className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-all duration-200"
                           title="Supprimer"
                         >
