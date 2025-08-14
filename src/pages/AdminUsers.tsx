@@ -152,7 +152,6 @@ const AdminUsers = () => {
     if (!confirm(`Supprimer ${userName} ?`)) return;
     
     console.log('Attempting to delete user:', userId);
-    setLoading(true);
     try {
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-user`, {
         method: 'POST',
@@ -184,7 +183,6 @@ const AdminUsers = () => {
       console.error('Erreur de suppression:', err);
       alert('Erreur de suppression: ' + (err instanceof Error ? err.message : 'Erreur inconnue'));
     }
-    setLoading(false);
   };
 
   // Préparer l'édition
