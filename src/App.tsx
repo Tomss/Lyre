@@ -1,3 +1,4 @@
+// src/App.tsx
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Header from './components/Header';
@@ -7,6 +8,8 @@ import School from './pages/School';
 import Events from './pages/Events';
 import Media from './pages/Media';
 import Contact from './pages/Contact';
+import Connexion from './pages/Connexion'; // Importer la page de connexion
+import Dashboard from './pages/Dashboard'; // Importer le dashboard
 
 function App() {
   return (
@@ -20,6 +23,8 @@ function App() {
             <Route path="/events" element={<Events />} />
             <Route path="/media" element={<Media />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/connexion" element={<Connexion />} /> {/* Route pour la connexion */}
+            <Route path="/dashboard" element={<Dashboard />} /> {/* Route (non protégée pour l'instant) */}
           </Routes>
         </main>
         <Footer />
