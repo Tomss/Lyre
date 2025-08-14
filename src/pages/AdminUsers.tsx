@@ -30,14 +30,20 @@ const AdminUsers = () => {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.rpc('get_all_users_with_profiles');
-      
-      if (error) {
-        console.error('Erreur lors du chargement des utilisateurs:', error);
-        alert(`Erreur: ${error.message}`);
-      } else {
-        setUsers(data || []);
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-all-users`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+
+      const data = await response.json();
+      setUsers(data || []);
     } catch (err) {
       console.error('Erreur réseau:', err);
       alert('Erreur de connexion');
@@ -62,11 +68,121 @@ const AdminUsers = () => {
     setLoading(true);
 
     try {
-      // Sauvegarder la session actuelle
-      const { data: currentSession } = await supabase.auth.getSession();
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-user`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          role: formData.role,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
       
-      // Créer l'utilisateur avec l'API auth (cela ne nous connecte pas dessus)
-      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+      if (result.success) {
+        alert('Utilisateur créé avec succès !');
+        cancelEdit();
+        fetchUsers();
+      } else {
+        alert(`Erreur de création: ${result.error}`);
+      }
+    } catch (err) {
+      console.error('Erreur de création:', err);
+      alert('Erreur de création: ' + (err instanceof Error ? err.message : 'Erreur inconnue'));
+    }
+    setLoading(false);
+  };
+
+  // Mettre à jour un utilisateur
+  const handleUpdate = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!editingUser) return;
+    setLoading(true);
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/update-user`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: editingUser.id,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          role: formData.role,
+          password: formData.password || undefined,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      
+      if (result.success) {
+        alert('Utilisateur mis à jour !');
+        cancelEdit();
+        fetchUsers();
+      } else {
+        alert(`Erreur de mise à jour: ${result.error}`);
+      }
+    } catch (err) {
+      console.error('Erreur de mise à jour:', err);
+      alert('Erreur de mise à jour: ' + (err instanceof Error ? err.message : 'Erreur inconnue'));
+    }
+    setLoading(false);
+  };
+
+  // Supprimer un utilisateur
+  const handleDelete = async (userId: string, userName: string) => {
+    if (!confirm(`Supprimer ${userName} ?`)) return;
+    
+    setLoading(true);
+    try {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-user`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: userId,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      
+      if (result.success) {
+        alert('Utilisateur supprimé');
+        fetchUsers();
+      } else {
+        alert(`Erreur de suppression: ${result.error}`);
+      }
+    } catch (err) {
+      console.error('Erreur de suppression:', err);
+      alert('Erreur de suppression: ' + (err instanceof Error ? err.message : 'Erreur inconnue'));
+    }
+    setLoading(false);
+  };
         email: formData.email,
         password: formData.password,
         email_confirm: true,
