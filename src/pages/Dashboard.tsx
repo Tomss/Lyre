@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, Navigate } from 'react-router-dom';
-import { Settings, LogOut, Users } from 'lucide-react';
+import { Settings, LogOut, Users, Music } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const Dashboard = () => {
@@ -63,13 +63,29 @@ const Dashboard = () => {
             <p className="font-inter text-gray-600 mb-6">
               Accédez aux outils d'administration de l'école.
             </p>
-            <Link
-              to="/admin/users"
-              className="inline-flex items-center space-x-2 bg-primary hover:bg-primary/90 text-white font-semibold px-6 py-3 rounded-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
-            >
-              <Users className="h-5 w-5" />
-              <span>Gérer les utilisateurs</span>
-            </Link>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Link
+                to="/admin/users"
+                className="inline-flex items-center space-x-2 bg-primary hover:bg-primary/90 text-white font-semibold px-6 py-3 rounded-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg text-center justify-center"
+              >
+                <Users className="h-5 w-5" />
+                <span>Utilisateurs</span>
+              </Link>
+              <Link
+                to="/admin/instruments"
+                className="inline-flex items-center space-x-2 bg-accent hover:bg-accent/90 text-white font-semibold px-6 py-3 rounded-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg text-center justify-center"
+              >
+                <Music className="h-5 w-5" />
+                <span>Instruments</span>
+              </Link>
+              <Link
+                to="/admin/orchestras"
+                className="inline-flex items-center space-x-2 bg-primary hover:bg-primary/90 text-white font-semibold px-6 py-3 rounded-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg text-center justify-center"
+              >
+                <Users className="h-5 w-5" />
+                <span>Orchestres</span>
+              </Link>
+            </div>
           </div>
         )}
 
