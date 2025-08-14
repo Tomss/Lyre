@@ -233,26 +233,57 @@ const AdminUsers = () => {
     setLoading(true);
 
     try {
-      // Supprimer d'abord le profil
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('id', userId);
+      console.log('=== DÉBUT SUPPRESSION UTILISATEUR ===');
+      console.log('User ID:', userId);
+      console.log('User Name:', userName);
 
-      if (profileError) {
-        console.error('Profile delete error:', profileError);
-        alert('Erreur lors de la suppression du profil: ' + profileError.message);
+      // Appeler la Edge Function pour supprimer complètement l'utilisateur
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+      
+      if (!supabaseUrl || !supabaseKey) {
+        throw new Error('Variables d\'environnement Supabase manquantes');
+      }
+
+      const requestUrl = `${supabaseUrl}/functions/v1/delete-user`;
+      console.log('URL de la requête:', requestUrl);
+      
+      const requestBody = { userId };
+      console.log('Corps de la requête:', requestBody);
+
+      console.log('Envoi de la requête de suppression...');
+      const response = await fetch(requestUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${supabaseKey}`,
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      console.log('Réponse reçue. Status:', response.status);
+      
+      const result = await response.json();
+      console.log('Contenu de la réponse:', result);
+
+      if (!response.ok) {
+        console.error('=== ERREUR LORS DE LA SUPPRESSION ===');
+        console.error('Status:', response.status);
+        console.error('Result:', result);
+        alert(`Erreur lors de la suppression : ${result.error || 'Erreur inconnue'}`);
         return;
       }
 
-      alert('Utilisateur supprimé avec succès!');
+      console.log('=== SUCCÈS SUPPRESSION ===');
+      alert('Utilisateur supprimé avec succès !');
       
-      // Refresh users list
+      // Rafraîchir la liste
       fetchUsers();
     } catch (error) {
-      console.error('Error deleting user:', error);
+      console.error('=== ERREUR CATCH SUPPRESSION ===', error);
       alert('Erreur lors de la suppression de l\'utilisateur');
     } finally {
+      console.log('=== FIN SUPPRESSION UTILISATEUR ===');
       setLoading(false);
     }
   };
