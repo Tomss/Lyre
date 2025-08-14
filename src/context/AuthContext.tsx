@@ -1,4 +1,5 @@
 import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { Session, User } from '@supabase/supabase-js';
 
@@ -75,7 +76,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = () => {
-    supabase.auth.signOut();
+    supabase.auth.signOut().then(() => {
+      window.location.href = '/';
+    });
   };
 
   const value = { session, user, profile, loading, logout };
