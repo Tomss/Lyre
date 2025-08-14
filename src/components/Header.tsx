@@ -59,9 +59,9 @@ const Header = () => {
               <>
                 <Link
                   to="/dashboard"
-                  className="bg-accent hover:bg-accent/90 text-white font-inter font-semibold px-6 py-3 rounded-full transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
+                  className="font-inter font-medium text-dark hover:text-primary transition-colors duration-300"
                 >
-                  Espace Membre
+                  {profile ? `${profile.first_name} ${profile.last_name}` : user.email}
                 </Link>
                 <button
                   onClick={logout}
@@ -111,10 +111,10 @@ const Header = () => {
                 <div className="pt-4 border-t border-gray-200">
                   <Link
                     to="/dashboard"
-                    className="inline-block w-full bg-accent hover:bg-accent/90 text-white font-inter font-semibold px-6 py-3 rounded-full transition-all duration-300 mb-3 text-center"
+                    className="block font-inter font-medium text-dark hover:text-primary transition-colors mb-3"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    Espace Membre
+                    {profile ? `${profile.first_name} ${profile.last_name}` : user.email}
                   </Link>
                   <button
                     onClick={() => {
