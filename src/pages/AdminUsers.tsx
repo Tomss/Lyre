@@ -17,6 +17,12 @@ interface Instrument {
   name: string;
 }
 
+interface Orchestra {
+  id: string;
+  name: string;
+  description?: string;
+}
+
 interface DeleteConfirmation {
   isOpen: boolean;
   user: UserData | null;
@@ -32,7 +38,9 @@ const AdminUsers = () => {
   const { profile } = useAuth();
   const [users, setUsers] = useState<UserData[]>([]);
   const [instruments, setInstruments] = useState<Instrument[]>([]);
+  const [orchestras, setOrchestras] = useState<Orchestra[]>([]);
   const [userInstruments, setUserInstruments] = useState<{[key: string]: Instrument[]}>({});
+  const [userOrchestras, setUserOrchestras] = useState<{[key: string]: Orchestra[]}>({});
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -53,6 +61,7 @@ const AdminUsers = () => {
     password: '',
     role: 'Membre' as 'Membre' | 'Gestionnaire' | 'Admin',
     instruments: [] as string[],
+    orchestras: [] as string[],
   });
 
   // Fonction pour afficher une notification
@@ -108,16 +117,65 @@ const AdminUsers = () => {
     }
   };
 
+  // Récupérer tous les orchestres
+  const fetchOrchestras = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-orchestras`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setOrchestras(data || []);
+    } catch (err) {
+      console.error('Erreur lors de la récupération des orchestres:', err);
+    }
+  };
+
+  // Récupérer les orchestres d'un utilisateur
+  const fetchUserOrchestras = async (userId: string) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-user-orchestras?userId=${userId}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data || [];
+    } catch (err) {
+      console.error('Erreur lors de la récupération des orchestres utilisateur:', err);
+      return [];
+    }
+  };
+
   // Récupérer les instruments de tous les utilisateurs
-  const fetchAllUserInstruments = async () => {
+  const fetchAllUserAssociations = async () => {
     const instrumentsMap: {[key: string]: Instrument[]} = {};
+    const orchestrasMap: {[key: string]: Orchestra[]} = {};
     
     for (const user of users) {
       const userInsts = await fetchUserInstruments(user.id);
+      const userOrcs = await fetchUserOrchestras(user.id);
       instrumentsMap[user.id] = userInsts;
+      orchestrasMap[user.id] = userOrcs;
     }
     
     setUserInstruments(instrumentsMap);
+    setUserOrchestras(orchestrasMap);
   };
 
   // Récupérer tous les utilisateurs
@@ -149,12 +207,13 @@ const AdminUsers = () => {
     if (profile?.role === 'Admin') {
       fetchUsers();
       fetchInstruments();
+      fetchOrchestras();
     }
   }, [profile]);
 
   useEffect(() => {
     if (users.length > 0) {
-      fetchAllUserInstruments();
+      fetchAllUserAssociations();
     }
   }, [users]);
 
@@ -169,6 +228,15 @@ const AdminUsers = () => {
       instruments: checked 
         ? [...prev.instruments, instrumentId]
         : prev.instruments.filter(id => id !== instrumentId)
+    }));
+  };
+
+  const handleOrchestraChange = (orchestraId: string, checked: boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      orchestras: checked 
+        ? [...prev.orchestras, orchestraId]
+        : prev.orchestras.filter(id => id !== orchestraId)
     }));
   };
 
@@ -208,6 +276,11 @@ const AdminUsers = () => {
           await manageUserInstruments(result.user.id, formData.instruments);
         }
         
+        // Gérer les orchestres si sélectionnés
+        if (formData.orchestras.length > 0) {
+          await manageUserOrchestras(result.user.id, formData.orchestras);
+        }
+        
         cancelEdit();
         fetchUsers();
       } else {
@@ -241,6 +314,31 @@ const AdminUsers = () => {
       }
     } catch (err) {
       console.error('Erreur lors de la gestion des instruments:', err);
+      throw err;
+    }
+  };
+
+  // Gérer les orchestres d'un utilisateur
+  const manageUserOrchestras = async (userId: string, orchestraIds: string[]) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-user-orchestras`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId,
+          orchestraIds,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
+    } catch (err) {
+      console.error('Erreur lors de la gestion des orchestres:', err);
       throw err;
     }
   };
@@ -279,6 +377,9 @@ const AdminUsers = () => {
         
         // Gérer les instruments
         await manageUserInstruments(editingUser.id, formData.instruments);
+        
+        // Gérer les orchestres
+        await manageUserOrchestras(editingUser.id, formData.orchestras);
         
         cancelEdit();
         fetchUsers();
@@ -346,6 +447,7 @@ const AdminUsers = () => {
   // Préparer l'édition
   const handleEdit = (user: UserData) => {
     const userInsts = userInstruments[user.id] || [];
+    const userOrcs = userOrchestras[user.id] || [];
     setEditingUser(user);
     setFormData({
       firstName: user.first_name,
@@ -354,6 +456,7 @@ const AdminUsers = () => {
       password: '',
       role: user.role,
       instruments: userInsts.map(inst => inst.id),
+      orchestras: userOrcs.map(orc => orc.id),
     });
     setShowAddForm(true);
   };
@@ -368,6 +471,7 @@ const AdminUsers = () => {
       password: '',
       role: 'Membre',
       instruments: [],
+      orchestras: [],
     });
   };
 
@@ -397,6 +501,9 @@ const AdminUsers = () => {
       user.role.toLowerCase().includes(searchLower) ||
       (userInstruments[user.id] && userInstruments[user.id].some(inst => 
         inst.name.toLowerCase().includes(searchLower)
+      )) ||
+      (userOrchestras[user.id] && userOrchestras[user.id].some(orc => 
+        orc.name.toLowerCase().includes(searchLower)
       ))
     );
   });
@@ -557,6 +664,33 @@ const AdminUsers = () => {
                     </div>
                     <p className="text-xs text-gray-500 mt-1">
                       Sélectionnez un ou plusieurs instruments (optionnel)
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-dark mb-3">
+                      Orchestres
+                    </label>
+                    <div className="space-y-2 max-h-40 overflow-y-auto border border-gray-200 rounded-lg p-3">
+                      {orchestras.map((orchestra) => (
+                        <label key={orchestra.id} className="flex items-start space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                          <input
+                            type="checkbox"
+                            checked={formData.orchestras.includes(orchestra.id)}
+                            onChange={(e) => handleOrchestraChange(orchestra.id, e.target.checked)}
+                            className="rounded border-gray-300 text-primary focus:ring-primary mt-1"
+                          />
+                          <div className="flex-1">
+                            <span className="text-sm font-medium text-gray-700">{orchestra.name}</span>
+                            {orchestra.description && (
+                              <p className="text-xs text-gray-500 mt-1">{orchestra.description}</p>
+                            )}
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Sélectionnez un ou plusieurs orchestres (optionnel)
                     </p>
                   </div>
 
@@ -723,6 +857,12 @@ const AdminUsers = () => {
                             <div className="flex items-center space-x-1 text-xs text-gray-500">
                               <Music className="h-3 w-3" />
                               <span>{userInstruments[user.id].map(inst => inst.name).join(', ')}</span>
+                            </div>
+                          )}
+                          {userOrchestras[user.id] && userOrchestras[user.id].length > 0 && (
+                            <div className="flex items-center space-x-1 text-xs text-gray-500 mt-1">
+                              <Users className="h-3 w-3" />
+                              <span>{userOrchestras[user.id].map(orc => orc.name).join(', ')}</span>
                             </div>
                           )}
                           </div>
