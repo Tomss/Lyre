@@ -29,14 +29,27 @@ const AdminUsers = () => {
 
   // 1. LIRE (Read) : Récupère les utilisateurs via une Edge Function sécurisée
   const fetchUsers = async () => {
-    setLoading(true);
-    const { data, error } = await supabase.functions.invoke('get-all-users');
-    if (error) {
-      console.error('Full error object:', error);
-      alert(`Erreur lors du chargement des utilisateurs: ${error.message || error.toString() || 'une erreur inconnue est survenue'}`);
-    } else {
-      setUsers(data);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('get-all-users');
+      
+      if (error) {
+        console.error('Supabase function error:', error);
+        const errorMessage = error?.message || error?.toString() || 'Failed to send a request to the Edge Function';
+        alert(`Erreur lors du chargement des utilisateurs: ${errorMessage}`);
+      } else if (data && data.error) {
+        // Handle errors returned from the Edge Function
+        console.error('Edge Function returned error:', data.error);
+        alert(`Erreur Edge Function: ${data.error}`);
+      } else {
+        console.log('Successfully fetched users:', data);
+        setUsers(data || []);
+      }
+    } catch (err) {
+      console.error('Network or unexpected error:', err);
+      alert(`Erreur réseau: ${err instanceof Error ? err.message : 'Erreur inconnue'}`);
     }
+    
     setLoading(false);
   };
 
