@@ -19,7 +19,8 @@ const Connexion = () => {
     });
 
     if (error) {
-      alert(error.error_description || error.message);
+      console.error('Login error:', error);
+      alert('Erreur de connexion: ' + (error.message || 'Vérifiez vos identifiants'));
     } else {
       // Si la connexion réussit, redirige vers un tableau de bord
       navigate('/dashboard'); 

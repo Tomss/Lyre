@@ -37,32 +37,36 @@ const AdminUsers = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      
+      // Récupérer les profils
+      const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select(`
-          id,
-          first_name,
-          last_name,
-          role
-        `);
+        .select('id, first_name, last_name, role')
+        .order('first_name');
 
-      if (error) {
-        console.error('Error fetching users:', error);
-        alert('Erreur lors du chargement des utilisateurs');
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
+        alert('Erreur lors du chargement des profils: ' + profilesError.message);
         return;
       }
 
-      // Get user emails from auth.users
-      const userIds = data?.map(profile => profile.id) || [];
-      const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
+      // Récupérer les emails depuis auth.users via RPC
+      const { data: authUsers, error: authError } = await supabase.rpc('get_users_with_emails');
       
       if (authError) {
         console.error('Error fetching auth users:', authError);
+        // Fallback: utiliser seulement les profils sans emails
+        const usersWithoutEmails = profiles?.map(profile => ({
+          ...profile,
+          email: 'Email non disponible'
+        })) || [];
+        setUsers(usersWithoutEmails);
+        return;
       }
 
-      // Combine profile and auth data
-      const combinedUsers = data?.map(profile => {
-        const authUser = authUsers?.users.find(user => user.id === profile.id);
+      // Combiner les données
+      const combinedUsers = profiles?.map(profile => {
+        const authUser = authUsers?.find((user: any) => user.id === profile.id);
         return {
           ...profile,
           email: authUser?.email || 'Email non disponible'
@@ -86,30 +90,30 @@ const AdminUsers = () => {
     }));
   };
 
-  // Dans src/pages/AdminUsers.tsx
-
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
-  
-    // Appel sécurisé à la Edge Function au lieu de l'appel admin direct
-    const { error } = await supabase.functions.invoke('create-user', {
-      body: { 
-        email: formData.email, 
-        password: formData.password, 
-        first_name: formData.firstName,
-        last_name: formData.lastName,
-        role: formData.role 
-      },
-    });
-  
-    setLoading(false);
-  
-    if (error) {
-      console.error("Erreur lors de l'invocation de la fonction:", error);
-      alert(`Erreur lors de la création : ${error.message}`);
-    } else {
+
+    try {
+      // Utiliser la Edge Function pour créer l'utilisateur
+      const { data, error } = await supabase.functions.invoke('create-user', {
+        body: { 
+          email: formData.email, 
+          password: formData.password, 
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          role: formData.role 
+        },
+      });
+
+      if (error) {
+        console.error("Erreur lors de l'invocation de la fonction:", error);
+        alert(`Erreur lors de la création : ${error.message}`);
+        return;
+      }
+
       alert('Utilisateur créé avec succès !');
+      
       // Réinitialiser le formulaire
       setFormData({
         firstName: '',
@@ -118,8 +122,14 @@ const AdminUsers = () => {
         password: '',
         role: 'Membre'
       });
+      
       // Rafraîchir la liste
       fetchUsers();
+    } catch (error) {
+      console.error('Error creating user:', error);
+      alert('Erreur lors de la création de l\'utilisateur');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -141,7 +151,7 @@ const AdminUsers = () => {
     setLoading(true);
 
     try {
-      // Update profile
+      // Mettre à jour le profil
       const { error: profileError } = await supabase
         .from('profiles')
         .update({
@@ -155,34 +165,6 @@ const AdminUsers = () => {
         console.error('Profile update error:', profileError);
         alert('Erreur lors de la mise à jour du profil: ' + profileError.message);
         return;
-      }
-
-      // Update email if changed
-      if (formData.email !== editingUser.email) {
-        const { error: emailError } = await supabase.auth.admin.updateUserById(
-          editingUser.id,
-          { email: formData.email }
-        );
-
-        if (emailError) {
-          console.error('Email update error:', emailError);
-          alert('Erreur lors de la mise à jour de l\'email: ' + emailError.message);
-          return;
-        }
-      }
-
-      // Update password if provided
-      if (formData.password) {
-        const { error: passwordError } = await supabase.auth.admin.updateUserById(
-          editingUser.id,
-          { password: formData.password }
-        );
-
-        if (passwordError) {
-          console.error('Password update error:', passwordError);
-          alert('Erreur lors de la mise à jour du mot de passe: ' + passwordError.message);
-          return;
-        }
       }
 
       alert('Utilisateur mis à jour avec succès!');
@@ -215,12 +197,15 @@ const AdminUsers = () => {
     setLoading(true);
 
     try {
-      // Delete user from auth (this will cascade delete the profile due to foreign key)
-      const { error } = await supabase.auth.admin.deleteUser(userId);
+      // Supprimer d'abord le profil
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', userId);
 
-      if (error) {
-        console.error('Delete error:', error);
-        alert('Erreur lors de la suppression: ' + error.message);
+      if (profileError) {
+        console.error('Profile delete error:', profileError);
+        alert('Erreur lors de la suppression du profil: ' + profileError.message);
         return;
       }
 
@@ -344,7 +329,8 @@ const AdminUsers = () => {
                     onChange={handleInputChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200"
                     placeholder="jean.dupont@email.com"
-                    required
+                    required={!editingUser}
+                    disabled={editingUser !== null}
                   />
                 </div>
 
