@@ -1,5 +1,5 @@
 import React, { useState, useEffect, FormEvent } from 'react';
-import { Edit, Trash2, Plus, Users, Mail, User, Shield, X, UserPlus } from 'lucide-react';
+import { Edit, Trash2, Plus, Users, Mail, User, Shield, X, UserPlus, CheckCircle } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import { useAuth } from '../context/AuthContext';
 import { Navigate } from 'react-router-dom';
@@ -17,6 +17,11 @@ interface DeleteConfirmation {
   user: UserData | null;
 }
 
+interface Notification {
+  show: boolean;
+  message: string;
+  type: 'success' | 'error';
+}
 const AdminUsers = () => {
   const { profile } = useAuth();
   const [users, setUsers] = useState<UserData[]>([]);
@@ -27,6 +32,11 @@ const AdminUsers = () => {
     isOpen: false,
     user: null,
   });
+  const [notification, setNotification] = useState<Notification>({
+    show: false,
+    message: '',
+    type: 'success',
+  });
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -35,6 +45,13 @@ const AdminUsers = () => {
     role: 'Membre' as 'Membre' | 'Gestionnaire' | 'Admin',
   });
 
+  // Fonction pour afficher une notification
+  const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
+    setNotification({ show: true, message, type });
+    setTimeout(() => {
+      setNotification({ show: false, message: '', type: 'success' });
+    }, 3000);
+  };
   // Récupérer tous les utilisateurs
   const fetchUsers = async () => {
     setLoading(true);
@@ -100,15 +117,15 @@ const AdminUsers = () => {
       const result = await response.json();
       
       if (result.success) {
-        alert('Utilisateur créé avec succès !');
+        showNotification('Utilisateur créé avec succès !');
         cancelEdit();
         fetchUsers();
       } else {
-        alert(`Erreur de création: ${result.error}`);
+        showNotification(`Erreur de création: ${result.error}`, 'error');
       }
     } catch (err) {
       console.error('Erreur de création:', err);
-      alert('Erreur de création: ' + (err instanceof Error ? err.message : 'Erreur inconnue'));
+      showNotification('Erreur de création: ' + (err instanceof Error ? err.message : 'Erreur inconnue'), 'error');
     }
     setLoading(false);
   };
@@ -143,15 +160,15 @@ const AdminUsers = () => {
       const result = await response.json();
       
       if (response.ok && result.message) {
-        alert('Utilisateur mis à jour !');
+        showNotification('Utilisateur mis à jour avec succès !');
         cancelEdit();
         fetchUsers();
       } else {
-        alert(`Erreur de mise à jour: ${result.error || 'Erreur inconnue'}`);
+        showNotification(`Erreur de mise à jour: ${result.error || 'Erreur inconnue'}`, 'error');
       }
     } catch (err) {
       console.error('Erreur de mise à jour:', err);
-      alert('Erreur de mise à jour: ' + (err instanceof Error ? err.message : 'Erreur inconnue'));
+      showNotification('Erreur de mise à jour: ' + (err instanceof Error ? err.message : 'Erreur inconnue'), 'error');
     }
     setLoading(false);
   };
@@ -190,16 +207,16 @@ const AdminUsers = () => {
       }
 
       if (result.message) {
-        alert('Utilisateur supprimé');
+        showNotification('Utilisateur supprimé avec succès !');
         fetchUsers();
         setDeleteConfirmation({ isOpen: false, user: null });
       } else {
         console.error('Unexpected response format:', result);
-        alert(`Erreur de suppression: ${result.error || 'Format de réponse inattendu'}`);
+        showNotification(`Erreur de suppression: ${result.error || 'Format de réponse inattendu'}`, 'error');
       }
     } catch (err) {
       console.error('Erreur de suppression:', err);
-      alert('Erreur de suppression: ' + (err instanceof Error ? err.message : 'Erreur inconnue'));
+      showNotification('Erreur de suppression: ' + (err instanceof Error ? err.message : 'Erreur inconnue'), 'error');
     }
   };
 
@@ -254,6 +271,24 @@ const AdminUsers = () => {
 
   return (
     <div className="font-inter pt-20 pb-20 min-h-screen bg-gray-50">
+      {/* Notification Toast */}
+      {notification.show && (
+        <div className="fixed top-24 right-4 z-50 animate-fade-in">
+          <div className={`flex items-center space-x-3 px-6 py-4 rounded-lg shadow-lg border ${
+            notification.type === 'success' 
+              ? 'bg-green-50 border-green-200 text-green-800' 
+              : 'bg-red-50 border-red-200 text-red-800'
+          }`}>
+            {notification.type === 'success' ? (
+              <CheckCircle className="h-5 w-5 text-green-600" />
+            ) : (
+              <X className="h-5 w-5 text-red-600" />
+            )}
+            <span className="font-medium">{notification.message}</span>
+          </div>
+        </div>
+      )}
+
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
         {/* Header */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 mb-8">
