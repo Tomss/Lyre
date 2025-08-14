@@ -61,25 +61,38 @@ const AdminUsers = () => {
     setLoading(true);
 
     try {
-      const { error } = await supabase.functions.invoke('create-user', {
-        body: {
-          email: formData.email,
-          password: formData.password,
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          role: formData.role,
-        },
+      // Créer l'utilisateur avec l'API auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
       });
 
-      if (error) {
-        alert(`Erreur: ${error.message || 'Erreur inconnue'}`);
+      if (authError) {
+        alert(`Erreur de création: ${authError.message}`);
+      } else if (authData.user) {
+        // Créer le profil
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({
+            id: authData.user.id,
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            role: formData.role,
+          });
+
+        if (profileError) {
+          alert(`Erreur de profil: ${profileError.message}`);
+        } else {
+          alert('Utilisateur créé avec succès !');
+          cancelEdit();
+          fetchUsers();
+        }
       } else {
-        alert('Utilisateur créé avec succès !');
-        cancelEdit();
-        fetchUsers();
+        alert('Erreur: Aucun utilisateur créé');
       }
     } catch (err) {
-      alert('Erreur de création');
+      console.error('Erreur de création:', err);
+      alert('Erreur de création: ' + (err instanceof Error ? err.message : 'Erreur inconnue'));
     }
     setLoading(false);
   };
@@ -103,25 +116,26 @@ const AdminUsers = () => {
     setLoading(true);
 
     try {
-      const { error } = await supabase.functions.invoke('update-user', {
-        body: {
-          id: editingUser.id,
+      // Mettre à jour le profil
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
           first_name: formData.firstName,
           last_name: formData.lastName,
           role: formData.role,
-          password: formData.password || undefined,
-        },
-      });
+        })
+        .eq('id', editingUser.id);
 
-      if (error) {
-        alert(`Erreur: ${error.message || 'Erreur inconnue'}`);
+      if (profileError) {
+        alert(`Erreur de mise à jour: ${profileError.message}`);
       } else {
         alert('Utilisateur mis à jour !');
         cancelEdit();
         fetchUsers();
       }
     } catch (err) {
-      alert('Erreur de mise à jour');
+      console.error('Erreur de mise à jour:', err);
+      alert('Erreur de mise à jour: ' + (err instanceof Error ? err.message : 'Erreur inconnue'));
     }
     setLoading(false);
   };
@@ -132,18 +146,21 @@ const AdminUsers = () => {
     
     setLoading(true);
     try {
-      const { error } = await supabase.functions.invoke('delete-user', {
-        body: { userId },
-      });
+      // Supprimer le profil (l'utilisateur auth sera supprimé en cascade si configuré)
+      const { error } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', userId);
 
       if (error) {
-        alert(`Erreur: ${error.message || 'Erreur inconnue'}`);
+        alert(`Erreur de suppression: ${error.message}`);
       } else {
         alert('Utilisateur supprimé');
         fetchUsers();
       }
     } catch (err) {
-      alert('Erreur de suppression');
+      console.error('Erreur de suppression:', err);
+      alert('Erreur de suppression: ' + (err instanceof Error ? err.message : 'Erreur inconnue'));
     }
     setLoading(false);
   };
