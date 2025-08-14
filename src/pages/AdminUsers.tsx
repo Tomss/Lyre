@@ -1,5 +1,5 @@
 import React, { useState, useEffect, FormEvent } from 'react';
-import { Edit, Trash2, Plus, Users, Mail, User, Shield, X } from 'lucide-react';
+import { Edit, Trash2, Plus, Users, Mail, User, Shield, X, UserPlus } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import { useAuth } from '../context/AuthContext';
 import { Navigate } from 'react-router-dom';
@@ -16,6 +16,7 @@ const AdminUsers = () => {
   const { profile } = useAuth();
   const [users, setUsers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showAddForm, setShowAddForm] = useState(false);
   const [editingUser, setEditingUser] = useState<UserData | null>(null);
   const [formData, setFormData] = useState({
     firstName: '',
@@ -55,16 +56,20 @@ const AdminUsers = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Créer un utilisateur
+  // Créer un utilisateur (sans se connecter dessus)
   const handleCreate = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      // Créer l'utilisateur avec l'API auth
-      const { data: authData, error: authError } = await supabase.auth.signUp({
+      // Sauvegarder la session actuelle
+      const { data: currentSession } = await supabase.auth.getSession();
+      
+      // Créer l'utilisateur avec l'API auth (cela ne nous connecte pas dessus)
+      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
         email: formData.email,
         password: formData.password,
+        email_confirm: true,
       });
 
       if (authError) {
@@ -86,6 +91,11 @@ const AdminUsers = () => {
           alert('Utilisateur créé avec succès !');
           cancelEdit();
           fetchUsers();
+          
+          // Restaurer la session actuelle si elle a été perturbée
+          if (currentSession.session) {
+            await supabase.auth.setSession(currentSession.session);
+          }
         }
       } else {
         alert('Erreur: Aucun utilisateur créé');
@@ -107,6 +117,7 @@ const AdminUsers = () => {
       password: '',
       role: user.role,
     });
+    setShowAddForm(true);
   };
 
   // Mettre à jour un utilisateur
@@ -167,6 +178,7 @@ const AdminUsers = () => {
 
   const cancelEdit = () => {
     setEditingUser(null);
+    setShowAddForm(false);
     setFormData({
       firstName: '',
       lastName: '',
@@ -198,23 +210,32 @@ const AdminUsers = () => {
 
   return (
     <div className="font-inter pt-20 pb-20 min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
         {/* Header */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 mb-8">
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="bg-primary/10 p-3 rounded-lg">
-              <Users className="h-8 w-8 text-primary" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="bg-primary/10 p-3 rounded-lg">
+                <Users className="h-8 w-8 text-primary" />
+              </div>
+              <div>
+                <h1 className="font-poppins font-bold text-3xl text-dark">
+                  Gestion des utilisateurs
+                </h1>
+                <p className="font-inter text-gray-600">
+                  Gérez les comptes utilisateurs de l'école
+                </p>
+              </div>
             </div>
-            <div>
-              <h1 className="font-poppins font-bold text-3xl text-dark">
-                Gestion des utilisateurs
-              </h1>
-              <p className="font-inter text-gray-600">
-                Gérez les comptes utilisateurs de l'école
-              </p>
-            </div>
+            <button
+              onClick={() => setShowAddForm(true)}
+              className="inline-flex items-center space-x-2 bg-primary hover:bg-primary/90 text-white font-semibold px-6 py-3 rounded-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
+            >
+              <UserPlus className="h-5 w-5" />
+              <span>Ajouter un utilisateur</span>
+            </button>
           </div>
-          <div className="flex items-center space-x-4 text-sm text-gray-500">
+          <div className="flex items-center space-x-4 text-sm text-gray-500 mt-4">
             <span className="flex items-center space-x-1">
               <Users className="h-4 w-4" />
               <span>{users.length} utilisateur{users.length > 1 ? 's' : ''}</span>
@@ -222,208 +243,190 @@ const AdminUsers = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Formulaire */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-              <div className="flex items-center space-x-3 mb-6">
-                <div className="bg-primary/10 p-2 rounded-lg">
-                  {editingUser ? <Edit className="h-6 w-6 text-primary" /> : <Plus className="h-6 w-6 text-primary" />}
-                </div>
-                <h2 className="font-poppins font-semibold text-xl text-dark">
-                  {editingUser ? 'Modifier' : 'Créer un utilisateur'}
-                </h2>
-              </div>
-
-              <form onSubmit={editingUser ? handleUpdate : handleCreate} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-dark mb-2">
-                    Prénom
-                  </label>
-                  <input
-                    type="text"
-                    name="firstName"
-                    value={formData.firstName}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-dark mb-2">
-                    Nom
-                  </label>
-                  <input
-                    type="text"
-                    name="lastName"
-                    value={formData.lastName}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-dark mb-2">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    disabled={!!editingUser}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary disabled:bg-gray-100"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-dark mb-2">
-                    Mot de passe {editingUser && '(laisser vide pour ne pas changer)'}
-                  </label>
-                  <input
-                    type="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                    required={!editingUser}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-dark mb-2">
-                    Rôle
-                  </label>
-                  <select
-                    name="role"
-                    value={formData.role}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                  >
-                    <option value="Membre">Membre</option>
-                    <option value="Gestionnaire">Gestionnaire</option>
-                    <option value="Admin">Admin</option>
-                  </select>
-                </div>
-
-                <div className="flex space-x-2 pt-2">
+        {/* Formulaire d'ajout/modification (Modal) */}
+        {showAddForm && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center space-x-3">
+                    <div className="bg-primary/10 p-2 rounded-lg">
+                      {editingUser ? <Edit className="h-6 w-6 text-primary" /> : <Plus className="h-6 w-6 text-primary" />}
+                    </div>
+                    <h2 className="font-poppins font-semibold text-xl text-dark">
+                      {editingUser ? 'Modifier l\'utilisateur' : 'Ajouter un utilisateur'}
+                    </h2>
+                  </div>
                   <button
-                    type="submit"
-                    disabled={loading}
-                    className="flex-1 bg-primary hover:bg-primary/90 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 disabled:opacity-50"
+                    onClick={cancelEdit}
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                   >
-                    {loading ? 'En cours...' : (editingUser ? 'Mettre à jour' : 'Créer')}
+                    <X className="h-5 w-5 text-gray-500" />
                   </button>
-                  {editingUser && (
+                </div>
+
+                <form onSubmit={editingUser ? handleUpdate : handleCreate} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-dark mb-2">
+                      Prénom
+                    </label>
+                    <input
+                      type="text"
+                      name="firstName"
+                      value={formData.firstName}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-dark mb-2">
+                      Nom
+                    </label>
+                    <input
+                      type="text"
+                      name="lastName"
+                      value={formData.lastName}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-dark mb-2">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      disabled={!!editingUser}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary disabled:bg-gray-100"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-dark mb-2">
+                      Mot de passe {editingUser && '(laisser vide pour ne pas changer)'}
+                    </label>
+                    <input
+                      type="password"
+                      name="password"
+                      value={formData.password}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                      required={!editingUser}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-dark mb-2">
+                      Rôle
+                    </label>
+                    <select
+                      name="role"
+                      value={formData.role}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                    >
+                      <option value="Membre">Membre</option>
+                      <option value="Gestionnaire">Gestionnaire</option>
+                      <option value="Admin">Admin</option>
+                    </select>
+                  </div>
+
+                  <div className="flex space-x-3 pt-4">
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="flex-1 bg-primary hover:bg-primary/90 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 disabled:opacity-50"
+                    >
+                      {loading ? 'En cours...' : (editingUser ? 'Mettre à jour' : 'Créer')}
+                    </button>
                     <button
                       type="button"
                       onClick={cancelEdit}
-                      className="p-2 bg-gray-200 hover:bg-gray-300 text-dark rounded-lg transition-all duration-200"
+                      className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-dark rounded-lg transition-all duration-200"
                     >
-                      <X className="h-4 w-4" />
+                      Annuler
                     </button>
-                  )}
-                </div>
-              </form>
-            </div>
-          </div>
-
-          {/* Liste des utilisateurs */}
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-              <div className="p-6 border-b border-gray-100">
-                <h3 className="font-poppins font-semibold text-lg text-dark">
-                  Liste des utilisateurs
-                </h3>
+                  </div>
+                </form>
               </div>
-              
-              {loading ? (
-                <div className="p-8 text-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-                  <p className="mt-2 text-gray-600">Chargement...</p>
-                </div>
-              ) : users.length === 0 ? (
-                <div className="p-8 text-center text-gray-500">
-                  Aucun utilisateur trouvé
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Utilisateur
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Email
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Rôle
-                        </th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Actions
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {users.map((user) => {
-                        const RoleIcon = getRoleIcon(user.role);
-                        return (
-                          <tr key={user.id} className="hover:bg-gray-50">
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="flex items-center">
-                                <div className="bg-primary/10 p-2 rounded-full mr-3">
-                                  <User className="h-4 w-4 text-primary" />
-                                </div>
-                                <div>
-                                  <div className="text-sm font-medium text-dark">
-                                    {user.first_name} {user.last_name}
-                                  </div>
-                                </div>
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="flex items-center text-sm text-gray-600">
-                                <Mail className="h-4 w-4 mr-2" />
-                                {user.email}
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleColor(user.role)}`}>
-                                <RoleIcon className="h-3 w-3 mr-1" />
-                                {user.role}
-                              </span>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                              <div className="flex items-center justify-end space-x-2">
-                                <button
-                                  onClick={() => handleEdit(user)}
-                                  className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-all duration-200"
-                                  title="Modifier"
-                                >
-                                  <Edit className="h-4 w-4" />
-                                </button>
-                                <button
-                                  onClick={() => handleDelete(user.id, `${user.first_name} ${user.last_name}`)}
-                                  className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-all duration-200"
-                                  title="Supprimer"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              )}
             </div>
           </div>
+        )}
+
+        {/* Liste des utilisateurs */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="p-6 border-b border-gray-100">
+            <h3 className="font-poppins font-semibold text-lg text-dark">
+              Liste des utilisateurs
+            </h3>
+          </div>
+          
+          {loading ? (
+            <div className="p-8 text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+              <p className="mt-2 text-gray-600">Chargement...</p>
+            </div>
+          ) : users.length === 0 ? (
+            <div className="p-8 text-center text-gray-500">
+              Aucun utilisateur trouvé
+            </div>
+          ) : (
+            <div className="divide-y divide-gray-200">
+              {users.map((user) => {
+                const RoleIcon = getRoleIcon(user.role);
+                return (
+                  <div key={user.id} className="p-6 hover:bg-gray-50 transition-colors">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-4">
+                        <div className="bg-primary/10 p-3 rounded-full">
+                          <User className="h-6 w-6 text-primary" />
+                        </div>
+                        <div>
+                          <div className="font-semibold text-dark text-lg">
+                            {user.first_name} {user.last_name}
+                          </div>
+                          <div className="flex items-center space-x-3 text-sm text-gray-600">
+                            <span className="flex items-center space-x-1">
+                              <Mail className="h-4 w-4" />
+                              <span>{user.email}</span>
+                            </span>
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleColor(user.role)}`}>
+                              <RoleIcon className="h-3 w-3 mr-1" />
+                              {user.role}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => handleEdit(user)}
+                          className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-all duration-200"
+                          title="Modifier"
+                        >
+                          <Edit className="h-5 w-5" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(user.id, `${user.first_name} ${user.last_name}`)}
+                          className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-all duration-200"
+                          title="Supprimer"
+                        >
+                          <Trash2 className="h-5 w-5" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
     </div>
