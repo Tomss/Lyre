@@ -160,7 +160,7 @@ const AdminUsers = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          id: userId,
+          userId: userId,
         }),
       });
 
