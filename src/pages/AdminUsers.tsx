@@ -151,6 +151,7 @@ const AdminUsers = () => {
   const handleDelete = async (userId: string, userName: string) => {
     if (!confirm(`Supprimer ${userName} ?`)) return;
     
+    console.log('Attempting to delete user:', userId);
     setLoading(true);
     try {
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-user`, {
@@ -164,18 +165,20 @@ const AdminUsers = () => {
         }),
       });
 
+      console.log('Delete response status:', response.status);
+      const result = await response.json();
+      console.log('Delete response body:', result);
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        throw new Error(result.error || `HTTP error! status: ${response.status}`);
       }
 
-      const result = await response.json();
-      
-      if (response.ok && result.message) {
+      if (result.message) {
         alert('Utilisateur supprimé');
         fetchUsers();
       } else {
-        alert(`Erreur de suppression: ${result.error || 'Erreur inconnue'}`);
+        console.error('Unexpected response format:', result);
+        alert(`Erreur de suppression: ${result.error || 'Format de réponse inattendu'}`);
       }
     } catch (err) {
       console.error('Erreur de suppression:', err);
