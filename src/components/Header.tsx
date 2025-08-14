@@ -57,12 +57,12 @@ const Header = () => {
           <div className="hidden lg:flex items-center space-x-4">
             {user ? (
               <>
-                <div className="flex items-center space-x-2">
-                  <UserCircle className="h-5 w-5 text-gray-600" />
-                  <span className="font-inter text-sm text-gray-600">
-                    {profile ? `${profile.first_name} ${profile.last_name}` : user.email}
-                  </span>
-                </div>
+                <Link
+                  to="/dashboard"
+                  className="bg-accent hover:bg-accent/90 text-white font-inter font-semibold px-6 py-3 rounded-full transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
+                >
+                  Espace Membre
+                </Link>
                 <button
                   onClick={logout}
                   className="bg-gray-200 hover:bg-gray-300 text-dark font-inter font-semibold px-4 py-2 rounded-full transition-all duration-300"
@@ -109,12 +109,13 @@ const Header = () => {
               {/* Mobile User Section */}
               {user ? (
                 <div className="pt-4 border-t border-gray-200">
-                  <div className="flex items-center space-x-2 mb-3">
-                    <UserCircle className="h-5 w-5 text-gray-600" />
-                    <span className="font-inter text-sm text-gray-600">
-                      {profile ? `${profile.first_name} ${profile.last_name}` : user.email}
-                    </span>
-                  </div>
+                  <Link
+                    to="/dashboard"
+                    className="inline-block w-full bg-accent hover:bg-accent/90 text-white font-inter font-semibold px-6 py-3 rounded-full transition-all duration-300 mb-3 text-center"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Espace Membre
+                  </Link>
                   <button
                     onClick={() => {
                       logout();
