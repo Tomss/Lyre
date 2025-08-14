@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Music } from 'lucide-react';
+import { Menu, X, Music, UserCircle } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const { user, profile, logout } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -51,15 +53,31 @@ const Header = () => {
             ))}
           </div>
 
-          {/* --- MODIFICATION ICI --- */}
-          {/* Member Space Button */}
-          <div className="hidden lg:block">
-            <Link
-              to="/connexion"
-              className="bg-accent hover:bg-accent/90 text-white font-inter font-semibold px-6 py-3 rounded-full transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
-            >
-              Espace Membre
-            </Link>
+          {/* Dynamic User Section */}
+          <div className="hidden lg:flex items-center space-x-4">
+            {user ? (
+              <>
+                <div className="flex items-center space-x-2">
+                  <UserCircle className="h-5 w-5 text-gray-600" />
+                  <span className="font-inter text-sm text-gray-600">
+                    {profile ? `${profile.first_name} ${profile.last_name}` : user.email}
+                  </span>
+                </div>
+                <button
+                  onClick={logout}
+                  className="bg-gray-200 hover:bg-gray-300 text-dark font-inter font-semibold px-4 py-2 rounded-full transition-all duration-300"
+                >
+                  Déconnexion
+                </button>
+              </>
+            ) : (
+              <Link
+                to="/connexion"
+                className="bg-accent hover:bg-accent/90 text-white font-inter font-semibold px-6 py-3 rounded-full transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
+              >
+                Espace Membre
+              </Link>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -87,14 +105,35 @@ const Header = () => {
                   {link.label}
                 </Link>
               ))}
-              {/* --- MODIFICATION ICI --- */}
-              <Link
-                to="/connexion"
-                className="inline-block bg-accent hover:bg-accent/90 text-white font-inter font-semibold px-6 py-3 rounded-full transition-all duration-300"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Espace Membre
-              </Link>
+              
+              {/* Mobile User Section */}
+              {user ? (
+                <div className="pt-4 border-t border-gray-200">
+                  <div className="flex items-center space-x-2 mb-3">
+                    <UserCircle className="h-5 w-5 text-gray-600" />
+                    <span className="font-inter text-sm text-gray-600">
+                      {profile ? `${profile.first_name} ${profile.last_name}` : user.email}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      logout();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="w-full bg-gray-200 hover:bg-gray-300 text-dark font-inter font-semibold px-4 py-2 rounded-full transition-all duration-300"
+                  >
+                    Déconnexion
+                  </button>
+                </div>
+              ) : (
+                <Link
+                  to="/connexion"
+                  className="inline-block bg-accent hover:bg-accent/90 text-white font-inter font-semibold px-6 py-3 rounded-full transition-all duration-300"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Espace Membre
+                </Link>
+              )}
             </div>
           </div>
         )}

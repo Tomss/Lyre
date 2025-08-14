@@ -1,28 +1,14 @@
-// src/pages/Dashboard.tsx
-import React, { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { supabase } from '../supabaseClient';
-import { User } from '@supabase/supabase-js';
+import React from 'react';
+import { Link, Navigate } from 'react-router-dom';
 import { Settings, LogOut, Users } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const Dashboard = () => {
-  const [user, setUser] = useState<User | null>(null);
-  const [userRole, setUserRole] = useState<string>('Membre'); // Valeur de remplacement
-  const [userName, setUserName] = useState<string>('Jean Dupont'); // Valeur de remplacement
-  const navigate = useNavigate();
+  const { user, profile, logout } = useAuth();
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-    };
-    fetchUser();
-  }, []);
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate('/'); // Redirige vers l'accueil après déconnexion
-  };
+  if (!user) {
+    return <Navigate to="/connexion" />;
+  }
 
   return (
     <div className="font-inter pt-20 pb-20 min-h-screen bg-gray-50">
@@ -31,21 +17,34 @@ const Dashboard = () => {
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 mb-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between">
             <div>
-              <h1 className="font-poppins font-bold text-3xl text-dark mb-2">
-                Bonjour {userName}
-              </h1>
-              <p className="font-inter text-lg text-gray-600">
-                Bienvenue dans votre espace.
-              </p>
-              {user && (
+              {profile ? (
+                <>
+                  <h1 className="font-poppins font-bold text-3xl text-dark mb-2">
+                    Bonjour {profile.first_name} {profile.last_name}
+                  </h1>
+                  <p className="font-inter text-lg text-gray-600">
+                    Bienvenue dans votre espace.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h1 className="font-poppins font-bold text-3xl text-dark mb-2">
+                    Bonjour
+                  </h1>
+                  <p className="font-inter text-lg text-gray-600">
+                    Chargement de votre profil...
+                  </p>
+                </>
+              )}
+              {user && profile && (
                 <p className="font-inter text-sm text-gray-500 mt-2">
-                  Connecté en tant que {user.email} • Rôle: {userRole}
+                  Connecté en tant que {user.email} • Rôle: {profile.role}
                 </p>
               )}
             </div>
             <div className="mt-6 md:mt-0">
               <button
-                onClick={handleLogout}
+                onClick={logout}
                 className="inline-flex items-center space-x-2 bg-gray-100 hover:bg-gray-200 text-dark font-medium px-4 py-2 rounded-lg transition-all duration-200"
               >
                 <LogOut className="h-4 w-4" />
@@ -56,7 +55,7 @@ const Dashboard = () => {
         </div>
 
         {/* Admin Section - Visible uniquement pour les Admins */}
-        {userRole === 'Admin' && (
+        {profile?.role === 'Admin' && (
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 mb-8">
             <h2 className="font-poppins font-semibold text-xl text-dark mb-4">
               Administration

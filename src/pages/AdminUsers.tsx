@@ -1,15 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, FormEvent } from 'react';
 import { Edit, Trash2, Plus, Users, Mail, User, Shield } from 'lucide-react';
+import { supabase } from '../supabaseClient';
+import { useAuth } from '../context/AuthContext';
+import { Navigate } from 'react-router-dom';
 
 interface UserData {
-  id: number;
-  firstName: string;
-  lastName: string;
+  id: string;
+  first_name: string;
+  last_name: string;
   email: string;
   role: 'Membre' | 'Gestionnaire' | 'Admin';
 }
 
 const AdminUsers = () => {
+  const { profile } = useAuth();
+  const [users, setUsers] = useState<UserData[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [editingUser, setEditingUser] = useState<UserData | null>(null);
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -18,14 +25,58 @@ const AdminUsers = () => {
     role: 'Membre' as 'Membre' | 'Gestionnaire' | 'Admin'
   });
 
-  // Données de remplacement pour la liste des utilisateurs
-  const [users] = useState<UserData[]>([
-    { id: 1, firstName: 'Jean', lastName: 'Dupont', email: 'jean.dupont@email.com', role: 'Admin' },
-    { id: 2, firstName: 'Marie', lastName: 'Martin', email: 'marie.martin@email.com', role: 'Gestionnaire' },
-    { id: 3, firstName: 'Pierre', lastName: 'Durand', email: 'pierre.durand@email.com', role: 'Membre' },
-    { id: 4, firstName: 'Sophie', lastName: 'Bernard', email: 'sophie.bernard@email.com', role: 'Membre' },
-    { id: 5, firstName: 'Lucas', lastName: 'Petit', email: 'lucas.petit@email.com', role: 'Membre' }
-  ]);
+  // Redirect if not admin
+  if (profile?.role !== 'Admin') {
+    return <Navigate to="/dashboard" />;
+  }
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('profiles')
+        .select(`
+          id,
+          first_name,
+          last_name,
+          role
+        `);
+
+      if (error) {
+        console.error('Error fetching users:', error);
+        alert('Erreur lors du chargement des utilisateurs');
+        return;
+      }
+
+      // Get user emails from auth.users
+      const userIds = data?.map(profile => profile.id) || [];
+      const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
+      
+      if (authError) {
+        console.error('Error fetching auth users:', authError);
+      }
+
+      // Combine profile and auth data
+      const combinedUsers = data?.map(profile => {
+        const authUser = authUsers?.users.find(user => user.id === profile.id);
+        return {
+          ...profile,
+          email: authUser?.email || 'Email non disponible'
+        };
+      }) || [];
+
+      setUsers(combinedUsers);
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Erreur lors du chargement des utilisateurs');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -35,12 +86,181 @@ const AdminUsers = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    console.log('Créer utilisateur:', formData);
-    // Ici vous ajouterez la logique pour créer l'utilisateur
-    
-    // Reset du formulaire
+    setLoading(true);
+
+    try {
+      // Create user in auth
+      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+        email: formData.email,
+        password: formData.password,
+        email_confirm: true
+      });
+
+      if (authError) {
+        console.error('Auth error:', authError);
+        alert('Erreur lors de la création du compte: ' + authError.message);
+        return;
+      }
+
+      if (!authData.user) {
+        alert('Erreur: Utilisateur non créé');
+        return;
+      }
+
+      // Create profile
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          id: authData.user.id,
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          role: formData.role
+        });
+
+      if (profileError) {
+        console.error('Profile error:', profileError);
+        alert('Erreur lors de la création du profil: ' + profileError.message);
+        return;
+      }
+
+      alert('Utilisateur créé avec succès!');
+      
+      // Reset form
+      setFormData({
+        firstName: '',
+        lastName: '',
+        email: '',
+        password: '',
+        role: 'Membre'
+      });
+
+      // Refresh users list
+      fetchUsers();
+    } catch (error) {
+      console.error('Error creating user:', error);
+      alert('Erreur lors de la création de l\'utilisateur');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEdit = (user: UserData) => {
+    setEditingUser(user);
+    setFormData({
+      firstName: user.first_name,
+      lastName: user.last_name,
+      email: user.email,
+      password: '',
+      role: user.role
+    });
+  };
+
+  const handleUpdate = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!editingUser) return;
+
+    setLoading(true);
+
+    try {
+      // Update profile
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          role: formData.role
+        })
+        .eq('id', editingUser.id);
+
+      if (profileError) {
+        console.error('Profile update error:', profileError);
+        alert('Erreur lors de la mise à jour du profil: ' + profileError.message);
+        return;
+      }
+
+      // Update email if changed
+      if (formData.email !== editingUser.email) {
+        const { error: emailError } = await supabase.auth.admin.updateUserById(
+          editingUser.id,
+          { email: formData.email }
+        );
+
+        if (emailError) {
+          console.error('Email update error:', emailError);
+          alert('Erreur lors de la mise à jour de l\'email: ' + emailError.message);
+          return;
+        }
+      }
+
+      // Update password if provided
+      if (formData.password) {
+        const { error: passwordError } = await supabase.auth.admin.updateUserById(
+          editingUser.id,
+          { password: formData.password }
+        );
+
+        if (passwordError) {
+          console.error('Password update error:', passwordError);
+          alert('Erreur lors de la mise à jour du mot de passe: ' + passwordError.message);
+          return;
+        }
+      }
+
+      alert('Utilisateur mis à jour avec succès!');
+      
+      // Reset form and editing state
+      setEditingUser(null);
+      setFormData({
+        firstName: '',
+        lastName: '',
+        email: '',
+        password: '',
+        role: 'Membre'
+      });
+
+      // Refresh users list
+      fetchUsers();
+    } catch (error) {
+      console.error('Error updating user:', error);
+      alert('Erreur lors de la mise à jour de l\'utilisateur');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (userId: string, userName: string) => {
+    if (!confirm(`Êtes-vous sûr de vouloir supprimer l'utilisateur ${userName} ? Cette action est irréversible.`)) {
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // Delete user from auth (this will cascade delete the profile due to foreign key)
+      const { error } = await supabase.auth.admin.deleteUser(userId);
+
+      if (error) {
+        console.error('Delete error:', error);
+        alert('Erreur lors de la suppression: ' + error.message);
+        return;
+      }
+
+      alert('Utilisateur supprimé avec succès!');
+      
+      // Refresh users list
+      fetchUsers();
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      alert('Erreur lors de la suppression de l\'utilisateur');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const cancelEdit = () => {
+    setEditingUser(null);
     setFormData({
       firstName: '',
       lastName: '',
@@ -90,7 +310,7 @@ const AdminUsers = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Section 1: Créer un nouvel utilisateur */}
+          {/* Section 1: Créer/Modifier un utilisateur */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
               <div className="flex items-center space-x-3 mb-6">
@@ -98,11 +318,11 @@ const AdminUsers = () => {
                   <Plus className="h-6 w-6 text-primary" />
                 </div>
                 <h2 className="font-poppins font-semibold text-xl text-dark">
-                  Créer un utilisateur
+                  {editingUser ? 'Modifier l\'utilisateur' : 'Créer un utilisateur'}
                 </h2>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={editingUser ? handleUpdate : handleSubmit} className="space-y-4">
                 <div>
                   <label htmlFor="firstName" className="block text-sm font-medium text-dark mb-2">
                     Prénom
@@ -153,7 +373,7 @@ const AdminUsers = () => {
 
                 <div>
                   <label htmlFor="password" className="block text-sm font-medium text-dark mb-2">
-                    Mot de passe
+                    Mot de passe {editingUser && '(laisser vide pour ne pas changer)'}
                   </label>
                   <input
                     type="password"
@@ -163,7 +383,7 @@ const AdminUsers = () => {
                     onChange={handleInputChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200"
                     placeholder="••••••••"
-                    required
+                    required={!editingUser}
                   />
                 </div>
 
@@ -185,12 +405,24 @@ const AdminUsers = () => {
                   </select>
                 </div>
 
-                <button
-                  type="submit"
-                  className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
-                >
-                  Créer l'utilisateur
-                </button>
+                <div className="flex space-x-2">
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="flex-1 bg-primary hover:bg-primary/90 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {loading ? 'En cours...' : (editingUser ? 'Mettre à jour' : 'Créer l\'utilisateur')}
+                  </button>
+                  {editingUser && (
+                    <button
+                      type="button"
+                      onClick={cancelEdit}
+                      className="px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-200"
+                    >
+                      Annuler
+                    </button>
+                  )}
+                </div>
               </form>
             </div>
           </div>
@@ -212,72 +444,80 @@ const AdminUsers = () => {
                 </p>
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Nom Complet
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Email
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Rôle
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {users.map((user) => (
-                      <tr key={user.id} className="hover:bg-gray-50 transition-colors duration-150">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <div className="bg-primary/10 p-2 rounded-full mr-3">
-                              <User className="h-4 w-4 text-primary" />
-                            </div>
-                            <div>
-                              <div className="text-sm font-medium text-dark">
-                                {user.firstName} {user.lastName}
+              {loading ? (
+                <div className="p-8 text-center">
+                  <p className="text-gray-600">Chargement...</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Nom Complet
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Email
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Rôle
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {users.map((user) => (
+                        <tr key={user.id} className="hover:bg-gray-50 transition-colors duration-150">
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <div className="bg-primary/10 p-2 rounded-full mr-3">
+                                <User className="h-4 w-4 text-primary" />
+                              </div>
+                              <div>
+                                <div className="text-sm font-medium text-dark">
+                                  {user.first_name} {user.last_name}
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <Mail className="h-4 w-4 text-gray-400 mr-2" />
-                            <div className="text-sm text-gray-600">{user.email}</div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleColor(user.role)}`}>
-                            {getRoleIcon(user.role)}
-                            <span>{user.role}</span>
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <div className="flex items-center space-x-2">
-                            <button
-                              className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-all duration-200 hover:-translate-y-0.5"
-                              title="Modifier"
-                            >
-                              <Edit className="h-4 w-4" />
-                            </button>
-                            <button
-                              className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 hover:-translate-y-0.5"
-                              title="Supprimer"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <Mail className="h-4 w-4 text-gray-400 mr-2" />
+                              <div className="text-sm text-gray-600">{user.email}</div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleColor(user.role)}`}>
+                              {getRoleIcon(user.role)}
+                              <span>{user.role}</span>
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div className="flex items-center space-x-2">
+                              <button
+                                onClick={() => handleEdit(user)}
+                                className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-all duration-200 hover:-translate-y-0.5"
+                                title="Modifier"
+                              >
+                                <Edit className="h-4 w-4" />
+                              </button>
+                              <button
+                                onClick={() => handleDelete(user.id, `${user.first_name} ${user.last_name}`)}
+                                className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 hover:-translate-y-0.5"
+                                title="Supprimer"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           </div>
         </div>
