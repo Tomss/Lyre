@@ -183,45 +183,6 @@ const AdminUsers = () => {
     }
     setLoading(false);
   };
-        email: formData.email,
-        password: formData.password,
-        email_confirm: true,
-      });
-
-      if (authError) {
-        alert(`Erreur de création: ${authError.message}`);
-      } else if (authData.user) {
-        // Créer le profil
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert({
-            id: authData.user.id,
-            first_name: formData.firstName,
-            last_name: formData.lastName,
-            role: formData.role,
-          });
-
-        if (profileError) {
-          alert(`Erreur de profil: ${profileError.message}`);
-        } else {
-          alert('Utilisateur créé avec succès !');
-          cancelEdit();
-          fetchUsers();
-          
-          // Restaurer la session actuelle si elle a été perturbée
-          if (currentSession.session) {
-            await supabase.auth.setSession(currentSession.session);
-          }
-        }
-      } else {
-        alert('Erreur: Aucun utilisateur créé');
-      }
-    } catch (err) {
-      console.error('Erreur de création:', err);
-      alert('Erreur de création: ' + (err instanceof Error ? err.message : 'Erreur inconnue'));
-    }
-    setLoading(false);
-  };
 
   // Préparer l'édition
   const handleEdit = (user: UserData) => {
@@ -234,62 +195,6 @@ const AdminUsers = () => {
       role: user.role,
     });
     setShowAddForm(true);
-  };
-
-  // Mettre à jour un utilisateur
-  const handleUpdate = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!editingUser) return;
-    setLoading(true);
-
-    try {
-      // Mettre à jour le profil
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          role: formData.role,
-        })
-        .eq('id', editingUser.id);
-
-      if (profileError) {
-        alert(`Erreur de mise à jour: ${profileError.message}`);
-      } else {
-        alert('Utilisateur mis à jour !');
-        cancelEdit();
-        fetchUsers();
-      }
-    } catch (err) {
-      console.error('Erreur de mise à jour:', err);
-      alert('Erreur de mise à jour: ' + (err instanceof Error ? err.message : 'Erreur inconnue'));
-    }
-    setLoading(false);
-  };
-
-  // Supprimer un utilisateur
-  const handleDelete = async (userId: string, userName: string) => {
-    if (!confirm(`Supprimer ${userName} ?`)) return;
-    
-    setLoading(true);
-    try {
-      // Supprimer le profil (l'utilisateur auth sera supprimé en cascade si configuré)
-      const { error } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('id', userId);
-
-      if (error) {
-        alert(`Erreur de suppression: ${error.message}`);
-      } else {
-        alert('Utilisateur supprimé');
-        fetchUsers();
-      }
-    } catch (err) {
-      console.error('Erreur de suppression:', err);
-      alert('Erreur de suppression: ' + (err instanceof Error ? err.message : 'Erreur inconnue'));
-    }
-    setLoading(false);
   };
 
   const cancelEdit = () => {
