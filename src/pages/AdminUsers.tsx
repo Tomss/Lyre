@@ -95,20 +95,27 @@ const AdminUsers = () => {
     setLoading(true);
 
     try {
-      // Utiliser la Edge Function pour créer l'utilisateur
-      const { data, error } = await supabase.functions.invoke('create-user', {
-        body: { 
-          email: formData.email, 
-          password: formData.password, 
+      // Appeler la Edge Function via fetch
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-user`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
           first_name: formData.firstName,
           last_name: formData.lastName,
-          role: formData.role 
-        },
+          role: formData.role
+        })
       });
 
-      if (error) {
-        console.error("Erreur lors de l'invocation de la fonction:", error);
-        alert(`Erreur lors de la création : ${error.message}`);
+      const result = await response.json();
+
+      if (!response.ok) {
+        console.error("Erreur lors de la création:", result);
+        alert(`Erreur lors de la création : ${result.error || 'Erreur inconnue'}`);
         return;
       }
 

@@ -1,3 +1,5 @@
+import { createClient } from 'npm:@supabase/supabase-js@2';
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
@@ -13,6 +15,12 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
+    // Initialiser le client Supabase avec les variables d'environnement
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
     const { email, password, first_name, last_name, role } = await req.json();
 
     // Créer l'utilisateur dans auth.users
@@ -50,6 +58,7 @@ Deno.serve(async (req: Request) => {
       }
     );
   } catch (error) {
+    console.error('Error in create-user function:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       {
