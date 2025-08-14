@@ -16,6 +16,7 @@ interface DeleteConfirmation {
   isOpen: boolean;
   user: UserData | null;
 }
+
 const AdminUsers = () => {
   const { profile } = useAuth();
   const [users, setUsers] = useState<UserData[]>([]);
@@ -205,6 +206,7 @@ const AdminUsers = () => {
   const cancelDelete = () => {
     setDeleteConfirmation({ isOpen: false, user: null });
   };
+
   // Préparer l'édition
   const handleEdit = (user: UserData) => {
     setEditingUser(user);
@@ -453,6 +455,7 @@ const AdminUsers = () => {
             </div>
           </div>
         )}
+
         {/* Liste des utilisateurs */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="p-6 border-b border-gray-100">
@@ -505,8 +508,6 @@ const AdminUsers = () => {
                         >
                           <Edit className="h-5 w-5" />
                         </button>
-                        <button
-                          onClick={() => handleDelete(user.id, `${user.first_name} ${user.last_name}`)}
                         <button
                           onClick={() => confirmDelete(user)}
                           className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-all duration-200"
