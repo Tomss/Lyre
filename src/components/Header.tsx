@@ -59,9 +59,10 @@ const Header = () => {
               <>
                 <Link
                   to="/dashboard"
-                  className="font-inter font-medium text-dark hover:text-primary transition-colors duration-300"
+                  className="flex items-center space-x-2 bg-primary/10 hover:bg-primary/20 text-primary font-inter font-semibold px-4 py-2 rounded-full border border-primary/20 hover:border-primary/30 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
                 >
-                  {profile ? `${profile.first_name} ${profile.last_name}` : user.email}
+                  <UserCircle className="h-5 w-5" />
+                  <span>{profile ? `${profile.first_name} ${profile.last_name}` : 'Mon Espace'}</span>
                 </Link>
                 <button
                   onClick={logout}
@@ -111,10 +112,11 @@ const Header = () => {
                 <div className="pt-4 border-t border-gray-200">
                   <Link
                     to="/dashboard"
-                    className="block font-inter font-medium text-dark hover:text-primary transition-colors mb-3"
+                    className="flex items-center space-x-2 bg-primary/10 hover:bg-primary/20 text-primary font-inter font-semibold px-4 py-2 rounded-full border border-primary/20 hover:border-primary/30 transition-all duration-300 mb-3"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    {profile ? `${profile.first_name} ${profile.last_name}` : user.email}
+                    <UserCircle className="h-5 w-5" />
+                    <span>{profile ? `${profile.first_name} ${profile.last_name}` : 'Mon Espace'}</span>
                   </Link>
                   <button
                     onClick={() => {
