@@ -239,10 +239,6 @@ const UserEvents = () => {
             <div className="flex items-center space-x-6">
               {/* Filtre par type */}
               <div className="flex items-center space-x-3">
-                <span className="text-sm font-medium text-gray-700 flex items-center space-x-1">
-                  <Filter className="h-4 w-4" />
-                  <span>Type :</span>
-                </span>
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={() => toggleTypeFilter('concert')}
@@ -277,7 +273,6 @@ const UserEvents = () => {
               {/* Filtre par orchestre */}
               {userOrchestras.length > 1 && (
                 <div className="flex items-center space-x-3">
-                  <span className="text-sm font-medium text-gray-700">Orchestre :</span>
                   <div className="flex items-center space-x-2">
                     {userOrchestras.map((orchestra) => (
                       <button
