@@ -260,7 +260,9 @@ const Dashboard = () => {
                   </div>
                 ))}
                 <button className="w-full text-green-600 hover:text-green-700 font-medium text-sm transition-colors mt-3 py-2 border border-green-200 rounded-lg hover:bg-green-50">
-                  Voir tous mes événements →
+                  <Link to="/user/events" className="block w-full">
+                    Voir tous mes événements →
+                  </Link>
                 </button>
               </div>
             ) : (
