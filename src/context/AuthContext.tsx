@@ -35,7 +35,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         fetchProfile(session.user.id);
       } else {
         setLoading(false);
-        navigate('/connexion');
+          navigate('/');
       }
     };
 
