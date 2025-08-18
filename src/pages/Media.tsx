@@ -414,7 +414,19 @@ const Media = () => {
                 {regularMedia.map((media) => {
                   const TypeIcon = getTypeIcon(media.media_type);
                   return (
-                    <div key={media.id} className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 animate-fade-in group">
+                    <div key={media.id} className={`rounded-xl shadow-md border overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 animate-fade-in group ${
+                      media.media_type === 'album' ? 'bg-blue-50 border-blue-100' :
+                      media.media_type === 'enregistrement' ? 'bg-green-50 border-green-100' :
+                      media.media_type === 'journal' ? 'bg-yellow-50 border-yellow-100' :
+                      media.media_type === 'lyrissimot' ? 'bg-purple-50 border-purple-100' :
+                      'bg-white border-gray-100'
+                    }`}>
+                      media.media_type === 'album' ? 'bg-blue-50 border-blue-100' :
+                      media.media_type === 'enregistrement' ? 'bg-green-50 border-green-100' :
+                      media.media_type === 'journal' ? 'bg-yellow-50 border-yellow-100' :
+                      media.media_type === 'lyrissimot' ? 'bg-purple-50 border-purple-100' :
+                      'bg-white border-gray-100'
+                    }`}>
                       {/* Prévisualisation visuelle */}
                       <MediaPreview
                         files={media.media_files}
