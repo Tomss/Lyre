@@ -1,6 +1,6 @@
 // src/App.tsx
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Home from './pages/Home';
@@ -19,29 +19,27 @@ import AdminMedia from './pages/AdminMedia'; // Importer la page d'administratio
 
 function App() {
   return (
-    <Router>
-      <div className="min-h-screen bg-white flex flex-col">
-        <Header />
-        <main className="flex-grow">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/school" element={<School />} />
-            <Route path="/events" element={<Events />} />
-            <Route path="/media" element={<Media />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/connexion" element={<Connexion />} /> {/* Route pour la connexion */}
-            <Route path="/dashboard" element={<Dashboard />} /> {/* Route (non protégée pour l'instant) */}
-            <Route path="/admin/users" element={<AdminUsers />} /> {/* Route pour l'administration des utilisateurs */}
-            <Route path="/admin/instruments" element={<AdminInstruments />} /> {/* Route pour l'administration des instruments */}
-            <Route path="/admin/orchestras" element={<AdminOrchestras />} /> {/* Route pour l'administration des orchestres */}
-            <Route path="/admin/events" element={<AdminEvents />} /> {/* Route pour l'administration des événements */}
-            <Route path="/user/events" element={<UserEvents />} /> {/* Route pour les événements utilisateur */}
-            <Route path="/admin/media" element={<AdminMedia />} /> {/* Route pour l'administration des médias */}
-          </Routes>
-        </main>
-        <Footer />
-      </div>
-    </Router>
+    <div className="min-h-screen bg-white flex flex-col">
+      <Header />
+      <main className="flex-grow">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/school" element={<School />} />
+          <Route path="/events" element={<Events />} />
+          <Route path="/media" element={<Media />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/connexion" element={<Connexion />} /> {/* Route pour la connexion */}
+          <Route path="/dashboard" element={<Dashboard />} /> {/* Route (non protégée pour l'instant) */}
+          <Route path="/admin/users" element={<AdminUsers />} /> {/* Route pour l'administration des utilisateurs */}
+          <Route path="/admin/instruments" element={<AdminInstruments />} /> {/* Route pour l'administration des instruments */}
+          <Route path="/admin/orchestras" element={<AdminOrchestras />} /> {/* Route pour l'administration des orchestres */}
+          <Route path="/admin/events" element={<AdminEvents />} /> {/* Route pour l'administration des événements */}
+          <Route path="/user/events" element={<UserEvents />} /> {/* Route pour les événements utilisateur */}
+          <Route path="/admin/media" element={<AdminMedia />} /> {/* Route pour l'administration des médias */}
+        </Routes>
+      </main>
+      <Footer />
+    </div>
   );
 }
 
