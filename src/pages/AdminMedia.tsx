@@ -2,6 +2,8 @@ import React, { useState, useEffect, FormEvent } from 'react';
 import { Edit, Trash2, Plus, Image, Search, X, CheckCircle, ArrowLeft, Upload, File, Music, FileText, Camera } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Navigate, Link } from 'react-router-dom';
+import FileUploadPreview from '../components/FileUploadPreview';
+import MediaPreview from '../components/MediaPreview';
 
 interface MediaItem {
   id: string;
@@ -121,6 +123,9 @@ const AdminMedia = () => {
     }
   };
 
+  const removeFile = (index: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+  };
   // Simuler l'upload de fichiers (à remplacer par une vraie logique d'upload)
   const uploadFiles = async (files: File[]): Promise<any[]> => {
     // Ici, vous devriez implémenter l'upload vers Supabase Storage
@@ -499,23 +504,14 @@ const AdminMedia = () => {
                       <p className="text-sm text-gray-500 mt-2">
                         Images, vidéos, audios ou PDF
                       </p>
-                      {selectedFiles.length > 0 && (
-                        <div className="mt-4 text-left">
-                          <p className="text-sm font-medium text-gray-700 mb-2">
-                            Fichiers sélectionnés :
-                          </p>
-                          <ul className="text-sm text-gray-600 space-y-1">
-                            {selectedFiles.map((file, index) => (
-                              <li key={index} className="flex items-center space-x-2">
-                                <File className="h-4 w-4" />
-                                <span>{file.name}</span>
-                                <span className="text-gray-400">({(file.size / 1024 / 1024).toFixed(2)} MB)</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
                     </div>
+                    
+                    {/* Prévisualisation des fichiers */}
+                    <FileUploadPreview
+                      files={selectedFiles}
+                      onRemove={removeFile}
+                      className="mt-4"
+                    />
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -692,10 +688,16 @@ const AdminMedia = () => {
                 return (
                   <div key={media.id} className="p-6 hover:bg-gray-50 transition-colors">
                     <div className="flex items-start justify-between">
-                      <div className="flex items-start space-x-4 flex-1">
-                        <div className="bg-primary/10 p-3 rounded-full">
-                          <TypeIcon className="h-6 w-6 text-primary" />
+                      <div className="flex items-start space-x-6 flex-1">
+                        {/* Prévisualisation visuelle */}
+                        <div className="flex-shrink-0">
+                          <MediaPreview
+                            files={media.media_files}
+                            mediaType={media.media_type}
+                            className="w-24 h-16"
+                          />
                         </div>
+                        
                         <div className="flex-1">
                           <div className="flex items-center space-x-3 mb-2">
                             <h3 className="font-semibold text-dark text-lg">
