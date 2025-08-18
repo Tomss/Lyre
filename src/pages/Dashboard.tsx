@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, Navigate } from 'react-router-dom';
-import { Settings, LogOut, Users, Music, Music2 } from 'lucide-react';
+import { Settings, LogOut, Users, Music, Music2, Calendar } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const Dashboard = () => {
@@ -115,7 +115,7 @@ const Dashboard = () => {
             <p className="font-inter text-gray-600 mb-6">
               Accédez aux outils d'administration de l'école.
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <Link
                 to="/admin/users"
                 className="inline-flex items-center space-x-2 bg-primary hover:bg-primary/90 text-white font-semibold px-6 py-3 rounded-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg text-center justify-center"
@@ -137,12 +137,19 @@ const Dashboard = () => {
                 <Users className="h-5 w-5" />
                 <span>Orchestres</span>
               </Link>
+              <Link
+                to="/admin/events"
+                className="inline-flex items-center space-x-2 bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg text-center justify-center"
+              >
+                <Calendar className="h-5 w-5" />
+                <span>Événements</span>
+              </Link>
             </div>
           </div>
         )}
 
         {/* Main Dashboard Content */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
             <div className="flex items-center space-x-3 mb-4">
               <div className="bg-primary/10 p-2 rounded-lg">
@@ -174,6 +181,23 @@ const Dashboard = () => {
             </p>
             <button className="text-primary hover:text-primary/80 font-medium text-sm transition-colors">
               Voir mes cours →
+            </button>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="bg-green-600/10 p-2 rounded-lg">
+                <Calendar className="h-6 w-6 text-green-600" />
+              </div>
+              <h3 className="font-poppins font-semibold text-lg text-dark">
+                Mes Événements
+              </h3>
+            </div>
+            <p className="font-inter text-gray-600 mb-4">
+              Consultez vos concerts et répétitions à venir.
+            </p>
+            <button className="text-primary hover:text-primary/80 font-medium text-sm transition-colors">
+              Voir mes événements →
             </button>
           </div>
         </div>
