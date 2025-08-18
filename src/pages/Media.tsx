@@ -190,13 +190,6 @@ const Media = () => {
                 ))}
               </div>
             </div>
-            
-            <div className="flex items-center space-x-4 text-sm text-gray-500 mt-4">
-              <span className="flex items-center space-x-1">
-                <Image className="h-4 w-4" />
-                <span>{filteredMedia.length} média{filteredMedia.length > 1 ? 's' : ''} {searchTerm && `sur ${mediaItems.length}`}</span>
-              </span>
-            </div>
           </div>
         </section>
       )}
