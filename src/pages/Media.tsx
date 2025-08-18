@@ -291,7 +291,12 @@ const Media = () => {
                       
                       <div className="flex items-center justify-between text-sm text-gray-500">
                         <span>{media.media_files.length} fichier{media.media_files.length > 1 ? 's' : ''}</span>
-                        <span>{new Date(media.created_at).toLocaleDateString('fr-FR')}</span>
+                        <span>
+                          {media.media_date 
+                            ? new Date(media.media_date).toLocaleDateString('fr-FR')
+                            : new Date(media.created_at).toLocaleDateString('fr-FR')
+                          }
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -362,7 +367,12 @@ const Media = () => {
                         
                         <div className="flex items-center justify-between text-sm text-gray-500">
                           <span>{media.media_files.length} fichier{media.media_files.length > 1 ? 's' : ''}</span>
-                          <span>{new Date(media.created_at).toLocaleDateString('fr-FR')}</span>
+                          <span>
+                            {media.media_date 
+                              ? new Date(media.media_date).toLocaleDateString('fr-FR')
+                              : new Date(media.created_at).toLocaleDateString('fr-FR')
+                            }
+                          </span>
                         </div>
                       </div>
                     </div>

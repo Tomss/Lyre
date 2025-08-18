@@ -10,7 +10,7 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const { action, id, title, description, media_type, published, is_featured, files, filesToRemove } = await req.json();
+    const { action, id, title, description, media_type, media_date, published, is_featured, files, filesToRemove } = await req.json();
     
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
@@ -43,6 +43,7 @@ Deno.serve(async (req: Request) => {
             title, 
             description, 
             media_type,
+            media_date: media_date || null,
             published: published ?? true,
             is_featured: is_featured ?? false
           })
@@ -87,6 +88,7 @@ Deno.serve(async (req: Request) => {
             title, 
             description, 
             media_type,
+            media_date: media_date || null,
             published: published ?? true,
             is_featured: is_featured ?? false
           })
