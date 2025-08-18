@@ -93,9 +93,11 @@ const Media = () => {
   const regularMedia = filteredMedia.filter(media => !media.is_featured);
 
   const openGallery = (media) => {
-    if (media.media_type === 'album' && media.media_files.some(f => f.file_type === 'image')) {
+    if (media.media_type === 'album' && media.media_files && media.media_files.some(f => f.file_type === 'image')) {
       setSelectedMedia(media);
       setIsGalleryOpen(true);
+    } else {
+      console.log('Pas d\'images dans cet album:', media);
     }
   };
 
