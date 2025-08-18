@@ -21,6 +21,16 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({ files, mediaType, className
   const firstImage = files.find(file => file.file_type === 'image');
   const imageCount = files.filter(file => file.file_type === 'image').length;
 
+  // Fonction pour construire l'URL complète du fichier
+  const getFileUrl = (filePath: string) => {
+    // Si le chemin commence par /uploads/, on utilise l'URL du serveur local
+    if (filePath.startsWith('/uploads/')) {
+      return `http://localhost:5173${filePath}`;
+    }
+    // Sinon on retourne le chemin tel quel
+    return filePath;
+  };
+
   if (mediaType === 'album' && firstImage) {
     return (
       <div 
@@ -29,7 +39,7 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({ files, mediaType, className
       >
         <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
           <img
-            src={firstImage.file_path}
+            src={getFileUrl(firstImage.file_path)}
             alt={firstImage.alt_text || 'Aperçu album'}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             onError={(e) => {
@@ -70,7 +80,7 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({ files, mediaType, className
         return firstImage ? (
           <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
             <img
-              src={firstImage.file_path}
+              src={getFileUrl(firstImage.file_path)}
               alt={firstImage.alt_text || 'Article de journal'}
               className="w-full h-full object-cover"
             />
