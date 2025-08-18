@@ -26,8 +26,105 @@ Deno.serve(async (req: Request) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Récupérer tous les événements avec une logique de filtrage directe
-    const { data: events, error } = await supabase
+    // Étape 1: Récupérer les orchestres de l'utilisateur
+    const { data: userOrchestras, error: orchestrasError } = await supabase
+      .from('user_orchestras')
+      .select('orchestra_id')
+      .eq('user_id', userId);
+
+    if (orchestrasError) {
+      throw orchestrasError;
+    }
+
+    if (!userOrchestras || userOrchestras.length === 0) {
+      // L'utilisateur n'est dans aucun orchestre, retourner seulement les concerts publics
+      const { data: publicConcerts, error: concertsError } = await supabase
+        .from('events')
+        .select(`
+          *,
+          event_orchestras (
+            orchestra_id,
+            orchestras (
+              id,
+              name,
+              description
+            )
+          )
+        `)
+        .eq('event_type', 'concert')
+        .order('event_date', { ascending: true });
+
+      if (concertsError) {
+        throw concertsError;
+      }
+
+      const formattedEvents = publicConcerts?.map(event => ({
+        ...event,
+        orchestras: event.event_orchestras?.map(eo => eo.orchestras) || []
+      })) || [];
+
+      return new Response(
+        JSON.stringify(formattedEvents),
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            ...corsHeaders,
+          },
+        }
+      );
+    }
+
+    const orchestraIds = userOrchestras.map(uo => uo.orchestra_id);
+
+    // Étape 2: Récupérer tous les événements concerts (publics)
+    const { data: allConcerts, error: concertsError } = await supabase
+      .from('event_orchestras')
+      .select('event_id')
+      .in('orchestra_id', orchestraIds)
+      .eq('events.event_type', 'concert');
+
+    // Étape 3: Récupérer les événements répétitions des orchestres de l'utilisateur
+    const { data: userRepetitions, error: repetitionsError } = await supabase
+      .from('event_orchestras')
+      .select('event_id')
+      .in('orchestra_id', orchestraIds);
+
+    if (repetitionsError) {
+      throw repetitionsError;
+    }
+
+    // Étape 4: Combiner tous les IDs d'événements
+    const allEventIds = new Set();
+    
+    // Ajouter tous les concerts publics
+    const { data: publicConcertIds, error: publicError } = await supabase
+      .from('events')
+      .select('id')
+      .eq('event_type', 'concert');
+
+    if (!publicError && publicConcertIds) {
+      publicConcertIds.forEach(event => allEventIds.add(event.id));
+    }
+
+    // Ajouter les répétitions des orchestres de l'utilisateur
+    if (userRepetitions) {
+      userRepetitions.forEach(eo => allEventIds.add(eo.event_id));
+    }
+
+    if (allEventIds.size === 0) {
+      return new Response(
+        JSON.stringify([]),
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            ...corsHeaders,
+          },
+        }
+      );
+    }
+
+    // Étape 5: Récupérer les événements finaux avec leurs détails
+    const { data: events, error: eventsError } = await supabase
       .from('events')
       .select(`
         *,
@@ -40,11 +137,11 @@ Deno.serve(async (req: Request) => {
           )
         )
       `)
-      .or(`event_type.eq.concert,and(event_type.eq.repetition,event_orchestras.orchestra_id.in.(select orchestra_id from user_orchestras where user_id=${userId}))`)
+      .in('id', Array.from(allEventIds))
       .order('event_date', { ascending: true });
 
-    if (error) {
-      throw error;
+    if (eventsError) {
+      throw eventsError;
     }
 
     // Formater les données
