@@ -5,6 +5,7 @@ import { Navigate, Link } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import FileUploadPreview from '../components/FileUploadPreview';
 import MediaPreview from '../components/MediaPreview';
+import ExistingFilesPreview from '../components/ExistingFilesPreview';
 
 interface MediaItem {
   id: string;
@@ -68,6 +69,7 @@ const AdminMedia = () => {
     is_featured: false,
   });
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [filesToRemove, setFilesToRemove] = useState<string[]>([]);
 
   // Fonction pour afficher une notification
   const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
@@ -126,6 +128,10 @@ const AdminMedia = () => {
 
   const removeFile = (index: number) => {
     setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const removeExistingFile = (fileId: string) => {
+    setFilesToRemove(prev => [...prev, fileId]);
   };
   
   // Upload réel des fichiers vers Supabase Storage
@@ -238,6 +244,7 @@ const AdminMedia = () => {
           id: editingMedia.id,
           ...formData,
           files: uploadedFiles,
+          filesToRemove: filesToRemove,
         }),
       });
 
@@ -311,6 +318,7 @@ const AdminMedia = () => {
       is_featured: media.is_featured,
     });
     setSelectedFiles([]);
+    setFilesToRemove([]);
     setShowAddForm(true);
   };
 
@@ -325,6 +333,7 @@ const AdminMedia = () => {
       is_featured: false,
     });
     setSelectedFiles([]);
+    setFilesToRemove([]);
   };
 
   const getTypeColor = (type: string) => {
@@ -513,9 +522,18 @@ const AdminMedia = () => {
                     />
                   </div>
 
+                  {/* Fichiers existants lors de la modification */}
+                  {editingMedia && editingMedia.media_files && (
+                    <ExistingFilesPreview
+                      files={editingMedia.media_files.filter(f => !filesToRemove.includes(f.id))}
+                      onRemove={removeExistingFile}
+                      className="mb-4"
+                    />
+                  )}
+
                   <div>
                     <label className="block text-sm font-medium text-dark mb-2">
-                      Fichiers
+                      {editingMedia ? 'Ajouter de nouveaux fichiers (optionnel)' : 'Fichiers'}
                     </label>
                     <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
                       <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -531,14 +549,14 @@ const AdminMedia = () => {
                         htmlFor="file-upload"
                         className="cursor-pointer text-primary hover:text-primary/80 font-medium"
                       >
-                        Cliquez pour sélectionner des fichiers
+                        {editingMedia ? 'Cliquez pour ajouter des fichiers' : 'Cliquez pour sélectionner des fichiers'}
                       </label>
                       <p className="text-sm text-gray-500 mt-2">
                         Images, vidéos, audios ou PDF
                       </p>
                     </div>
                     
-                    {/* Prévisualisation des fichiers */}
+                    {/* Prévisualisation des nouveaux fichiers */}
                     <FileUploadPreview
                       files={selectedFiles}
                       onRemove={removeFile}
