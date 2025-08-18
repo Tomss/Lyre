@@ -225,25 +225,3 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({ files, mediaType, className
 };
 
 export default MediaPreview;
-                Aucun PDF
-              </p>
-            </div>
-          </div>
-        );
-      default:
-        return (
-          <div className="aspect-[4/3] bg-gray-100 rounded-lg flex items-center justify-center">
-            <ImageIcon className="h-12 w-12 text-gray-400" />
-          </div>
-        );
-    }
-  };
-
-  return (
-    <div className={`${className}`} onClick={onClick}>
-      {getPreviewContent()}
-    </div>
-  );
-};
-
-export default MediaPreview;
