@@ -53,9 +53,8 @@ const Dashboard = () => {
   };
 
   // Récupérer les événements de l'utilisateur
-  const fetchUserEvents = async (userId) => {
+  const fetchUserEvents = async (userId: string) => {
     if (!userId) return;
-    console.log('Fetching events for user:', userId);
     try {
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-user-events?userId=${userId}`, {
         method: 'GET',
@@ -67,15 +66,12 @@ const Dashboard = () => {
 
       if (response.ok) {
         const data = await response.json();
-        console.log('Raw events data:', data);
         // Filtrer les événements futurs et prendre les 3 prochains
         const futureEvents = data.filter(event => new Date(event.event_date) > new Date());
-        console.log('Future events:', futureEvents);
         const sortedEvents = futureEvents.sort((a, b) => new Date(a.event_date) - new Date(b.event_date));
-        console.log('Sorted events:', sortedEvents);
         setUserEvents(sortedEvents.slice(0, 3));
       } else {
-        console.error('Failed to fetch events:', response.status, response.statusText);
+        console.error('Failed to fetch events:', response.status);
       }
     } catch (err) {
       console.error('Erreur lors de la récupération des événements:', err);
