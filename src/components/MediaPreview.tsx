@@ -19,7 +19,10 @@ interface MediaPreviewProps {
 
 const MediaPreview: React.FC<MediaPreviewProps> = ({ files, mediaType, className = '', onClick }) => {
   const firstImage = files.find(file => file.file_type === 'image');
+  const firstAudio = files.find(file => file.file_type === 'audio');
+  const firstPdf = files.find(file => file.file_type === 'pdf');
   const imageCount = files.filter(file => file.file_type === 'image').length;
+  const audioCount = files.filter(file => file.file_type === 'audio').length;
 
   // Fonction pour construire l'URL complète du fichier
   const getFileUrl = (filePath: string) => {
@@ -31,6 +34,7 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({ files, mediaType, className
     return filePath;
   };
 
+  // Albums : photos et vidéos
   if (mediaType === 'album' && firstImage) {
     return (
       <div 
@@ -62,6 +66,94 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({ files, mediaType, className
     );
   }
 
+  // Enregistrements : fichiers audio
+  if (mediaType === 'enregistrement' && firstAudio) {
+    return (
+      <div 
+        className={`relative group cursor-pointer ${className}`}
+        onClick={onClick}
+      >
+        <div className="aspect-[4/3] bg-gradient-to-br from-green-100 to-green-200 rounded-lg flex items-center justify-center">
+          <div className="text-center">
+            <div className="bg-green-600/20 p-4 rounded-full mb-3 mx-auto w-fit group-hover:bg-green-600/30 transition-colors duration-300">
+              <Play className="h-8 w-8 text-green-600" />
+            </div>
+            <p className="text-sm text-green-700 font-medium">
+              {audioCount} audio{audioCount > 1 ? 's' : ''}
+            </p>
+          </div>
+          {/* Icône play pour indiquer que c'est cliquable */}
+          <div className="absolute top-2 right-2 bg-black/50 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <Play className="h-4 w-4" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Journaux : image ou PDF d'article
+  if (mediaType === 'journal') {
+    if (firstImage) {
+      return (
+        <div 
+          className={`relative group cursor-pointer ${className}`}
+          onClick={onClick}
+        >
+          <div className="aspect-[4/3] bg-gray-100 rounded-lg overflow-hidden">
+            <img
+              src={getFileUrl(firstImage.file_path)}
+              alt={firstImage.alt_text || 'Article de journal'}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            />
+            <div className="absolute top-2 right-2 bg-black/50 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <FileText className="h-4 w-4" />
+            </div>
+          </div>
+        </div>
+      );
+    } else if (firstPdf) {
+      return (
+        <div 
+          className={`relative group cursor-pointer ${className}`}
+          onClick={onClick}
+        >
+          <div className="aspect-[4/3] bg-gradient-to-br from-yellow-100 to-yellow-200 rounded-lg flex items-center justify-center">
+            <div className="text-center">
+              <div className="bg-yellow-600/20 p-4 rounded-full mb-3 mx-auto w-fit group-hover:bg-yellow-600/30 transition-colors duration-300">
+                <FileText className="h-8 w-8 text-yellow-600" />
+              </div>
+              <p className="text-sm text-yellow-700 font-medium">Article PDF</p>
+            </div>
+            <div className="absolute top-2 right-2 bg-black/50 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <FileText className="h-4 w-4" />
+            </div>
+          </div>
+        </div>
+      );
+    }
+  }
+
+  // Lyrissimots : PDF uniquement
+  if (mediaType === 'lyrissimot' && firstPdf) {
+    return (
+      <div 
+        className={`relative group cursor-pointer ${className}`}
+        onClick={onClick}
+      >
+        <div className="aspect-[4/3] bg-gradient-to-br from-purple-100 to-purple-200 rounded-lg flex items-center justify-center">
+          <div className="text-center">
+            <div className="bg-purple-600/20 p-4 rounded-full mb-3 mx-auto w-fit group-hover:bg-purple-600/30 transition-colors duration-300">
+              <File className="h-8 w-8 text-purple-600" />
+            </div>
+            <p className="text-sm text-purple-700 font-medium">Lyrissimot</p>
+          </div>
+          <div className="absolute top-2 right-2 bg-black/50 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <File className="h-4 w-4" />
+          </div>
+        </div>
+      </div>
+    );
+  }
   // Pour les autres types de médias
   const getPreviewContent = () => {
     switch (mediaType) {
@@ -71,23 +163,18 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({ files, mediaType, className
             <div className="text-center">
               <Music className="h-12 w-12 text-green-600 mx-auto mb-2" />
               <p className="text-sm text-green-700 font-medium">
-                {files.filter(f => f.file_type === 'audio').length} audio{files.filter(f => f.file_type === 'audio').length > 1 ? 's' : ''}
+                Aucun audio
               </p>
             </div>
           </div>
         );
       case 'journal':
-        return firstImage ? (
-          <div className="aspect-[4/3] bg-gray-100 rounded-lg overflow-hidden">
-            <img
-              src={getFileUrl(firstImage.file_path)}
-              alt={firstImage.alt_text || 'Article de journal'}
-              className="w-full h-full object-cover"
-            />
-          </div>
-        ) : (
+        return (
           <div className="aspect-[4/3] bg-gradient-to-br from-yellow-100 to-yellow-200 rounded-lg flex items-center justify-center">
-            <FileText className="h-12 w-12 text-yellow-600" />
+            <div className="text-center">
+              <FileText className="h-12 w-12 text-yellow-600 mx-auto mb-2" />
+              <p className="text-sm text-yellow-700 font-medium">Aucun fichier</p>
+            </div>
           </div>
         );
       case 'lyrissimot':
@@ -96,7 +183,7 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({ files, mediaType, className
             <div className="text-center">
               <File className="h-12 w-12 text-purple-600 mx-auto mb-2" />
               <p className="text-sm text-purple-700 font-medium">
-                {files.filter(f => f.file_type === 'pdf').length} PDF
+                Aucun PDF
               </p>
             </div>
           </div>

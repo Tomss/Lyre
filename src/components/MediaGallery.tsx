@@ -30,7 +30,17 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({ media, isOpen, onClose }) =
 
   if (!isOpen) return null;
 
-  const imageFiles = media.media_files.filter(file => file.file_type === 'image');
+  // Filtrer selon le type de média
+  let displayFiles = [];
+  if (media.media_type === 'album') {
+    displayFiles = media.media_files.filter(file => file.file_type === 'image' || file.file_type === 'video');
+  } else if (media.media_type === 'journal') {
+    displayFiles = media.media_files.filter(file => file.file_type === 'image');
+  } else {
+    displayFiles = media.media_files.filter(file => file.file_type === 'image');
+  }
+  
+  const imageFiles = displayFiles;
   const currentFile = imageFiles[currentIndex];
 
   // Fonction pour construire l'URL complète du fichier

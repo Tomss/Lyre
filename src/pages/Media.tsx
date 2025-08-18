@@ -93,6 +93,57 @@ const Media = () => {
   const regularMedia = filteredMedia.filter(media => !media.is_featured);
 
   const openGallery = (media) => {
+    if (media.media_files && media.media_files.length > 0) {
+      // Pour les albums : ouvrir la galerie d'images
+      if (media.media_type === 'album' && media.media_files.some(f => f.file_type === 'image')) {
+        setSelectedMedia(media);
+        setIsGalleryOpen(true);
+      }
+      // Pour les enregistrements : ouvrir le lecteur audio
+      else if (media.media_type === 'enregistrement' && media.media_files.some(f => f.file_type === 'audio')) {
+        openAudioPlayer(media);
+      }
+      // Pour les journaux : ouvrir l'image ou le PDF
+      else if (media.media_type === 'journal') {
+        const imageFile = media.media_files.find(f => f.file_type === 'image');
+        const pdfFile = media.media_files.find(f => f.file_type === 'pdf');
+        
+        if (imageFile) {
+          setSelectedMedia(media);
+          setIsGalleryOpen(true);
+        } else if (pdfFile) {
+          openPdfViewer(pdfFile);
+        }
+      }
+      // Pour les lyrissimots : ouvrir le PDF
+      else if (media.media_type === 'lyrissimot') {
+        const pdfFile = media.media_files.find(f => f.file_type === 'pdf');
+        if (pdfFile) {
+          openPdfViewer(pdfFile);
+        }
+      }
+    }
+  };
+
+  const openAudioPlayer = (media) => {
+    // Créer un lecteur audio simple
+    const audioFile = media.media_files.find(f => f.file_type === 'audio');
+    if (audioFile) {
+      const audio = new Audio(audioFile.file_path);
+      audio.play().catch(err => {
+        console.error('Erreur lecture audio:', err);
+        // Fallback : ouvrir dans un nouvel onglet
+        window.open(audioFile.file_path, '_blank');
+      });
+    }
+  };
+
+  const openPdfViewer = (pdfFile) => {
+    // Ouvrir le PDF dans un nouvel onglet
+    window.open(pdfFile.file_path, '_blank');
+  };
+
+  const oldOpenGallery = (media) => {
     if (media.media_type === 'album' && media.media_files && media.media_files.some(f => f.file_type === 'image')) {
       setSelectedMedia(media);
       setIsGalleryOpen(true);
