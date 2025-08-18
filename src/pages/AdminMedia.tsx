@@ -122,7 +122,21 @@ const AdminMedia = () => {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      setSelectedFiles(Array.from(e.target.files));
+      const files = Array.from(e.target.files);
+      
+      // Pour les lyrissimots, limiter à 1 seul fichier PDF
+      if (formData.media_type === 'lyrissimot') {
+        if (files.length > 1) {
+          showNotification('Un seul fichier PDF autorisé pour les Lyrissimots', 'error');
+          return;
+        }
+        if (files[0] && files[0].type !== 'application/pdf') {
+          showNotification('Seuls les fichiers PDF sont autorisés pour les Lyrissimots', 'error');
+          return;
+        }
+      }
+      
+      setSelectedFiles(files);
     }
   };
 
@@ -362,7 +376,7 @@ const AdminMedia = () => {
       case 'album': return 'Sélectionner photos et vidéos';
       case 'enregistrement': return 'Sélectionner fichiers audio';
       case 'journal': return 'Sélectionner image ou PDF';
-      case 'lyrissimot': return 'Sélectionner le PDF';
+      case 'lyrissimot': return 'Sélectionner UN seul PDF';
       default: return 'Sélectionner des fichiers';
     }
   };
@@ -372,7 +386,7 @@ const AdminMedia = () => {
       case 'album': return 'Images (JPG, PNG, GIF) et vidéos (MP4, MOV)';
       case 'enregistrement': return 'Fichiers audio (MP3, WAV, M4A)';
       case 'journal': return 'Image de l\'article ou PDF';
-      case 'lyrissimot': return 'Document PDF uniquement';
+      case 'lyrissimot': return 'UN SEUL document PDF uniquement';
       default: return 'Tous types de fichiers';
     }
   };
@@ -579,7 +593,7 @@ const AdminMedia = () => {
                       <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                       <input
                         type="file"
-                        multiple
+                        multiple={formData.media_type !== 'lyrissimot'}
                         onChange={handleFileChange}
                         className="hidden"
                         id="file-upload"
