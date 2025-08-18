@@ -2,6 +2,7 @@ import React, { useState, useEffect, FormEvent } from 'react';
 import { Edit, Trash2, Plus, Image, Search, X, CheckCircle, ArrowLeft, Upload, File, Music, FileText, Camera } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Navigate, Link } from 'react-router-dom';
+import { supabase } from '../supabaseClient';
 import FileUploadPreview from '../components/FileUploadPreview';
 import MediaPreview from '../components/MediaPreview';
 
@@ -126,20 +127,52 @@ const AdminMedia = () => {
   const removeFile = (index: number) => {
     setSelectedFiles(prev => prev.filter((_, i) => i !== index));
   };
-  // Simuler l'upload de fichiers (à remplacer par une vraie logique d'upload)
+  
+  // Upload réel des fichiers vers Supabase Storage
   const uploadFiles = async (files: File[]): Promise<any[]> => {
-    // Pour l'instant, on crée des URLs temporaires pour les fichiers
-    return files.map((file, index) => ({
-      file_name: file.name,
-      file_path: URL.createObjectURL(file), // URL temporaire pour prévisualisation
-      file_type: file.type.startsWith('image/') ? 'image' : 
-                 file.type.startsWith('video/') ? 'video' :
-                 file.type.startsWith('audio/') ? 'audio' : 'pdf',
-      file_size: file.size,
-      mime_type: file.type,
-      alt_text: null,
-      sort_order: index
-    }));
+    const uploadedFiles = [];
+    
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `media/${fileName}`;
+      
+      try {
+        // Upload du fichier vers Supabase Storage
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('media-files')
+          .upload(filePath, file);
+          
+        if (uploadError) {
+          console.error('Erreur upload:', uploadError);
+          throw uploadError;
+        }
+        
+        // Récupération de l'URL publique
+        const { data: urlData } = supabase.storage
+          .from('media-files')
+          .getPublicUrl(filePath);
+          
+        uploadedFiles.push({
+          file_name: file.name,
+          file_path: urlData.publicUrl,
+          file_type: file.type.startsWith('image/') ? 'image' : 
+                     file.type.startsWith('video/') ? 'video' :
+                     file.type.startsWith('audio/') ? 'audio' : 'pdf',
+          file_size: file.size,
+          mime_type: file.type,
+          alt_text: null,
+          sort_order: i
+        });
+        
+      } catch (error) {
+        console.error(`Erreur lors de l'upload de ${file.name}:`, error);
+        showNotification(`Erreur lors de l'upload de ${file.name}`, 'error');
+      }
+    }
+    
+    return uploadedFiles;
   };
 
   // Créer un média
