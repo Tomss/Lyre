@@ -113,6 +113,9 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({ media, isOpen, onClose }) =
               isZoomed ? 'scale-150 cursor-zoom-out' : 'cursor-zoom-in'
             }`}
             onClick={() => setIsZoomed(!isZoomed)}
+            onError={(e) => {
+              console.error('Erreur de chargement image galerie:', currentFile.file_path);
+            }}
           />
         )}
       </div>

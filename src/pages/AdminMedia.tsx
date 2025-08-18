@@ -128,11 +128,10 @@ const AdminMedia = () => {
   };
   // Simuler l'upload de fichiers (à remplacer par une vraie logique d'upload)
   const uploadFiles = async (files: File[]): Promise<any[]> => {
-    // Ici, vous devriez implémenter l'upload vers Supabase Storage
-    // Pour l'instant, on simule avec des données factices
+    // Pour l'instant, on crée des URLs temporaires pour les fichiers
     return files.map((file, index) => ({
       file_name: file.name,
-      file_path: `/uploads/${Date.now()}_${file.name}`,
+      file_path: URL.createObjectURL(file), // URL temporaire pour prévisualisation
       file_type: file.type.startsWith('image/') ? 'image' : 
                  file.type.startsWith('video/') ? 'video' :
                  file.type.startsWith('audio/') ? 'audio' : 'pdf',
