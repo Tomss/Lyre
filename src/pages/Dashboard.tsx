@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, Navigate } from 'react-router-dom';
-import { Settings, LogOut, Users, Music, Music2, Calendar } from 'lucide-react';
+import { Settings, LogOut, Users, Music, Music2, Calendar, Image } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const Dashboard = () => {
@@ -175,6 +175,15 @@ const Dashboard = () => {
               >
                 <Calendar className="h-5 w-5" />
                 <span>Événements</span>
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+              <Link
+                to="/admin/media"
+                className="inline-flex items-center space-x-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold px-6 py-3 rounded-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg text-center justify-center"
+              >
+                <Image className="h-5 w-5" />
+                <span>Médias</span>
               </Link>
             </div>
           </div>

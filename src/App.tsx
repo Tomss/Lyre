@@ -15,6 +15,7 @@ import AdminInstruments from './pages/AdminInstruments'; // Importer la page d'a
 import AdminOrchestras from './pages/AdminOrchestras'; // Importer la page d'administration des orchestres
 import AdminEvents from './pages/AdminEvents'; // Importer la page d'administration des événements
 import UserEvents from './pages/UserEvents'; // Importer la page des événements utilisateur
+import AdminMedia from './pages/AdminMedia'; // Importer la page d'administration des médias
 
 function App() {
   return (
@@ -35,6 +36,7 @@ function App() {
             <Route path="/admin/orchestras" element={<AdminOrchestras />} /> {/* Route pour l'administration des orchestres */}
             <Route path="/admin/events" element={<AdminEvents />} /> {/* Route pour l'administration des événements */}
             <Route path="/user/events" element={<UserEvents />} /> {/* Route pour les événements utilisateur */}
+            <Route path="/admin/media" element={<AdminMedia />} /> {/* Route pour l'administration des médias */}
           </Routes>
         </main>
         <Footer />
