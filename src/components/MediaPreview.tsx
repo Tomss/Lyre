@@ -140,14 +140,23 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({ files, mediaType, className
         className={`relative group cursor-pointer ${className}`}
         onClick={onClick}
       >
-        <div className="aspect-[4/3] bg-gradient-to-br from-purple-100 to-purple-200 rounded-lg flex items-center justify-center">
-          <div className="text-center">
-            <div className="bg-purple-600/20 p-4 rounded-full mb-3 mx-auto w-fit group-hover:bg-purple-600/30 transition-colors duration-300">
-              <File className="h-8 w-8 text-purple-600" />
-            </div>
-            <p className="text-sm text-purple-700 font-medium">Lyrissimot</p>
+        <div className="aspect-[4/3] bg-gradient-to-br from-purple-500 via-purple-600 to-indigo-600 rounded-lg flex items-center justify-center relative overflow-hidden">
+          {/* Pattern de fond décoratif */}
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute top-2 left-2 w-8 h-8 border-2 border-white rounded-full"></div>
+            <div className="absolute top-6 right-4 w-4 h-4 border border-white rounded-full"></div>
+            <div className="absolute bottom-4 left-6 w-6 h-6 border border-white rounded-full"></div>
+            <div className="absolute bottom-2 right-2 w-3 h-3 bg-white rounded-full"></div>
           </div>
-          <div className="absolute top-2 right-2 bg-black/50 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <div className="text-center">
+            <div className="bg-white/20 backdrop-blur-sm p-4 rounded-full mb-3 mx-auto w-fit group-hover:bg-white/30 transition-all duration-300 border border-white/30">
+              <File className="h-10 w-10 text-white drop-shadow-lg" />
+            </div>
+            <div className="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full">
+              <p className="text-sm text-purple-800 font-bold">Lyrissimot</p>
+            </div>
+          </div>
+          <div className="absolute top-2 right-2 bg-white/20 backdrop-blur-sm text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 border border-white/30">
             <File className="h-4 w-4" />
           </div>
         </div>
@@ -179,10 +188,43 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({ files, mediaType, className
         );
       case 'lyrissimot':
         return (
-          <div className="aspect-[4/3] bg-gradient-to-br from-purple-100 to-purple-200 rounded-lg flex items-center justify-center">
+          <div className="aspect-[4/3] bg-gradient-to-br from-purple-500 via-purple-600 to-indigo-600 rounded-lg flex items-center justify-center relative overflow-hidden">
+            {/* Pattern de fond décoratif */}
+            <div className="absolute inset-0 opacity-10">
+              <div className="absolute top-2 left-2 w-8 h-8 border-2 border-white rounded-full"></div>
+              <div className="absolute top-6 right-4 w-4 h-4 border border-white rounded-full"></div>
+              <div className="absolute bottom-4 left-6 w-6 h-6 border border-white rounded-full"></div>
+              <div className="absolute bottom-2 right-2 w-3 h-3 bg-white rounded-full"></div>
+            </div>
             <div className="text-center">
-              <File className="h-12 w-12 text-purple-600 mx-auto mb-2" />
-              <p className="text-sm text-purple-700 font-medium">
+              <div className="bg-white/20 backdrop-blur-sm p-4 rounded-full mb-3 mx-auto w-fit border border-white/30">
+                <File className="h-10 w-10 text-white drop-shadow-lg" />
+              </div>
+              <div className="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full">
+                <p className="text-sm text-purple-800 font-bold">
+                  Aucun PDF
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+      default:
+        return (
+          <div className="aspect-[4/3] bg-gray-100 rounded-lg flex items-center justify-center">
+            <ImageIcon className="h-12 w-12 text-gray-400" />
+          </div>
+        );
+    }
+  };
+
+  return (
+    <div className={`${className}`} onClick={onClick}>
+      {getPreviewContent()}
+    </div>
+  );
+};
+
+export default MediaPreview;
                 Aucun PDF
               </p>
             </div>
