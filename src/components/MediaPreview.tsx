@@ -37,7 +37,7 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({ files, mediaType, className
         className={`relative group cursor-pointer ${className}`}
         onClick={onClick}
       >
-        <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
+        <div className="aspect-[4/3] bg-gray-100 rounded-lg overflow-hidden">
           <img
             src={getFileUrl(firstImage.file_path)}
             alt={firstImage.alt_text || 'Aperçu album'}
@@ -67,7 +67,7 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({ files, mediaType, className
     switch (mediaType) {
       case 'enregistrement':
         return (
-          <div className="aspect-video bg-gradient-to-br from-green-100 to-green-200 rounded-lg flex items-center justify-center">
+          <div className="aspect-[4/3] bg-gradient-to-br from-green-100 to-green-200 rounded-lg flex items-center justify-center">
             <div className="text-center">
               <Music className="h-12 w-12 text-green-600 mx-auto mb-2" />
               <p className="text-sm text-green-700 font-medium">
@@ -78,7 +78,7 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({ files, mediaType, className
         );
       case 'journal':
         return firstImage ? (
-          <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
+          <div className="aspect-[4/3] bg-gray-100 rounded-lg overflow-hidden">
             <img
               src={getFileUrl(firstImage.file_path)}
               alt={firstImage.alt_text || 'Article de journal'}
@@ -86,13 +86,13 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({ files, mediaType, className
             />
           </div>
         ) : (
-          <div className="aspect-video bg-gradient-to-br from-yellow-100 to-yellow-200 rounded-lg flex items-center justify-center">
+          <div className="aspect-[4/3] bg-gradient-to-br from-yellow-100 to-yellow-200 rounded-lg flex items-center justify-center">
             <FileText className="h-12 w-12 text-yellow-600" />
           </div>
         );
       case 'lyrissimot':
         return (
-          <div className="aspect-video bg-gradient-to-br from-purple-100 to-purple-200 rounded-lg flex items-center justify-center">
+          <div className="aspect-[4/3] bg-gradient-to-br from-purple-100 to-purple-200 rounded-lg flex items-center justify-center">
             <div className="text-center">
               <File className="h-12 w-12 text-purple-600 mx-auto mb-2" />
               <p className="text-sm text-purple-700 font-medium">
@@ -103,7 +103,7 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({ files, mediaType, className
         );
       default:
         return (
-          <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
+          <div className="aspect-[4/3] bg-gray-100 rounded-lg flex items-center justify-center">
             <ImageIcon className="h-12 w-12 text-gray-400" />
           </div>
         );
