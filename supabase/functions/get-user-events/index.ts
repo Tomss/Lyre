@@ -77,38 +77,21 @@ Deno.serve(async (req: Request) => {
     const orchestraIds = userOrchestras.map(uo => uo.orchestra_id);
 
     // Étape 2: Récupérer tous les événements concerts (publics)
-    const { data: allConcerts, error: concertsError } = await supabase
-      .from('event_orchestras')
-      .select('event_id')
-      .in('orchestra_id', orchestraIds)
-      .eq('events.event_type', 'concert');
-
-    // Étape 3: Récupérer les événements répétitions des orchestres de l'utilisateur
-    const { data: userRepetitions, error: repetitionsError } = await supabase
+    const { data: userConcerts, error: concertsError } = await supabase
       .from('event_orchestras')
       .select('event_id')
       .in('orchestra_id', orchestraIds);
 
-    if (repetitionsError) {
-      throw repetitionsError;
+    if (concertsError) {
+      throw concertsError;
     }
 
     // Étape 4: Combiner tous les IDs d'événements
     const allEventIds = new Set();
     
-    // Ajouter tous les concerts publics
-    const { data: publicConcertIds, error: publicError } = await supabase
-      .from('events')
-      .select('id')
-      .eq('event_type', 'concert');
-
-    if (!publicError && publicConcertIds) {
-      publicConcertIds.forEach(event => allEventIds.add(event.id));
-    }
-
-    // Ajouter les répétitions des orchestres de l'utilisateur
-    if (userRepetitions) {
-      userRepetitions.forEach(eo => allEventIds.add(eo.event_id));
+    // Ajouter tous les événements (concerts ET répétitions) des orchestres de l'utilisateur
+    if (userConcerts) {
+      userConcerts.forEach(eo => allEventIds.add(eo.event_id));
     }
 
     if (allEventIds.size === 0) {
