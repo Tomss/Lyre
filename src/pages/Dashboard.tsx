@@ -7,6 +7,7 @@ const Dashboard = () => {
   const { user, profile, logout } = useAuth();
   const [userInstruments, setUserInstruments] = React.useState([]);
   const [userOrchestras, setUserOrchestras] = React.useState([]);
+  const [userEvents, setUserEvents] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
 
   // Récupérer les instruments de l'utilisateur
@@ -51,9 +52,32 @@ const Dashboard = () => {
     }
   };
 
+  // Récupérer les événements de l'utilisateur
+  const fetchUserEvents = async () => {
+    if (!user) return;
+    try {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-user-events?userId=${user.id}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        // Filtrer les événements futurs et prendre les 3 prochains
+        const futureEvents = data.filter(event => new Date(event.event_date) > new Date());
+        const sortedEvents = futureEvents.sort((a, b) => new Date(a.event_date) - new Date(b.event_date));
+        setUserEvents(sortedEvents.slice(0, 3));
+      }
+    } catch (err) {
+      console.error('Erreur lors de la récupération des événements:', err);
+    }
+  };
   React.useEffect(() => {
     if (user) {
-      Promise.all([fetchUserInstruments(), fetchUserOrchestras()]).finally(() => {
+      Promise.all([fetchUserInstruments(), fetchUserOrchestras(), fetchUserEvents()]).finally(() => {
         setLoading(false);
       });
     }
@@ -190,15 +214,48 @@ const Dashboard = () => {
                 <Calendar className="h-6 w-6 text-green-600" />
               </div>
               <h3 className="font-poppins font-semibold text-lg text-dark">
-                Mes Événements
+                Mes Prochains Événements
               </h3>
             </div>
-            <p className="font-inter text-gray-600 mb-4">
-              Consultez vos concerts et répétitions à venir.
-            </p>
-            <button className="text-primary hover:text-primary/80 font-medium text-sm transition-colors">
-              Voir mes événements →
-            </button>
+            {loading ? (
+              <div className="flex items-center justify-center py-4">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-600"></div>
+              </div>
+            ) : userEvents.length > 0 ? (
+              <div className="space-y-3">
+                {userEvents.map((event, index) => (
+                  <div key={index} className="p-3 bg-gray-50 rounded-lg border-l-4 border-green-600">
+                    <div className="flex items-center justify-between mb-1">
+                      <h4 className="font-inter font-medium text-gray-800 text-sm">{event.title}</h4>
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                        event.event_type === 'concert' 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-blue-100 text-blue-800'
+                      }`}>
+                        {event.event_type === 'concert' ? 'Concert' : 'Répétition'}
+                      </span>
+                    </div>
+                    <p className="font-inter text-xs text-gray-500">
+                      {new Date(event.event_date).toLocaleDateString('fr-FR', {
+                        weekday: 'short',
+                        day: 'numeric',
+                        month: 'short',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                      {event.location && ` • ${event.location}`}
+                    </p>
+                  </div>
+                ))}
+                <button className="w-full text-green-600 hover:text-green-700 font-medium text-sm transition-colors mt-3 py-2 border border-green-200 rounded-lg hover:bg-green-50">
+                  Voir tous mes événements →
+                </button>
+              </div>
+            ) : (
+              <p className="font-inter text-gray-500 text-sm">
+                Aucun événement à venir pour le moment.
+              </p>
+            )}
           </div>
         </div>
 
