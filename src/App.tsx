@@ -13,6 +13,7 @@ import Dashboard from './pages/Dashboard'; // Importer le dashboard
 import AdminUsers from './pages/AdminUsers'; // Importer la page d'administration des utilisateurs
 import AdminInstruments from './pages/AdminInstruments'; // Importer la page d'administration des instruments
 import AdminOrchestras from './pages/AdminOrchestras'; // Importer la page d'administration des orchestres
+import AdminEvents from './pages/AdminEvents'; // Importer la page d'administration des événements
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
             <Route path="/admin/users" element={<AdminUsers />} /> {/* Route pour l'administration des utilisateurs */}
             <Route path="/admin/instruments" element={<AdminInstruments />} /> {/* Route pour l'administration des instruments */}
             <Route path="/admin/orchestras" element={<AdminOrchestras />} /> {/* Route pour l'administration des orchestres */}
+            <Route path="/admin/events" element={<AdminEvents />} /> {/* Route pour l'administration des événements */}
           </Routes>
         </main>
         <Footer />
