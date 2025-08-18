@@ -7,7 +7,7 @@ const Media = () => {
   const [mediaItems, setMediaItems] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   const [searchTerm, setSearchTerm] = React.useState('');
-  const [typeFilter, setTypeFilter] = React.useState(['album', 'enregistrement', 'journal', 'lyrissimot']);
+  const [selectedType, setSelectedType] = React.useState('all'); // 'all' ou une catégorie spécifique
   const [selectedMedia, setSelectedMedia] = React.useState(null);
   const [isGalleryOpen, setIsGalleryOpen] = React.useState(false);
 
@@ -67,12 +67,8 @@ const Media = () => {
     }
   };
 
-  const toggleTypeFilter = (type) => {
-    setTypeFilter(prev => 
-      prev.includes(type) 
-        ? prev.filter(t => t !== type)
-        : [...prev, type]
-    );
+  const selectType = (type) => {
+    setSelectedType(type);
   };
 
   // Filtrer les médias
@@ -83,7 +79,7 @@ const Media = () => {
       (media.description && media.description.toLowerCase().includes(searchLower))
     );
     
-    const matchesType = typeFilter.includes(media.media_type);
+    const matchesType = selectedType === 'all' || media.media_type === selectedType;
     
     return matchesSearch && matchesType;
   });
@@ -220,8 +216,18 @@ const Media = () => {
 
               {/* Filtres par type */}
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2 flex-wrap gap-2">
+                <div className="flex items-center space-x-3 flex-wrap gap-2">
                   <span className="text-sm font-medium text-gray-700 mr-2">Catégories :</span>
+                  <button
+                    onClick={() => selectType('all')}
+                    className={`inline-flex items-center space-x-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 hover:scale-105 ${
+                      selectedType === 'all'
+                        ? 'bg-gray-800 text-white shadow-lg'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    <span>Tout</span>
+                  </button>
                   {[
                     { key: 'album', label: 'Albums', icon: Camera, color: 'blue' },
                     { key: 'enregistrement', label: 'Enregistrements', icon: Music, color: 'green' },
@@ -230,9 +236,9 @@ const Media = () => {
                   ].map(({ key, label, icon: Icon, color }) => (
                     <button
                       key={key}
-                      onClick={() => toggleTypeFilter(key)}
+                      onClick={() => selectType(key)}
                       className={`inline-flex items-center space-x-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 hover:scale-105 ${
-                        typeFilter.includes(key)
+                        selectedType === key
                           ? `bg-${color}-500 text-white shadow-lg`
                           : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                       }`}
@@ -252,18 +258,16 @@ const Media = () => {
               {/* Actions rapides */}
               <div className="flex items-center justify-between pt-2 border-t border-gray-100">
                 <div className="flex items-center space-x-4">
-                  <button
-                    onClick={() => setTypeFilter(['album', 'enregistrement', 'journal', 'lyrissimot'])}
-                    className="text-sm text-primary hover:text-primary/80 font-medium transition-colors"
-                  >
-                    Tout afficher
-                  </button>
-                  <button
-                    onClick={() => setTypeFilter([])}
-                    className="text-sm text-gray-500 hover:text-gray-700 font-medium transition-colors"
-                  >
-                    Tout masquer
-                  </button>
+                  {selectedType !== 'all' && (
+                    <div className="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
+                      Filtré par : {
+                        selectedType === 'album' ? 'Albums' :
+                        selectedType === 'enregistrement' ? 'Enregistrements' :
+                        selectedType === 'journal' ? 'Journaux' :
+                        selectedType === 'lyrissimot' ? 'Lyrissimots' : ''
+                      }
+                    </div>
+                  )}
                 </div>
                 
                 {searchTerm && (
