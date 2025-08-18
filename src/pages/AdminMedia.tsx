@@ -65,6 +65,7 @@ const AdminMedia = () => {
     title: '',
     description: '',
     media_type: 'album' as 'album' | 'enregistrement' | 'journal' | 'lyrissimot',
+    media_date: '',
     published: true,
     is_featured: false,
   });
@@ -328,6 +329,7 @@ const AdminMedia = () => {
       title: media.title,
       description: media.description || '',
       media_type: media.media_type,
+      media_date: media.media_date ? new Date(media.media_date).toISOString().split('T')[0] : '',
       published: media.published,
       is_featured: media.is_featured,
     });
@@ -343,6 +345,7 @@ const AdminMedia = () => {
       title: '',
       description: '',
       media_type: 'album',
+      media_date: '',
       published: true,
       is_featured: false,
     });
@@ -560,6 +563,22 @@ const AdminMedia = () => {
                         <option value="lyrissimot">Lyrissimot</option>
                       </select>
                     </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-dark mb-2">
+                      Date du média (optionnel)
+                    </label>
+                    <input
+                      type="date"
+                      name="media_date"
+                      value={formData.media_date}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Date de création/enregistrement du contenu (différent de la date d'ajout)
+                    </p>
                   </div>
 
                   <div>
@@ -831,7 +850,12 @@ const AdminMedia = () => {
                           
                           <div className="flex items-center space-x-4 text-sm text-gray-500 mb-2">
                             <span>{media.media_files.length} fichier{media.media_files.length > 1 ? 's' : ''}</span>
-                            <span>{new Date(media.created_at).toLocaleDateString('fr-FR')}</span>
+                            <span>
+                              {media.media_date 
+                                ? new Date(media.media_date).toLocaleDateString('fr-FR')
+                                : new Date(media.created_at).toLocaleDateString('fr-FR')
+                              }
+                            </span>
                             {media.profiles && (
                               <span>Par {media.profiles.first_name} {media.profiles.last_name}</span>
                             )}
