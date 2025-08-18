@@ -421,12 +421,6 @@ const Media = () => {
                       media.media_type === 'lyrissimot' ? 'bg-purple-50 border-purple-100' :
                       'bg-white border-gray-100'
                     }`}>
-                      media.media_type === 'album' ? 'bg-blue-50 border-blue-100' :
-                      media.media_type === 'enregistrement' ? 'bg-green-50 border-green-100' :
-                      media.media_type === 'journal' ? 'bg-yellow-50 border-yellow-100' :
-                      media.media_type === 'lyrissimot' ? 'bg-purple-50 border-purple-100' :
-                      'bg-white border-gray-100'
-                    }`}>
                       {/* Prévisualisation visuelle */}
                       <MediaPreview
                         files={media.media_files}
