@@ -37,34 +37,9 @@ Deno.serve(async (req: Request) => {
     }
 
     if (!userOrchestras || userOrchestras.length === 0) {
-      // L'utilisateur n'est dans aucun orchestre, retourner seulement les concerts publics
-      const { data: publicConcerts, error: concertsError } = await supabase
-        .from('events')
-        .select(`
-          *,
-          event_orchestras (
-            orchestra_id,
-            orchestras (
-              id,
-              name,
-              description
-            )
-          )
-        `)
-        .eq('event_type', 'concert')
-        .order('event_date', { ascending: true });
-
-      if (concertsError) {
-        throw concertsError;
-      }
-
-      const formattedEvents = publicConcerts?.map(event => ({
-        ...event,
-        orchestras: event.event_orchestras?.map(eo => eo.orchestras) || []
-      })) || [];
-
+      // L'utilisateur n'est dans aucun orchestre, ne retourner aucun événement
       return new Response(
-        JSON.stringify(formattedEvents),
+        JSON.stringify([]),
         {
           headers: {
             'Content-Type': 'application/json',
