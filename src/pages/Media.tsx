@@ -279,7 +279,7 @@ const Media = () => {
                 {regularMedia.map((media) => {
                   const TypeIcon = getTypeIcon(media.media_type);
                   return (
-                    <div key={media.id} className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 animate-fade-in group">
+                    <div key={media.id} className="bg-white rounded-lg shadow-md border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 animate-fade-in group">
                       {/* Prévisualisation visuelle */}
                       <MediaPreview
                         files={media.media_files}
@@ -288,10 +288,10 @@ const Media = () => {
                         className="cursor-pointer"
                       />
                       
-                      <div className="p-6">
-                        <div className="flex items-center space-x-3 mb-4">
-                          <div className="bg-primary/10 p-2 rounded-lg">
-                            <TypeIcon className="h-6 w-6 text-primary" />
+                      <div className="p-4">
+                        <div className="flex items-center space-x-2 mb-3">
+                          <div className="bg-primary/10 p-1.5 rounded-lg">
+                            <TypeIcon className="h-4 w-4 text-primary" />
                           </div>
                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getTypeColor(media.media_type)}`}>
                             <TypeIcon className="h-3 w-3 mr-1" />
@@ -299,12 +299,12 @@ const Media = () => {
                           </span>
                         </div>
                         
-                        <h3 className="font-poppins font-semibold text-xl text-dark mb-3">
+                        <h3 className="font-poppins font-semibold text-lg text-dark mb-2">
                           {media.title}
                         </h3>
                         
                         {media.description && (
-                          <p className="font-inter text-gray-600 mb-4 text-sm leading-relaxed">
+                          <p className="font-inter text-gray-600 mb-3 text-sm leading-relaxed line-clamp-2">
                             {media.description}
                           </p>
                         )}
