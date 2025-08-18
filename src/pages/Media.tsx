@@ -1,11 +1,15 @@
 import React from 'react';
 import { Image, Play, Camera, Music, FileText, File, Filter, Search, X } from 'lucide-react';
+import MediaGallery from '../components/MediaGallery';
+import MediaPreview from '../components/MediaPreview';
 
 const Media = () => {
   const [mediaItems, setMediaItems] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   const [searchTerm, setSearchTerm] = React.useState('');
   const [typeFilter, setTypeFilter] = React.useState(['album', 'enregistrement', 'journal', 'lyrissimot']);
+  const [selectedMedia, setSelectedMedia] = React.useState(null);
+  const [isGalleryOpen, setIsGalleryOpen] = React.useState(false);
 
   // Récupérer tous les médias publiés
   const fetchMedia = async () => {
@@ -88,8 +92,28 @@ const Media = () => {
   const featuredMedia = filteredMedia.filter(media => media.is_featured);
   const regularMedia = filteredMedia.filter(media => !media.is_featured);
 
+  const openGallery = (media) => {
+    if (media.media_type === 'album' && media.media_files.some(f => f.file_type === 'image')) {
+      setSelectedMedia(media);
+      setIsGalleryOpen(true);
+    }
+  };
+
+  const closeGallery = () => {
+    setIsGalleryOpen(false);
+    setSelectedMedia(null);
+  };
   return (
     <div className="font-inter pt-20">
+      {/* Galerie modale */}
+      {selectedMedia && (
+        <MediaGallery
+          media={selectedMedia}
+          isOpen={isGalleryOpen}
+          onClose={closeGallery}
+        />
+      )}
+
       {/* Header Section */}
       <section className="py-20 bg-gradient-to-r from-primary/10 to-accent/10">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -189,7 +213,15 @@ const Media = () => {
               {featuredMedia.map((media) => {
                 const TypeIcon = getTypeIcon(media.media_type);
                 return (
-                  <div key={media.id} className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 animate-fade-in">
+                  <div key={media.id} className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 animate-fade-in group">
+                    {/* Prévisualisation visuelle */}
+                    <MediaPreview
+                      files={media.media_files}
+                      mediaType={media.media_type}
+                      onClick={() => openGallery(media)}
+                      className="cursor-pointer"
+                    />
+                    
                     <div className="p-6">
                       <div className="flex items-center space-x-3 mb-4">
                         <div className="bg-primary/10 p-2 rounded-lg">
@@ -252,7 +284,15 @@ const Media = () => {
                 {regularMedia.map((media) => {
                   const TypeIcon = getTypeIcon(media.media_type);
                   return (
-                    <div key={media.id} className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 animate-fade-in">
+                    <div key={media.id} className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 animate-fade-in group">
+                      {/* Prévisualisation visuelle */}
+                      <MediaPreview
+                        files={media.media_files}
+                        mediaType={media.media_type}
+                        onClick={() => openGallery(media)}
+                        className="cursor-pointer"
+                      />
+                      
                       <div className="p-6">
                         <div className="flex items-center space-x-3 mb-4">
                           <div className="bg-primary/10 p-2 rounded-lg">
