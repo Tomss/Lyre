@@ -10,7 +10,7 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const { action, id, title, description, media_type, published, is_featured, files } = await req.json();
+    const { action, id, title, description, media_type, published, is_featured, files, filesToRemove } = await req.json();
     
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
@@ -97,16 +97,30 @@ Deno.serve(async (req: Request) => {
         if (updateError) throw updateError;
 
         // Gérer les fichiers si fournis
-        if (files !== undefined) {
-          // Supprimer les anciens fichiers
+        // Supprimer les fichiers spécifiquement marqués pour suppression
+        if (filesToRemove && filesToRemove.length > 0) {
           const { error: deleteFilesError } = await supabase
             .from('media_files')
             .delete()
-            .eq('media_item_id', id);
+            .in('id', filesToRemove);
 
           if (deleteFilesError) throw deleteFilesError;
+        }
 
-          // Ajouter les nouveaux fichiers
+        // Ajouter les nouveaux fichiers si fournis
+        if (files && files.length > 0) {
+          // Récupérer le nombre de fichiers existants pour le sort_order
+          const { data: existingFiles } = await supabase
+            .from('media_files')
+            .select('sort_order')
+            .eq('media_item_id', id)
+            .order('sort_order', { ascending: false })
+            .limit(1);
+
+          const startOrder = existingFiles && existingFiles.length > 0 
+            ? existingFiles[0].sort_order + 1 
+            : 0;
+
           if (files.length > 0) {
             const mediaFiles = files.map((file: any, index: number) => ({
               media_item_id: id,
@@ -116,7 +130,7 @@ Deno.serve(async (req: Request) => {
               file_size: file.file_size,
               mime_type: file.mime_type,
               alt_text: file.alt_text,
-              sort_order: index
+              sort_order: startOrder + index
             }));
 
             const { error: filesError } = await supabase
