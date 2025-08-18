@@ -21,6 +21,25 @@ Deno.serve(async (req: Request) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    // Ensure media_date column exists
+    try {
+      await supabase.rpc('exec', {
+        sql: `
+          DO $$
+          BEGIN
+            IF NOT EXISTS (
+              SELECT 1 FROM information_schema.columns
+              WHERE table_name = 'media_items' AND column_name = 'media_date'
+            ) THEN
+              ALTER TABLE media_items ADD COLUMN media_date DATE;
+            END IF;
+          END $$;
+        `
+      });
+    } catch (error) {
+      console.log('Column check/creation attempt:', error);
+    }
+
     // Vérifier les permissions
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
