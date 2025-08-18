@@ -1,5 +1,4 @@
 import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { Session, User } from '@supabase/supabase-js';
 
@@ -24,7 +23,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchSession = async () => {
@@ -35,7 +33,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         fetchProfile(session.user.id);
       } else {
         setLoading(false);
-          navigate('/');
       }
     };
 
@@ -49,14 +46,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       } else {
         setProfile(null);
         setLoading(false);
-        navigate('/connexion');
       }
     });
 
     return () => {
       authListener?.subscription.unsubscribe();
     };
-  }, [navigate]);
+  }, []);
 
   const fetchProfile = async (userId: string) => {
     try {
@@ -79,9 +75,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = () => {
-    supabase.auth.signOut().then(() => {
-      navigate('/connexion');
-    });
+    supabase.auth.signOut();
   };
 
   const value = { session, user, profile, loading, logout };
