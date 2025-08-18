@@ -33,6 +33,14 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({ media, isOpen, onClose }) =
   const imageFiles = media.media_files.filter(file => file.file_type === 'image');
   const currentFile = imageFiles[currentIndex];
 
+  // Fonction pour construire l'URL complète du fichier
+  const getFileUrl = (filePath: string) => {
+    if (filePath.startsWith('/uploads/')) {
+      return `http://localhost:5173${filePath}`;
+    }
+    return filePath;
+  };
+
   const nextImage = () => {
     setCurrentIndex((prev) => (prev + 1) % imageFiles.length);
     setIsZoomed(false);
@@ -107,7 +115,7 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({ media, isOpen, onClose }) =
       <div className="flex items-center justify-center w-full h-full p-20">
         {currentFile && (
           <img
-            src={currentFile.file_path}
+            src={getFileUrl(currentFile.file_path)}
             alt={currentFile.alt_text || media.title}
             className={`max-w-full max-h-full object-contain transition-transform duration-300 ${
               isZoomed ? 'scale-150 cursor-zoom-out' : 'cursor-zoom-in'
@@ -138,7 +146,7 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({ media, isOpen, onClose }) =
                 }`}
               >
                 <img
-                  src={file.file_path}
+                  src={getFileUrl(file.file_path)}
                   alt={file.alt_text || `Image ${index + 1}`}
                   className="w-full h-full object-cover"
                 />
