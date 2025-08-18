@@ -11,10 +11,10 @@ const Dashboard = () => {
   const [loading, setLoading] = React.useState(true);
 
   // Récupérer les instruments de l'utilisateur
-  const fetchUserInstruments = async () => {
-    if (!user) return;
+  const fetchUserInstruments = async (userId) => {
+    if (!userId) return;
     try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-user-instruments?userId=${user.id}`, {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-user-instruments?userId=${userId}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
@@ -32,10 +32,10 @@ const Dashboard = () => {
   };
 
   // Récupérer les orchestres de l'utilisateur
-  const fetchUserOrchestras = async () => {
-    if (!user) return;
+  const fetchUserOrchestras = async (userId) => {
+    if (!userId) return;
     try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-user-orchestras?userId=${user.id}`, {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-user-orchestras?userId=${userId}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
@@ -53,11 +53,11 @@ const Dashboard = () => {
   };
 
   // Récupérer les événements de l'utilisateur
-  const fetchUserEvents = async () => {
-    if (!user) return;
-    console.log('Fetching events for user:', user.id);
+  const fetchUserEvents = async (userId) => {
+    if (!userId) return;
+    console.log('Fetching events for user:', userId);
     try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-user-events?userId=${user.id}`, {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-user-events?userId=${userId}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
@@ -82,10 +82,16 @@ const Dashboard = () => {
     }
   };
   React.useEffect(() => {
-    if (user) {
-      Promise.all([fetchUserInstruments(), fetchUserOrchestras(), fetchUserEvents()]).finally(() => {
+    if (user && user.id) {
+      Promise.all([
+        fetchUserInstruments(user.id), 
+        fetchUserOrchestras(user.id), 
+        fetchUserEvents(user.id)
+      ]).finally(() => {
         setLoading(false);
       });
+    } else {
+      setLoading(false);
     }
   }, [user]);
   if (!user) {
