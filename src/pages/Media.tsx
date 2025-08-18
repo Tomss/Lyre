@@ -239,7 +239,13 @@ const Media = () => {
                       onClick={() => selectType(key)}
                       className={`inline-flex items-center space-x-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 hover:scale-105 ${
                         selectedType === key
-                          ? `bg-${color}-500 text-white shadow-lg`
+                          ? (
+                              color === 'blue' ? 'bg-blue-600 text-white shadow-lg border-2 border-blue-700' :
+                              color === 'green' ? 'bg-green-600 text-white shadow-lg border-2 border-green-700' :
+                              color === 'yellow' ? 'bg-yellow-600 text-white shadow-lg border-2 border-yellow-700' :
+                              color === 'purple' ? 'bg-purple-600 text-white shadow-lg border-2 border-purple-700' :
+                              'bg-gray-600 text-white shadow-lg border-2 border-gray-700'
+                            )
                           : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                       }`}
                     >
