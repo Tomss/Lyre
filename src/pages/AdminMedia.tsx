@@ -336,6 +336,46 @@ const AdminMedia = () => {
     setFilesToRemove([]);
   };
 
+  // Fonctions utilitaires pour les types de fichiers
+  const getAcceptedFileTypes = (mediaType: string) => {
+    switch (mediaType) {
+      case 'album': return 'image/*,video/*';
+      case 'enregistrement': return 'audio/*';
+      case 'journal': return 'image/*,.pdf';
+      case 'lyrissimot': return '.pdf';
+      default: return 'image/*,video/*,audio/*,.pdf';
+    }
+  };
+
+  const getFileInputLabel = (mediaType: string) => {
+    switch (mediaType) {
+      case 'album': return 'Photos et vidéos';
+      case 'enregistrement': return 'Fichiers audio';
+      case 'journal': return 'Image ou PDF de l\'article';
+      case 'lyrissimot': return 'Fichier PDF';
+      default: return 'Fichiers';
+    }
+  };
+
+  const getFileInputText = (mediaType: string) => {
+    switch (mediaType) {
+      case 'album': return 'Sélectionner photos et vidéos';
+      case 'enregistrement': return 'Sélectionner fichiers audio';
+      case 'journal': return 'Sélectionner image ou PDF';
+      case 'lyrissimot': return 'Sélectionner le PDF';
+      default: return 'Sélectionner des fichiers';
+    }
+  };
+
+  const getFileTypeDescription = (mediaType: string) => {
+    switch (mediaType) {
+      case 'album': return 'Images (JPG, PNG, GIF) et vidéos (MP4, MOV)';
+      case 'enregistrement': return 'Fichiers audio (MP3, WAV, M4A)';
+      case 'journal': return 'Image de l\'article ou PDF';
+      case 'lyrissimot': return 'Document PDF uniquement';
+      default: return 'Tous types de fichiers';
+    }
+  };
   const getTypeColor = (type: string) => {
     switch (type) {
       case 'album': return 'bg-blue-100 text-blue-800';
@@ -533,7 +573,7 @@ const AdminMedia = () => {
 
                   <div>
                     <label className="block text-sm font-medium text-dark mb-2">
-                      {editingMedia ? 'Ajouter de nouveaux fichiers (optionnel)' : 'Fichiers'}
+                      {editingMedia ? 'Ajouter de nouveaux fichiers (optionnel)' : getFileInputLabel(formData.media_type)}
                     </label>
                     <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
                       <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -543,16 +583,16 @@ const AdminMedia = () => {
                         onChange={handleFileChange}
                         className="hidden"
                         id="file-upload"
-                        accept="image/*,video/*,audio/*,.pdf"
+                        accept={getAcceptedFileTypes(formData.media_type)}
                       />
                       <label
                         htmlFor="file-upload"
                         className="cursor-pointer text-primary hover:text-primary/80 font-medium"
                       >
-                        {editingMedia ? 'Cliquez pour ajouter des fichiers' : 'Cliquez pour sélectionner des fichiers'}
+                        {editingMedia ? 'Cliquez pour ajouter des fichiers' : getFileInputText(formData.media_type)}
                       </label>
                       <p className="text-sm text-gray-500 mt-2">
-                        Images, vidéos, audios ou PDF
+                        {getFileTypeDescription(formData.media_type)}
                       </p>
                     </div>
                     
