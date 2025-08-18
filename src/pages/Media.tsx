@@ -193,11 +193,11 @@ const Media = () => {
 
       {/* Filtres et recherche */}
       {mediaItems.length > 0 && (
-        <section className="py-8 bg-white border-b border-gray-100">
+        <section className="py-6 bg-white border-b border-gray-100 sticky top-20 z-40 shadow-sm">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+            <div className="flex flex-col space-y-4">
               {/* Recherche */}
-              <div className="relative">
+              <div className="relative max-w-md">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Search className="h-5 w-5 text-gray-400" />
                 </div>
@@ -206,12 +206,12 @@ const Media = () => {
                   placeholder="Rechercher dans nos médias..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary w-64"
+                  className="pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary w-full text-base shadow-sm"
                 />
                 {searchTerm && (
                   <button
                     onClick={() => setSearchTerm('')}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center hover:bg-gray-100 rounded-r-xl transition-colors"
                   >
                     <X className="h-4 w-4 text-gray-400 hover:text-gray-600" />
                   </button>
@@ -219,27 +219,93 @@ const Media = () => {
               </div>
 
               {/* Filtres par type */}
-              <div className="flex items-center space-x-2 flex-wrap gap-2">
-                {[
-                  { key: 'album', label: 'Albums', icon: Camera, color: 'blue' },
-                  { key: 'enregistrement', label: 'Enregistrements', icon: Music, color: 'green' },
-                  { key: 'journal', label: 'Journaux', icon: FileText, color: 'yellow' },
-                  { key: 'lyrissimot', label: 'Lyrissimots', icon: File, color: 'purple' }
-                ].map(({ key, label, icon: Icon, color }) => (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2 flex-wrap gap-2">
+                  <span className="text-sm font-medium text-gray-700 mr-2">Catégories :</span>
+                  {[
+                    { key: 'album', label: 'Albums', icon: Camera, color: 'blue' },
+                    { key: 'enregistrement', label: 'Enregistrements', icon: Music, color: 'green' },
+                    { key: 'journal', label: 'Journaux', icon: FileText, color: 'yellow' },
+                    { key: 'lyrissimot', label: 'Lyrissimots', icon: File, color: 'purple' }
+                  ].map(({ key, label, icon: Icon, color }) => (
+                    <button
+                      key={key}
+                      onClick={() => toggleTypeFilter(key)}
+                      className={`inline-flex items-center space-x-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 hover:scale-105 ${
+                        typeFilter.includes(key)
+                          ? `bg-${color}-500 text-white shadow-lg`
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      }`}
+                    >
+                      <Icon className="h-4 w-4" />
+                      <span>{label}</span>
+                    </button>
+                  ))}
+                </div>
+                
+                {/* Compteur de résultats */}
+                <div className="text-sm text-gray-500 bg-gray-50 px-3 py-1 rounded-full">
+                  {filteredMedia.length} résultat{filteredMedia.length > 1 ? 's' : ''}
+                </div>
+              </div>
+              
+              {/* Actions rapides */}
+              <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                <div className="flex items-center space-x-4">
                   <button
-                    key={key}
-                    onClick={() => toggleTypeFilter(key)}
-                    className={`inline-flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
-                      typeFilter.includes(key)
-                        ? `bg-${color}-100 text-${color}-800 border border-${color}-200`
-                        : 'bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200'
-                    }`}
+                    onClick={() => setTypeFilter(['album', 'enregistrement', 'journal', 'lyrissimot'])}
+                    className="text-sm text-primary hover:text-primary/80 font-medium transition-colors"
                   >
-                    <Icon className="h-3 w-3" />
-                    <span>{label}</span>
+                    Tout afficher
                   </button>
+                  <button
+                    onClick={() => setTypeFilter([])}
+                    className="text-sm text-gray-500 hover:text-gray-700 font-medium transition-colors"
+                  >
+                    Tout masquer
+                  </button>
+                </div>
+                
+                {searchTerm && (
+                  <button
+                    onClick={() => setSearchTerm('')}
+                    className="text-sm text-gray-500 hover:text-gray-700 font-medium transition-colors flex items-center space-x-1"
+                  >
+                    <X className="h-3 w-3" />
+                    <span>Effacer la recherche</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Barre de statut */}
+      {mediaItems.length > 0 && (
+        <section className="py-3 bg-gray-50 border-b border-gray-200">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center space-x-4">
+                {[
+                  { key: 'album', count: mediaItems.filter(m => m.media_type === 'album').length, label: 'Albums', icon: Camera },
+                  { key: 'enregistrement', count: mediaItems.filter(m => m.media_type === 'enregistrement').length, label: 'Enregistrements', icon: Music },
+                  { key: 'journal', count: mediaItems.filter(m => m.media_type === 'journal').length, label: 'Journaux', icon: FileText },
+                  { key: 'lyrissimot', count: mediaItems.filter(m => m.media_type === 'lyrissimot').length, label: 'Lyrissimots', icon: File }
+                ].filter(item => item.count > 0).map(({ key, count, label, icon: Icon }) => (
+                  <div key={key} className="flex items-center space-x-1 text-gray-600">
+                    <Icon className="h-4 w-4" />
+                    <span>{count} {label.toLowerCase()}</span>
+                  </div>
                 ))}
               </div>
+              
+              {featuredMedia.length > 0 && (
+                <div className="flex items-center space-x-1 text-amber-600">
+                  <span>⭐</span>
+                  <span>{featuredMedia.length} mis en avant</span>
+                </div>
+              )}
             </div>
           </div>
         </section>
@@ -325,17 +391,20 @@ const Media = () => {
             <>
               {featuredMedia.length > 0 && (
                 <div className="text-center mb-8">
-                  <h2 className="font-poppins font-bold text-2xl md:text-3xl text-dark mb-4">
+                  <h2 className="font-poppins font-bold text-2xl md:text-3xl text-dark mb-2">
                     Tous nos médias
                   </h2>
+                  <p className="text-gray-600">
+                    Découvrez l'ensemble de notre collection
+                  </p>
                 </div>
               )}
               
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {regularMedia.map((media) => {
                   const TypeIcon = getTypeIcon(media.media_type);
                   return (
-                    <div key={media.id} className="bg-white rounded-lg shadow-md border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 animate-fade-in group">
+                    <div key={media.id} className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 animate-fade-in group">
                       {/* Prévisualisation visuelle */}
                       <MediaPreview
                         files={media.media_files}
@@ -345,7 +414,7 @@ const Media = () => {
                       />
                       
                       <div className="p-4">
-                        <div className="flex items-center space-x-2 mb-3">
+                        <div className="flex items-center justify-between mb-3">
                           <div className="bg-primary/10 p-1.5 rounded-lg">
                             <TypeIcon className="h-4 w-4 text-primary" />
                           </div>
@@ -353,6 +422,9 @@ const Media = () => {
                             <TypeIcon className="h-3 w-3 mr-1" />
                             {getTypeLabel(media.media_type)}
                           </span>
+                          {media.is_featured && (
+                            <span className="text-amber-500">⭐</span>
+                          )}
                         </div>
                         
                         <h3 className="font-poppins font-semibold text-lg text-dark mb-2">
@@ -360,7 +432,7 @@ const Media = () => {
                         </h3>
                         
                         {media.description && (
-                          <p className="font-inter text-gray-600 mb-3 text-sm leading-relaxed line-clamp-2">
+                          <p className="font-inter text-gray-600 mb-3 text-sm leading-relaxed line-clamp-3">
                             {media.description}
                           </p>
                         )}
@@ -382,7 +454,7 @@ const Media = () => {
             </>
           ) : mediaItems.length === 0 ? (
             <div className="text-center animate-fade-in">
-              <div className="bg-gradient-to-br from-primary/20 to-accent/20 rounded-full w-32 h-32 flex items-center justify-center mx-auto mb-8">
+              <div className="bg-gradient-to-br from-primary/20 to-accent/20 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
                 <Image className="h-16 w-16 text-primary" />
               </div>
               <h2 className="font-poppins font-semibold text-2xl text-dark mb-4">
@@ -395,7 +467,7 @@ const Media = () => {
             </div>
           ) : (
             <div className="text-center animate-fade-in">
-              <Filter className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+              <Filter className="h-16 w-16 text-gray-300 mx-auto mb-4" />
               <p className="text-gray-600">Aucun média ne correspond aux filtres sélectionnés</p>
             </div>
           )}
@@ -405,55 +477,56 @@ const Media = () => {
       {/* Media Categories */}
       <section className="py-20 bg-gray-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
+          <div className="text-center mb-16">
             <h2 className="font-poppins font-bold text-2xl md:text-3xl text-dark mb-4">
               Nos différents types de médias
             </h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Explorez nos différentes catégories de contenus musicaux et découvrez la richesse de notre école
+            </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-white rounded-lg p-8 shadow-md text-center animate-fade-in">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="bg-white rounded-xl p-6 shadow-md text-center animate-fade-in hover:shadow-lg transition-all duration-300 group">
               <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Camera className="h-8 w-8 text-blue-600" />
+                <Camera className="h-8 w-8 text-blue-600 group-hover:scale-110 transition-transform duration-300" />
               </div>
               <h3 className="font-poppins font-semibold text-xl text-dark mb-4">
                 Albums
               </h3>
-              <p className="font-inter text-gray-600">
+              <p className="font-inter text-gray-600 text-sm">
                 Nos albums photos et vidéos des concerts, répétitions et événements de l'école.
               </p>
             </div>
-            <div className="bg-white rounded-lg p-8 shadow-md text-center animate-fade-in">
+            <div className="bg-white rounded-xl p-6 shadow-md text-center animate-fade-in hover:shadow-lg transition-all duration-300 group">
               <div className="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Music className="h-8 w-8 text-green-600" />
+                <Music className="h-8 w-8 text-green-600 group-hover:scale-110 transition-transform duration-300" />
               </div>
               <h3 className="font-poppins font-semibold text-xl text-dark mb-4">
                 Enregistrements
               </h3>
-              <p className="font-inter text-gray-600">
+              <p className="font-inter text-gray-600 text-sm">
                 Écoutez nos enregistrements audio de concerts et répétitions.
               </p>
             </div>
-            <div className="bg-white rounded-lg p-8 shadow-md text-center animate-fade-in">
+            <div className="bg-white rounded-xl p-6 shadow-md text-center animate-fade-in hover:shadow-lg transition-all duration-300 group">
               <div className="bg-yellow-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
-                <FileText className="h-8 w-8 text-yellow-600" />
+                <FileText className="h-8 w-8 text-yellow-600 group-hover:scale-110 transition-transform duration-300" />
               </div>
               <h3 className="font-poppins font-semibold text-xl text-dark mb-4">
                 Journaux
               </h3>
-              <p className="font-inter text-gray-600">
+              <p className="font-inter text-gray-600 text-sm">
                 "On parle de nous" - Découvrez les articles de presse sur notre école.
               </p>
             </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-1 gap-8 mt-8 max-w-md mx-auto">
-            <div className="bg-white rounded-lg p-8 shadow-md text-center animate-fade-in">
+            <div className="bg-white rounded-xl p-6 shadow-md text-center animate-fade-in hover:shadow-lg transition-all duration-300 group">
               <div className="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
-                <File className="h-8 w-8 text-purple-600" />
+                <File className="h-8 w-8 text-purple-600 group-hover:scale-110 transition-transform duration-300" />
               </div>
               <h3 className="font-poppins font-semibold text-xl text-dark mb-4">
                 Lyrissimots
               </h3>
-              <p className="font-inter text-gray-600">
+              <p className="font-inter text-gray-600 text-sm">
                 Notre petit journal d'actualités avec toutes les nouvelles de l'école.
               </p>
             </div>
