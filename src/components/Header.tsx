@@ -32,20 +32,28 @@ const Header = () => {
 
   return (
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-      isScrolled || !isHeroPage 
+      isScrolled
         ? 'bg-white shadow-lg border-b border-orange-100' 
-        : 'bg-gradient-to-b from-black/60 via-black/40 to-transparent backdrop-blur-sm'
+        : isHeroPage 
+          ? 'bg-gradient-to-b from-black/60 via-black/40 to-transparent backdrop-blur-sm'
+          : 'bg-white shadow-lg border-b border-orange-100'
     }`}>
       <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo */}
           <Link to="/" className={`flex items-center space-x-2 font-poppins font-bold text-xl transition-colors ${
-            isScrolled || !isHeroPage 
+            isScrolled
               ? 'text-orange-800 hover:text-orange-600' 
-              : 'text-white hover:text-orange-200'
+              : isHeroPage 
+                ? 'text-white hover:text-orange-200'
+                : 'text-orange-800 hover:text-orange-600'
           }`}>
             <Music className={`h-8 w-8 ${
-              isScrolled || !isHeroPage ? 'text-orange-600' : 'text-orange-300'
+              isScrolled
+                ? 'text-orange-600' 
+                : isHeroPage 
+                  ? 'text-orange-300'
+                  : 'text-orange-600'
             }`} />
             <span>La Lyre</span>
           </Link>
@@ -58,12 +66,16 @@ const Header = () => {
                 to={link.path}
                 className={`font-inter font-medium transition-all duration-200 hover:scale-105 ${
                   location.pathname === link.path 
-                    ? (isScrolled || !isHeroPage 
+                    ? (isScrolled
                         ? 'text-orange-600 font-semibold' 
-                        : 'text-orange-300 font-semibold') 
-                    : (isScrolled || !isHeroPage 
+                        : isHeroPage 
+                          ? 'text-orange-300 font-semibold'
+                          : 'text-orange-600 font-semibold') 
+                    : (isScrolled
                         ? 'text-gray-700 hover:text-orange-600' 
-                        : 'text-white/90 hover:text-white')
+                        : isHeroPage 
+                          ? 'text-white/90 hover:text-white'
+                          : 'text-gray-700 hover:text-orange-600')
                 }`}
               >
                 {link.label}
@@ -78,9 +90,11 @@ const Header = () => {
                 <Link
                   to="/dashboard"
                   className={`flex items-center space-x-2 font-inter font-medium px-4 py-2 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-lg ${
-                    isScrolled || !isHeroPage
+                    isScrolled
                       ? 'bg-orange-100 hover:bg-orange-200 text-orange-800 border border-orange-200'
-                      : 'bg-white/20 hover:bg-white/30 text-white border border-white/30 backdrop-blur-sm'
+                      : isHeroPage 
+                        ? 'bg-white/20 hover:bg-white/30 text-white border border-white/30 backdrop-blur-sm'
+                        : 'bg-orange-100 hover:bg-orange-200 text-orange-800 border border-orange-200'
                   }`}
                 >
                   <UserCircle className="h-4 w-4" />
@@ -91,9 +105,11 @@ const Header = () => {
                 <button
                   onClick={logout}
                   className={`font-inter font-medium px-4 py-2 rounded-full transition-all duration-300 hover:scale-105 text-sm ${
-                    isScrolled || !isHeroPage
+                    isScrolled
                       ? 'bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200'
-                      : 'bg-white/20 hover:bg-white/30 text-white border border-white/30 backdrop-blur-sm'
+                      : isHeroPage 
+                        ? 'bg-white/20 hover:bg-white/30 text-white border border-white/30 backdrop-blur-sm'
+                        : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200'
                   }`}
                 >
                   Déconnexion
@@ -103,9 +119,11 @@ const Header = () => {
               <Link
                 to="/connexion"
                 className={`font-inter font-semibold px-6 py-3 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-lg ${
-                  isScrolled || !isHeroPage
+                  isScrolled
                     ? 'bg-orange-600 hover:bg-orange-700 text-white shadow-md'
-                    : 'bg-orange-500 hover:bg-orange-600 text-white shadow-lg'
+                    : isHeroPage 
+                      ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-lg'
+                      : 'bg-orange-600 hover:bg-orange-700 text-white shadow-md'
                 }`}
               >
                 Espace Membre
@@ -116,9 +134,11 @@ const Header = () => {
           {/* Mobile Menu Button */}
           <button
             className={`lg:hidden p-2 rounded-lg transition-all duration-200 ${
-              isScrolled || !isHeroPage 
+              isScrolled
                 ? 'text-gray-700 hover:text-orange-600 hover:bg-orange-50' 
-                : 'text-white hover:text-orange-200 hover:bg-white/10'
+                : isHeroPage 
+                  ? 'text-white hover:text-orange-200 hover:bg-white/10'
+                  : 'text-gray-700 hover:text-orange-600 hover:bg-orange-50'
             }`}
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
