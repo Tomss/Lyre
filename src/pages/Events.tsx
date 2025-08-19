@@ -1,10 +1,12 @@
 import React from 'react';
-import { Calendar, Clock, MapPin, Users, Star, Music, ChevronRight, Filter } from 'lucide-react';
+import { Calendar, Clock, MapPin, Users, Star, Music, ChevronRight, Filter, X } from 'lucide-react';
 
 const Events = () => {
   const [events, setEvents] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   const [filter, setFilter] = React.useState('upcoming'); // 'upcoming' ou 'past'
+  const [selectedEvent, setSelectedEvent] = React.useState(null);
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
 
   // Récupérer les concerts publics
   const fetchPublicEvents = async () => {
@@ -60,8 +62,153 @@ const Events = () => {
   const upcomingEvents = events.filter(event => isUpcoming(event.event_date)).sort((a, b) => new Date(a.event_date) - new Date(b.event_date));
   const pastEvents = events.filter(event => isPast(event.event_date)).sort((a, b) => new Date(a.event_date) - new Date(b.event_date));
 
+  const openEventModal = (event) => {
+    setSelectedEvent(event);
+    setIsModalOpen(true);
+  };
+
+  const closeEventModal = () => {
+    setSelectedEvent(null);
+    setIsModalOpen(false);
+  };
+
   return (
     <div className="font-inter pt-20">
+      {/* Modal détails événement */}
+      {isModalOpen && selectedEvent && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="relative">
+              {/* Header du modal */}
+              <div className="bg-gradient-to-r from-green-500 to-emerald-600 p-8 text-white rounded-t-2xl relative overflow-hidden">
+                {/* Motifs décoratifs */}
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
+                <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-12 -translate-x-12"></div>
+                
+                <button
+                  onClick={closeEventModal}
+                  className="absolute top-4 right-4 p-2 hover:bg-white/20 rounded-full transition-colors z-10"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+                
+                <div className="relative z-10">
+                  <div className="flex items-center space-x-4 mb-6">
+                    <div className="bg-white/20 backdrop-blur-sm rounded-full p-3">
+                      <Calendar className="h-8 w-8" />
+                    </div>
+                    <div>
+                      <div className="bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 inline-block mb-2">
+                        <span className="text-sm font-semibold">Concert</span>
+                      </div>
+                      <h2 className="font-poppins font-bold text-3xl">
+                        {selectedEvent.title}
+                      </h2>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Contenu du modal */}
+              <div className="p-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                  {/* Informations principales */}
+                  <div className="space-y-6">
+                    <div className="flex items-center space-x-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
+                      <div className="bg-blue-500 p-3 rounded-full">
+                        <Calendar className="h-6 w-6 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-800">Date et heure</h3>
+                        <p className="text-gray-600">
+                          {formatDate(selectedEvent.event_date).fullDate}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          {formatDate(selectedEvent.event_date).time}
+                        </p>
+                      </div>
+                    </div>
+
+                    {selectedEvent.location && (
+                      <div className="flex items-center space-x-4 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-100">
+                        <div className="bg-purple-500 p-3 rounded-full">
+                          <MapPin className="h-6 w-6 text-white" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-gray-800">Lieu</h3>
+                          <p className="text-gray-600">{selectedEvent.location}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Orchestres participants */}
+                  <div className="space-y-6">
+                    {selectedEvent.orchestras && selectedEvent.orchestras.length > 0 && (
+                      <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-100">
+                        <div className="flex items-center space-x-3 mb-4">
+                          <div className="bg-green-500 p-3 rounded-full">
+                            <Users className="h-6 w-6 text-white" />
+                          </div>
+                          <h3 className="font-semibold text-gray-800">
+                            Orchestre{selectedEvent.orchestras.length > 1 ? 's' : ''} participant{selectedEvent.orchestras.length > 1 ? 's' : ''}
+                          </h3>
+                        </div>
+                        <div className="space-y-2">
+                          {selectedEvent.orchestras.map((orchestra, index) => (
+                            <div key={index} className="bg-white/60 rounded-lg p-3 border border-green-200">
+                              <h4 className="font-medium text-gray-800">{orchestra.name}</h4>
+                              {orchestra.description && (
+                                <p className="text-sm text-gray-600 mt-1">{orchestra.description}</p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Statut */}
+                    <div className="p-4 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl border border-amber-100">
+                      <div className="flex items-center space-x-3">
+                        <div className={`p-3 rounded-full ${isUpcoming(selectedEvent.event_date) ? 'bg-green-500' : 'bg-gray-500'}`}>
+                          <Star className="h-6 w-6 text-white" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-gray-800">Statut</h3>
+                          <div className={`inline-flex items-center space-x-2 px-3 py-1 rounded-full text-sm font-medium ${
+                            isUpcoming(selectedEvent.event_date) 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-gray-100 text-gray-800'
+                          }`}>
+                            <div className={`w-2 h-2 rounded-full ${
+                              isUpcoming(selectedEvent.event_date) ? 'bg-green-400 animate-pulse' : 'bg-gray-400'
+                            }`}></div>
+                            <span>{isUpcoming(selectedEvent.event_date) ? 'À venir' : 'Terminé'}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Description */}
+                {selectedEvent.description && (
+                  <div className="bg-gradient-to-r from-slate-50 to-gray-50 rounded-xl p-6 border border-slate-200">
+                    <h3 className="font-poppins font-semibold text-xl text-gray-800 mb-4 flex items-center space-x-2">
+                      <Music className="h-6 w-6 text-slate-600" />
+                      <span>À propos de ce concert</span>
+                    </h3>
+                    <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+                      {selectedEvent.description}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header Section */}
       <section className="py-20 bg-gradient-to-br from-orange-50 via-amber-25 to-yellow-25">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -196,8 +343,11 @@ const Events = () => {
                     const dateInfo = formatDate(event.event_date);
                     
                     return (
-                      <div key={event.id} className="group animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
-                        <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-white/50 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 h-80 flex flex-col">
+                      <div key={event.id} className="group animate-fade-in cursor-pointer" style={{ animationDelay: `${index * 0.1}s` }}>
+                        <div 
+                          onClick={() => openEventModal(event)}
+                          className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-white/50 overflow-hidden hover:shadow-xl hover:-translate-y-2 hover:scale-105 transition-all duration-300 h-64 flex flex-col"
+                        >
                           {/* Header avec date */}
                           <div className="bg-gradient-to-r from-green-500 to-emerald-600 p-4 text-white relative overflow-hidden">
                             {/* Motif décoratif */}
@@ -226,12 +376,6 @@ const Events = () => {
                           {/* Contenu */}
                           <div className="p-4 flex-1 flex flex-col">
                             <div className="flex-1">
-                            {event.description && (
-                              <p className="text-gray-600 mb-4 leading-relaxed text-sm line-clamp-3">
-                                {event.description}
-                              </p>
-                            )}
-                            
                             <div className="space-y-4">
                               {event.location && (
                                 <div className="flex items-center space-x-3 text-gray-500">
@@ -255,9 +399,14 @@ const Events = () => {
 
                             {/* Badge à venir */}
                             <div className="pt-3 border-t border-gray-100 mt-auto">
-                              <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-green-50 to-emerald-50 rounded-full px-4 py-2 border border-green-200">
+                              <div className="flex items-center justify-between">
+                                <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-green-50 to-emerald-50 rounded-full px-4 py-2 border border-green-200">
                                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
                                 <span className="text-green-700 font-semibold text-sm">À venir</span>
+                                </div>
+                                <div className="text-xs text-gray-400 group-hover:text-gray-600 transition-colors">
+                                  Cliquer pour plus de détails
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -292,8 +441,11 @@ const Events = () => {
                     const dateInfo = formatDate(event.event_date);
                     
                     return (
-                      <div key={event.id} className="group animate-fade-in" style={{ animationDelay: `${index * 0.05}s` }}>
-                        <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 opacity-80 hover:opacity-100">
+                      <div key={event.id} className="group animate-fade-in cursor-pointer" style={{ animationDelay: `${index * 0.05}s` }}>
+                        <div 
+                          onClick={() => openEventModal(event)}
+                          className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl hover:-translate-y-1 hover:scale-105 transition-all duration-300 opacity-80 hover:opacity-100"
+                        >
                           {/* Header compact */}
                           <div className="bg-gradient-to-r from-gray-400 to-slate-500 p-4 text-white">
                             <div className="flex items-center justify-between">
@@ -325,6 +477,12 @@ const Events = () => {
                                   <span className="truncate">{event.location}</span>
                                 </div>
                               )}
+                              
+                              <div className="text-center pt-2 border-t border-gray-100">
+                                <span className="text-gray-400 group-hover:text-gray-600 transition-colors">
+                                  Cliquer pour détails
+                                </span>
+                              </div>
                             </div>
                           </div>
                         </div>
