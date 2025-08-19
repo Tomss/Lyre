@@ -28,7 +28,7 @@ const Contact = () => {
   return (
     <div className="font-inter pt-20">
       {/* Header Section */}
-      <section className="py-20 bg-gradient-to-br from-orange-100 via-amber-50 to-yellow-50">
+      <section className="py-20 bg-gradient-to-br from-orange-50 via-amber-25 to-yellow-25">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center animate-fade-in">
             <h1 className="font-poppins font-bold text-4xl md:text-5xl text-dark mb-6">
@@ -43,7 +43,7 @@ const Contact = () => {
       </section>
 
       {/* Contact Information */}
-      <section className="py-20 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      <section className="py-20 bg-gradient-to-br from-blue-25 via-indigo-25 to-purple-25">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {contactInfo.map((info, index) => (
@@ -68,7 +68,7 @@ const Contact = () => {
       </section>
 
       {/* Map Placeholder and Additional Info */}
-      <section className="py-20 bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50">
+      <section className="py-20 bg-gradient-to-br from-emerald-25 via-teal-25 to-cyan-25">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             {/* Map Placeholder */}

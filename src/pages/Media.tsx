@@ -164,7 +164,7 @@ const Media = () => {
       )}
 
       {/* Header Section */}
-      <section className="py-20 bg-gradient-to-br from-orange-100 via-amber-50 to-yellow-50">
+      <section className="py-20 bg-gradient-to-br from-orange-50 via-amber-25 to-yellow-25">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center animate-fade-in">
             <h1 className="font-poppins font-bold text-4xl md:text-5xl text-dark mb-6">
@@ -189,7 +189,7 @@ const Media = () => {
 
       {/* Filtres et recherche */}
       {mediaItems.length > 0 && (
-        <section className="py-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-white/50 sticky top-20 z-40 shadow-sm backdrop-blur-sm">
+        <section className="py-6 bg-gradient-to-r from-blue-25 to-indigo-25 border-b border-white/50 sticky top-20 z-40 shadow-sm backdrop-blur-sm">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col space-y-4">
               {/* Recherche */}
@@ -293,7 +293,7 @@ const Media = () => {
 
       {/* Barre de statut */}
       {mediaItems.length > 0 && (
-        <section className="py-3 bg-gradient-to-r from-purple-50 to-pink-50 border-b border-white/50">
+        <section className="py-3 bg-gradient-to-r from-purple-25 to-pink-25 border-b border-white/50">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between text-sm">
               <div className="flex items-center space-x-4">
@@ -323,7 +323,7 @@ const Media = () => {
 
       {/* Médias mis en avant */}
       {featuredMedia.length > 0 && (
-        <section className="py-12 bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50">
+        <section className="py-12 bg-gradient-to-br from-emerald-25 via-teal-25 to-cyan-25">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8">
               <h2 className="font-poppins font-bold text-2xl md:text-3xl text-dark mb-4">
@@ -384,7 +384,7 @@ const Media = () => {
       )}
 
       {/* Tous les médias */}
-      <section className="py-20 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      <section className="py-20 bg-gradient-to-br from-blue-25 via-indigo-25 to-purple-25">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           {loading ? (
             <div className="text-center animate-fade-in">
@@ -491,7 +491,7 @@ const Media = () => {
       </section>
 
       {/* Media Categories */}
-      <section className="py-20 bg-gradient-to-br from-rose-50 via-pink-50 to-orange-50">
+      <section className="py-20 bg-gradient-to-br from-rose-25 via-pink-25 to-orange-25">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="font-poppins font-bold text-2xl md:text-3xl text-dark mb-4">

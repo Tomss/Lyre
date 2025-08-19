@@ -79,7 +79,7 @@ const School = () => {
   return (
     <div className="font-inter pt-20">
       {/* Header Section */}
-      <section className="py-20 bg-gradient-to-br from-orange-100 via-amber-50 to-yellow-50">
+      <section className="py-20 bg-gradient-to-br from-orange-50 via-amber-25 to-yellow-25">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto animate-fade-in">
             <h1 className="font-poppins font-bold text-4xl md:text-5xl text-dark mb-8">
@@ -100,7 +100,7 @@ const School = () => {
       </section>
 
       {/* Section Orchestres */}
-      <section className="py-16 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      <section className="py-16 bg-gradient-to-br from-blue-25 via-indigo-25 to-purple-25">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12 animate-fade-in">
@@ -201,7 +201,7 @@ const School = () => {
       </section>
 
       {/* Section Instruments */}
-      <section className="py-16 bg-gradient-to-br from-slate-50 via-gray-50 to-blue-50">
+      <section className="py-16 bg-gradient-to-br from-slate-25 via-gray-25 to-blue-25">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 animate-fade-in">
             <h2 className="font-poppins font-bold text-xl md:text-2xl text-dark mb-3">
@@ -284,7 +284,7 @@ const School = () => {
       </section>
 
       {/* Features Grid */}
-      <section className="py-16 bg-gradient-to-br from-rose-50 via-pink-50 to-orange-50">
+      <section className="py-16 bg-gradient-to-br from-rose-25 via-pink-25 to-orange-25">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center animate-fade-in">
