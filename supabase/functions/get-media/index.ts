@@ -43,8 +43,7 @@ Deno.serve(async (req: Request) => {
           last_name
         )
       `)
-      .order('media_date', { ascending: false, nullsLast: true })
-      .order('created_at', { ascending: false });
+      .order('media_date', { ascending: false, nullsLast: true });
 
     // Filtrer par type si spécifié
     if (mediaType) {
