@@ -182,7 +182,9 @@ const Events = () => {
         <>
           {/* Événements à venir */}
           {filter === 'upcoming' && (
+            <>
             upcomingEvents.length > 0 ? (
+              <>
               <section className="py-16 bg-gradient-to-br from-slate-50 via-gray-50 to-blue-50">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                   <div className="text-center mb-12"><h2 className="font-poppins font-bold text-3xl text-gray-800 mb-6">Nos Prochains Événements</h2></div>
@@ -345,6 +347,7 @@ const Events = () => {
                   </div>
                 </div>
               </section>
+              </>
             ) : (
               <section className="py-16 bg-gradient-to-br from-slate-50 via-gray-50 to-blue-50">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -358,6 +361,7 @@ const Events = () => {
                 </div>
               </section>
             )
+            </>
           )}
 
           {/* Événements passés */}
