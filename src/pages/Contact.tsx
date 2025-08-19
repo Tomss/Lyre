@@ -26,7 +26,7 @@ const Contact = () => {
   ];
 
   return (
-    <div className="font-inter pt-20">
+    <div className="font-inter">
       {/* Header Section */}
       <section className="relative py-20 bg-cover bg-center bg-no-repeat bg-gray-900" 
         style={{ 
