@@ -232,7 +232,7 @@ const School = () => {
           ) : instruments.length > 0 ? (
             <div className="relative z-10">
               {/* Grille hexagonale innovante */}
-              <div className="flex flex-wrap justify-center gap-8 max-w-7xl mx-auto">
+              <div className="flex flex-wrap justify-center gap-12 max-w-7xl mx-auto">
               {instruments.map((instrument, index) => (
                 <div 
                   key={instrument.id} 
