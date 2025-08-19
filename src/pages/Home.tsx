@@ -47,25 +47,20 @@ const Home = () => {
         }}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center animate-fade-in">
-            <h2 className="font-poppins font-bold text-3xl md:text-4xl text-dark mb-8">
-              Notre Histoire
-            </h2>
-            <div className="space-y-6 text-lg leading-relaxed text-gray-700">
-              <p className="font-inter">
-                La Lyre, ce n'est pas seulement un orchestre d'Harmonie, c'est aussi une École fixant les bases musicales théoriques et pratiques nécessaires, afin de gravir les échelons menant des petits orchestres au Grand.
-              </p>
-              <p className="font-inter">
-                Spectateur(s) à l'ouïe fine, futur(e)s virtuose(s) ou simplement curieux(ses), n'hésitez pas à prendre le temps de parcourir notre site afin de nous connaître un peu mieux.
-              </p>
-              <p className="font-inter font-medium text-primary">
-                En ayant l'espoir de vous voir à notre prochain concert ou au sein de notre groupe, nous vous souhaitons une agréable journée et vous remercions de votre visite.
-              </p>
-            </div>
+            <h1 className="font-poppins font-bold text-4xl md:text-6xl text-white mb-6">
+              Bienvenue à la Lyre
+            </h1>
+            <p className="font-inter text-xl text-gray-200 mb-8 leading-relaxed">
+              Rejoignez notre communauté musicale dynamique !
+            </p>
+            <p className="font-inter text-lg text-yellow-300 font-medium mb-12">
+              Depuis 1931, nous cultivons la passion musicale
+            </p>
             <div className="mt-12">
               <div className="bg-gradient-to-br from-primary/10 to-accent/10 rounded-xl p-8">
                 <div className="flex items-center justify-center mb-6">
                   <div className="bg-primary/20 p-4 rounded-full">
-                    <Music className="h-12 w-12 text-primary" />
+                    <Music2 className="h-12 w-12 text-primary" />
                   </div>
                 </div>
                 <h3 className="font-poppins font-semibold text-xl text-dark mb-4">
@@ -134,11 +129,10 @@ const Home = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="animate-on-scroll text-center mb-12">
             <h2 className="font-poppins font-bold text-3xl md:text-4xl text-dark mb-4">
-            <h1 className="font-poppins font-bold text-4xl md:text-6xl text-white mb-6">
+              Nos Événements
             </h2>
             <p className="font-inter text-lg text-gray-600 max-w-2xl mx-auto">
-            <p className="font-inter text-xl text-gray-200 mb-8 leading-relaxed">
-              Rejoignez notre communauté musicale dynamique !
+              Découvrez nos prochains concerts et événements musicaux
             </p>
           </div>
           
@@ -146,20 +140,19 @@ const Home = () => {
             {/* Event Cards Placeholder */}
             {[1, 2, 3].map((item) => (
               <div 
-            <p className="font-inter text-lg text-gray-200 mb-8 leading-relaxed">
+                key={item}
                 className="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group"
               >
-            <p className="font-inter text-lg text-gray-200 mb-8 leading-relaxed">
                 <div className="p-6">
                   <h3 className="font-poppins font-semibold text-xl text-dark mb-2">
-            <p className="font-inter text-lg text-yellow-300 font-medium mb-12">
+                    Événement à venir
                   </h3>
                   <p className="font-inter text-gray-600 mb-4">
                     Les détails seront bientôt disponibles. Restez connectés !
                   </p>
                   <div className="flex items-center text-sm text-gray-500">
                     <Calendar className="h-4 w-4 mr-2" />
-                    <Music2 className="h-12 w-12 text-primary" />
+                    <span>Date à confirmer</span>
                   </div>
                 </div>
               </div>
