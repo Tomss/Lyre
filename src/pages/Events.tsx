@@ -158,9 +158,6 @@ const Events = () => {
                           {selectedEvent.orchestras.map((orchestra, index) => (
                             <div key={index} className="bg-white/60 rounded-lg p-3 border border-green-200">
                               <h4 className="font-medium text-gray-800">{orchestra.name}</h4>
-                              {orchestra.description && (
-                                <p className="text-sm text-gray-600 mt-1">{orchestra.description}</p>
-                              )}
                             </div>
                           ))}
                         </div>
@@ -245,13 +242,13 @@ const Events = () => {
         <section className="py-6 bg-gradient-to-r from-blue-25 to-indigo-25 border-b border-white/50 sticky top-20 z-40 shadow-sm backdrop-blur-sm">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-center space-x-4">
-              <div className="flex items-center space-x-2 bg-white/80 backdrop-blur-sm rounded-full p-1 shadow-lg border border-white/50">
+              <div className="flex items-center space-x-2">
                 <button
                   onClick={() => setFilter('upcoming')}
-                  className={`inline-flex items-center space-x-2 px-6 py-3 rounded-full font-semibold transition-all duration-300 ${
+                  className={`inline-flex items-center space-x-2 px-6 py-3 rounded-full font-semibold transition-all duration-300 shadow-lg ${
                     filter === 'upcoming'
-                      ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg'
-                      : 'text-gray-600 hover:text-gray-800'
+                      ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white'
+                      : 'bg-white text-gray-600 hover:text-gray-800 hover:bg-gray-50'
                   }`}
                 >
                   <Star className="h-4 w-4" />
@@ -259,10 +256,10 @@ const Events = () => {
                 </button>
                 <button
                   onClick={() => setFilter('past')}
-                  className={`inline-flex items-center space-x-2 px-6 py-3 rounded-full font-semibold transition-all duration-300 ${
+                  className={`inline-flex items-center space-x-2 px-6 py-3 rounded-full font-semibold transition-all duration-300 shadow-lg ${
                     filter === 'past'
-                      ? 'bg-gradient-to-r from-gray-500 to-slate-600 text-white shadow-lg'
-                      : 'text-gray-600 hover:text-gray-800'
+                      ? 'bg-gradient-to-r from-gray-500 to-slate-600 text-white'
+                      : 'bg-white text-gray-600 hover:text-gray-800 hover:bg-gray-50'
                   }`}
                 >
                   <Clock className="h-4 w-4" />
@@ -457,6 +454,9 @@ const Events = () => {
                                 <div className="text-xs opacity-90">{dateInfo.month}</div>
                               </div>
                             </div>
+                            <h3 className="font-poppins font-semibold text-sm text-white mb-2 group-hover:text-gray-100 transition-colors line-clamp-2">
+                              {event.title}
+                            </h3>
                           </div>
 
                           {/* Contenu compact */}
