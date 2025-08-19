@@ -218,9 +218,9 @@ const School = () => {
               <p className="text-gray-600">Chargement des instruments...</p>
             </div>
           ) : instruments.length > 0 ? (
-            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 animate-fade-in max-w-6xl mx-auto">
+            <div className="flex flex-wrap justify-center gap-3 animate-fade-in max-w-7xl mx-auto">
               {instruments.map((instrument) => (
-                <div key={instrument.id} className="bg-white/90 backdrop-blur-sm rounded-lg shadow-sm border border-slate-200/50 overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group">
+                <div key={instrument.id} className="w-32 bg-white/90 backdrop-blur-sm rounded-lg shadow-sm border border-slate-200/50 overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group">
                   {/* Photo de l'instrument */}
                   <div className="aspect-square bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-2">
                     {instrument.photo_url ? (
