@@ -227,7 +227,7 @@ const Events = () => {
                           <div className="p-4 flex-1 flex flex-col">
                             <div className="flex-1">
                             {event.description && (
-                              <p className="text-gray-600 mb-4 leading-relaxed text-sm">
+                              <p className="text-gray-600 mb-4 leading-relaxed text-sm line-clamp-3">
                                 {event.description}
                               </p>
                             )}
@@ -237,15 +237,15 @@ const Events = () => {
                                 <div className="flex items-center space-x-3 text-gray-500">
                                   <div className="bg-gray-100 p-2 rounded-lg">
                                     <MapPin className="h-4 w-4" />
-                                <p className="text-gray-600 mb-4 leading-relaxed text-sm line-clamp-3">
-                                  <span className="font-medium text-sm">{event.location}</span>
+                                  </div>
+                                  <span className="font-medium text-sm line-clamp-1">{event.location}</span>
                                 </div>
                               )}
                               
                               {event.orchestras && event.orchestras.length > 0 && (
                                 <div className="flex items-center space-x-3 text-gray-500">
                                   <div className="bg-gray-100 p-2 rounded-lg">
-                                    <span className="font-medium text-sm line-clamp-1">{event.location}</span>
+                                    <Users className="h-4 w-4" />
                                   </div>
                                     <span className="font-medium text-sm line-clamp-1">{event.orchestras.map(o => o.name).join(', ')}</span>
                                 </div>
