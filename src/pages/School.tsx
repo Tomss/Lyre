@@ -232,7 +232,7 @@ const School = () => {
           ) : instruments.length > 0 ? (
             <div className="relative z-10">
               {/* Grille hexagonale innovante */}
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-8 max-w-7xl mx-auto">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-8 max-w-7xl mx-auto justify-items-center">
               {instruments.map((instrument, index) => (
                 <div 
                   key={instrument.id} 
