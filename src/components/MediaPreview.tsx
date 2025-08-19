@@ -212,7 +212,7 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({ files, mediaType, className
         return (
           <div className="aspect-[4/3] bg-gray-100 rounded-lg flex items-center justify-center">
             <ImageIcon className="h-12 w-12 text-gray-400" />
-      case 'lyrissimot': return Music;
+          </div>
         );
     }
   };
