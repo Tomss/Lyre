@@ -131,7 +131,7 @@ const School = () => {
                         onClick={() => setSelectedOrchestra(orchestra)}
                         className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${
                           selectedOrchestra?.id === orchestra.id
-                            ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg'
+                            ? 'bg-gradient-to-r from-orange-400 to-amber-400 text-white shadow-lg'
                             : 'bg-white/80 backdrop-blur-sm text-gray-700 hover:bg-white shadow-md border border-white/50'
                         }`}
                       >
