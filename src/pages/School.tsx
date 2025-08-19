@@ -102,93 +102,6 @@ const School = () => {
         </div>
       </section>
 
-      {/* Section Orchestres */}
-      <section className="py-16 bg-gradient-to-br from-blue-25 via-indigo-25 to-purple-25">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-12 animate-fade-in">
-              <h2 className="font-poppins font-bold text-3xl md:text-4xl text-dark mb-4">
-                Nos Orchestres
-              </h2>
-              <p className="font-inter text-lg text-gray-600 max-w-2xl mx-auto">
-                Découvrez nos différents ensembles musicaux
-              </p>
-            </div>
-
-            <div className="animate-fade-in mb-12">
-              {loading ? (
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-                  <p className="text-gray-600">Chargement des orchestres...</p>
-                </div>
-              ) : orchestras.length > 0 ? (
-                <>
-                  {/* Boutons des orchestres */}
-                  <div className="flex flex-wrap justify-center gap-4 mb-8">
-                    {orchestras.map((orchestra) => (
-                      <button
-                        key={orchestra.id}
-                        onClick={() => setSelectedOrchestra(orchestra)}
-                        className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${
-                          selectedOrchestra?.id === orchestra.id
-                            ? 'bg-gradient-to-r from-amber-700 to-yellow-800 text-white shadow-lg'
-                            : 'bg-white/80 backdrop-blur-sm text-gray-700 hover:bg-white shadow-md border border-white/50'
-                        }`}
-                      >
-                        {orchestra.name}
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Description de l'orchestre sélectionné */}
-                  {selectedOrchestra && (
-                    <div className="animate-fade-in">
-                      {/* Titre centré */}
-                      <div className="text-center mb-8">
-                        <h3 className="font-poppins font-bold text-3xl text-dark mb-2">
-                          {selectedOrchestra.name}
-                        </h3>
-                        <div className="h-1 w-16 bg-gradient-to-r from-orange-500 to-amber-500 rounded-full mx-auto mb-6"></div>
-                      </div>
-                      
-                      {/* Photo centrée */}
-                      {selectedOrchestra.photo_url && (
-                        <div className="text-center mb-8">
-                          <img
-                            src={selectedOrchestra.photo_url}
-                            alt={selectedOrchestra.name}
-                            className="max-w-md w-full h-64 object-cover rounded-xl shadow-xl border-4 border-white hover:shadow-2xl transition-all duration-300 mx-auto"
-                            onError={(e) => {
-                              e.currentTarget.style.display = 'none';
-                            }}
-                          />
-                        </div>
-                      )}
-                      
-                      {/* Description directe */}
-                      {selectedOrchestra.description ? (
-                        <div className="font-inter text-gray-800 leading-relaxed text-lg whitespace-pre-line max-w-4xl mx-auto text-center">
-                          {selectedOrchestra.description}
-                        </div>
-                      ) : (
-                        <p className="font-inter text-gray-500 italic text-center max-w-2xl mx-auto">
-                          Description à venir pour cet orchestre.
-                        </p>
-                      )}
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div className="text-center py-8">
-                  <Users className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-600">Aucun orchestre disponible pour le moment.</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Section Instruments */}
       <section className="py-20 bg-gradient-to-br from-gray-800 via-slate-800 to-gray-900 relative overflow-hidden">
         {/* Particules d'arrière-plan */}
@@ -336,6 +249,93 @@ const School = () => {
               <p className="text-gray-300 text-xl">Aucun instrument disponible pour le moment.</p>
             </div>
           )}
+        </div>
+      </section>
+
+      {/* Section Orchestres */}
+      <section className="py-16 bg-gradient-to-br from-blue-25 via-indigo-25 to-purple-25">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-12 animate-fade-in">
+              <h2 className="font-poppins font-bold text-3xl md:text-4xl text-dark mb-4">
+                Nos Orchestres
+              </h2>
+              <p className="font-inter text-lg text-gray-600 max-w-2xl mx-auto">
+                Découvrez nos différents ensembles musicaux
+              </p>
+            </div>
+
+            <div className="animate-fade-in mb-12">
+              {loading ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                  <p className="text-gray-600">Chargement des orchestres...</p>
+                </div>
+              ) : orchestras.length > 0 ? (
+                <>
+                  {/* Boutons des orchestres */}
+                  <div className="flex flex-wrap justify-center gap-4 mb-8">
+                    {orchestras.map((orchestra) => (
+                      <button
+                        key={orchestra.id}
+                        onClick={() => setSelectedOrchestra(orchestra)}
+                        className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${
+                          selectedOrchestra?.id === orchestra.id
+                            ? 'bg-gradient-to-r from-amber-700 to-yellow-800 text-white shadow-lg'
+                            : 'bg-white/80 backdrop-blur-sm text-gray-700 hover:bg-white shadow-md border border-white/50'
+                        }`}
+                      >
+                        {orchestra.name}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Description de l'orchestre sélectionné */}
+                  {selectedOrchestra && (
+                    <div className="animate-fade-in">
+                      {/* Titre centré */}
+                      <div className="text-center mb-8">
+                        <h3 className="font-poppins font-bold text-3xl text-dark mb-2">
+                          {selectedOrchestra.name}
+                        </h3>
+                        <div className="h-1 w-16 bg-gradient-to-r from-orange-500 to-amber-500 rounded-full mx-auto mb-6"></div>
+                      </div>
+                      
+                      {/* Photo centrée */}
+                      {selectedOrchestra.photo_url && (
+                        <div className="text-center mb-8">
+                          <img
+                            src={selectedOrchestra.photo_url}
+                            alt={selectedOrchestra.name}
+                            className="max-w-md w-full h-64 object-cover rounded-xl shadow-xl border-4 border-white hover:shadow-2xl transition-all duration-300 mx-auto"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                            }}
+                          />
+                        </div>
+                      )}
+                      
+                      {/* Description directe */}
+                      {selectedOrchestra.description ? (
+                        <div className="font-inter text-gray-800 leading-relaxed text-lg whitespace-pre-line max-w-4xl mx-auto text-center">
+                          {selectedOrchestra.description}
+                        </div>
+                      ) : (
+                        <p className="font-inter text-gray-500 italic text-center max-w-2xl mx-auto">
+                          Description à venir pour cet orchestre.
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="text-center py-8">
+                  <Users className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                  <p className="text-gray-600">Aucun orchestre disponible pour le moment.</p>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </section>
 
