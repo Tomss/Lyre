@@ -233,7 +233,7 @@ const School = () => {
             <div className="relative z-10">
               {/* Grille hexagonale innovante */}
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-8 max-w-7xl mx-auto">
-              {instruments.map((instrument) => (
+              {instruments.map((instrument, index) => (
                 <div 
                   key={instrument.id} 
                   className="group relative animate-fade-in"
