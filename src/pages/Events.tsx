@@ -197,7 +197,7 @@ const Events = () => {
                     
                     return (
                       <div key={event.id} className="group animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
-                        <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-white/50 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                        <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-white/50 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 h-80 flex flex-col">
                           {/* Header avec date */}
                           <div className="bg-gradient-to-r from-green-500 to-emerald-600 p-4 text-white relative overflow-hidden">
                             {/* Motif décoratif */}
@@ -214,7 +214,7 @@ const Events = () => {
                                   <div className="text-sm opacity-90">{dateInfo.month} {dateInfo.year}</div>
                                 </div>
                               </div>
-                              <h3 className="font-poppins font-bold text-lg mb-1 group-hover:scale-105 transition-transform duration-300">
+                              <h3 className="font-poppins font-bold text-lg mb-1 group-hover:scale-105 transition-transform duration-300 line-clamp-2">
                                 {event.title}
                               </h3>
                               <div className="text-green-100 text-sm">
@@ -224,7 +224,8 @@ const Events = () => {
                           </div>
 
                           {/* Contenu */}
-                          <div className="p-4">
+                          <div className="p-4 flex-1 flex flex-col">
+                            <div className="flex-1">
                             {event.description && (
                               <p className="text-gray-600 mb-4 leading-relaxed text-sm">
                                 {event.description}
@@ -236,7 +237,7 @@ const Events = () => {
                                 <div className="flex items-center space-x-3 text-gray-500">
                                   <div className="bg-gray-100 p-2 rounded-lg">
                                     <MapPin className="h-4 w-4" />
-                                  </div>
+                                <p className="text-gray-600 mb-4 leading-relaxed text-sm line-clamp-3">
                                   <span className="font-medium text-sm">{event.location}</span>
                                 </div>
                               )}
@@ -244,15 +245,16 @@ const Events = () => {
                               {event.orchestras && event.orchestras.length > 0 && (
                                 <div className="flex items-center space-x-3 text-gray-500">
                                   <div className="bg-gray-100 p-2 rounded-lg">
-                                    <Users className="h-4 w-4" />
+                                    <span className="font-medium text-sm line-clamp-1">{event.location}</span>
                                   </div>
-                                  <span className="font-medium text-sm">{event.orchestras.map(o => o.name).join(', ')}</span>
+                                    <span className="font-medium text-sm line-clamp-1">{event.orchestras.map(o => o.name).join(', ')}</span>
                                 </div>
                               )}
                             </div>
+                            </div>
 
                             {/* Badge à venir */}
-                            <div className="mt-4 pt-3 border-t border-gray-100">
+                            <div className="pt-3 border-t border-gray-100 mt-auto">
                               <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-green-50 to-emerald-50 rounded-full px-4 py-2 border border-green-200">
                                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
                                 <span className="text-green-700 font-semibold text-sm">À venir</span>
