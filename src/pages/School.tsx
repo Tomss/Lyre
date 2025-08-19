@@ -111,9 +111,9 @@ const School = () => {
                         </h3>
                       </div>
                       {selectedOrchestra.description ? (
-                        <p className="font-inter text-gray-700 leading-relaxed text-lg">
+                        <div className="font-inter text-gray-700 leading-relaxed text-lg whitespace-pre-line">
                           {selectedOrchestra.description}
-                        </p>
+                        </div>
                       ) : (
                         <p className="font-inter text-gray-500 italic">
                           Description à venir pour cet orchestre.
