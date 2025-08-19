@@ -227,14 +227,12 @@ const School = () => {
                           e.currentTarget.nextElementSibling.style.display = 'flex';
                         }}
                       />
-                     className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${
+                    ) : null}
                     <div 
-                         ? 'bg-gradient-to-r from-orange-600 to-amber-600 text-white shadow-lg'
-                         : 'bg-white/80 backdrop-blur-sm text-gray-700 hover:bg-orange-50 shadow-md border border-white/50'
-                      }`}
+                      className="hidden w-full h-full items-center justify-center"
+                      style={{ display: instrument.photo_url ? 'none' : 'flex' }}
                     >
                       <Music className="h-16 w-16 text-gray-400 group-hover:text-primary transition-colors duration-300" />
-                      <Music className="h-5 w-5 text-slate-400 group-hover:text-slate-600 transition-colors duration-300" />
                     </div>
                   </div>
                   
