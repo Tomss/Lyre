@@ -69,7 +69,6 @@ const Home = () => {
                 <p className="font-inter text-gray-600">
                   Plus de 90 ans d'histoire musicale au service de la passion et de l'apprentissage
                 </p>
-              </a>
             </div>
           </div>
         </div>
