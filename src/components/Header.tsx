@@ -28,13 +28,15 @@ const Header = () => {
 
   return (
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-      isScrolled ? 'bg-white/95 backdrop-blur-md shadow-lg' : 'bg-transparent'
+      isScrolled ? 'bg-white/98 backdrop-blur-md shadow-lg border-b border-orange-100' : 'bg-white/10 backdrop-blur-sm'
     }`}>
       <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2 font-poppins font-bold text-xl text-dark hover:text-primary transition-colors">
-            <Music className="h-8 w-8 text-primary" />
+          <Link to="/" className={`flex items-center space-x-2 font-poppins font-bold text-xl transition-colors ${
+            isScrolled ? 'text-orange-800 hover:text-orange-600' : 'text-white hover:text-orange-200'
+          }`}>
+            <Music className={`h-8 w-8 ${isScrolled ? 'text-orange-600' : 'text-orange-300'}`} />
             <span>La Lyre</span>
           </Link>
 
@@ -44,8 +46,8 @@ const Header = () => {
               <Link
                 key={link.path}
                 to={link.path}
-                className={`font-inter font-medium transition-colors hover:text-primary ${
-                  location.pathname === link.path ? 'text-primary' : 'text-dark'
+                className={`font-inter font-medium transition-colors ${
+                  location.pathname === link.path ? (isScrolled ? 'text-orange-600' : 'text-orange-300') : (isScrolled ? 'text-gray-700 hover:text-orange-600' : 'text-white hover:text-orange-200')
                 }`}
               >
                 {link.label}
@@ -59,14 +61,22 @@ const Header = () => {
               <>
                 <Link
                   to="/dashboard"
-                  className="flex items-center space-x-2 bg-primary/10 hover:bg-primary/20 text-primary font-inter font-semibold px-4 py-2 rounded-full border border-primary/20 hover:border-primary/30 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
+                  className={`flex items-center space-x-2 font-inter font-semibold px-4 py-2 rounded-full transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md ${
+                    isScrolled 
+                      ? 'bg-orange-100 hover:bg-orange-200 text-orange-700 border border-orange-200 hover:border-orange-300' 
+                      : 'bg-white/20 hover:bg-white/30 text-white border border-white/30 hover:border-white/50'
+                  }`}
                 >
                   <UserCircle className="h-5 w-5" />
                   <span>{profile ? `${profile.first_name} ${profile.last_name}` : 'Mon Espace'}</span>
                 </Link>
                 <button
                   onClick={logout}
-                  className="bg-gray-200 hover:bg-gray-300 text-dark font-inter font-semibold px-4 py-2 rounded-full transition-all duration-300"
+                  className={`font-inter font-semibold px-4 py-2 rounded-full transition-all duration-300 ${
+                    isScrolled 
+                      ? 'bg-gray-200 hover:bg-gray-300 text-gray-700' 
+                      : 'bg-white/20 hover:bg-white/30 text-white'
+                  }`}
                 >
                   Déconnexion
                 </button>
@@ -74,7 +84,11 @@ const Header = () => {
             ) : (
               <Link
                 to="/connexion"
-                className="bg-accent hover:bg-accent/90 text-white font-inter font-semibold px-6 py-3 rounded-full transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
+                className={`font-inter font-semibold px-6 py-3 rounded-full transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg ${
+                  isScrolled 
+                    ? 'bg-orange-500 hover:bg-orange-600 text-white' 
+                    : 'bg-orange-400 hover:bg-orange-500 text-white'
+                }`}
               >
                 Espace Membre
               </Link>
@@ -83,7 +97,9 @@ const Header = () => {
 
           {/* Mobile Menu Button */}
           <button
-            className="lg:hidden p-2 text-dark hover:text-primary transition-colors"
+            className={`lg:hidden p-2 transition-colors ${
+              isScrolled ? 'text-gray-700 hover:text-orange-600' : 'text-white hover:text-orange-200'
+            }`}
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -92,14 +108,14 @@ const Header = () => {
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className="lg:hidden bg-white/95 backdrop-blur-md border-t border-gray-200">
+          <div className="lg:hidden bg-white/98 backdrop-blur-md border-t border-orange-200">
             <div className="px-4 py-4 space-y-4">
               {navLinks.map((link) => (
                 <Link
                   key={link.path}
                   to={link.path}
-                  className={`block font-inter font-medium transition-colors hover:text-primary ${
-                    location.pathname === link.path ? 'text-primary' : 'text-dark'
+                  className={`block font-inter font-medium transition-colors hover:text-orange-600 ${
+                    location.pathname === link.path ? 'text-orange-600' : 'text-gray-700'
                   }`}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
@@ -112,7 +128,7 @@ const Header = () => {
                 <div className="pt-4 border-t border-gray-200">
                   <Link
                     to="/dashboard"
-                    className="flex items-center space-x-2 bg-primary/10 hover:bg-primary/20 text-primary font-inter font-semibold px-4 py-2 rounded-full border border-primary/20 hover:border-primary/30 transition-all duration-300 mb-3"
+                    className="flex items-center space-x-2 bg-orange-100 hover:bg-orange-200 text-orange-700 font-inter font-semibold px-4 py-2 rounded-full border border-orange-200 hover:border-orange-300 transition-all duration-300 mb-3"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     <UserCircle className="h-5 w-5" />
@@ -123,7 +139,7 @@ const Header = () => {
                       logout();
                       setIsMobileMenuOpen(false);
                     }}
-                    className="w-full bg-gray-200 hover:bg-gray-300 text-dark font-inter font-semibold px-4 py-2 rounded-full transition-all duration-300"
+                    className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-inter font-semibold px-4 py-2 rounded-full transition-all duration-300"
                   >
                     Déconnexion
                   </button>
@@ -131,7 +147,7 @@ const Header = () => {
               ) : (
                 <Link
                   to="/connexion"
-                  className="inline-block bg-accent hover:bg-accent/90 text-white font-inter font-semibold px-6 py-3 rounded-full transition-all duration-300"
+                  className="inline-block bg-orange-500 hover:bg-orange-600 text-white font-inter font-semibold px-6 py-3 rounded-full transition-all duration-300"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   Espace Membre
