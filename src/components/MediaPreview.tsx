@@ -140,7 +140,7 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({ files, mediaType, className
         className={`relative group cursor-pointer ${className}`}
         onClick={onClick}
       >
-        <div className="aspect-[4/3] bg-gradient-to-br from-purple-500 via-purple-600 to-indigo-600 rounded-lg flex items-center justify-center relative overflow-hidden">
+        <div className="aspect-[4/3] bg-gradient-to-br from-slate-400 via-slate-500 to-gray-600 rounded-lg flex items-center justify-center relative overflow-hidden">
           {/* Pattern de fond décoratif */}
           <div className="absolute inset-0 opacity-10">
             <div className="absolute top-2 left-2 w-8 h-8 border-2 border-white rounded-full"></div>
@@ -153,7 +153,7 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({ files, mediaType, className
               <Music className="h-10 w-10 text-white drop-shadow-lg" />
             </div>
             <div className="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full">
-              <p className="text-sm text-purple-800 font-bold">Lyrissimot</p>
+              <p className="text-sm text-slate-800 font-bold">Lyrissimot</p>
             </div>
           </div>
           <div className="absolute top-2 right-2 bg-white/20 backdrop-blur-sm text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 border border-white/30">
@@ -188,7 +188,7 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({ files, mediaType, className
         );
       case 'lyrissimot':
         return (
-          <div className="aspect-[4/3] bg-gradient-to-br from-purple-500 via-purple-600 to-indigo-600 rounded-lg flex items-center justify-center relative overflow-hidden">
+          <div className="aspect-[4/3] bg-gradient-to-br from-slate-400 via-slate-500 to-gray-600 rounded-lg flex items-center justify-center relative overflow-hidden">
             {/* Pattern de fond décoratif */}
             <div className="absolute inset-0 opacity-10">
               <div className="absolute top-2 left-2 w-8 h-8 border-2 border-white rounded-full"></div>
@@ -202,6 +202,7 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({ files, mediaType, className
               </div>
               <div className="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full">
                 <p className="text-sm text-purple-800 font-bold">
+                <p className="text-sm text-slate-800 font-bold">
                   Aucun PDF
                 </p>
               </div>
