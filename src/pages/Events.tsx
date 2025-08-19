@@ -1,9 +1,10 @@
 import React from 'react';
-import { Calendar, Clock, MapPin, Users, Star, Music, ChevronRight } from 'lucide-react';
+import { Calendar, Clock, MapPin, Users, Star, Music, ChevronRight, Filter } from 'lucide-react';
 
 const Events = () => {
   const [events, setEvents] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
+  const [filter, setFilter] = React.useState('upcoming'); // 'upcoming' ou 'past'
 
   // Récupérer les concerts publics
   const fetchPublicEvents = async () => {
@@ -56,8 +57,8 @@ const Events = () => {
   };
 
   // Séparer les événements futurs et passés
-  const upcomingEvents = events.filter(event => isUpcoming(event.event_date));
-  const pastEvents = events.filter(event => isPast(event.event_date));
+  const upcomingEvents = events.filter(event => isUpcoming(event.event_date)).sort((a, b) => new Date(a.event_date) - new Date(b.event_date));
+  const pastEvents = events.filter(event => isPast(event.event_date)).sort((a, b) => new Date(a.event_date) - new Date(b.event_date));
 
   return (
     <div className="font-inter pt-20">
@@ -92,6 +93,39 @@ const Events = () => {
         </div>
       </section>
 
+      {/* Filtre */}
+      {events.length > 0 && (
+        <section className="py-6 bg-gradient-to-r from-blue-25 to-indigo-25 border-b border-white/50 sticky top-20 z-40 shadow-sm backdrop-blur-sm">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-center space-x-4">
+              <div className="flex items-center space-x-2 bg-white/80 backdrop-blur-sm rounded-full p-1 shadow-lg border border-white/50">
+                <button
+                  onClick={() => setFilter('upcoming')}
+                  className={`inline-flex items-center space-x-2 px-6 py-3 rounded-full font-semibold transition-all duration-300 ${
+                    filter === 'upcoming'
+                      ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg'
+                      : 'text-gray-600 hover:text-gray-800'
+                  }`}
+                >
+                  <Star className="h-4 w-4" />
+                  <span>À venir ({upcomingEvents.length})</span>
+                </button>
+                <button
+                  onClick={() => setFilter('past')}
+                  className={`inline-flex items-center space-x-2 px-6 py-3 rounded-full font-semibold transition-all duration-300 ${
+                    filter === 'past'
+                      ? 'bg-gradient-to-r from-gray-500 to-slate-600 text-white shadow-lg'
+                      : 'text-gray-600 hover:text-gray-800'
+                  }`}
+                >
+                  <Clock className="h-4 w-4" />
+                  <span>Passés ({pastEvents.length})</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
       {loading ? (
         <section className="py-16 bg-gradient-to-br from-blue-25 via-indigo-25 to-purple-25">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -140,8 +174,8 @@ const Events = () => {
         </section>
       ) : (
         <>
-          {/* Événements à venir */}
-          {upcomingEvents.length > 0 && (
+          {/* Événements à venir - Affiché si filtre = 'upcoming' */}
+          {filter === 'upcoming' && upcomingEvents.length > 0 && (
             <section className="py-16 bg-gradient-to-br from-emerald-25 via-teal-25 to-cyan-25">
               <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center mb-12">
@@ -163,24 +197,24 @@ const Events = () => {
                     
                     return (
                       <div key={event.id} className="group animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
-                        <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/50 overflow-hidden hover:shadow-2xl hover:-translate-y-2 transition-all duration-500">
+                        <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-white/50 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
                           {/* Header avec date */}
-                          <div className="bg-gradient-to-r from-green-500 to-emerald-600 p-6 text-white relative overflow-hidden">
+                          <div className="bg-gradient-to-r from-green-500 to-emerald-600 p-4 text-white relative overflow-hidden">
                             {/* Motif décoratif */}
-                            <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -translate-y-10 translate-x-10"></div>
-                            <div className="absolute bottom-0 left-0 w-16 h-16 bg-white/10 rounded-full translate-y-8 -translate-x-8"></div>
+                            <div className="absolute top-0 right-0 w-12 h-12 bg-white/10 rounded-full -translate-y-6 translate-x-6"></div>
+                            <div className="absolute bottom-0 left-0 w-10 h-10 bg-white/10 rounded-full translate-y-5 -translate-x-5"></div>
                             
                             <div className="relative z-10">
-                              <div className="flex items-center justify-between mb-4">
+                              <div className="flex items-center justify-between mb-3">
                                 <div className="bg-white/20 backdrop-blur-sm rounded-full px-4 py-2">
                                   <span className="text-sm font-semibold">Concert</span>
                                 </div>
                                 <div className="text-right">
-                                  <div className="text-3xl font-bold">{dateInfo.day}</div>
+                                  <div className="text-2xl font-bold">{dateInfo.day}</div>
                                   <div className="text-sm opacity-90">{dateInfo.month} {dateInfo.year}</div>
                                 </div>
                               </div>
-                              <h3 className="font-poppins font-bold text-xl mb-2 group-hover:scale-105 transition-transform duration-300">
+                              <h3 className="font-poppins font-bold text-lg mb-1 group-hover:scale-105 transition-transform duration-300">
                                 {event.title}
                               </h3>
                               <div className="text-green-100 text-sm">
@@ -190,9 +224,9 @@ const Events = () => {
                           </div>
 
                           {/* Contenu */}
-                          <div className="p-6">
+                          <div className="p-4">
                             {event.description && (
-                              <p className="text-gray-600 mb-6 leading-relaxed">
+                              <p className="text-gray-600 mb-4 leading-relaxed text-sm">
                                 {event.description}
                               </p>
                             )}
@@ -203,7 +237,7 @@ const Events = () => {
                                   <div className="bg-gray-100 p-2 rounded-lg">
                                     <MapPin className="h-4 w-4" />
                                   </div>
-                                  <span className="font-medium">{event.location}</span>
+                                  <span className="font-medium text-sm">{event.location}</span>
                                 </div>
                               )}
                               
@@ -212,13 +246,13 @@ const Events = () => {
                                   <div className="bg-gray-100 p-2 rounded-lg">
                                     <Users className="h-4 w-4" />
                                   </div>
-                                  <span className="font-medium">{event.orchestras.map(o => o.name).join(', ')}</span>
+                                  <span className="font-medium text-sm">{event.orchestras.map(o => o.name).join(', ')}</span>
                                 </div>
                               )}
                             </div>
 
                             {/* Badge à venir */}
-                            <div className="mt-6 pt-4 border-t border-gray-100">
+                            <div className="mt-4 pt-3 border-t border-gray-100">
                               <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-green-50 to-emerald-50 rounded-full px-4 py-2 border border-green-200">
                                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
                                 <span className="text-green-700 font-semibold text-sm">À venir</span>
@@ -234,8 +268,8 @@ const Events = () => {
             </section>
           )}
 
-          {/* Événements passés */}
-          {pastEvents.length > 0 && (
+          {/* Événements passés - Affiché si filtre = 'past' */}
+          {filter === 'past' && pastEvents.length > 0 && (
             <section className="py-16 bg-gradient-to-br from-slate-25 via-gray-25 to-blue-25">
               <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center mb-12">
@@ -305,6 +339,47 @@ const Events = () => {
                     </button>
                   </div>
                 )}
+              </div>
+            </section>
+          )}
+
+          {/* Message si aucun événement dans la catégorie sélectionnée */}
+          {filter === 'upcoming' && upcomingEvents.length === 0 && (
+            <section className="py-16 bg-gradient-to-br from-emerald-25 via-teal-25 to-cyan-25">
+              <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="text-center">
+                  <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-12 shadow-xl border border-white/50 max-w-2xl mx-auto">
+                    <div className="bg-gradient-to-br from-green-400 to-emerald-500 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6 shadow-lg">
+                      <Star className="h-10 w-10 text-white" />
+                    </div>
+                    <h2 className="font-poppins font-bold text-2xl text-gray-800 mb-4">
+                      Aucun concert à venir
+                    </h2>
+                    <p className="font-inter text-gray-600 leading-relaxed">
+                      Notre programmation est en cours de préparation. Revenez bientôt pour découvrir nos prochains concerts !
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </section>
+          )}
+
+          {filter === 'past' && pastEvents.length === 0 && (
+            <section className="py-16 bg-gradient-to-br from-slate-25 via-gray-25 to-blue-25">
+              <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="text-center">
+                  <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-12 shadow-xl border border-white/50 max-w-2xl mx-auto">
+                    <div className="bg-gradient-to-br from-gray-400 to-slate-500 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6 shadow-lg">
+                      <Clock className="h-10 w-10 text-white" />
+                    </div>
+                    <h2 className="font-poppins font-bold text-2xl text-gray-800 mb-4">
+                      Aucun concert passé
+                    </h2>
+                    <p className="font-inter text-gray-600 leading-relaxed">
+                      L'historique de nos concerts apparaîtra ici après nos premières représentations.
+                    </p>
+                  </div>
+                </div>
               </div>
             </section>
           )}
