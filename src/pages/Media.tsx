@@ -7,7 +7,7 @@ const Media = () => {
   const [mediaItems, setMediaItems] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   const [searchTerm, setSearchTerm] = React.useState('');
-  const [selectedType, setSelectedType] = React.useState('all'); // 'all' ou une catégorie spécifique
+  const [selectedType, setSelectedType] = React.useState('album'); // Présélectionner Albums par défaut
   const [selectedMedia, setSelectedMedia] = React.useState(null);
   const [isGalleryOpen, setIsGalleryOpen] = React.useState(false);
 
