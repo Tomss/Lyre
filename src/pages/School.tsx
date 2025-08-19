@@ -92,7 +92,7 @@ const School = () => {
                 L'école propose une formation musicale du niveau Éveil au niveau Supérieur, par des professeurs diplômés de Conservatoires à Rayonnement Régional ou possédant un niveau équivalent.
               </p>
               <p className="font-inter text-lg text-gray-700 leading-relaxed mb-8">
-                Les cours suivent le rythme scolaire : un cours de solfège, une demi-heure d'instrument et une activité orchestrale par semaine dans l'un des orchestres suivants :
+                Les cours suivent le rythme scolaire : un cours de solfège, une demi-heure d'instrument et une activité orchestrale par semaine dans l'un des orchestres suivants
               </p>
             </div>
           </div>
