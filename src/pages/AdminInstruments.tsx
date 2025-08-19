@@ -2,6 +2,7 @@ import React, { useState, useEffect, FormEvent } from 'react';
 import { Edit, Trash2, Plus, Music, Search, X, CheckCircle, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Navigate, Link } from 'react-router-dom';
+import { supabase } from '../supabaseClient';
 
 interface Instrument {
   id: string;
