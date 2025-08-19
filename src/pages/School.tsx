@@ -280,7 +280,7 @@ const School = () => {
                     
                     {instrument.teacher && (
                       <div className="mb-2">
-                        <span className="text-sm text-orange-300 font-semibold bg-orange-900/20 px-3 py-1 rounded-full">
+                        <span className="text-sm text-orange-300 font-semibold">
                           {instrument.teacher}
                         </span>
                       </div>
