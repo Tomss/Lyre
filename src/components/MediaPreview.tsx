@@ -201,7 +201,6 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({ files, mediaType, className
                 <Music className="h-10 w-10 text-white drop-shadow-lg" />
               </div>
               <div className="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full">
-                <p className="text-sm text-purple-800 font-bold">
                 <p className="text-sm text-slate-800 font-bold">
                   Aucun PDF
                 </p>
