@@ -183,7 +183,7 @@ const Events = () => {
           {/* Événements à venir */}
           {filter === 'upcoming' && (
             upcomingEvents.length > 0 ? (
-              <section className="py-16 bg-gradient-to-br from-emerald-25 via-teal-25 to-cyan-25">
+              <section className="py-16 bg-gradient-to-br from-blue-25 via-indigo-25 to-purple-25">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                   <div className="text-center mb-12"><h2 className="font-poppins font-bold text-3xl text-gray-800 mb-6">Nos Prochains Événements</h2></div>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
@@ -191,13 +191,13 @@ const Events = () => {
                       const dateInfo = formatDate(event.event_date);
                       return (
                         <div key={event.id} onClick={() => openEventModal(event)} className="group animate-fade-in cursor-pointer" style={{ animationDelay: `${index * 0.1}s` }}>
-                          <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-white/50 overflow-hidden hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
-                            <div className="bg-gradient-to-r from-green-500 to-emerald-600 p-4 text-white relative overflow-hidden">
+                          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-white/50 overflow-hidden hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
+                            <div className="bg-gradient-to-r from-orange-500 to-amber-600 p-4 text-white relative overflow-hidden">
                               <div className="absolute top-0 right-0 w-12 h-12 bg-white/10 rounded-full -translate-y-6 translate-x-6"></div><div className="absolute bottom-0 left-0 w-10 h-10 bg-white/10 rounded-full translate-y-5 -translate-x-5"></div>
                               <div className="relative z-10">
                                 <div className="flex items-center justify-between mb-3"><div className="bg-white/20 backdrop-blur-sm rounded-full px-4 py-2"><span className="text-sm font-semibold">Concert</span></div><div className="text-right"><div className="text-2xl font-bold">{dateInfo.day}</div><div className="text-sm opacity-90">{dateInfo.month} {dateInfo.year}</div></div></div>
                                 <h3 className="font-poppins font-bold text-lg mb-1 group-hover:scale-105 transition-transform duration-300 line-clamp-2">{event.title}</h3>
-                                <div className="text-green-100 text-sm">{dateInfo.weekday} • {dateInfo.time}</div>
+                                <div className="text-orange-100 text-sm">{dateInfo.weekday} • {dateInfo.time}</div>
                               </div>
                             </div>
                             <div className="p-4 space-y-4">
@@ -212,11 +212,11 @@ const Events = () => {
                 </div>
               </section>
             ) : (
-              <section className="py-16 bg-gradient-to-br from-emerald-25 via-teal-25 to-cyan-25">
+              <section className="py-16 bg-gradient-to-br from-blue-25 via-indigo-25 to-purple-25">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                   <div className="text-center">
                     <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-12 shadow-xl border border-white/50 max-w-2xl mx-auto">
-                      <div className="bg-gradient-to-br from-green-400 to-emerald-500 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6 shadow-lg"><Star className="h-10 w-10 text-white" /></div>
+                      <div className="bg-gradient-to-br from-orange-400 to-amber-500 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6 shadow-lg"><Star className="h-10 w-10 text-white" /></div>
                       <h2 className="font-poppins font-bold text-2xl text-gray-800 mb-4">Aucun concert à venir</h2>
                       <p className="font-inter text-gray-600 leading-relaxed">Notre programmation est en cours de préparation. Revenez bientôt pour découvrir nos prochains concerts !</p>
                     </div>
@@ -229,7 +229,7 @@ const Events = () => {
           {/* Événements passés */}
           {filter === 'past' && (
             pastEvents.length > 0 ? (
-              <section className="py-16 bg-gradient-to-br from-slate-25 via-gray-25 to-blue-25">
+              <section className="py-16 bg-gradient-to-br from-gray-25 via-slate-25 to-blue-25">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                   <div className="text-center mb-12"><h2 className="font-poppins font-bold text-3xl text-gray-800 mb-6">Événements Passés</h2></div>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
@@ -261,7 +261,7 @@ const Events = () => {
                 </div>
               </section>
             ) : (
-              <section className="py-16 bg-gradient-to-br from-slate-25 via-gray-25 to-blue-25">
+              <section className="py-16 bg-gradient-to-br from-gray-25 via-slate-25 to-blue-25">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                   <div className="text-center">
                     <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-12 shadow-xl border border-white/50 max-w-2xl mx-auto">
@@ -278,19 +278,19 @@ const Events = () => {
       )}
 
       {/* Section d'information */}
-      <section className="py-16 bg-gradient-to-br from-orange-50 via-pink-50 to-purple-50">
+      <section className="py-16 bg-gradient-to-br from-rose-25 via-pink-25 to-orange-25">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center">
             <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border border-white/50">
-              <div className="bg-gradient-to-br from-orange-400 to-pink-500 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-8 shadow-lg"><Music className="h-10 w-10 text-white" /></div>
+              <div className="bg-gradient-to-br from-orange-400 to-amber-500 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-8 shadow-lg"><Music className="h-10 w-10 text-white" /></div>
               <h2 className="font-poppins font-bold text-3xl text-gray-800 mb-6">Rejoignez-nous</h2>
               <p className="font-inter text-base text-gray-600 leading-relaxed mb-6">
                 Chaque concert est une nouvelle page de notre histoire musicale. Venez partager ces moments d'émotion et de partage avec La Lyre Cheminote et Municipale de Chalindrey.
               </p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-                <div className="text-center"><div className="bg-gradient-to-br from-blue-100 to-indigo-100 rounded-2xl p-6 mb-4"><Calendar className="h-8 w-8 text-blue-600 mx-auto mb-3" /><h3 className="font-semibold text-gray-800">Concerts réguliers</h3><p className="text-sm text-gray-600 mt-2">Plusieurs représentations par an</p></div></div>
-                <div className="text-center"><div className="bg-gradient-to-br from-green-100 to-emerald-100 rounded-2xl p-6 mb-4"><Users className="h-8 w-8 text-green-600 mx-auto mb-3" /><h3 className="font-semibold text-gray-800">Tous niveaux</h3><p className="text-sm text-gray-600 mt-2">De l'éveil au niveau supérieur</p></div></div>
-                <div className="text-center"><div className="bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl p-6 mb-4"><Music className="h-8 w-8 text-purple-600 mx-auto mb-3" /><h3 className="font-semibold text-gray-800">Répertoire varié</h3><p className="text-sm text-gray-600 mt-2">Classique, moderne, populaire</p></div></div>
+                <div className="text-center"><div className="bg-gradient-to-br from-orange-100 to-amber-100 rounded-2xl p-6 mb-4"><Calendar className="h-8 w-8 text-orange-600 mx-auto mb-3" /><h3 className="font-semibold text-gray-800">Concerts réguliers</h3><p className="text-sm text-gray-600 mt-2">Plusieurs représentations par an</p></div></div>
+                <div className="text-center"><div className="bg-gradient-to-br from-indigo-100 to-purple-100 rounded-2xl p-6 mb-4"><Users className="h-8 w-8 text-indigo-600 mx-auto mb-3" /><h3 className="font-semibold text-gray-800">Tous niveaux</h3><p className="text-sm text-gray-600 mt-2">De l'éveil au niveau supérieur</p></div></div>
+                <div className="text-center"><div className="bg-gradient-to-br from-pink-100 to-rose-100 rounded-2xl p-6 mb-4"><Music className="h-8 w-8 text-pink-600 mx-auto mb-3" /><h3 className="font-semibold text-gray-800">Répertoire varié</h3><p className="text-sm text-gray-600 mt-2">Classique, moderne, populaire</p></div></div>
               </div>
             </div>
           </div>
