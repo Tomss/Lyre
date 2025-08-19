@@ -142,17 +142,13 @@ const School = () => {
 
                   {/* Description de l'orchestre sélectionné */}
                   {selectedOrchestra && (
-                    <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-8 border border-white/50 shadow-xl animate-fade-in">
+                    <div className="animate-fade-in">
                       {/* Titre centré */}
                       <div className="text-center mb-8">
-                        <div className="flex items-center justify-center space-x-4 mb-4">
-                          <div>
-                            <h3 className="font-poppins font-bold text-3xl text-dark mb-1">
-                              {selectedOrchestra.name}
-                            </h3>
-                           <div className="h-1 w-16 bg-gradient-to-r from-orange-500 to-amber-500 rounded-full mx-auto"></div>
-                          </div>
-                        </div>
+                        <h3 className="font-poppins font-bold text-3xl text-dark mb-2">
+                          {selectedOrchestra.name}
+                        </h3>
+                        <div className="h-1 w-16 bg-gradient-to-r from-orange-500 to-amber-500 rounded-full mx-auto mb-6"></div>
                       </div>
                       
                       {/* Photo centrée */}
@@ -169,13 +165,13 @@ const School = () => {
                         </div>
                       )}
                       
-                      {/* Description */}
+                      {/* Description directe */}
                       {selectedOrchestra.description ? (
-                        <div className="font-inter text-gray-800 leading-relaxed text-lg whitespace-pre-line bg-white/90 backdrop-blur-sm p-6 rounded-xl border border-white/60 shadow-sm">
+                        <div className="font-inter text-gray-800 leading-relaxed text-lg whitespace-pre-line max-w-4xl mx-auto text-center">
                           {selectedOrchestra.description}
                         </div>
                       ) : (
-                        <p className="font-inter text-gray-500 italic bg-white/90 backdrop-blur-sm p-6 rounded-xl border border-white/60 shadow-sm text-center">
+                        <p className="font-inter text-gray-500 italic text-center max-w-2xl mx-auto">
                           Description à venir pour cet orchestre.
                         </p>
                       )}
