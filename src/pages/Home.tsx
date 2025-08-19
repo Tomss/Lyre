@@ -66,18 +66,18 @@ const Home = () => {
           <div
             key={index}
             className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-1000 ${index === currentImageIndex ? 'opacity-100' : 'opacity-0'}`}
-            style={{ backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(234, 88, 12, 0.3)), url("${image}")` }}
+            style={{ backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url("${image}")` }}
           />
         ))}
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="max-w-4xl mx-auto text-center animate-fade-in">
             <h1 className="font-poppins font-bold text-4xl md:text-6xl text-white mb-6">
               Lyre Cheminote et Municipale de Chalindrey
             </h1>
-            <p className="font-inter text-xl text-orange-100 mb-8 leading-relaxed">
+            <p className="font-inter text-xl text-white mb-8 leading-relaxed">
               Rejoignez notre communauté musicale dynamique !
             </p>
-            <p className="font-inter text-lg text-orange-300 font-medium mb-12">
+            <p className="font-inter text-lg text-orange-200 font-medium mb-12">
               Depuis 1931, nous cultivons la passion musicale
             </p>
           </div>
@@ -88,7 +88,7 @@ const Home = () => {
           {backgroundImages.map((_, index) => (
             <button
               key={index}
-              className={`w-3 h-3 rounded-full transition-all duration-300 ${index === currentImageIndex ? 'bg-orange-400 scale-125' : 'bg-white/50 hover:bg-white/75'}`}
+              className={`w-3 h-3 rounded-full transition-all duration-300 ${index === currentImageIndex ? 'bg-orange-400 scale-125 shadow-lg' : 'bg-white/60 hover:bg-white/80'}`}
               onClick={() => setCurrentImageIndex(index)}
             />
           ))}
