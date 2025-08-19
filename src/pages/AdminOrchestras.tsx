@@ -613,27 +613,59 @@ const AdminOrchestras = () => {
               {filteredOrchestras.map((orchestra) => (
                 <div key={orchestra.id} className="p-6 hover:bg-gray-50 transition-colors">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div className="bg-primary/10 p-3 rounded-full">
-                        <Users className="h-6 w-6 text-primary" />
+                    <div className="flex items-start space-x-4">
+                      {/* Photo ou icône par défaut */}
+                      <div className="flex-shrink-0">
+                        {orchestra.photo_url ? (
+                          <img
+                            src={orchestra.photo_url}
+                            alt={orchestra.name}
+                            className="w-16 h-16 object-cover rounded-lg border-2 border-gray-200 shadow-sm"
+                            onError={(e) => {
+                              // En cas d'erreur, afficher l'icône par défaut
+                              e.currentTarget.style.display = 'none';
+                              e.currentTarget.nextElementSibling.style.display = 'flex';
+                            }}
+                          />
+                        ) : null}
+                        <div 
+                          className={`bg-primary/10 p-3 rounded-lg flex items-center justify-center w-16 h-16 ${
+                            orchestra.photo_url ? 'hidden' : 'flex'
+                          }`}
+                        >
+                          <Users className="h-6 w-6 text-primary" />
+                        </div>
                       </div>
-                      <div>
+                      
+                      {/* Contenu textuel */}
+                      <div className="flex-1 min-w-0">
                         <div className="font-semibold text-dark text-lg">
                           {orchestra.name}
                         </div>
                         {orchestra.description && (
-                          <div className="text-sm text-gray-600 mt-1">
-                            {orchestra.description}
+                          <div className="text-sm text-gray-600 mt-1 line-clamp-2">
+                            {orchestra.description.length > 100 
+                              ? `${orchestra.description.substring(0, 100)}...` 
+                              : orchestra.description
+                            }
                           </div>
                         )}
-                        {orchestra.photo_url && (
-                          <div className="text-xs text-gray-500 mt-1">
-                            📷 Photo disponible
+                        <div className="flex items-center space-x-3 mt-2">
+                          {orchestra.photo_url && (
+                            <div className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full flex items-center space-x-1">
+                              <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                              <span>Photo</span>
+                            </div>
+                          )}
+                          <div className="text-xs text-gray-400">
+                            Créé le {new Date(orchestra.created_at).toLocaleDateString('fr-FR')}
                           </div>
-                        )}
+                        </div>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-2">
+                    
+                    {/* Actions */}
+                    <div className="flex items-center space-x-2 flex-shrink-0">
                       <button
                         onClick={() => handleEdit(orchestra)}
                         className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-all duration-200"
