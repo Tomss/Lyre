@@ -95,7 +95,7 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="font-inter pt-20 pb-20 min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+    <div className="font-inter pt-20 pb-20 min-h-screen bg-gradient-to-br from-blue-25 via-indigo-25 to-purple-25">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
         {/* Header Section */}
         <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-white/50 p-8 mb-8">
