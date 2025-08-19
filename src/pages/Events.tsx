@@ -101,12 +101,12 @@ const Events = () => {
       )}
 
       {/* Header Section */}
-      <section className="relative py-20 bg-cover bg-center bg-no-repeat bg-gray-900" 
+      <section className="relative py-32 bg-cover bg-center bg-no-repeat bg-gray-900" 
         style={{ 
           backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url("https://images.pexels.com/photos/1327430/pexels-photo-1327430.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop")` 
         }}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center animate-fade-in relative z-10">
+          <div className="text-center animate-fade-in relative z-10 pt-16">
             <div className="inline-flex items-center space-x-3 bg-white/20 backdrop-blur-sm rounded-full px-6 py-3 mb-8 border border-white/30 shadow-lg">
               <Music className="h-6 w-6 text-white" />
               <span className="text-white font-semibold">Nos événements musicaux</span>
