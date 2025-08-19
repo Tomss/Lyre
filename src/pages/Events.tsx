@@ -238,38 +238,6 @@ const Events = () => {
       </section>
 
       {/* Filtre */}
-      {events.length > 0 && (
-        <section className="py-6 bg-gradient-to-r from-blue-25 to-indigo-25 border-b border-white/50 sticky top-20 z-40 shadow-sm backdrop-blur-sm">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => setFilter('upcoming')}
-                  className={`inline-flex items-center space-x-2 px-6 py-3 rounded-full font-semibold transition-all duration-300 shadow-lg ${
-                    filter === 'upcoming'
-                      ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white'
-                      : 'bg-white text-gray-600 hover:text-gray-800 hover:bg-gray-50'
-                  }`}
-                >
-                  <Star className="h-4 w-4" />
-                  <span>À venir ({upcomingEvents.length})</span>
-                </button>
-                <button
-                  onClick={() => setFilter('past')}
-                  className={`inline-flex items-center space-x-2 px-6 py-3 rounded-full font-semibold transition-all duration-300 shadow-lg ${
-                    filter === 'past'
-                      ? 'bg-gradient-to-r from-gray-500 to-slate-600 text-white'
-                      : 'bg-white text-gray-600 hover:text-gray-800 hover:bg-gray-50'
-                  }`}
-                >
-                  <Clock className="h-4 w-4" />
-                  <span>Passés ({pastEvents.length})</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
       {loading ? (
         <section className="py-16 bg-gradient-to-br from-blue-25 via-indigo-25 to-purple-25">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -373,6 +341,9 @@ const Events = () => {
                           {/* Contenu */}
                           <div className="p-4 flex-1 flex flex-col">
                             <div className="flex-1">
+                            <h3 className="font-poppins font-bold text-lg mb-2 group-hover:scale-105 transition-transform duration-300 line-clamp-2 text-white">
+                              {event.title}
+                            </h3>
                             <div className="space-y-4">
                               {event.location && (
                                 <div className="flex items-center space-x-3 text-gray-500">
@@ -555,14 +526,70 @@ const Events = () => {
                 <Music className="h-10 w-10 text-white" />
               </div>
               
-              <h2 className="font-poppins font-bold text-2xl text-gray-800 mb-6">
-                Rejoignez notre aventure musicale
+              <h2 className="font-poppins font-bold text-3xl text-gray-800 mb-6">
+                Événements Passés
               </h2>
               
               <p className="font-inter text-base text-gray-600 leading-relaxed mb-6">
                 Chaque concert est une nouvelle page de notre histoire musicale. 
                 Venez partager ces moments d'émotion et de partage avec La Lyre Cheminote et Municipale de Chalindrey.
               </p>
+              
+              {/* Filtres aussi ici pour cohérence */}
+              <div className="flex items-center justify-center space-x-4 mt-8">
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => setFilter('upcoming')}
+                    className={`inline-flex items-center space-x-2 px-6 py-3 rounded-full font-semibold transition-all duration-300 shadow-lg ${
+                      filter === 'upcoming'
+                        ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white'
+                        : 'bg-white text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                    }`}
+                  >
+                    <Star className="h-4 w-4" />
+                    <span>À venir ({upcomingEvents.length})</span>
+                  </button>
+                  <button
+                    onClick={() => setFilter('past')}
+                    className={`inline-flex items-center space-x-2 px-6 py-3 rounded-full font-semibold transition-all duration-300 shadow-lg ${
+                      filter === 'past'
+                        ? 'bg-gradient-to-r from-gray-500 to-slate-600 text-white'
+                        : 'bg-white text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                    }`}
+                  >
+                    <Clock className="h-4 w-4" />
+                    <span>Passés ({pastEvents.length})</span>
+                  </button>
+                </div>
+              </div>
+              
+              {/* Filtres déplacés ici */}
+              <div className="flex items-center justify-center space-x-4 mt-8">
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => setFilter('upcoming')}
+                    className={`inline-flex items-center space-x-2 px-6 py-3 rounded-full font-semibold transition-all duration-300 shadow-lg ${
+                      filter === 'upcoming'
+                        ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white'
+                        : 'bg-white text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                    }`}
+                  >
+                    <Star className="h-4 w-4" />
+                    <span>À venir ({upcomingEvents.length})</span>
+                  </button>
+                  <button
+                    onClick={() => setFilter('past')}
+                    className={`inline-flex items-center space-x-2 px-6 py-3 rounded-full font-semibold transition-all duration-300 shadow-lg ${
+                      filter === 'past'
+                        ? 'bg-gradient-to-r from-gray-500 to-slate-600 text-white'
+                        : 'bg-white text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                    }`}
+                  >
+                    <Clock className="h-4 w-4" />
+                    <span>Passés ({pastEvents.length})</span>
+                  </button>
+                </div>
+              </div>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
                 <div className="text-center">
