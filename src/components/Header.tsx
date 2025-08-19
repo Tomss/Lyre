@@ -47,7 +47,9 @@ const Header = () => {
                 key={link.path}
                 to={link.path}
                 className={`font-inter font-medium transition-colors ${
-                  location.pathname === link.path ? (isScrolled ? 'text-orange-600' : 'text-orange-300') : (isScrolled ? 'text-gray-700 hover:text-orange-600' : 'text-white hover:text-orange-200')
+                  location.pathname === link.path 
+                    ? (isScrolled ? 'text-orange-600' : 'text-orange-300') 
+                    : (isScrolled ? 'text-gray-700 hover:text-orange-600' : 'text-orange-200 hover:text-white')
                 }`}
               >
                 {link.label}
