@@ -103,45 +103,45 @@ const School = () => {
                   {/* Description de l'orchestre sélectionné */}
                   {selectedOrchestra && (
                     <div className="bg-gradient-to-br from-orange-50 to-orange-100/50 rounded-2xl p-8 border border-orange-200 shadow-lg animate-fade-in">
-                      <div className="flex flex-col lg:flex-row lg:items-start lg:space-x-10 space-y-8 lg:space-y-0">
-                        {/* Photo de l'orchestre */}
-                        {selectedOrchestra.photo_url && (
-                          <div className="lg:w-2/5 flex-shrink-0">
-                            <img
-                              src={selectedOrchestra.photo_url}
-                              alt={selectedOrchestra.name}
-                              className="w-full h-80 lg:h-64 object-cover rounded-xl shadow-xl border-4 border-white/80 hover:shadow-2xl transition-all duration-300"
-                              onError={(e) => {
-                                e.currentTarget.style.display = 'none';
-                              }}
-                            />
+                      {/* Titre centré */}
+                      <div className="text-center mb-8">
+                        <div className="flex items-center justify-center space-x-4 mb-4">
+                          <div className="bg-gradient-to-br from-primary to-primary/80 p-4 rounded-xl shadow-lg">
+                            <Users className="h-8 w-8 text-white" />
                           </div>
-                        )}
-                        
-                        {/* Contenu textuel */}
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-4 mb-6">
-                            <div className="bg-gradient-to-br from-primary to-primary/80 p-4 rounded-xl shadow-lg">
-                              <Users className="h-8 w-8 text-white" />
-                            </div>
-                            <div>
-                              <h3 className="font-poppins font-bold text-3xl text-dark mb-1">
-                                {selectedOrchestra.name}
-                              </h3>
-                              <div className="h-1 w-16 bg-gradient-to-r from-primary to-accent rounded-full"></div>
-                            </div>
+                          <div>
+                            <h3 className="font-poppins font-bold text-3xl text-dark mb-1">
+                              {selectedOrchestra.name}
+                            </h3>
+                            <div className="h-1 w-16 bg-gradient-to-r from-primary to-accent rounded-full mx-auto"></div>
                           </div>
-                          {selectedOrchestra.description ? (
-                            <div className="font-inter text-gray-800 leading-relaxed text-lg whitespace-pre-line bg-white/60 backdrop-blur-sm p-6 rounded-xl border border-white/40 shadow-sm">
-                              {selectedOrchestra.description}
-                            </div>
-                          ) : (
-                            <p className="font-inter text-gray-500 italic bg-white/60 backdrop-blur-sm p-6 rounded-xl border border-white/40 shadow-sm">
-                              Description à venir pour cet orchestre.
-                            </p>
-                          )}
                         </div>
                       </div>
+                      
+                      {/* Photo centrée */}
+                      {selectedOrchestra.photo_url && (
+                        <div className="text-center mb-8">
+                          <img
+                            src={selectedOrchestra.photo_url}
+                            alt={selectedOrchestra.name}
+                            className="max-w-md w-full h-64 object-cover rounded-xl shadow-xl border-4 border-white/80 hover:shadow-2xl transition-all duration-300 mx-auto"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                            }}
+                          />
+                        </div>
+                      )}
+                      
+                      {/* Description */}
+                      {selectedOrchestra.description ? (
+                        <div className="font-inter text-gray-800 leading-relaxed text-lg whitespace-pre-line bg-white/60 backdrop-blur-sm p-6 rounded-xl border border-white/40 shadow-sm">
+                          {selectedOrchestra.description}
+                        </div>
+                      ) : (
+                        <p className="font-inter text-gray-500 italic bg-white/60 backdrop-blur-sm p-6 rounded-xl border border-white/40 shadow-sm text-center">
+                          Description à venir pour cet orchestre.
+                        </p>
+                      )}
                     </div>
                   )}
                 </>
