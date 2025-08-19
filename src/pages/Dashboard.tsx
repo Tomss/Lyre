@@ -338,11 +338,6 @@ const Dashboard = () => {
                       <Users className="h-4 w-4 text-primary" />
                       <span className="font-inter font-medium text-gray-800">{orchestra.name}</span>
                     </div>
-                    {orchestra.description && (
-                      <p className="font-inter text-xs text-gray-500 ml-6">
-                        {orchestra.description}
-                      </p>
-                    )}
                   </div>
                 ))}
               </div>
