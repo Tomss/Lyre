@@ -204,10 +204,10 @@ const School = () => {
       <section className="py-16 bg-gradient-to-br from-slate-25 via-gray-25 to-blue-25">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 animate-fade-in">
-            <h2 className="font-poppins font-bold text-xl md:text-2xl text-dark mb-3">
+            <h2 className="font-poppins font-bold text-3xl md:text-4xl text-dark mb-4">
               Nos classes d'instruments
             </h2>
-            <p className="font-inter text-sm text-gray-600 max-w-2xl mx-auto">
+            <p className="font-inter text-lg text-gray-600 max-w-2xl mx-auto">
               Découvrez nos enseignements instrumentaux avec nos professeurs qualifiés
             </p>
           </div>
