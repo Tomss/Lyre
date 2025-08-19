@@ -1,30 +1,31 @@
-import React, { useState, useEffect } from 'react';
-import { Calendar, Clock, MapPin, Users, Music, Search, X, Filter } from 'lucide-react';
+import React from 'react';
+import { Calendar, Clock, MapPin, Users, Star, Music, ChevronRight, X } from 'lucide-react';
+
+// --- Ajout des types pour la cohérence du projet et corriger les erreurs implicites ---
+interface Orchestra {
+  id: string;
+  name: string;
+}
 
 interface Event {
   id: string;
   title: string;
   description: string | null;
-  event_type: 'concert' | 'repetition';
   event_date: string;
   location: string | null;
   orchestras: Orchestra[];
 }
-
-interface Orchestra {
-  id: string;
-  name: string;
-  description?: string;
-}
+// --- Fin de l'ajout des types ---
 
 const Events = () => {
-  const [events, setEvents] = useState<Event[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [typeFilter, setTypeFilter] = useState<string[]>(['concert', 'repetition']);
+  const [events, setEvents] = React.useState<Event[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [filter, setFilter] = React.useState('upcoming'); // 'upcoming' ou 'past'
+  const [selectedEvent, setSelectedEvent] = React.useState<Event | null>(null);
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
 
-  // Récupérer tous les événements publics (concerts)
-  const fetchEvents = async () => {
+  // Récupérer les concerts publics
+  const fetchPublicEvents = async () => {
     try {
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-events?type=public`, {
         method: 'GET',
@@ -33,7 +34,6 @@ const Events = () => {
           'Content-Type': 'application/json',
         },
       });
-
       if (response.ok) {
         const data = await response.json();
         setEvents(data || []);
@@ -44,339 +44,394 @@ const Events = () => {
     setLoading(false);
   };
 
-  useEffect(() => {
-    fetchEvents();
+  React.useEffect(() => {
+    fetchPublicEvents();
   }, []);
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('fr-FR', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    const date = new Date(dateString);
+    return {
+      day: date.getDate(),
+      month: date.toLocaleDateString('fr-FR', { month: 'short' }),
+      year: date.getFullYear(),
+      time: date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+      weekday: date.toLocaleDateString('fr-FR', { weekday: 'long' }),
+      fullDate: date.toLocaleDateString('fr-FR', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      })
+    };
   };
 
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case 'concert': return 'bg-green-100 text-green-800';
-      case 'repetition': return 'bg-blue-100 text-blue-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'concert': return Calendar;
-      case 'repetition': return Clock;
-      default: return Calendar;
-    }
-  };
-
-  const toggleTypeFilter = (type: string) => {
-    setTypeFilter(prev => 
-      prev.includes(type) 
-        ? prev.filter(t => t !== type)
-        : [...prev, type]
-    );
-  };
-
-  // Filtrer les événements
-  const filteredEvents = events.filter(event => {
-    const searchLower = searchTerm.toLowerCase();
-    const matchesSearch = (
-      event.title.toLowerCase().includes(searchLower) ||
-      (event.description && event.description.toLowerCase().includes(searchLower)) ||
-      (event.location && event.location.toLowerCase().includes(searchLower)) ||
-      event.orchestras.some(o => o.name.toLowerCase().includes(searchLower))
-    );
-    
-    const matchesType = typeFilter.includes(event.event_type);
-    
-    return matchesSearch && matchesType;
-  });
+  const isUpcoming = (dateString: string) => new Date(dateString) > new Date();
+  const isPast = (dateString: string) => new Date(dateString) <= new Date();
 
   // Séparer les événements futurs et passés
-  const now = new Date();
-  const futureEvents = filteredEvents.filter(event => new Date(event.event_date) > now)
-    .sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime());
-  const pastEvents = filteredEvents.filter(event => new Date(event.event_date) <= now)
-    .sort((a, b) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime());
+  const upcomingEvents = events.filter(event => isUpcoming(event.event_date)).sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime());
+  const pastEvents = events.filter(event => isPast(event.event_date)).sort((a, b) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime());
+
+  const openEventModal = (event: Event) => {
+    setSelectedEvent(event);
+    setIsModalOpen(true);
+  };
+
+  const closeEventModal = () => {
+    setSelectedEvent(null);
+    setIsModalOpen(false);
+  };
 
   return (
     <div className="font-inter">
+      {/* Modal détails événement */}
+      {isModalOpen && selectedEvent && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
+            <div className="flex justify-end">
+                <button onClick={closeEventModal} className="p-2 text-gray-500 hover:text-gray-800"><X size={24} /></button>
+            </div>
+            <div className="p-4">
+                <h2 className="font-poppins font-bold text-2xl mb-4">{selectedEvent.title}</h2>
+                <p className="text-gray-600">{selectedEvent.description}</p>
+                {/* Vous pouvez ajouter plus de détails ici si nécessaire */}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header Section */}
       <section className="relative py-32 bg-cover bg-center bg-no-repeat bg-gray-900" 
         style={{ 
-          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url("https://images.pexels.com/photos/1407322/pexels-photo-1407322.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop")` 
+          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url("https://images.pexels.com/photos/1327430/pexels-photo-1327430.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop")` 
         }}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center animate-fade-in relative z-10 pt-16">
-            <h1 className="font-poppins font-bold text-4xl md:text-5xl text-white mb-6">
-              Nos événements musicaux.
-            </h1>
+            <div className="inline-flex items-center space-x-3 bg-white/20 backdrop-blur-sm rounded-full px-6 py-3 mb-8 border border-white/30 shadow-lg">
+              <Music className="h-6 w-6 text-white" />
+              <span className="text-white font-semibold">Nos événements musicaux</span>
+            </div>
+            <h1 className="font-poppins font-bold text-4xl md:text-5xl text-white mb-6">Nos Événements</h1>
             {loading ? (
-              <p className="font-inter text-lg text-white/80 max-w-2xl mx-auto">
-                Chargement de nos événements...
-              </p>
-            ) : events.length > 0 ? (
-              <p className="font-inter text-lg text-white/90 max-w-2xl mx-auto">
-                Découvrez nos concerts et répétitions !
-              </p>
+              <div className="flex items-center justify-center space-x-3 text-white/80">
+                <div className="animate-spin rounded-full h-6 w-6 border-2 border-white/30 border-t-white"></div>
+                <span>Chargement de notre calendrier musical...</span>
+              </div>
             ) : (
-              <p className="font-inter text-lg text-white/90 max-w-2xl mx-auto">
-                Nos événements seront bientôt disponibles. Revenez nous voir !
+              <p className="font-inter text-lg text-white/90 max-w-2xl mx-auto leading-relaxed">
+                {events.length > 0 ? 'Découvrez notre calendrier de concerts et rejoignez-nous pour ces moments musicaux exceptionnels' : 'Notre calendrier musical se prépare... Revenez bientôt pour découvrir nos prochains concerts !'}
               </p>
+            )}
+            
+            {/* Filtres */}
+            {!loading && events.length > 0 && (
+              <div className="flex items-center justify-center space-x-4 mt-8">
+                <button
+                  onClick={() => setFilter('upcoming')}
+                  className={`inline-flex items-center space-x-2 px-6 py-3 rounded-full font-semibold transition-all duration-300 shadow-lg ${filter === 'upcoming' ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white' : 'bg-white/90 text-gray-700 hover:bg-white hover:text-gray-800'}`}
+                >
+                  <Star className="h-4 w-4" />
+                  <span>À venir ({upcomingEvents.length})</span>
+                </button>
+                <button
+                  onClick={() => setFilter('past')}
+                  className={`inline-flex items-center space-x-2 px-6 py-3 rounded-full font-semibold transition-all duration-300 shadow-lg ${filter === 'past' ? 'bg-gradient-to-r from-gray-500 to-slate-600 text-white' : 'bg-white/90 text-gray-700 hover:bg-white hover:text-gray-800'}`}
+                >
+                  <Clock className="h-4 w-4" />
+                  <span>Passés ({pastEvents.length})</span>
+                </button>
+              </div>
             )}
           </div>
         </div>
       </section>
 
-      {/* Filtres et recherche */}
-      {events.length > 0 && (
-        <section className="py-6 bg-gradient-to-r from-blue-25 to-indigo-25 border-b border-white/50 sticky top-20 z-40 shadow-sm backdrop-blur-sm">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col space-y-4">
-              {/* Recherche */}
-              <div className="relative max-w-md">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Search className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  type="text"
-                  placeholder="Rechercher un événement..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary w-full text-base shadow-sm"
-                />
-                {searchTerm && (
-                  <button
-                    onClick={() => setSearchTerm('')}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center hover:bg-gray-100 rounded-r-xl transition-colors"
-                  >
-                    <X className="h-4 w-4 text-gray-400 hover:text-gray-600" />
-                  </button>
-                )}
-              </div>
-
-              {/* Filtres par type */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3 flex-wrap gap-2">
-                  <span className="text-sm font-medium text-gray-700 mr-2">Types :</span>
-                  {[
-                    { key: 'concert', label: 'Concerts', icon: Calendar, color: 'green' },
-                    { key: 'repetition', label: 'Répétitions', icon: Clock, color: 'blue' }
-                  ].map(({ key, label, icon: Icon, color }) => (
-                    <button
-                      key={key}
-                      onClick={() => toggleTypeFilter(key)}
-                      className={`inline-flex items-center space-x-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 hover:scale-105 ${
-                        typeFilter.includes(key)
-                          ? (
-                              color === 'green' ? 'bg-green-600 text-white shadow-lg border-2 border-green-700' :
-                              color === 'blue' ? 'bg-blue-600 text-white shadow-lg border-2 border-blue-700' :
-                              'bg-gray-600 text-white shadow-lg border-2 border-gray-700'
-                            )
-                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                      }`}
-                    >
-                      <Icon className="h-4 w-4" />
-                      <span>{label}</span>
-                    </button>
-                  ))}
-                </div>
-                
-                {/* Compteur de résultats */}
-                <div className="text-sm text-gray-500 bg-gray-50 px-3 py-1 rounded-full">
-                  {filteredEvents.length} résultat{filteredEvents.length > 1 ? 's' : ''}
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Événements à venir */}
-      {futureEvents.length > 0 && (
-        <section className="py-20 bg-gradient-to-br from-emerald-25 via-teal-25 to-cyan-25">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12 animate-fade-in">
-              <h2 className="font-poppins font-bold text-3xl md:text-4xl text-dark mb-4">
-                🎵 Événements à venir
-              </h2>
-              <p className="font-inter text-lg text-gray-600 max-w-2xl mx-auto">
-                Ne manquez pas nos prochains concerts et répétitions
-              </p>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {futureEvents.map((event) => {
-                const TypeIcon = getTypeIcon(event.event_type);
-                return (
-                  <div key={event.id} className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-white/50 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 animate-fade-in group">
-                    <div className="p-6">
-                      <div className="flex items-center space-x-3 mb-4">
-                        <div className="bg-gradient-to-br from-teal-400 to-cyan-500 p-2 rounded-lg shadow-md">
-                          <TypeIcon className="h-6 w-6 text-white" />
-                        </div>
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getTypeColor(event.event_type)}`}>
-                          <TypeIcon className="h-3 w-3 mr-1" />
-                          {event.event_type === 'concert' ? 'Concert' : 'Répétition'}
-                        </span>
-                      </div>
-                      
-                      <h3 className="font-poppins font-semibold text-xl text-dark mb-3">
-                        {event.title}
-                      </h3>
-                      
-                      {event.description && (
-                        <p className="font-inter text-gray-600 mb-4 text-sm leading-relaxed">
-                          {event.description}
-                        </p>
-                      )}
-                      
-                      <div className="space-y-2 text-sm text-gray-500 mb-4">
-                        <div className="flex items-center space-x-2">
-                          <Calendar className="h-4 w-4 text-teal-500" />
-                          <span>{formatDate(event.event_date)}</span>
-                        </div>
-                        {event.location && (
-                          <div className="flex items-center space-x-2">
-                            <MapPin className="h-4 w-4 text-teal-500" />
-                            <span>{event.location}</span>
-                          </div>
-                        )}
-                        {event.orchestras && event.orchestras.length > 0 && (
-                          <div className="flex items-center space-x-2">
-                            <Users className="h-4 w-4 text-teal-500" />
-                            <span>{event.orchestras.map(o => o.name).join(', ')}</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Événements passés */}
-      {pastEvents.length > 0 && (
-        <section className="py-20 bg-gradient-to-br from-gray-25 via-slate-25 to-blue-25">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12 animate-fade-in">
-              <h2 className="font-poppins font-bold text-3xl md:text-4xl text-dark mb-4">
-                📅 Événements passés
-              </h2>
-              <p className="font-inter text-lg text-gray-600 max-w-2xl mx-auto">
-                Revivez nos derniers concerts et répétitions
-              </p>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {pastEvents.map((event) => {
-                const TypeIcon = getTypeIcon(event.event_type);
-                return (
-                  <div key={event.id} className="bg-white/60 backdrop-blur-sm rounded-xl shadow-md border border-white/50 overflow-hidden hover:shadow-lg transition-all duration-300 animate-fade-in opacity-75">
-                    <div className="p-6">
-                      <div className="flex items-center space-x-3 mb-4">
-                        <div className="bg-gray-300 p-2 rounded-lg">
-                          <TypeIcon className="h-6 w-6 text-gray-600" />
-                        </div>
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getTypeColor(event.event_type)} opacity-75`}>
-                          <TypeIcon className="h-3 w-3 mr-1" />
-                          {event.event_type === 'concert' ? 'Concert' : 'Répétition'}
-                        </span>
-                      </div>
-                      
-                      <h3 className="font-poppins font-semibold text-xl text-gray-700 mb-3">
-                        {event.title}
-                      </h3>
-                      
-                      {event.description && (
-                        <p className="font-inter text-gray-500 mb-4 text-sm leading-relaxed">
-                          {event.description}
-                        </p>
-                      )}
-                      
-                      <div className="space-y-2 text-sm text-gray-400 mb-4">
-                        <div className="flex items-center space-x-2">
-                          <Calendar className="h-4 w-4" />
-                          <span>{formatDate(event.event_date)}</span>
-                        </div>
-                        {event.location && (
-                          <div className="flex items-center space-x-2">
-                            <MapPin className="h-4 w-4" />
-                            <span>{event.location}</span>
-                          </div>
-                        )}
-                        {event.orchestras && event.orchestras.length > 0 && (
-                          <div className="flex items-center space-x-2">
-                            <Users className="h-4 w-4" />
-                            <span>{event.orchestras.map(o => o.name).join(', ')}</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Message si aucun événement */}
+      {/* --- Contenu Principal --- */}
       {loading ? (
-        <section className="py-20 bg-gradient-to-br from-blue-25 via-indigo-25 to-purple-25">
+        <section className="py-16 bg-gradient-to-br from-blue-25 via-indigo-25 to-purple-25">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center animate-fade-in">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-              <p className="text-gray-600">Chargement de nos événements...</p>
-            </div>
-          </div>
-        </section>
-      ) : filteredEvents.length === 0 && searchTerm ? (
-        <section className="py-20 bg-gradient-to-br from-blue-25 via-indigo-25 to-purple-25">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center animate-fade-in">
-              <Search className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-600 mb-4">Aucun événement trouvé pour "{searchTerm}"</p>
-              <button onClick={() => setSearchTerm('')} className="text-primary hover:text-primary/80">Effacer la recherche</button>
+            <div className="text-center">
+              <div className="inline-flex items-center space-x-4 bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-white/50">
+                <div className="animate-spin rounded-full h-12 w-12 border-4 border-orange-200 border-t-orange-500"></div>
+                <div>
+                  <h3 className="font-poppins font-semibold text-xl text-gray-800 mb-2">Préparation du spectacle...</h3>
+                  <p className="text-gray-600">Chargement de notre calendrier musical</p>
+                </div>
+              </div>
             </div>
           </div>
         </section>
       ) : events.length === 0 ? (
-        <section className="py-20 bg-gradient-to-br from-blue-25 via-indigo-25 to-purple-25">
+        <section className="py-16 bg-gradient-to-br from-blue-25 via-indigo-25 to-purple-25">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center animate-fade-in">
-              <div className="bg-gradient-to-br from-indigo-400 to-purple-500 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6 shadow-lg">
-                <Calendar className="h-16 w-16 text-white" />
+            <div className="text-center">
+              <div className="bg-gradient-to-br from-orange-100 to-pink-100 rounded-3xl p-12 shadow-2xl border border-orange-200 max-w-2xl mx-auto">
+                <div className="bg-gradient-to-br from-slate-400 to-gray-500 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-8 shadow-lg">
+                  <Calendar className="h-12 w-12 text-white" />
+                </div>
+                <h2 className="font-poppins font-bold text-3xl text-gray-800 mb-4">Le rideau se lève bientôt...</h2>
+                <p className="font-inter text-lg text-gray-600 leading-relaxed">
+                  Notre équipe artistique prépare actuellement la programmation de nos prochains concerts. Revenez bientôt pour découvrir les dates de nos représentations !
+                </p>
+                <div className="mt-8 flex justify-center"><div className="flex space-x-2">{[...Array(3)].map((_, i) => (<div key={i} className="w-3 h-3 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: `${i * 0.2}s` }} />))}</div></div>
               </div>
-              <h2 className="font-poppins font-semibold text-2xl text-dark mb-4">
-                Nos événements arrivent bientôt !
-              </h2>
-              <p className="font-inter text-gray-600 max-w-md mx-auto">
-                Notre équipe travaille actuellement sur la programmation de nos prochains concerts et répétitions. 
-                Revenez bientôt pour les découvrir !
+            </div>
+          </div>
+        </section>
+      ) : (
+        <>
+          {/* Événements à venir */}
+          {filter === 'upcoming' && (
+            upcomingEvents.length > 0 ? (
+              <>
+              <section className="py-16 bg-gradient-to-br from-slate-50 via-gray-50 to-blue-50">
+                <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+                  <div className="text-center mb-12"><h2 className="font-poppins font-bold text-3xl text-gray-800 mb-6">Nos Prochains Événements</h2></div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                    {upcomingEvents.map((event, index) => {
+                      const dateInfo = formatDate(event.event_date);
+                      return (
+                        <div key={event.id} onClick={() => openEventModal(event)} className="group animate-fade-in cursor-pointer" style={{ animationDelay: `${index * 0.1}s` }}>
+                          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-white/50 overflow-hidden hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
+                            <div className="bg-gradient-to-r from-slate-600 to-gray-700 p-4 text-white relative overflow-hidden">
+                              <div className="absolute top-0 right-0 w-12 h-12 bg-white/10 rounded-full -translate-y-6 translate-x-6"></div><div className="absolute bottom-0 left-0 w-10 h-10 bg-white/10 rounded-full translate-y-5 -translate-x-5"></div>
+                              <div className="relative z-10">
+                                <div className="flex items-center justify-between mb-3"><div className="bg-white/20 backdrop-blur-sm rounded-full px-4 py-2"><span className="text-sm font-semibold">Concert</span></div><div className="text-right"><div className="text-2xl font-bold">{dateInfo.day}</div><div className="text-sm opacity-90">{dateInfo.month} {dateInfo.year}</div></div></div>
+                                <h3 className="font-poppins font-bold text-lg mb-1 group-hover:scale-105 transition-transform duration-300 line-clamp-2">{event.title}</h3>
+                                <div className="text-gray-200 text-sm">{dateInfo.weekday} • {dateInfo.time}</div>
+                              </div>
+                            </div>
+                            <div className="p-4 space-y-4">
+                                {event.location && <div className="flex items-center space-x-3 text-gray-500"><div className="bg-gray-100 p-2 rounded-lg"><MapPin className="h-4 w-4" /></div><span className="font-medium text-sm">{event.location}</span></div>}
+                                {event.orchestras.length > 0 && <div className="flex items-center space-x-3 text-gray-500"><div className="bg-gray-100 p-2 rounded-lg"><Users className="h-4 w-4" /></div><span className="font-medium text-sm">{event.orchestras.map(o => o.name).join(', ')}</span></div>}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </section>
+
+              {/* Calendrier résumé */}
+              <section className="py-12 bg-gradient-to-br from-slate-25 via-gray-25 to-blue-25">
+                <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+                  <div className="max-w-5xl mx-auto">
+                    <div className="text-center mb-8">
+                      <h2 className="font-poppins font-bold text-2xl text-gray-800 mb-3">
+                        📅 Calendrier Musical
+                      </h2>
+                      <p className="text-gray-600">Aperçu de nos prochaines dates</p>
+                    </div>
+                    
+                    <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/60 overflow-hidden">
+                      {/* Header du calendrier */}
+                      <div className="bg-gradient-to-r from-slate-600 via-gray-600 to-slate-700 p-6 text-white relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-16 translate-x-16"></div>
+                        <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12"></div>
+                        <div className="relative z-10 flex items-center justify-between">
+                          <div className="flex items-center space-x-4">
+                            <div className="bg-white/20 backdrop-blur-sm rounded-full p-3">
+                              <Calendar className="h-6 w-6 text-white" />
+                            </div>
+                            <div>
+                              <h3 className="font-poppins font-bold text-xl">Prochains Rendez-vous</h3>
+                              <p className="text-gray-200 text-sm">Ne manquez aucun de nos concerts</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-2xl font-bold">{upcomingEvents.length}</div>
+                            <div className="text-sm text-gray-200">Concert{upcomingEvents.length > 1 ? 's' : ''}</div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Corps du calendrier */}
+                      <div className="p-6">
+                        {upcomingEvents.length > 0 ? (
+                          <div className="space-y-4">
+                            {upcomingEvents.slice(0, 4).map((event, index) => {
+                              const dateInfo = formatDate(event.event_date);
+                              const isNext = index === 0;
+                              
+                              return (
+                                <div 
+                                  key={event.id} 
+                                  className={`flex items-center space-x-4 p-4 rounded-xl transition-all duration-300 hover:shadow-md ${
+                                    isNext 
+                                      ? 'bg-gradient-to-r from-slate-50 to-gray-50 border-2 border-slate-200 shadow-sm' 
+                                      : 'bg-gray-25 hover:bg-gray-50 border border-gray-100'
+                                  }`}
+                                >
+                                  {/* Date */}
+                                  <div className={`flex-shrink-0 text-center p-3 rounded-xl ${
+                                    isNext 
+                                      ? 'bg-gradient-to-br from-slate-600 to-gray-700 text-white shadow-lg' 
+                                      : 'bg-white border-2 border-gray-200 text-gray-700'
+                                  }`}>
+                                    <div className="text-xs font-medium opacity-80 uppercase tracking-wide">
+                                      {dateInfo.month}
+                                    </div>
+                                    <div className="text-2xl font-bold leading-none">
+                                      {dateInfo.day}
+                                    </div>
+                                    <div className="text-xs opacity-80">
+                                      {dateInfo.year}
+                                    </div>
+                                  </div>
+                                  
+                                  {/* Détails */}
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center space-x-2 mb-1">
+                                      <h4 className={`font-poppins font-semibold truncate ${
+                                        isNext ? 'text-slate-800 text-lg' : 'text-gray-800'
+                                      }`}>
+                                        {event.title}
+                                      </h4>
+                                      {isNext && (
+                                        <span className="bg-gradient-to-r from-slate-600 to-gray-700 text-white text-xs px-2 py-1 rounded-full font-medium">
+                                          Prochain
+                                        </span>
+                                      )}
+                                    </div>
+                                    <div className="flex items-center space-x-4 text-sm text-gray-500">
+                                      <div className="flex items-center space-x-1">
+                                        <Clock className="h-3 w-3" />
+                                        <span>{dateInfo.time}</span>
+                                      </div>
+                                      {event.location && (
+                                        <div className="flex items-center space-x-1">
+                                          <MapPin className="h-3 w-3" />
+                                          <span className="truncate">{event.location}</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                  
+                                  {/* Orchestres */}
+                                  {event.orchestras.length > 0 && (
+                                    <div className="flex-shrink-0">
+                                      <div className="flex items-center space-x-1 text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                                        <Users className="h-3 w-3" />
+                                        <span className="truncate max-w-24">
+                                          {event.orchestras[0].name}
+                                          {event.orchestras.length > 1 && ` +${event.orchestras.length - 1}`}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                            
+                            {upcomingEvents.length > 4 && (
+                              <div className="text-center pt-4 border-t border-gray-100">
+                                <span className="text-sm text-gray-500 bg-gray-50 px-4 py-2 rounded-full">
+                                  +{upcomingEvents.length - 4} autre{upcomingEvents.length - 4 > 1 ? 's' : ''} concert{upcomingEvents.length - 4 > 1 ? 's' : ''}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="text-center py-8">
+                            <div className="bg-gray-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                              <Calendar className="h-8 w-8 text-gray-400" />
+                            </div>
+                            <p className="text-gray-500 font-medium">Calendrier en préparation</p>
+                            <p className="text-gray-400 text-sm mt-1">Nos prochaines dates seront bientôt annoncées</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+              </>
+            ) : (
+              <section className="py-16 bg-gradient-to-br from-slate-50 via-gray-50 to-blue-50">
+                <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+                  <div className="text-center">
+                    <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-12 shadow-xl border border-white/50 max-w-2xl mx-auto">
+                      <div className="bg-gradient-to-br from-slate-400 to-gray-500 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6 shadow-lg"><Star className="h-10 w-10 text-white" /></div>
+                      <h2 className="font-poppins font-bold text-2xl text-gray-800 mb-4">Aucun concert à venir</h2>
+                      <p className="font-inter text-gray-600 leading-relaxed">Notre programmation est en cours de préparation. Revenez bientôt pour découvrir nos prochains concerts !</p>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            )
+          )}
+
+          {/* Événements passés */}
+          {filter === 'past' && (
+            pastEvents.length > 0 ? (
+              <section className="py-16 bg-gradient-to-br from-gray-50 via-slate-50 to-gray-100">
+                <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+                  <div className="text-center mb-12"><h2 className="font-poppins font-bold text-3xl text-gray-800 mb-6">Événements Passés</h2></div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+                    {pastEvents.slice(0, 8).map((event, index) => {
+                      const dateInfo = formatDate(event.event_date);
+                      return (
+                        <div key={event.id} onClick={() => openEventModal(event)} className="group animate-fade-in cursor-pointer" style={{ animationDelay: `${index * 0.05}s` }}>
+                          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 opacity-80 hover:opacity-100">
+                            <div className="p-4">
+                              <h3 className="font-poppins font-semibold text-base text-gray-800 mb-3 group-hover:text-gray-900 transition-colors line-clamp-2">{event.title}</h3>
+                              <div className="space-y-2 text-xs text-gray-500">
+                                <div className="flex items-center space-x-2"><Clock className="h-3 w-3" /><span>{dateInfo.fullDate}</span></div>
+                                {event.location && <div className="flex items-center space-x-2"><MapPin className="h-3 w-3" /><span className="truncate">{event.location}</span></div>}
+                              </div>
+                              <div className="text-center pt-2 mt-2 border-t border-gray-100"><span className="text-xs text-gray-400 group-hover:text-gray-600 transition-colors">Cliquer pour détails</span></div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {pastEvents.length > 8 && (
+                    <div className="text-center mt-8">
+                      <button className="inline-flex items-center space-x-2 bg-white hover:bg-gray-50 text-gray-700 font-semibold px-8 py-4 rounded-full shadow-lg border border-gray-200 transition-all duration-300 hover:-translate-y-1">
+                        <span>Voir plus de concerts</span><ChevronRight className="h-4 w-4" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </section>
+            ) : (
+              <section className="py-16 bg-gradient-to-br from-gray-50 via-slate-50 to-gray-100">
+                <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+                  <div className="text-center">
+                    <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-12 shadow-xl border border-white/50 max-w-2xl mx-auto">
+                      <div className="bg-gradient-to-br from-gray-400 to-slate-500 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6 shadow-lg"><Clock className="h-10 w-10 text-white" /></div>
+                      <h2 className="font-poppins font-bold text-2xl text-gray-800 mb-4">Aucun concert passé</h2>
+                      <p className="font-inter text-gray-600 leading-relaxed">L'historique de nos concerts apparaîtra ici après nos premières représentations.</p>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            )
+          )}
+        </>
+      )}
+
+      {/* Section d'information */}
+      <section className="py-16 bg-gradient-to-br from-blue-50 via-indigo-50 to-slate-50">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-4xl mx-auto text-center">
+            <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border border-white/50">
+              <div className="bg-gradient-to-br from-slate-500 to-gray-600 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-8 shadow-lg"><Music className="h-10 w-10 text-white" /></div>
+              <h2 className="font-poppins font-bold text-3xl text-gray-800 mb-6">Rejoignez-nous</h2>
+              <p className="font-inter text-base text-gray-600 leading-relaxed mb-6">
+                Chaque concert est une nouvelle page de notre histoire musicale. Venez partager ces moments d'émotion et de partage avec La Lyre Cheminote et Municipale de Chalindrey.
               </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+                <div className="text-center"><div className="bg-gradient-to-br from-slate-100 to-gray-100 rounded-2xl p-6 mb-4"><Calendar className="h-8 w-8 text-slate-600 mx-auto mb-3" /><h3 className="font-semibold text-gray-800">Concerts réguliers</h3><p className="text-sm text-gray-600 mt-2">Plusieurs représentations par an</p></div></div>
+                <div className="text-center"><div className="bg-gradient-to-br from-indigo-100 to-purple-100 rounded-2xl p-6 mb-4"><Users className="h-8 w-8 text-indigo-600 mx-auto mb-3" /><h3 className="font-semibold text-gray-800">Tous niveaux</h3><p className="text-sm text-gray-600 mt-2">De l'éveil au niveau supérieur</p></div></div>
+                <div className="text-center"><div className="bg-gradient-to-br from-blue-100 to-slate-100 rounded-2xl p-6 mb-4"><Music className="h-8 w-8 text-blue-600 mx-auto mb-3" /><h3 className="font-semibold text-gray-800">Répertoire varié</h3><p className="text-sm text-gray-600 mt-2">Classique, moderne, populaire</p></div></div>
+              </div>
             </div>
           </div>
-        </section>
-      ) : filteredEvents.length === 0 ? (
-        <section className="py-20 bg-gradient-to-br from-blue-25 via-indigo-25 to-purple-25">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center animate-fade-in">
-              <Filter className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-600">Aucun événement ne correspond aux filtres sélectionnés</p>
-            </div>
-          </div>
-        </section>
-      ) : null}
+        </div>
+      </section>
     </div>
   );
 };
