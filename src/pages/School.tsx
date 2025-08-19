@@ -1,7 +1,48 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Users, Award, Music } from 'lucide-react';
 
+interface Orchestra {
+  id: string;
+  name: string;
+  description: string | null;
+}
+
 const School = () => {
+  const [orchestras, setOrchestras] = useState<Orchestra[]>([]);
+  const [selectedOrchestra, setSelectedOrchestra] = useState<Orchestra | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Récupérer tous les orchestres
+  const fetchOrchestras = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-orchestras`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setOrchestras(data || []);
+        
+        // Sélectionner l'orchestre d'harmonie par défaut (ou le premier si pas trouvé)
+        const harmonieOrchestra = data.find((o: Orchestra) => 
+          o.name.toLowerCase().includes('harmonie')
+        );
+        setSelectedOrchestra(harmonieOrchestra || data[0] || null);
+      }
+    } catch (err) {
+      console.error('Erreur lors de la récupération des orchestres:', err);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchOrchestras();
+  }, []);
+
   return (
     <div className="font-inter pt-20">
       {/* Header Section */}
@@ -12,41 +53,88 @@ const School = () => {
               Notre école, votre musique.
             </h1>
             <p className="font-inter text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor 
-              incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud 
-              exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute 
-              irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla 
-              pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia 
-              deserunt mollit anim id est laborum.
+              Une formation musicale complète dans un environnement bienveillant et professionnel.
             </p>
           </div>
         </div>
       </section>
 
-      {/* Content Section */}
+      {/* Main Content Section */}
       <section className="py-20 bg-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div className="animate-fade-in">
-              <h2 className="font-poppins font-bold text-3xl text-dark mb-6">
-                Une école de musique d'exception
-              </h2>
-              <p className="font-inter text-gray-600 mb-6 leading-relaxed">
-                Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium 
-                doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore 
-                veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim 
-                ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit.
+          <div className="max-w-4xl mx-auto">
+            {/* Description principale */}
+            <div className="animate-fade-in mb-12">
+              <p className="font-inter text-lg text-gray-700 leading-relaxed mb-8">
+                L'école propose une formation musicale du niveau Éveil au niveau Supérieur, par des professeurs diplômés de Conservatoires à Rayonnement Régional ou possédant un niveau équivalent.
               </p>
-              <p className="font-inter text-gray-600 leading-relaxed">
-                At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis 
-                praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias 
-                excepturi sint occaecati cupiditate non provident.
+              <p className="font-inter text-lg text-gray-700 leading-relaxed mb-8">
+                Les cours suivent le rythme scolaire : un cours de solfège, une demi-heure d'instrument et une activité orchestrale par semaine dans l'un des orchestres suivants :
               </p>
             </div>
+
+            {/* Section Orchestres */}
+            <div className="animate-fade-in mb-12">
+              {loading ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                  <p className="text-gray-600">Chargement des orchestres...</p>
+                </div>
+              ) : orchestras.length > 0 ? (
+                <>
+                  {/* Boutons des orchestres */}
+                  <div className="flex flex-wrap justify-center gap-4 mb-8">
+                    {orchestras.map((orchestra) => (
+                      <button
+                        key={orchestra.id}
+                        onClick={() => setSelectedOrchestra(orchestra)}
+                        className={`px-6 py-3 rounded-lg font-semibold transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg ${
+                          selectedOrchestra?.id === orchestra.id
+                            ? 'bg-primary text-white shadow-lg'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                      >
+                        {orchestra.name}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Description de l'orchestre sélectionné */}
+                  {selectedOrchestra && (
+                    <div className="bg-orange-50 rounded-xl p-8 border border-orange-100 animate-fade-in">
+                      <div className="flex items-center space-x-3 mb-4">
+                        <div className="bg-primary/10 p-3 rounded-lg">
+                          <Users className="h-6 w-6 text-primary" />
+                        </div>
+                        <h3 className="font-poppins font-semibold text-2xl text-dark">
+                          {selectedOrchestra.name}
+                        </h3>
+                      </div>
+                      {selectedOrchestra.description ? (
+                        <p className="font-inter text-gray-700 leading-relaxed text-lg">
+                          {selectedOrchestra.description}
+                        </p>
+                      ) : (
+                        <p className="font-inter text-gray-500 italic">
+                          Description à venir pour cet orchestre.
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="text-center py-8">
+                  <Users className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                  <p className="text-gray-600">Aucun orchestre disponible pour le moment.</p>
+                </div>
+              )}
+            </div>
+
+            {/* Conclusion */}
             <div className="animate-fade-in">
-              <div className="bg-gradient-to-br from-primary/20 to-accent/20 rounded-lg h-80 flex items-center justify-center">
-                <Music className="h-24 w-24 text-primary/50" />
-              </div>
+              <p className="font-inter text-lg text-gray-700 leading-relaxed">
+                Si les activités d'éveil sont ludiques, la récompense, pour les néophytes, est l'intégration progressive dans les orchestres d'élèves, jusqu'à l'accession au Grand Orchestre d'Harmonie.
+              </p>
             </div>
           </div>
         </div>
