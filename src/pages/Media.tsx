@@ -153,7 +153,7 @@ const Media = () => {
     setSelectedMedia(null);
   };
   return (
-    <div className="font-inter pt-20">
+    <div className="font-inter">
       {/* Galerie modale */}
       {selectedMedia && (
         <MediaGallery
