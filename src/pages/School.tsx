@@ -190,81 +190,150 @@ const School = () => {
       </section>
 
       {/* Section Instruments */}
-      <section className="py-16 bg-gradient-to-br from-slate-25 via-gray-25 to-blue-25">
+      <section className="py-20 bg-gradient-to-br from-slate-900 via-gray-800 to-slate-900 relative overflow-hidden">
+        {/* Particules d'arrière-plan */}
+        <div className="absolute inset-0">
+          {[...Array(20)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute w-2 h-2 bg-amber-400/20 rounded-full animate-pulse"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                animationDelay: `${Math.random() * 3}s`,
+                animationDuration: `${2 + Math.random() * 2}s`
+              }}
+            />
+          ))}
+        </div>
+        
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12 animate-fade-in">
-            <h2 className="font-poppins font-bold text-3xl md:text-4xl text-dark mb-4">
+          <div className="text-center mb-16 animate-fade-in relative z-10">
+            <div className="inline-block mb-6">
+              <div className="flex items-center justify-center space-x-4 mb-4">
+                <div className="w-12 h-0.5 bg-gradient-to-r from-transparent to-amber-400"></div>
+                <Music className="h-8 w-8 text-amber-400 animate-pulse" />
+                <div className="w-12 h-0.5 bg-gradient-to-l from-transparent to-amber-400"></div>
+              </div>
+            </div>
+            <h2 className="font-poppins font-bold text-4xl md:text-5xl text-white mb-6 bg-gradient-to-r from-amber-200 via-yellow-200 to-amber-200 bg-clip-text text-transparent">
               Nos classes d'instruments
             </h2>
-            <p className="font-inter text-lg text-gray-600 max-w-2xl mx-auto">
-              Découvrez nos enseignements instrumentaux avec nos professeurs qualifiés
+            <p className="font-inter text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
+              Découvrez nos enseignements instrumentaux avec nos professeurs qualifiés dans un environnement d'exception
             </p>
           </div>
 
           {instrumentsLoading ? (
-            <div className="text-center py-4">
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary mx-auto mb-2"></div>
-              <p className="text-gray-600">Chargement des instruments...</p>
+            <div className="text-center py-12 relative z-10">
+              <div className="animate-spin rounded-full h-12 w-12 border-4 border-amber-400/30 border-t-amber-400 mx-auto mb-4"></div>
+              <p className="text-gray-300 text-lg">Chargement de nos instruments...</p>
             </div>
           ) : instruments.length > 0 ? (
-            <div className="flex flex-wrap justify-center gap-3 animate-fade-in max-w-6xl mx-auto">
+            <div className="relative z-10">
+              {/* Grille hexagonale innovante */}
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-8 max-w-7xl mx-auto">
               {instruments.map((instrument) => (
-                <div key={instrument.id} className="w-36 bg-white/90 backdrop-blur-sm rounded-lg shadow-sm border border-slate-200/50 overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group">
-                  {/* Photo de l'instrument */}
-                  <div className="aspect-square bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-2">
+                <div 
+                  key={instrument.id} 
+                  className="group relative animate-fade-in"
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  {/* Hexagone container */}
+                  <div className="relative w-40 h-40 mx-auto">
+                    {/* Hexagone de fond avec effet glow */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-amber-400/20 to-yellow-600/20 rounded-3xl transform rotate-45 group-hover:rotate-12 transition-all duration-500 group-hover:scale-110 shadow-lg group-hover:shadow-amber-400/30"></div>
+                    
+                    {/* Hexagone principal */}
+                    <div className="absolute inset-2 bg-gradient-to-br from-white via-gray-50 to-gray-100 rounded-2xl transform rotate-45 group-hover:rotate-12 transition-all duration-500 shadow-xl group-hover:shadow-2xl border border-gray-200/50">
+                      {/* Contenu de l'instrument */}
+                      <div className="absolute inset-0 flex items-center justify-center transform -rotate-45 group-hover:-rotate-12 transition-all duration-500 p-4">
                     {instrument.photo_url ? (
                       <img
                         src={instrument.photo_url}
                         alt={instrument.name}
-                        className="w-full h-full object-cover rounded group-hover:scale-105 transition-transform duration-300"
+                            className="w-20 h-20 object-cover rounded-xl group-hover:scale-110 transition-all duration-500 shadow-md"
                         onError={(e) => {
-                          // En cas d'erreur, afficher l'icône par défaut
                           e.currentTarget.style.display = 'none';
                           e.currentTarget.nextElementSibling.style.display = 'flex';
                         }}
                       />
                     ) : null}
-                    <div 
-                      className="hidden w-full h-full items-center justify-center"
+                        <div 
+                          className="hidden w-20 h-20 items-center justify-center bg-gradient-to-br from-amber-100 to-yellow-100 rounded-xl"
                       style={{ display: instrument.photo_url ? 'none' : 'flex' }}
                     >
-                      <Music className="h-16 w-16 text-gray-400 group-hover:text-primary transition-colors duration-300" />
+                          <Music className="h-10 w-10 text-amber-600 group-hover:text-amber-700 transition-colors duration-500" />
                     </div>
+                      </div>
+                    </div>
+                    
+                    {/* Effet de brillance au survol */}
+                    <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent rounded-3xl transform rotate-45 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                   </div>
                   
-                  {/* Contenu */}
-                  <div className="p-2">
-                    <h3 className="font-poppins font-semibold text-xs text-dark mb-0.5 group-hover:text-slate-700 transition-colors duration-300 text-center">
+                  {/* Informations sous l'hexagone */}
+                  <div className="mt-6 text-center">
+                    <h3 className="font-poppins font-bold text-lg text-white mb-2 group-hover:text-amber-200 transition-colors duration-300">
                       {instrument.name}
                     </h3>
                     
                     {instrument.teacher && (
-                      <div className="text-center mb-0.5">
-                        <span className="text-xs text-slate-600 font-medium">
+                      <div className="mb-2">
+                        <span className="text-sm text-amber-300 font-semibold bg-amber-900/30 px-3 py-1 rounded-full">
                           {instrument.teacher}
                         </span>
                       </div>
                     )}
                     
                     {instrument.description && (
-                      <p className="text-xs text-slate-500 leading-tight line-clamp-1 text-center truncate">
-                        {instrument.description}
+                      <p className="text-xs text-gray-400 leading-tight line-clamp-2 max-w-32 mx-auto">
+                        {instrument.description.length > 50 
+                          ? `${instrument.description.substring(0, 50)}...` 
+                          : instrument.description
+                        }
                       </p>
                     )}
                     
                     {!instrument.teacher && !instrument.description && (
-                      <p className="text-xs text-slate-400 italic text-center">
+                      <p className="text-xs text-gray-500 italic">
                         Informations à venir
                       </p>
                     )}
                   </div>
+                  
+                  {/* Effet de particules au survol */}
+                  <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                    <div className="flex space-x-1">
+                      {[...Array(3)].map((_, i) => (
+                        <div
+                          key={i}
+                          className="w-1 h-1 bg-amber-400 rounded-full animate-bounce"
+                          style={{ animationDelay: `${i * 0.2}s` }}
+                        />
+                      ))}
+                    </div>
+                  </div>
                 </div>
               ))}
+              </div>
+              
+              {/* Message d'encouragement */}
+              <div className="text-center mt-16 animate-fade-in">
+                <div className="bg-gradient-to-r from-amber-900/30 via-yellow-900/30 to-amber-900/30 backdrop-blur-sm rounded-2xl p-8 max-w-2xl mx-auto border border-amber-400/20">
+                  <h3 className="font-poppins font-bold text-2xl text-amber-200 mb-4">
+                    🎵 Trouvez votre instrument !
+                  </h3>
+                  <p className="text-gray-300 leading-relaxed">
+                    Chaque instrument a sa propre personnalité. Laissez-vous guider par votre cœur et découvrez celui qui résonnera avec votre âme musicale.
+                  </p>
+                </div>
+              </div>
             </div>
           ) : (
-            <div className="text-center py-4 animate-fade-in">
-              <Music className="h-8 w-8 text-slate-300 mx-auto mb-2" />
-              <p className="text-gray-600 text-lg">Aucun instrument disponible pour le moment.</p>
+            <div className="text-center py-12 animate-fade-in relative z-10">
+              <Music className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-300 text-xl">Aucun instrument disponible pour le moment.</p>
             </div>
           )}
         </div>
