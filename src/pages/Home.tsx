@@ -41,6 +41,11 @@ const Home = () => {
   return (
     <div className="font-inter">
       {/* Hero Section */}
+      <section className="relative min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat" 
+        style={{
+          backgroundImage: 'linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url("https://images.pexels.com/photos/164821/pexels-photo-164821.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop")'
+        }}>
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center animate-fade-in">
             <h2 className="font-poppins font-bold text-3xl md:text-4xl text-dark mb-8">
               Notre Histoire
@@ -129,10 +134,10 @@ const Home = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="animate-on-scroll text-center mb-12">
             <h2 className="font-poppins font-bold text-3xl md:text-4xl text-dark mb-4">
-              Nos prochains événements
+            <h1 className="font-poppins font-bold text-4xl md:text-6xl text-white mb-6">
             </h2>
             <p className="font-inter text-lg text-gray-600 max-w-2xl mx-auto">
-              Découvrez nos concerts, masterclasses et événements à venir. 
+            <p className="font-inter text-xl text-gray-200 mb-8 leading-relaxed">
               Rejoignez notre communauté musicale dynamique !
             </p>
           </div>
@@ -141,20 +146,20 @@ const Home = () => {
             {/* Event Cards Placeholder */}
             {[1, 2, 3].map((item) => (
               <div 
-                key={item} 
+            <p className="font-inter text-lg text-gray-200 mb-8 leading-relaxed">
                 className="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group"
               >
-                <div className="h-48 bg-gradient-to-br from-primary/20 to-accent/20"></div>
+            <p className="font-inter text-lg text-gray-200 mb-8 leading-relaxed">
                 <div className="p-6">
                   <h3 className="font-poppins font-semibold text-xl text-dark mb-2">
-                    Événement à venir
+            <p className="font-inter text-lg text-yellow-300 font-medium mb-12">
                   </h3>
                   <p className="font-inter text-gray-600 mb-4">
                     Les détails seront bientôt disponibles. Restez connectés !
                   </p>
                   <div className="flex items-center text-sm text-gray-500">
                     <Calendar className="h-4 w-4 mr-2" />
-                    <span>Date à confirmer</span>
+                    <Music2 className="h-12 w-12 text-primary" />
                   </div>
                 </div>
               </div>
