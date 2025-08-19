@@ -102,18 +102,18 @@ const School = () => {
 
                   {/* Description de l'orchestre sélectionné */}
                   {selectedOrchestra && (
-                    <div className="bg-gradient-to-br from-orange-50 to-orange-100/50 rounded-2xl p-8 border border-orange-200 shadow-lg animate-fade-in">
+                    <div className="bg-gradient-to-br from-gray-50 to-blue-50/30 rounded-2xl p-8 border border-gray-200 shadow-lg animate-fade-in">
                       {/* Titre centré */}
                       <div className="text-center mb-8">
                         <div className="flex items-center justify-center space-x-4 mb-4">
-                          <div className="bg-gradient-to-br from-primary to-primary/80 p-4 rounded-xl shadow-lg">
+                          <div className="bg-gradient-to-br from-slate-600 to-slate-700 p-4 rounded-xl shadow-lg">
                             <Users className="h-8 w-8 text-white" />
                           </div>
                           <div>
                             <h3 className="font-poppins font-bold text-3xl text-dark mb-1">
                               {selectedOrchestra.name}
                             </h3>
-                            <div className="h-1 w-16 bg-gradient-to-r from-primary to-accent rounded-full mx-auto"></div>
+                            <div className="h-1 w-16 bg-gradient-to-r from-slate-500 to-blue-500 rounded-full mx-auto"></div>
                           </div>
                         </div>
                       </div>
@@ -134,11 +134,11 @@ const School = () => {
                       
                       {/* Description */}
                       {selectedOrchestra.description ? (
-                        <div className="font-inter text-gray-800 leading-relaxed text-lg whitespace-pre-line bg-white/60 backdrop-blur-sm p-6 rounded-xl border border-white/40 shadow-sm">
+                        <div className="font-inter text-gray-800 leading-relaxed text-lg whitespace-pre-line bg-white/80 backdrop-blur-sm p-6 rounded-xl border border-gray-200/50 shadow-sm">
                           {selectedOrchestra.description}
                         </div>
                       ) : (
-                        <p className="font-inter text-gray-500 italic bg-white/60 backdrop-blur-sm p-6 rounded-xl border border-white/40 shadow-sm text-center">
+                        <p className="font-inter text-gray-500 italic bg-white/80 backdrop-blur-sm p-6 rounded-xl border border-gray-200/50 shadow-sm text-center">
                           Description à venir pour cet orchestre.
                         </p>
                       )}
