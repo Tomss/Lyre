@@ -127,6 +127,62 @@ const Events = () => {
                           {formatDate(selectedEvent.event_date).time}
                         </p>
                       </div>
+                      
+                      {/* Filtres */}
+                      <div className="flex items-center justify-center space-x-4 mt-8">
+                        <div className="flex items-center space-x-2">
+                          <button
+                            onClick={() => setFilter('upcoming')}
+                            className={`inline-flex items-center space-x-2 px-6 py-3 rounded-full font-semibold transition-all duration-300 shadow-lg ${
+                              filter === 'upcoming'
+                                ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white'
+                                : 'bg-white text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                            }`}
+                          >
+                            <Star className="h-4 w-4" />
+                            <span>À venir ({upcomingEvents.length})</span>
+                          </button>
+                          <button
+                            onClick={() => setFilter('past')}
+                            className={`inline-flex items-center space-x-2 px-6 py-3 rounded-full font-semibold transition-all duration-300 shadow-lg ${
+                              filter === 'past'
+                                ? 'bg-gradient-to-r from-gray-500 to-slate-600 text-white'
+                                : 'bg-white text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                            }`}
+                          >
+                            <Clock className="h-4 w-4" />
+                            <span>Passés ({pastEvents.length})</span>
+                          </button>
+                        </div>
+                      </div>
+                      
+                      {/* Filtres */}
+                      <div className="flex items-center justify-center space-x-4 mt-8">
+                        <div className="flex items-center space-x-2">
+                          <button
+                            onClick={() => setFilter('upcoming')}
+                            className={`inline-flex items-center space-x-2 px-6 py-3 rounded-full font-semibold transition-all duration-300 shadow-lg ${
+                              filter === 'upcoming'
+                                ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white'
+                                : 'bg-white text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                            }`}
+                          >
+                            <Star className="h-4 w-4" />
+                            <span>À venir ({upcomingEvents.length})</span>
+                          </button>
+                          <button
+                            onClick={() => setFilter('past')}
+                            className={`inline-flex items-center space-x-2 px-6 py-3 rounded-full font-semibold transition-all duration-300 shadow-lg ${
+                              filter === 'past'
+                                ? 'bg-gradient-to-r from-gray-500 to-slate-600 text-white'
+                                : 'bg-white text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                            }`}
+                          >
+                            <Clock className="h-4 w-4" />
+                            <span>Passés ({pastEvents.length})</span>
+                          </button>
+                        </div>
+                      </div>
                     </div>
 
                     {selectedEvent.location && (
@@ -527,69 +583,13 @@ const Events = () => {
               </div>
               
               <h2 className="font-poppins font-bold text-3xl text-gray-800 mb-6">
-                Événements Passés
+                Rejoignez-nous
               </h2>
               
               <p className="font-inter text-base text-gray-600 leading-relaxed mb-6">
                 Chaque concert est une nouvelle page de notre histoire musicale. 
                 Venez partager ces moments d'émotion et de partage avec La Lyre Cheminote et Municipale de Chalindrey.
               </p>
-              
-              {/* Filtres aussi ici pour cohérence */}
-              <div className="flex items-center justify-center space-x-4 mt-8">
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={() => setFilter('upcoming')}
-                    className={`inline-flex items-center space-x-2 px-6 py-3 rounded-full font-semibold transition-all duration-300 shadow-lg ${
-                      filter === 'upcoming'
-                        ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white'
-                        : 'bg-white text-gray-600 hover:text-gray-800 hover:bg-gray-50'
-                    }`}
-                  >
-                    <Star className="h-4 w-4" />
-                    <span>À venir ({upcomingEvents.length})</span>
-                  </button>
-                  <button
-                    onClick={() => setFilter('past')}
-                    className={`inline-flex items-center space-x-2 px-6 py-3 rounded-full font-semibold transition-all duration-300 shadow-lg ${
-                      filter === 'past'
-                        ? 'bg-gradient-to-r from-gray-500 to-slate-600 text-white'
-                        : 'bg-white text-gray-600 hover:text-gray-800 hover:bg-gray-50'
-                    }`}
-                  >
-                    <Clock className="h-4 w-4" />
-                    <span>Passés ({pastEvents.length})</span>
-                  </button>
-                </div>
-              </div>
-              
-              {/* Filtres déplacés ici */}
-              <div className="flex items-center justify-center space-x-4 mt-8">
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={() => setFilter('upcoming')}
-                    className={`inline-flex items-center space-x-2 px-6 py-3 rounded-full font-semibold transition-all duration-300 shadow-lg ${
-                      filter === 'upcoming'
-                        ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white'
-                        : 'bg-white text-gray-600 hover:text-gray-800 hover:bg-gray-50'
-                    }`}
-                  >
-                    <Star className="h-4 w-4" />
-                    <span>À venir ({upcomingEvents.length})</span>
-                  </button>
-                  <button
-                    onClick={() => setFilter('past')}
-                    className={`inline-flex items-center space-x-2 px-6 py-3 rounded-full font-semibold transition-all duration-300 shadow-lg ${
-                      filter === 'past'
-                        ? 'bg-gradient-to-r from-gray-500 to-slate-600 text-white'
-                        : 'bg-white text-gray-600 hover:text-gray-800 hover:bg-gray-50'
-                    }`}
-                  >
-                    <Clock className="h-4 w-4" />
-                    <span>Passés ({pastEvents.length})</span>
-                  </button>
-                </div>
-              </div>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
                 <div className="text-center">
