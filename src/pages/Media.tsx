@@ -164,7 +164,7 @@ const Media = () => {
       )}
 
       {/* Header Section */}
-      <section className="py-20 bg-gradient-to-r from-primary/10 to-accent/10">
+      <section className="py-20 bg-gradient-to-br from-orange-100 via-amber-50 to-yellow-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center animate-fade-in">
             <h1 className="font-poppins font-bold text-4xl md:text-5xl text-dark mb-6">
@@ -189,7 +189,7 @@ const Media = () => {
 
       {/* Filtres et recherche */}
       {mediaItems.length > 0 && (
-        <section className="py-6 bg-white border-b border-gray-100 sticky top-20 z-40 shadow-sm">
+        <section className="py-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-white/50 sticky top-20 z-40 shadow-sm backdrop-blur-sm">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col space-y-4">
               {/* Recherche */}
@@ -293,7 +293,7 @@ const Media = () => {
 
       {/* Barre de statut */}
       {mediaItems.length > 0 && (
-        <section className="py-3 bg-gray-50 border-b border-gray-200">
+        <section className="py-3 bg-gradient-to-r from-purple-50 to-pink-50 border-b border-white/50">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between text-sm">
               <div className="flex items-center space-x-4">
@@ -323,7 +323,7 @@ const Media = () => {
 
       {/* Médias mis en avant */}
       {featuredMedia.length > 0 && (
-        <section className="py-12 bg-gradient-to-r from-accent/5 to-primary/5">
+        <section className="py-12 bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8">
               <h2 className="font-poppins font-bold text-2xl md:text-3xl text-dark mb-4">
@@ -335,7 +335,7 @@ const Media = () => {
               {featuredMedia.map((media) => {
                 const TypeIcon = getTypeIcon(media.media_type);
                 return (
-                  <div key={media.id} className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 animate-fade-in group">
+                  <div key={media.id} className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-white/50 overflow-hidden hover:shadow-xl transition-all duration-300 animate-fade-in group">
                     {/* Prévisualisation visuelle */}
                     <MediaPreview
                       files={media.media_files}
@@ -346,8 +346,8 @@ const Media = () => {
                     
                     <div className="p-6">
                       <div className="flex items-center space-x-3 mb-4">
-                        <div className="bg-primary/10 p-2 rounded-lg">
-                          <TypeIcon className="h-6 w-6 text-primary" />
+                        <div className="bg-gradient-to-br from-teal-400 to-cyan-500 p-2 rounded-lg shadow-md">
+                          <TypeIcon className="h-6 w-6 text-white" />
                         </div>
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getTypeColor(media.media_type)}`}>
                           <TypeIcon className="h-3 w-3 mr-1" />
@@ -384,7 +384,7 @@ const Media = () => {
       )}
 
       {/* Tous les médias */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           {loading ? (
             <div className="text-center animate-fade-in">
@@ -470,8 +470,8 @@ const Media = () => {
             </>
           ) : mediaItems.length === 0 ? (
             <div className="text-center animate-fade-in">
-              <div className="bg-gradient-to-br from-primary/20 to-accent/20 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
-                <Image className="h-16 w-16 text-primary" />
+              <div className="bg-gradient-to-br from-indigo-400 to-purple-500 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6 shadow-lg">
+                <Image className="h-16 w-16 text-white" />
               </div>
               <h2 className="font-poppins font-semibold text-2xl text-dark mb-4">
                 Nos médias arrivent bientôt !
@@ -491,7 +491,7 @@ const Media = () => {
       </section>
 
       {/* Media Categories */}
-      <section className="py-20 bg-gray-50">
+      <section className="py-20 bg-gradient-to-br from-rose-50 via-pink-50 to-orange-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="font-poppins font-bold text-2xl md:text-3xl text-dark mb-4">
@@ -502,9 +502,9 @@ const Media = () => {
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bg-white rounded-xl p-6 shadow-md text-center animate-fade-in hover:shadow-lg transition-all duration-300 group">
-              <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Camera className="h-8 w-8 text-blue-600 group-hover:scale-110 transition-transform duration-300" />
+            <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-md text-center animate-fade-in hover:shadow-lg transition-all duration-300 group border border-white/50">
+              <div className="bg-gradient-to-br from-blue-400 to-indigo-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                <Camera className="h-8 w-8 text-white group-hover:scale-110 transition-transform duration-300" />
               </div>
               <h3 className="font-poppins font-semibold text-xl text-dark mb-4">
                 Albums
@@ -513,9 +513,9 @@ const Media = () => {
                 Nos albums photos et vidéos des concerts, répétitions et événements de l'école.
               </p>
             </div>
-            <div className="bg-white rounded-xl p-6 shadow-md text-center animate-fade-in hover:shadow-lg transition-all duration-300 group">
-              <div className="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Music className="h-8 w-8 text-green-600 group-hover:scale-110 transition-transform duration-300" />
+            <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-md text-center animate-fade-in hover:shadow-lg transition-all duration-300 group border border-white/50">
+              <div className="bg-gradient-to-br from-green-400 to-emerald-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                <Music className="h-8 w-8 text-white group-hover:scale-110 transition-transform duration-300" />
               </div>
               <h3 className="font-poppins font-semibold text-xl text-dark mb-4">
                 Enregistrements
@@ -524,9 +524,9 @@ const Media = () => {
                 Écoutez nos enregistrements audio de concerts et répétitions.
               </p>
             </div>
-            <div className="bg-white rounded-xl p-6 shadow-md text-center animate-fade-in hover:shadow-lg transition-all duration-300 group">
-              <div className="bg-yellow-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
-                <FileText className="h-8 w-8 text-yellow-600 group-hover:scale-110 transition-transform duration-300" />
+            <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-md text-center animate-fade-in hover:shadow-lg transition-all duration-300 group border border-white/50">
+              <div className="bg-gradient-to-br from-yellow-400 to-amber-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                <FileText className="h-8 w-8 text-white group-hover:scale-110 transition-transform duration-300" />
               </div>
               <h3 className="font-poppins font-semibold text-xl text-dark mb-4">
                 Journaux
@@ -535,9 +535,9 @@ const Media = () => {
                 "On parle de nous" - Découvrez les articles de presse sur notre école.
               </p>
             </div>
-            <div className="bg-white rounded-xl p-6 shadow-md text-center animate-fade-in hover:shadow-lg transition-all duration-300 group">
-              <div className="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
-                <File className="h-8 w-8 text-purple-600 group-hover:scale-110 transition-transform duration-300" />
+            <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-md text-center animate-fade-in hover:shadow-lg transition-all duration-300 group border border-white/50">
+              <div className="bg-gradient-to-br from-purple-400 to-indigo-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                <File className="h-8 w-8 text-white group-hover:scale-110 transition-transform duration-300" />
               </div>
               <h3 className="font-poppins font-semibold text-xl text-dark mb-4">
                 Lyrissimots

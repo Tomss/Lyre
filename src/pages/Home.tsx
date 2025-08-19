@@ -96,7 +96,7 @@ const Home = () => {
       </section>
 
       {/* About Section */}
-      <section className="py-20 bg-orange-50">
+      <section className="py-20 bg-gradient-to-br from-orange-100 via-amber-50 to-yellow-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center animate-fade-in">
             <h2 className="font-poppins font-bold text-3xl md:text-4xl text-orange-800 mb-8">
@@ -121,18 +121,18 @@ const Home = () => {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-20 bg-white">
+      <section id="features" className="py-20 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {features.map((feature, index) => (
               <div 
                 key={index} 
-                className="animate-on-scroll text-center group hover:transform hover:-translate-y-2 transition-all duration-300"
+                className="animate-on-scroll text-center group hover:transform hover:-translate-y-2 transition-all duration-300 bg-white/60 backdrop-blur-sm rounded-xl p-6 border border-white/50 shadow-md hover:shadow-lg"
               >
-                <div className="bg-orange-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-orange-200 transition-colors duration-300">
-                  <feature.icon className="h-8 w-8 text-orange-600 group-hover:text-orange-700 transition-colors duration-300" />
+                <div className="bg-gradient-to-br from-indigo-400 to-purple-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                  <feature.icon className="h-8 w-8 text-white" />
                 </div>
-                <h3 className="font-poppins font-semibold text-xl text-orange-800 mb-4">
+                <h3 className="font-poppins font-semibold text-xl text-dark mb-4">
                   {feature.title}
                 </h3>
                 <p className="font-inter text-gray-700 leading-relaxed">
@@ -145,13 +145,13 @@ const Home = () => {
       </section>
 
       {/* Events Preview Section */}
-      <section className="py-20 bg-orange-50">
+      <section className="py-20 bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="animate-on-scroll text-center mb-12">
-            <h2 className="font-poppins font-bold text-3xl md:text-4xl text-orange-800 mb-4">
+            <h2 className="font-poppins font-bold text-3xl md:text-4xl text-dark mb-4">
               Nos Événements
             </h2>
-            <p className="font-inter text-lg text-gray-700 max-w-2xl mx-auto">
+            <p className="font-inter text-lg text-gray-600 max-w-2xl mx-auto">
               Découvrez nos prochains concerts et événements musicaux
             </p>
           </div>
@@ -161,17 +161,17 @@ const Home = () => {
             {[1, 2, 3].map((item) => (
               <div 
                 key={item}
-                className="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group border border-orange-100"
+                className="bg-white/80 backdrop-blur-sm rounded-lg shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group border border-white/50"
               >
                 <div className="p-6">
-                  <h3 className="font-poppins font-semibold text-xl text-orange-800 mb-2">
+                  <h3 className="font-poppins font-semibold text-xl text-dark mb-2">
                     Événement à venir
                   </h3>
-                  <p className="font-inter text-gray-700 mb-4">
+                  <p className="font-inter text-gray-600 mb-4">
                     Les détails seront bientôt disponibles. Restez connectés !
                   </p>
-                  <div className="flex items-center text-sm text-orange-600">
-                    <Calendar className="h-4 w-4 mr-2 text-orange-500" />
+                  <div className="flex items-center text-sm text-teal-600">
+                    <Calendar className="h-4 w-4 mr-2 text-teal-500" />
                     <span>Date à confirmer</span>
                   </div>
                 </div>

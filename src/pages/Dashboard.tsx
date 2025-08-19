@@ -95,10 +95,10 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="font-inter pt-20 pb-20 min-h-screen bg-gray-50">
+    <div className="font-inter pt-20 pb-20 min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
         {/* Header Section */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 mb-8">
+        <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-white/50 p-8 mb-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between">
             <div>
               {profile ? (
@@ -140,7 +140,7 @@ const Dashboard = () => {
 
         {/* Admin Section - Visible uniquement pour les Admins */}
         {(profile?.role === 'Admin' || profile?.role === 'Gestionnaire') && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 mb-8">
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-white/50 p-8 mb-8">
             <h2 className="font-poppins font-semibold text-xl text-dark mb-4">
               Administration
             </h2>
@@ -197,10 +197,10 @@ const Dashboard = () => {
 
         {/* Main Dashboard Content */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-white/50 p-6">
             <div className="flex items-center space-x-3 mb-4">
-              <div className="bg-primary/10 p-2 rounded-lg">
-                <Settings className="h-6 w-6 text-primary" />
+              <div className="bg-gradient-to-br from-indigo-400 to-purple-500 p-2 rounded-lg shadow-md">
+                <Settings className="h-6 w-6 text-white" />
               </div>
               <h3 className="font-poppins font-semibold text-lg text-dark">
                 Mon Profil
@@ -214,10 +214,10 @@ const Dashboard = () => {
             </button>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-white/50 p-6">
             <div className="flex items-center space-x-3 mb-4">
-              <div className="bg-accent/10 p-2 rounded-lg">
-                <Users className="h-6 w-6 text-accent" />
+              <div className="bg-gradient-to-br from-teal-400 to-cyan-500 p-2 rounded-lg shadow-md">
+                <Users className="h-6 w-6 text-white" />
               </div>
               <h3 className="font-poppins font-semibold text-lg text-dark">
                 Mes Cours
@@ -231,10 +231,10 @@ const Dashboard = () => {
             </button>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-white/50 p-6">
             <div className="flex items-center space-x-3 mb-4">
-              <div className="bg-green-600/10 p-2 rounded-lg">
-                <Calendar className="h-6 w-6 text-green-600" />
+              <div className="bg-gradient-to-br from-green-400 to-emerald-500 p-2 rounded-lg shadow-md">
+                <Calendar className="h-6 w-6 text-white" />
               </div>
               <h3 className="font-poppins font-semibold text-lg text-dark">
                 Mes Prochains Événements
@@ -287,10 +287,10 @@ const Dashboard = () => {
         {/* User Instruments and Orchestras */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* My Instruments */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-white/50 p-6">
             <div className="flex items-center space-x-3 mb-4">
-              <div className="bg-accent/10 p-2 rounded-lg">
-                <Music className="h-6 w-6 text-accent" />
+              <div className="bg-gradient-to-br from-amber-400 to-orange-500 p-2 rounded-lg shadow-md">
+                <Music className="h-6 w-6 text-white" />
               </div>
               <h3 className="font-poppins font-semibold text-lg text-dark">
                 Mes Instruments
@@ -317,10 +317,10 @@ const Dashboard = () => {
           </div>
 
           {/* My Orchestras */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-white/50 p-6">
             <div className="flex items-center space-x-3 mb-4">
-              <div className="bg-primary/10 p-2 rounded-lg">
-                <Users className="h-6 w-6 text-primary" />
+              <div className="bg-gradient-to-br from-rose-400 to-pink-500 p-2 rounded-lg shadow-md">
+                <Users className="h-6 w-6 text-white" />
               </div>
               <h3 className="font-poppins font-semibold text-lg text-dark">
                 Mes Orchestres
