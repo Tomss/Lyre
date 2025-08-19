@@ -41,26 +41,34 @@ const Home = () => {
   return (
     <div className="font-inter">
       {/* Hero Section */}
-      <section 
-        className="relative min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage: 'linear-gradient(rgba(30, 41, 59, 0.4), rgba(37, 99, 235, 0.2)), url(https://images.pexels.com/photos/164743/pexels-photo-164743.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1280&fit=crop)'
-        }}
-      >
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
-          <div className="animate-fade-in space-y-6">
-            <h1 className="font-poppins font-bold text-4xl md:text-5xl lg:text-6xl leading-tight">
-              Exprimez la musique <br />qui est en vous.
-            </h1>
-            <p className="font-inter text-lg md:text-xl lg:text-2xl text-gray-200 max-w-3xl mx-auto leading-relaxed">
-              Cours de musique pour tous les âges et tous les niveaux.
-            </p>
-            <div className="mt-8">
-              <a
-                href="#features"
-                className="inline-block bg-accent hover:bg-accent/90 text-white font-semibold px-8 py-4 rounded-full text-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
-              >
-                Découvrir nos cours
+          <div className="max-w-4xl mx-auto text-center animate-fade-in">
+            <h2 className="font-poppins font-bold text-3xl md:text-4xl text-dark mb-8">
+              Notre Histoire
+            </h2>
+            <div className="space-y-6 text-lg leading-relaxed text-gray-700">
+              <p className="font-inter">
+                La Lyre, ce n'est pas seulement un orchestre d'Harmonie, c'est aussi une École fixant les bases musicales théoriques et pratiques nécessaires, afin de gravir les échelons menant des petits orchestres au Grand.
+              </p>
+              <p className="font-inter">
+                Spectateur(s) à l'ouïe fine, futur(e)s virtuose(s) ou simplement curieux(ses), n'hésitez pas à prendre le temps de parcourir notre site afin de nous connaître un peu mieux.
+              </p>
+              <p className="font-inter font-medium text-primary">
+                En ayant l'espoir de vous voir à notre prochain concert ou au sein de notre groupe, nous vous souhaitons une agréable journée et vous remercions de votre visite.
+              </p>
+            </div>
+            <div className="mt-12">
+              <div className="bg-gradient-to-br from-primary/10 to-accent/10 rounded-xl p-8">
+                <div className="flex items-center justify-center mb-6">
+                  <div className="bg-primary/20 p-4 rounded-full">
+                    <Music className="h-12 w-12 text-primary" />
+                  </div>
+                </div>
+                <h3 className="font-poppins font-semibold text-xl text-dark mb-4">
+                  Depuis 1931
+                </h3>
+                <p className="font-inter text-gray-600">
+                  Plus de 90 ans d'histoire musicale au service de la passion et de l'apprentissage
+                </p>
               </a>
             </div>
           </div>
