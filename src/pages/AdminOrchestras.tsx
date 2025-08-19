@@ -2,6 +2,7 @@ import React, { useState, useEffect, FormEvent } from 'react';
 import { Edit, Trash2, Plus, Users, Search, X, CheckCircle, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Navigate, Link } from 'react-router-dom';
+import { supabase } from '../supabaseClient';
 
 interface Orchestra {
   id: string;
@@ -41,8 +42,9 @@ const AdminOrchestras = () => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    photo_url: '',
   });
+  const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
   // Fonction pour afficher une notification
   const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
@@ -88,12 +90,84 @@ const AdminOrchestras = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      
+      // Vérifier que c'est une image
+      if (!file.type.startsWith('image/')) {
+        showNotification('Veuillez sélectionner un fichier image', 'error');
+        return;
+      }
+      
+      // Vérifier la taille (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        showNotification('L\'image ne doit pas dépasser 5MB', 'error');
+        return;
+      }
+      
+      setSelectedPhoto(file);
+      
+      // Créer une prévisualisation
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setPhotoPreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removePhoto = () => {
+    setSelectedPhoto(null);
+    setPhotoPreview(null);
+  };
+
+  // Upload de la photo vers Supabase Storage
+  const uploadPhoto = async (file: File): Promise<string | null> => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `orchestra_${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `orchestras/${fileName}`;
+      
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('media-files')
+        .upload(filePath, file);
+        
+      if (uploadError) {
+        console.error('Erreur upload photo:', uploadError);
+        throw uploadError;
+      }
+      
+      // Récupération de l'URL publique
+      const { data: urlData } = supabase.storage
+        .from('media-files')
+        .getPublicUrl(filePath);
+        
+      return urlData.publicUrl;
+    } catch (error) {
+      console.error('Erreur lors de l\'upload de la photo:', error);
+      showNotification('Erreur lors de l\'upload de la photo', 'error');
+      return null;
+    }
+  };
+
   // Créer un orchestre
   const handleCreate = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
+      let photoUrl = null;
+      
+      // Upload de la photo si sélectionnée
+      if (selectedPhoto) {
+        photoUrl = await uploadPhoto(selectedPhoto);
+        if (!photoUrl) {
+          setLoading(false);
+          return; // Arrêter si l'upload a échoué
+        }
+      }
+
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-orchestras`, {
         method: 'POST',
         headers: {
@@ -104,7 +178,7 @@ const AdminOrchestras = () => {
           action: 'create',
           name: formData.name,
           description: formData.description || null,
-          photo_url: formData.photo_url || null,
+          photo_url: photoUrl,
         }),
       });
 
@@ -131,6 +205,19 @@ const AdminOrchestras = () => {
     setLoading(true);
 
     try {
+      let photoUrl = editingOrchestra.photo_url; // Garder l'ancienne photo par défaut
+      
+      // Upload de la nouvelle photo si sélectionnée
+      if (selectedPhoto) {
+        const newPhotoUrl = await uploadPhoto(selectedPhoto);
+        if (newPhotoUrl) {
+          photoUrl = newPhotoUrl;
+        } else {
+          setLoading(false);
+          return; // Arrêter si l'upload a échoué
+        }
+      }
+
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-orchestras`, {
         method: 'POST',
         headers: {
@@ -142,7 +229,7 @@ const AdminOrchestras = () => {
           id: editingOrchestra.id,
           name: formData.name,
           description: formData.description || null,
-          photo_url: formData.photo_url || null,
+          photo_url: photoUrl,
         }),
       });
 
@@ -211,8 +298,9 @@ const AdminOrchestras = () => {
     setFormData({
       name: orchestra.name,
       description: orchestra.description || '',
-      photo_url: orchestra.photo_url || '',
     });
+    setSelectedPhoto(null);
+    setPhotoPreview(orchestra.photo_url);
     setShowAddForm(true);
   };
 
@@ -222,8 +310,9 @@ const AdminOrchestras = () => {
     setFormData({
       name: '',
       description: '',
-      photo_url: '',
     });
+    setSelectedPhoto(null);
+    setPhotoPreview(null);
   };
 
   // Filtrer les orchestres selon le terme de recherche
@@ -350,20 +439,54 @@ const AdminOrchestras = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-dark mb-2">
-                      Photo (URL - optionnel)
+                    <label className="block text-sm font-medium text-dark mb-3">
+                      Photo de l'orchestre (optionnel)
                     </label>
-                    <input
-                      type="url"
-                      name="photo_url"
-                      value={formData.photo_url}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                      placeholder="https://exemple.com/photo-orchestre.jpg"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      URL de la photo de l'orchestre (optionnel)
-                    </p>
+                    
+                    {/* Zone d'upload */}
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                      {photoPreview ? (
+                        <div className="relative">
+                          <img
+                            src={photoPreview}
+                            alt="Prévisualisation"
+                            className="max-w-full h-32 object-cover rounded-lg mx-auto mb-4"
+                          />
+                          <button
+                            type="button"
+                            onClick={removePhoto}
+                            className="absolute top-0 right-0 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 transform translate-x-2 -translate-y-2"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                          <p className="text-sm text-gray-600">
+                            {selectedPhoto ? selectedPhoto.name : 'Photo actuelle'}
+                          </p>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="bg-gray-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <Users className="h-8 w-8 text-gray-400" />
+                          </div>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handlePhotoChange}
+                            className="hidden"
+                            id="photo-upload"
+                          />
+                          <label
+                            htmlFor="photo-upload"
+                            className="cursor-pointer text-primary hover:text-primary/80 font-medium"
+                          >
+                            Cliquez pour sélectionner une photo
+                          </label>
+                          <p className="text-sm text-gray-500 mt-2">
+                            JPG, PNG, GIF jusqu'à 5MB
+                          </p>
+                        </>
+                      )}
+                    </div>
                   </div>
 
                   <div className="flex space-x-3 pt-4">
