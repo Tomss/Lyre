@@ -164,22 +164,25 @@ const Media = () => {
       )}
 
       {/* Header Section */}
-      <section className="py-20 bg-gradient-to-br from-orange-50 via-amber-25 to-yellow-25">
+      <section className="relative py-20 bg-cover bg-center bg-no-repeat bg-gray-900" 
+        style={{ 
+          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url("https://images.pexels.com/photos/164743/pexels-photo-164743.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop")` 
+        }}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center animate-fade-in">
-            <h1 className="font-poppins font-bold text-4xl md:text-5xl text-dark mb-6">
+          <div className="text-center animate-fade-in relative z-10">
+            <h1 className="font-poppins font-bold text-4xl md:text-5xl text-white mb-6">
               Galerie de nos moments musicaux.
             </h1>
             {loading ? (
-              <p className="font-inter text-lg text-gray-600 max-w-2xl mx-auto">
+              <p className="font-inter text-lg text-white/80 max-w-2xl mx-auto">
                 Chargement de nos médias...
               </p>
             ) : mediaItems.length > 0 ? (
-              <p className="font-inter text-lg text-gray-600 max-w-2xl mx-auto">
+              <p className="font-inter text-lg text-white/90 max-w-2xl mx-auto">
                 Découvrez nos albums, enregistrements, articles de presse et actualités !
               </p>
             ) : (
-              <p className="font-inter text-lg text-gray-600 max-w-2xl mx-auto">
+              <p className="font-inter text-lg text-white/90 max-w-2xl mx-auto">
                 Nos médias seront bientôt disponibles. Revenez nous voir !
               </p>
             )}

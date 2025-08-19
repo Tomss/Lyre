@@ -79,19 +79,22 @@ const School = () => {
   return (
     <div className="font-inter pt-20">
       {/* Header Section */}
-      <section className="py-20 bg-gradient-to-br from-orange-50 via-amber-25 to-yellow-25">
+      <section className="relative py-20 bg-cover bg-center bg-no-repeat bg-gray-900" 
+        style={{ 
+          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url("https://images.pexels.com/photos/1407322/pexels-photo-1407322.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop")` 
+        }}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto animate-fade-in">
-            <h1 className="font-poppins font-bold text-4xl md:text-5xl text-dark mb-8 text-center">
+          <div className="max-w-4xl mx-auto animate-fade-in relative z-10">
+            <h1 className="font-poppins font-bold text-4xl md:text-5xl text-white mb-8 text-center">
               L'école de musique
             </h1>
             
             {/* Description principale */}
             <div className="mb-12">
-              <p className="font-inter text-lg text-gray-700 leading-relaxed mb-8">
+              <p className="font-inter text-lg text-white/90 leading-relaxed mb-8">
                 L'école propose une formation musicale du niveau Éveil au niveau Supérieur, par des professeurs diplômés de Conservatoires à Rayonnement Régional ou possédant un niveau équivalent.
               </p>
-              <p className="font-inter text-lg text-gray-700 leading-relaxed mb-8">
+              <p className="font-inter text-lg text-white/90 leading-relaxed mb-8">
                 Les cours suivent le rythme scolaire : un cours de solfège, une demi-heure d'instrument et une activité orchestrale par semaine dans l'un des orchestres suivants
               </p>
             </div>
