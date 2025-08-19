@@ -82,12 +82,9 @@ const School = () => {
       <section className="py-20 bg-gradient-to-r from-primary/10 to-accent/10">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center animate-fade-in">
-            <h1 className="font-poppins font-bold text-4xl md:text-5xl text-dark mb-6">
-              Notre école, votre musique.
+            <h1 className="font-poppins font-bold text-4xl md:text-5xl text-dark mb-8">
+              Notre École de Musique
             </h1>
-            <p className="font-inter text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              Une formation musicale complète dans un environnement bienveillant et professionnel.
-            </p>
           </div>
         </div>
       </section>
@@ -196,33 +193,33 @@ const School = () => {
       </section>
 
       {/* Section Instruments */}
-      <section className="py-20 bg-white">
+      <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16 animate-fade-in">
-            <h2 className="font-poppins font-bold text-3xl md:text-4xl text-dark mb-6">
+          <div className="text-center mb-12 animate-fade-in">
+            <h2 className="font-poppins font-bold text-2xl md:text-3xl text-dark mb-4">
               Nos classes d'instruments
             </h2>
-            <p className="font-inter text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              Découvrez la diversité de nos enseignements instrumentaux avec nos professeurs qualifiés
+            <p className="font-inter text-base text-gray-600 max-w-2xl mx-auto">
+              Découvrez nos enseignements instrumentaux avec nos professeurs qualifiés
             </p>
           </div>
 
           {instrumentsLoading ? (
-            <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <div className="text-center py-6">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto mb-3"></div>
               <p className="text-gray-600">Chargement des instruments...</p>
             </div>
           ) : instruments.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-fade-in">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 animate-fade-in">
               {instruments.map((instrument) => (
-                <div key={instrument.id} className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
+                <div key={instrument.id} className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group">
                   {/* Photo de l'instrument */}
-                  <div className="aspect-square bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-6">
+                  <div className="aspect-square bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-3">
                     {instrument.photo_url ? (
                       <img
                         src={instrument.photo_url}
                         alt={instrument.name}
-                        className="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform duration-300"
+                        className="w-full h-full object-cover rounded group-hover:scale-105 transition-transform duration-300"
                         onError={(e) => {
                           // En cas d'erreur, afficher l'icône par défaut
                           e.currentTarget.style.display = 'none';
@@ -236,32 +233,32 @@ const School = () => {
                       }`}
                     >
                       <Music className="h-16 w-16 text-gray-400 group-hover:text-primary transition-colors duration-300" />
+                      <Music className="h-8 w-8 text-gray-400 group-hover:text-primary transition-colors duration-300" />
                     </div>
                   </div>
                   
                   {/* Contenu */}
-                  <div className="p-6">
-                    <h3 className="font-poppins font-semibold text-xl text-dark mb-2 group-hover:text-primary transition-colors duration-300">
+                  <div className="p-3">
+                    <h3 className="font-poppins font-semibold text-sm text-dark mb-1 group-hover:text-primary transition-colors duration-300 text-center">
                       {instrument.name}
                     </h3>
                     
                     {instrument.teacher && (
-                      <div className="flex items-center space-x-2 mb-3">
-                        <div className="w-2 h-2 bg-primary rounded-full"></div>
-                        <span className="text-sm text-gray-600 font-medium">
+                      <div className="text-center mb-2">
+                        <span className="text-xs text-gray-600 font-medium">
                           {instrument.teacher}
                         </span>
                       </div>
                     )}
                     
                     {instrument.description && (
-                      <p className="text-sm text-gray-500 leading-relaxed line-clamp-3">
+                      <p className="text-xs text-gray-500 leading-relaxed line-clamp-2 text-center">
                         {instrument.description}
                       </p>
                     )}
                     
                     {!instrument.teacher && !instrument.description && (
-                      <p className="text-sm text-gray-400 italic">
+                      <p className="text-xs text-gray-400 italic text-center">
                         Informations à venir
                       </p>
                     )}
@@ -270,8 +267,8 @@ const School = () => {
               ))}
             </div>
           ) : (
-            <div className="text-center py-8 animate-fade-in">
-              <Music className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+            <div className="text-center py-6 animate-fade-in">
+              <Music className="h-12 w-12 text-gray-300 mx-auto mb-3" />
               <p className="text-gray-600 text-lg">Aucun instrument disponible pour le moment.</p>
             </div>
           )}
@@ -279,7 +276,7 @@ const School = () => {
       </section>
 
       {/* Features Grid */}
-      <section className="py-20 bg-gray-50">
+      <section className="py-16 bg-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center animate-fade-in">
