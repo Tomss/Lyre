@@ -26,11 +26,13 @@ const Header = () => {
     { path: '/contact', label: 'Contact' },
   ];
 
-  const isHomePage = location.pathname === '/';
+  // Pages avec hero sections qui nécessitent un header transparent
+  const pagesWithHero = ['/', '/school', '/events', '/media', '/contact'];
+  const isHeroPage = pagesWithHero.includes(location.pathname);
 
   return (
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-      isScrolled || !isHomePage 
+      isScrolled || !isHeroPage 
         ? 'bg-white shadow-lg border-b border-orange-100' 
         : 'bg-gradient-to-b from-black/60 via-black/40 to-transparent backdrop-blur-sm'
     }`}>
@@ -38,12 +40,12 @@ const Header = () => {
         <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo */}
           <Link to="/" className={`flex items-center space-x-2 font-poppins font-bold text-xl transition-colors ${
-            isScrolled || !isHomePage 
+            isScrolled || !isHeroPage 
               ? 'text-orange-800 hover:text-orange-600' 
               : 'text-white hover:text-orange-200'
           }`}>
             <Music className={`h-8 w-8 ${
-              isScrolled || !isHomePage ? 'text-orange-600' : 'text-orange-300'
+              isScrolled || !isHeroPage ? 'text-orange-600' : 'text-orange-300'
             }`} />
             <span>La Lyre</span>
           </Link>
@@ -56,10 +58,10 @@ const Header = () => {
                 to={link.path}
                 className={`font-inter font-medium transition-all duration-200 hover:scale-105 ${
                   location.pathname === link.path 
-                    ? (isScrolled || !isHomePage 
+                    ? (isScrolled || !isHeroPage 
                         ? 'text-orange-600 font-semibold' 
                         : 'text-orange-300 font-semibold') 
-                    : (isScrolled || !isHomePage 
+                    : (isScrolled || !isHeroPage 
                         ? 'text-gray-700 hover:text-orange-600' 
                         : 'text-white/90 hover:text-white')
                 }`}
@@ -76,7 +78,7 @@ const Header = () => {
                 <Link
                   to="/dashboard"
                   className={`flex items-center space-x-2 font-inter font-medium px-4 py-2 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-lg ${
-                    isScrolled || !isHomePage
+                    isScrolled || !isHeroPage
                       ? 'bg-orange-100 hover:bg-orange-200 text-orange-800 border border-orange-200'
                       : 'bg-white/20 hover:bg-white/30 text-white border border-white/30 backdrop-blur-sm'
                   }`}
@@ -89,7 +91,7 @@ const Header = () => {
                 <button
                   onClick={logout}
                   className={`font-inter font-medium px-4 py-2 rounded-full transition-all duration-300 hover:scale-105 text-sm ${
-                    isScrolled || !isHomePage
+                    isScrolled || !isHeroPage
                       ? 'bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200'
                       : 'bg-white/20 hover:bg-white/30 text-white border border-white/30 backdrop-blur-sm'
                   }`}
@@ -101,7 +103,7 @@ const Header = () => {
               <Link
                 to="/connexion"
                 className={`font-inter font-semibold px-6 py-3 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-lg ${
-                  isScrolled || !isHomePage
+                  isScrolled || !isHeroPage
                     ? 'bg-orange-600 hover:bg-orange-700 text-white shadow-md'
                     : 'bg-orange-500 hover:bg-orange-600 text-white shadow-lg'
                 }`}
@@ -114,7 +116,7 @@ const Header = () => {
           {/* Mobile Menu Button */}
           <button
             className={`lg:hidden p-2 rounded-lg transition-all duration-200 ${
-              isScrolled || !isHomePage 
+              isScrolled || !isHeroPage 
                 ? 'text-gray-700 hover:text-orange-600 hover:bg-orange-50' 
                 : 'text-white hover:text-orange-200 hover:bg-white/10'
             }`}
