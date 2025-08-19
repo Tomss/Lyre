@@ -47,68 +47,6 @@ const AdminInstruments = () => {
   const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
-  // Logos prédéfinis pour les instruments
-  const predefinedLogos = {
-    // Instruments à cordes
-    'Piano': '🎹',
-    'Violon': '🎻',
-    'Violoncelle': '🎻',
-    'Contrebasse': '🎻',
-    'Alto': '🎻',
-    'Guitare': '🎸',
-    'Guitare classique': '🎸',
-    'Guitare électrique': '🎸',
-    'Basse': '🎸',
-    'Harpe': '🎵',
-    'Mandoline': '🎸',
-    
-    // Instruments à vent - Bois
-    'Flûte': '🪈',
-    'Flûte traversière': '🪈',
-    'Piccolo': '🪈',
-    'Clarinette': '🎵',
-    'Saxophone': '🎷',
-    'Saxophone alto': '🎷',
-    'Saxophone ténor': '🎷',
-    'Saxophone soprano': '🎷',
-    'Hautbois': '🎵',
-    'Basson': '🎵',
-    'Cor anglais': '🎵',
-    
-    // Instruments à vent - Cuivres
-    'Trompette': '🎺',
-    'Cornet': '🎺',
-    'Trombone': '🎺',
-    'Cor': '📯',
-    'Cor d\'harmonie': '📯',
-    'Tuba': '🎺',
-    'Euphonium': '🎺',
-    'Bugle': '🎺',
-    
-    // Percussions
-    'Batterie': '🥁',
-    'Percussion': '🥁',
-    'Percussions': '🥁',
-    'Timbales': '🥁',
-    'Xylophone': '🎵',
-    'Vibraphone': '🎵',
-    'Marimba': '🎵',
-    'Cymbales': '🥁',
-    'Caisse claire': '🥁',
-    'Grosse caisse': '🥁',
-    
-    // Autres instruments
-    'Accordéon': '🪗',
-    'Harmonica': '🎵',
-    'Orgue': '🎹',
-    'Synthétiseur': '🎹',
-    'Clavier': '🎹',
-    'Chant': '🎤',
-    'Voix': '🎤',
-    'Formation musicale': '🎼',
-    'Solfège': '🎼'
-  };
-
   // Fonction pour afficher une notification
   const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
     setNotification({ show: true, message, type });
@@ -183,33 +121,6 @@ const AdminInstruments = () => {
   const removePhoto = () => {
     setSelectedPhoto(null);
     setPhotoPreview(null);
-  };
-
-  const usePredefinedLogo = (instrumentName: string) => {
-    const logo = predefinedLogos[instrumentName as keyof typeof predefinedLogos];
-    if (logo) {
-      // Créer une image avec l'emoji comme logo
-      const canvas = document.createElement('canvas');
-      canvas.width = 200;
-      canvas.height = 200;
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        ctx.fillStyle = '#f8fafc';
-        ctx.fillRect(0, 0, 200, 200);
-        ctx.font = '120px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(logo, 100, 100);
-        
-        canvas.toBlob((blob) => {
-          if (blob) {
-            const file = new File([blob], `${instrumentName.toLowerCase()}-logo.png`, { type: 'image/png' });
-            setSelectedPhoto(file);
-            setPhotoPreview(canvas.toDataURL());
-          }
-        });
-      }
-    }
   };
 
   // Upload de la photo vers Supabase Storage
@@ -552,26 +463,7 @@ const AdminInstruments = () => {
                     <label className="block text-sm font-medium text-dark mb-3">
                       Photo de l'instrument (optionnel)
                     </label>
-                    
-                    {/* Logo prédéfini */}
-                    {formData.name && predefinedLogos[formData.name as keyof typeof predefinedLogos] && (
-                      <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-3">
-                            <span className="text-3xl">{predefinedLogos[formData.name as keyof typeof predefinedLogos]}</span>
-                            <span className="text-sm text-blue-700">Logo prédéfini disponible pour {formData.name}</span>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => usePredefinedLogo(formData.name)}
-                            className="px-3 py-1 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700 transition-colors"
-                          >
-                            Utiliser
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                    
+
                     {/* Zone d'upload */}
                     <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
                       {photoPreview ? (
