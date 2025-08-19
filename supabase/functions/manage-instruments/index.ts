@@ -10,7 +10,7 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const { action, id, name } = await req.json();
+    const { action, id, name, teacher, description, photo_url } = await req.json();
     
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
@@ -30,7 +30,7 @@ Deno.serve(async (req: Request) => {
         
         const { data: createData, error: createError } = await supabase
           .from('instruments')
-          .insert({ name })
+          .insert({ name, teacher, description, photo_url })
           .select()
           .single();
         
@@ -44,7 +44,7 @@ Deno.serve(async (req: Request) => {
         
         const { data: updateData, error: updateError } = await supabase
           .from('instruments')
-          .update({ name })
+          .update({ name, teacher, description, photo_url })
           .eq('id', id)
           .select()
           .single();

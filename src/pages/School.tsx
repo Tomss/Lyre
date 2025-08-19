@@ -8,10 +8,20 @@ interface Orchestra {
   photo_url: string | null;
 }
 
+interface Instrument {
+  id: string;
+  name: string;
+  teacher: string | null;
+  description: string | null;
+  photo_url: string | null;
+}
+
 const School = () => {
   const [orchestras, setOrchestras] = useState<Orchestra[]>([]);
+  const [instruments, setInstruments] = useState<Instrument[]>([]);
   const [selectedOrchestra, setSelectedOrchestra] = useState<Orchestra | null>(null);
   const [loading, setLoading] = useState(true);
+  const [instrumentsLoading, setInstrumentsLoading] = useState(true);
 
   // Récupérer tous les orchestres
   const fetchOrchestras = async () => {
@@ -40,8 +50,30 @@ const School = () => {
     setLoading(false);
   };
 
+  // Récupérer tous les instruments
+  const fetchInstruments = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-instruments`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setInstruments(data || []);
+      }
+    } catch (err) {
+      console.error('Erreur lors de la récupération des instruments:', err);
+    }
+    setInstrumentsLoading(false);
+  };
+
   useEffect(() => {
     fetchOrchestras();
+    fetchInstruments();
   }, []);
 
   return (
@@ -160,6 +192,89 @@ const School = () => {
               </p>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Section Instruments */}
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16 animate-fade-in">
+            <h2 className="font-poppins font-bold text-3xl md:text-4xl text-dark mb-6">
+              Nos classes d'instruments
+            </h2>
+            <p className="font-inter text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
+              Découvrez la diversité de nos enseignements instrumentaux avec nos professeurs qualifiés
+            </p>
+          </div>
+
+          {instrumentsLoading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-gray-600">Chargement des instruments...</p>
+            </div>
+          ) : instruments.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-fade-in">
+              {instruments.map((instrument) => (
+                <div key={instrument.id} className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
+                  {/* Photo de l'instrument */}
+                  <div className="aspect-square bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-6">
+                    {instrument.photo_url ? (
+                      <img
+                        src={instrument.photo_url}
+                        alt={instrument.name}
+                        className="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform duration-300"
+                        onError={(e) => {
+                          // En cas d'erreur, afficher l'icône par défaut
+                          e.currentTarget.style.display = 'none';
+                          e.currentTarget.nextElementSibling.style.display = 'flex';
+                        }}
+                      />
+                    ) : null}
+                    <div 
+                      className={`flex items-center justify-center w-full h-full ${
+                        instrument.photo_url ? 'hidden' : 'flex'
+                      }`}
+                    >
+                      <Music className="h-16 w-16 text-gray-400 group-hover:text-primary transition-colors duration-300" />
+                    </div>
+                  </div>
+                  
+                  {/* Contenu */}
+                  <div className="p-6">
+                    <h3 className="font-poppins font-semibold text-xl text-dark mb-2 group-hover:text-primary transition-colors duration-300">
+                      {instrument.name}
+                    </h3>
+                    
+                    {instrument.teacher && (
+                      <div className="flex items-center space-x-2 mb-3">
+                        <div className="w-2 h-2 bg-primary rounded-full"></div>
+                        <span className="text-sm text-gray-600 font-medium">
+                          {instrument.teacher}
+                        </span>
+                      </div>
+                    )}
+                    
+                    {instrument.description && (
+                      <p className="text-sm text-gray-500 leading-relaxed line-clamp-3">
+                        {instrument.description}
+                      </p>
+                    )}
+                    
+                    {!instrument.teacher && !instrument.description && (
+                      <p className="text-sm text-gray-400 italic">
+                        Informations à venir
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 animate-fade-in">
+              <Music className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-600 text-lg">Aucun instrument disponible pour le moment.</p>
+            </div>
+          )}
         </div>
       </section>
 
