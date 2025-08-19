@@ -28,13 +28,16 @@ const Contact = () => {
   return (
     <div className="font-inter pt-20">
       {/* Header Section */}
-      <section className="py-20 bg-gradient-to-br from-orange-50 via-amber-25 to-yellow-25">
+      <section className="relative py-20 bg-cover bg-center bg-no-repeat bg-gray-900" 
+        style={{ 
+          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url("https://images.pexels.com/photos/1751731/pexels-photo-1751731.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop")` 
+        }}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center animate-fade-in">
-            <h1 className="font-poppins font-bold text-4xl md:text-5xl text-dark mb-6">
+          <div className="text-center animate-fade-in relative z-10">
+            <h1 className="font-poppins font-bold text-4xl md:text-5xl text-white mb-6">
               Contactez-nous.
             </h1>
-            <p className="font-inter text-lg text-gray-600 max-w-2xl mx-auto">
+            <p className="font-inter text-lg text-white/90 max-w-2xl mx-auto">
               Nous sommes là pour répondre à toutes vos questions sur nos cours, 
               nos événements et notre école de musique.
             </p>

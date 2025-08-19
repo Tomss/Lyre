@@ -101,21 +101,24 @@ const Events = () => {
       )}
 
       {/* Header Section */}
-      <section className="py-20 bg-gradient-to-br from-orange-50 via-amber-25 to-yellow-25">
+      <section className="relative py-20 bg-cover bg-center bg-no-repeat bg-gray-900" 
+        style={{ 
+          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url("https://images.pexels.com/photos/1327430/pexels-photo-1327430.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop")` 
+        }}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center animate-fade-in">
-            <div className="inline-flex items-center space-x-3 bg-white/80 backdrop-blur-sm rounded-full px-6 py-3 mb-8 border border-orange-200 shadow-lg">
-              <Music className="h-6 w-6 text-orange-600" />
-              <span className="text-orange-800 font-semibold">Nos événements musicaux</span>
+          <div className="text-center animate-fade-in relative z-10">
+            <div className="inline-flex items-center space-x-3 bg-white/20 backdrop-blur-sm rounded-full px-6 py-3 mb-8 border border-white/30 shadow-lg">
+              <Music className="h-6 w-6 text-white" />
+              <span className="text-white font-semibold">Nos événements musicaux</span>
             </div>
-            <h1 className="font-poppins font-bold text-4xl md:text-5xl text-dark mb-6">Nos Événements</h1>
+            <h1 className="font-poppins font-bold text-4xl md:text-5xl text-white mb-6">Nos Événements</h1>
             {loading ? (
-              <div className="flex items-center justify-center space-x-3 text-gray-600">
-                <div className="animate-spin rounded-full h-6 w-6 border-2 border-orange-300 border-t-orange-600"></div>
+              <div className="flex items-center justify-center space-x-3 text-white/80">
+                <div className="animate-spin rounded-full h-6 w-6 border-2 border-white/30 border-t-white"></div>
                 <span>Chargement de notre calendrier musical...</span>
               </div>
             ) : (
-              <p className="font-inter text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
+              <p className="font-inter text-lg text-white/90 max-w-2xl mx-auto leading-relaxed">
                 {events.length > 0 ? 'Découvrez notre calendrier de concerts et rejoignez-nous pour ces moments musicaux exceptionnels' : 'Notre calendrier musical se prépare... Revenez bientôt pour découvrir nos prochains concerts !'}
               </p>
             )}
@@ -125,14 +128,14 @@ const Events = () => {
               <div className="flex items-center justify-center space-x-4 mt-8">
                 <button
                   onClick={() => setFilter('upcoming')}
-                  className={`inline-flex items-center space-x-2 px-6 py-3 rounded-full font-semibold transition-all duration-300 shadow-lg ${filter === 'upcoming' ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white' : 'bg-white text-gray-600 hover:text-gray-800 hover:bg-gray-50'}`}
+                  className={`inline-flex items-center space-x-2 px-6 py-3 rounded-full font-semibold transition-all duration-300 shadow-lg ${filter === 'upcoming' ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white' : 'bg-white/90 text-gray-700 hover:bg-white hover:text-gray-800'}`}
                 >
                   <Star className="h-4 w-4" />
                   <span>À venir ({upcomingEvents.length})</span>
                 </button>
                 <button
                   onClick={() => setFilter('past')}
-                  className={`inline-flex items-center space-x-2 px-6 py-3 rounded-full font-semibold transition-all duration-300 shadow-lg ${filter === 'past' ? 'bg-gradient-to-r from-gray-500 to-slate-600 text-white' : 'bg-white text-gray-600 hover:text-gray-800 hover:bg-gray-50'}`}
+                  className={`inline-flex items-center space-x-2 px-6 py-3 rounded-full font-semibold transition-all duration-300 shadow-lg ${filter === 'past' ? 'bg-gradient-to-r from-gray-500 to-slate-600 text-white' : 'bg-white/90 text-gray-700 hover:bg-white hover:text-gray-800'}`}
                 >
                   <Clock className="h-4 w-4" />
                   <span>Passés ({pastEvents.length})</span>
