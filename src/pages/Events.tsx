@@ -78,27 +78,10 @@ const Events = () => {
       {isModalOpen && selectedEvent && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          </div>
+        </div>
+      )}
           
-          {/* Filtres */}
-          {events.length > 0 && (
-            <div className="flex items-center justify-center space-x-4 mt-8">
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => setFilter('upcoming')}
-                  className={`inline-flex items-center space-x-2 px-6 py-3 rounded-full font-semibold transition-all duration-300 shadow-lg ${
-                    filter === 'upcoming'
-                      ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white'
-                      : 'bg-white text-gray-600 hover:text-gray-800 hover:bg-gray-50'
-                  }`}
-                >
-                  <Star className="h-4 w-4" />
-                  <span>À venir ({upcomingEvents.length})</span>
-                </button>
-                <button
-                  onClick={() => setFilter('past')}
-                  className={`inline-flex items-center space-x-2 px-6 py-3 rounded-full font-semibold transition-all duration-300 shadow-lg ${
-                    filter === 'past'
-                      ? 'bg-gradient-to-r from-gray-500 to-slate-600 text-white'
       {/* Header Section */}
       <section className="py-20 bg-gradient-to-br from-orange-50 via-amber-25 to-yellow-25">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -260,6 +243,10 @@ const Events = () => {
                                   </div>
                                   <span className="font-medium text-sm">{event.location}</span>
                                 </div>
+                              )}
+                              
+                              {event.orchestras && event.orchestras.length > 0 && (
+                                <div className="flex items-center space-x-3 text-gray-500">
                                   <div className="bg-gray-100 p-2 rounded-lg">
                                     <Users className="h-4 w-4" />
                                   </div>
@@ -273,6 +260,7 @@ const Events = () => {
                                 </div>
                               )}
                               
+                              <div className="space-y-2 text-xs text-gray-500">
                                 {event.orchestras && event.orchestras.length > 0 && (
                                   <div className="flex items-center space-x-2">
                                     <Users className="h-3 w-3" />
@@ -287,7 +275,6 @@ const Events = () => {
                                     </p>
                                   </div>
                                 )}
-                                </div>
                               </div>
                             </div>
                           </div>
