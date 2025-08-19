@@ -190,13 +190,13 @@ const School = () => {
       </section>
 
       {/* Section Instruments */}
-      <section className="py-20 bg-gradient-to-br from-slate-900 via-gray-800 to-slate-900 relative overflow-hidden">
+      <section className="py-20 bg-gradient-to-br from-gray-800 via-slate-800 to-gray-900 relative overflow-hidden">
         {/* Particules d'arrière-plan */}
         <div className="absolute inset-0">
           {[...Array(20)].map((_, i) => (
             <div
               key={i}
-              className="absolute w-2 h-2 bg-amber-400/20 rounded-full animate-pulse"
+              className="absolute w-2 h-2 bg-orange-400/15 rounded-full animate-pulse"
               style={{
                 left: `${Math.random() * 100}%`,
                 top: `${Math.random() * 100}%`,
@@ -211,12 +211,12 @@ const School = () => {
           <div className="text-center mb-16 animate-fade-in relative z-10">
             <div className="inline-block mb-6">
               <div className="flex items-center justify-center space-x-4 mb-4">
-                <div className="w-12 h-0.5 bg-gradient-to-r from-transparent to-amber-400"></div>
-                <Music className="h-8 w-8 text-amber-400 animate-pulse" />
-                <div className="w-12 h-0.5 bg-gradient-to-l from-transparent to-amber-400"></div>
+                <div className="w-12 h-0.5 bg-gradient-to-r from-transparent to-orange-400"></div>
+                <Music className="h-8 w-8 text-orange-400 animate-pulse" />
+                <div className="w-12 h-0.5 bg-gradient-to-l from-transparent to-orange-400"></div>
               </div>
             </div>
-            <h2 className="font-poppins font-bold text-4xl md:text-5xl text-white mb-6 bg-gradient-to-r from-amber-200 via-yellow-200 to-amber-200 bg-clip-text text-transparent">
+            <h2 className="font-poppins font-bold text-4xl md:text-5xl text-white mb-6 bg-gradient-to-r from-orange-200 via-amber-200 to-orange-200 bg-clip-text text-transparent">
               Nos classes d'instruments
             </h2>
             <p className="font-inter text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
@@ -242,17 +242,17 @@ const School = () => {
                   {/* Hexagone container */}
                   <div className="relative w-40 h-40 mx-auto">
                     {/* Hexagone de fond avec effet glow */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-amber-400/20 to-yellow-600/20 rounded-3xl transform rotate-45 group-hover:rotate-12 transition-all duration-500 group-hover:scale-110 shadow-lg group-hover:shadow-amber-400/30"></div>
+                    <div className="absolute inset-0 bg-gradient-to-br from-orange-400/15 to-amber-500/15 rounded-3xl transform rotate-45 group-hover:rotate-12 transition-all duration-500 group-hover:scale-110 shadow-lg group-hover:shadow-orange-400/20"></div>
                     
                     {/* Hexagone principal */}
-                    <div className="absolute inset-2 bg-gradient-to-br from-white via-gray-50 to-gray-100 rounded-2xl transform rotate-45 group-hover:rotate-12 transition-all duration-500 shadow-xl group-hover:shadow-2xl border border-gray-200/50">
+                    <div className="absolute inset-2 bg-gradient-to-br from-white via-orange-50 to-amber-50 rounded-2xl transform rotate-45 group-hover:rotate-12 transition-all duration-500 shadow-xl group-hover:shadow-2xl">
                       {/* Contenu de l'instrument */}
                       <div className="absolute inset-0 flex items-center justify-center transform -rotate-45 group-hover:-rotate-12 transition-all duration-500 p-4">
                     {instrument.photo_url ? (
                       <img
                         src={instrument.photo_url}
                         alt={instrument.name}
-                            className="w-20 h-20 object-cover rounded-xl group-hover:scale-110 transition-all duration-500 shadow-md"
+                            className="w-20 h-20 object-cover rounded-xl group-hover:scale-110 transition-all duration-500"
                         onError={(e) => {
                           e.currentTarget.style.display = 'none';
                           e.currentTarget.nextElementSibling.style.display = 'flex';
@@ -260,10 +260,10 @@ const School = () => {
                       />
                     ) : null}
                         <div 
-                          className="hidden w-20 h-20 items-center justify-center bg-gradient-to-br from-amber-100 to-yellow-100 rounded-xl"
+                          className="hidden w-20 h-20 items-center justify-center bg-gradient-to-br from-orange-100 to-amber-100 rounded-xl"
                       style={{ display: instrument.photo_url ? 'none' : 'flex' }}
                     >
-                          <Music className="h-10 w-10 text-amber-600 group-hover:text-amber-700 transition-colors duration-500" />
+                          <Music className="h-10 w-10 text-orange-600 group-hover:text-orange-700 transition-colors duration-500" />
                     </div>
                       </div>
                     </div>
@@ -274,13 +274,13 @@ const School = () => {
                   
                   {/* Informations sous l'hexagone */}
                   <div className="mt-6 text-center">
-                    <h3 className="font-poppins font-bold text-lg text-white mb-2 group-hover:text-amber-200 transition-colors duration-300">
+                    <h3 className="font-poppins font-bold text-lg text-white mb-2 group-hover:text-orange-200 transition-colors duration-300">
                       {instrument.name}
                     </h3>
                     
                     {instrument.teacher && (
                       <div className="mb-2">
-                        <span className="text-sm text-amber-300 font-semibold bg-amber-900/30 px-3 py-1 rounded-full">
+                        <span className="text-sm text-orange-300 font-semibold bg-orange-900/20 px-3 py-1 rounded-full">
                           {instrument.teacher}
                         </span>
                       </div>
@@ -308,7 +308,7 @@ const School = () => {
                       {[...Array(3)].map((_, i) => (
                         <div
                           key={i}
-                          className="w-1 h-1 bg-amber-400 rounded-full animate-bounce"
+                          className="w-1 h-1 bg-orange-400 rounded-full animate-bounce"
                           style={{ animationDelay: `${i * 0.2}s` }}
                         />
                       ))}
@@ -320,8 +320,8 @@ const School = () => {
               
               {/* Message d'encouragement */}
               <div className="text-center mt-16 animate-fade-in">
-                <div className="bg-gradient-to-r from-amber-900/30 via-yellow-900/30 to-amber-900/30 backdrop-blur-sm rounded-2xl p-8 max-w-2xl mx-auto border border-amber-400/20">
-                  <h3 className="font-poppins font-bold text-2xl text-amber-200 mb-4">
+                <div className="bg-gradient-to-r from-orange-900/20 via-amber-900/20 to-orange-900/20 backdrop-blur-sm rounded-2xl p-8 max-w-2xl mx-auto border border-orange-400/15">
+                  <h3 className="font-poppins font-bold text-2xl text-orange-200 mb-4">
                     🎵 Trouvez votre instrument !
                   </h3>
                   <p className="text-gray-300 leading-relaxed">
