@@ -150,14 +150,14 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({ files, mediaType, className
           </div>
           <div className="text-center">
             <div className="bg-white/20 backdrop-blur-sm p-4 rounded-full mb-3 mx-auto w-fit group-hover:bg-white/30 transition-all duration-300 border border-white/30">
-              <File className="h-10 w-10 text-white drop-shadow-lg" />
+              <Music className="h-10 w-10 text-white drop-shadow-lg" />
             </div>
             <div className="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full">
               <p className="text-sm text-purple-800 font-bold">Lyrissimot</p>
             </div>
           </div>
           <div className="absolute top-2 right-2 bg-white/20 backdrop-blur-sm text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 border border-white/30">
-            <File className="h-4 w-4" />
+            <Music className="h-4 w-4" />
           </div>
         </div>
       </div>
@@ -198,7 +198,7 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({ files, mediaType, className
             </div>
             <div className="text-center">
               <div className="bg-white/20 backdrop-blur-sm p-4 rounded-full mb-3 mx-auto w-fit border border-white/30">
-                <File className="h-10 w-10 text-white drop-shadow-lg" />
+                <Music className="h-10 w-10 text-white drop-shadow-lg" />
               </div>
               <div className="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full">
                 <p className="text-sm text-purple-800 font-bold">
@@ -212,7 +212,7 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({ files, mediaType, className
         return (
           <div className="aspect-[4/3] bg-gray-100 rounded-lg flex items-center justify-center">
             <ImageIcon className="h-12 w-12 text-gray-400" />
-          </div>
+      case 'lyrissimot': return Music;
         );
     }
   };

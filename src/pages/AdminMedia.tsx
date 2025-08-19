@@ -408,7 +408,7 @@ const AdminMedia = () => {
       case 'album': return Camera;
       case 'enregistrement': return Music;
       case 'journal': return FileText;
-      case 'lyrissimot': return File;
+      case 'lyrissimot': return Music;
       default: return Image;
     }
   };
