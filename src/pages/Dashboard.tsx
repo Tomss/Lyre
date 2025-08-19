@@ -139,7 +139,7 @@ const Dashboard = () => {
         </div>
 
         {/* Admin Section - Visible uniquement pour les Admins */}
-        {profile?.role === 'Admin' && (
+        {(profile?.role === 'Admin' || profile?.role === 'Gestionnaire') && (
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 mb-8">
             <h2 className="font-poppins font-semibold text-xl text-dark mb-4">
               Administration
@@ -148,36 +148,42 @@ const Dashboard = () => {
               Accédez aux outils d'administration de l'école.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Link
-                to="/admin/users"
-                className="inline-flex items-center space-x-2 bg-primary hover:bg-primary/90 text-white font-semibold px-6 py-3 rounded-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg text-center justify-center"
-              >
-                <Users className="h-5 w-5" />
-                <span>Utilisateurs</span>
-              </Link>
-              <Link
-                to="/admin/instruments"
-                className="inline-flex items-center space-x-2 bg-accent hover:bg-accent/90 text-white font-semibold px-6 py-3 rounded-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg text-center justify-center"
-              >
-                <Music className="h-5 w-5" />
-                <span>Instruments</span>
-              </Link>
-              <Link
-                to="/admin/orchestras"
-                className="inline-flex items-center space-x-2 bg-primary hover:bg-primary/90 text-white font-semibold px-6 py-3 rounded-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg text-center justify-center"
-              >
-                <Users className="h-5 w-5" />
-                <span>Orchestres</span>
-              </Link>
-              <Link
-                to="/admin/events"
-                className="inline-flex items-center space-x-2 bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg text-center justify-center"
-              >
-                <Calendar className="h-5 w-5" />
-                <span>Événements</span>
-              </Link>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+              {profile?.role === 'Admin' && (
+                <Link
+                  to="/admin/users"
+                  className="inline-flex items-center space-x-2 bg-primary hover:bg-primary/90 text-white font-semibold px-6 py-3 rounded-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg text-center justify-center"
+                >
+                  <Users className="h-5 w-5" />
+                  <span>Utilisateurs</span>
+                </Link>
+              )}
+              {profile?.role === 'Admin' && (
+                <Link
+                  to="/admin/instruments"
+                  className="inline-flex items-center space-x-2 bg-accent hover:bg-accent/90 text-white font-semibold px-6 py-3 rounded-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg text-center justify-center"
+                >
+                  <Music className="h-5 w-5" />
+                  <span>Instruments</span>
+                </Link>
+              )}
+              {profile?.role === 'Admin' && (
+                <Link
+                  to="/admin/orchestras"
+                  className="inline-flex items-center space-x-2 bg-primary hover:bg-primary/90 text-white font-semibold px-6 py-3 rounded-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg text-center justify-center"
+                >
+                  <Users className="h-5 w-5" />
+                  <span>Orchestres</span>
+                </Link>
+              )}
+              {profile?.role === 'Admin' && (
+                <Link
+                  to="/admin/events"
+                  className="inline-flex items-center space-x-2 bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg text-center justify-center"
+                >
+                  <Calendar className="h-5 w-5" />
+                  <span>Événements</span>
+                </Link>
+              )}
               <Link
                 to="/admin/media"
                 className="inline-flex items-center space-x-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold px-6 py-3 rounded-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg text-center justify-center"
