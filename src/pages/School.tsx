@@ -218,11 +218,11 @@ const School = () => {
               <p className="text-gray-600">Chargement des instruments...</p>
             </div>
           ) : instruments.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 animate-fade-in max-w-5xl mx-auto">
+            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 animate-fade-in max-w-6xl mx-auto">
               {instruments.map((instrument) => (
                 <div key={instrument.id} className="bg-white/90 backdrop-blur-sm rounded-lg shadow-sm border border-slate-200/50 overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group">
                   {/* Photo de l'instrument */}
-                  <div className="aspect-square bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-3">
+                  <div className="aspect-square bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-2">
                     {instrument.photo_url ? (
                       <img
                         src={instrument.photo_url}
@@ -241,18 +241,18 @@ const School = () => {
                       }`}
                     >
                       <Music className="h-16 w-16 text-gray-400 group-hover:text-primary transition-colors duration-300" />
-                      <Music className="h-6 w-6 text-slate-400 group-hover:text-slate-600 transition-colors duration-300" />
+                      <Music className="h-5 w-5 text-slate-400 group-hover:text-slate-600 transition-colors duration-300" />
                     </div>
                   </div>
                   
                   {/* Contenu */}
-                  <div className="p-3">
-                    <h3 className="font-poppins font-semibold text-xs text-dark mb-1 group-hover:text-slate-700 transition-colors duration-300 text-center">
+                  <div className="p-2">
+                    <h3 className="font-poppins font-semibold text-xs text-dark mb-0.5 group-hover:text-slate-700 transition-colors duration-300 text-center">
                       {instrument.name}
                     </h3>
                     
                     {instrument.teacher && (
-                      <div className="text-center mb-1">
+                      <div className="text-center mb-0.5">
                         <span className="text-xs text-slate-600 font-medium">
                           {instrument.teacher}
                         </span>
@@ -260,7 +260,7 @@ const School = () => {
                     )}
                     
                     {instrument.description && (
-                      <p className="text-xs text-slate-500 leading-tight line-clamp-1 text-center">
+                      <p className="text-xs text-slate-500 leading-tight line-clamp-1 text-center truncate">
                         {instrument.description}
                       </p>
                     )}
