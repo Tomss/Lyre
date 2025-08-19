@@ -36,7 +36,7 @@ Deno.serve(async (req: Request) => {
           )
         )
       `)
-      .order('event_date', { ascending: true });
+      .order('event_date', { ascending: false });
 
     if (type === 'public') {
       // Événements publics : seulement les concerts
