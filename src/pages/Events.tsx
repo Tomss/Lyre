@@ -357,7 +357,7 @@ const Events = () => {
             </div>
           </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 };
