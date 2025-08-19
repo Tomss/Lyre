@@ -164,12 +164,12 @@ const Media = () => {
       )}
 
       {/* Header Section */}
-      <section className="relative py-20 bg-cover bg-center bg-no-repeat bg-gray-900" 
+      <section className="relative py-32 bg-cover bg-center bg-no-repeat bg-gray-900" 
         style={{ 
           backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url("https://images.pexels.com/photos/164743/pexels-photo-164743.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop")` 
         }}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center animate-fade-in relative z-10">
+          <div className="text-center animate-fade-in relative z-10 pt-16">
             <h1 className="font-poppins font-bold text-4xl md:text-5xl text-white mb-6">
               Galerie de nos moments musicaux.
             </h1>
