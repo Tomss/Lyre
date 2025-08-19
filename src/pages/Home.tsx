@@ -2,7 +2,22 @@ import React, { useEffect } from 'react';
 import { Users, Calendar, Heart, Music2, Star, Award } from 'lucide-react';
 
 const Home = () => {
+  const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
+  
+  const backgroundImages = [
+    'https://images.pexels.com/photos/164743/pexels-photo-164743.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop', // Partition de musique
+    'https://images.pexels.com/photos/1407322/pexels-photo-1407322.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop', // Orchestre symphonique
+    'https://images.pexels.com/photos/1751731/pexels-photo-1751731.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop', // Instruments à vent
+    'https://images.pexels.com/photos/1246437/pexels-photo-1246437.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop', // Trompettes dorées
+    'https://images.pexels.com/photos/1327430/pexels-photo-1327430.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop'  // Chef d'orchestre
+  ];
+
   useEffect(() => {
+    // Carousel d'images de fond
+    const imageInterval = setInterval(() => {
+      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % backgroundImages.length);
+    }, 5000); // Change toutes les 5 secondes
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -17,7 +32,10 @@ const Home = () => {
     const elements = document.querySelectorAll('.animate-on-scroll');
     elements.forEach((el) => observer.observe(el));
 
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      clearInterval(imageInterval);
+    };
   }, []);
 
   const features = [
@@ -42,9 +60,15 @@ const Home = () => {
     <div className="font-inter">
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat bg-gray-900" 
-        style={{
-          backgroundImage: 'linear-gradient(rgba(0, 0, 0, 0.6), rgba(234, 88, 12, 0.3)), url("https://images.pexels.com/photos/164743/pexels-photo-164743.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop")'
-        }}>
+      >
+        {/* Images de fond avec transition */}
+        {backgroundImages.map((image, index) => (
+          <div
+            key={index}
+            className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-1000 ${index === currentImageIndex ? 'opacity-100' : 'opacity-0'}`}
+            style={{ backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(234, 88, 12, 0.3)), url("${image}")` }}
+          />
+        ))}
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center animate-fade-in">
             <h1 className="font-poppins font-bold text-4xl md:text-6xl text-white mb-6">
@@ -57,6 +81,17 @@ const Home = () => {
               Depuis 1931, nous cultivons la passion musicale
             </p>
           </div>
+        </div>
+        
+        {/* Indicateurs de carousel */}
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10">
+          {backgroundImages.map((_, index) => (
+            <button
+              key={index}
+              className={`w-3 h-3 rounded-full transition-all duration-300 ${index === currentImageIndex ? 'bg-orange-400 scale-125' : 'bg-white/50 hover:bg-white/75'}`}
+              onClick={() => setCurrentImageIndex(index)}
+            />
+          ))}
         </div>
       </section>
 
