@@ -146,14 +146,11 @@ const School = () => {
                       {/* Titre centré */}
                       <div className="text-center mb-8">
                         <div className="flex items-center justify-center space-x-4 mb-4">
-                          <div className="bg-gradient-to-br from-indigo-600 to-purple-600 p-4 rounded-xl shadow-lg">
-                            <Users className="h-8 w-8 text-white" />
-                          </div>
                           <div>
                             <h3 className="font-poppins font-bold text-3xl text-dark mb-1">
                               {selectedOrchestra.name}
                             </h3>
-                            <div className="h-1 w-16 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full mx-auto"></div>
+                           <div className="h-1 w-16 bg-gradient-to-r from-orange-500 to-amber-500 rounded-full mx-auto"></div>
                           </div>
                         </div>
                       </div>
@@ -230,10 +227,10 @@ const School = () => {
                           e.currentTarget.nextElementSibling.style.display = 'flex';
                         }}
                       />
-                    ) : null}
+                     className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${
                     <div 
-                      className={`flex items-center justify-center w-full h-full ${
-                        instrument.photo_url ? 'hidden' : 'flex'
+                         ? 'bg-gradient-to-r from-orange-600 to-amber-600 text-white shadow-lg'
+                         : 'bg-white/80 backdrop-blur-sm text-gray-700 hover:bg-orange-50 shadow-md border border-white/50'
                       }`}
                     >
                       <Music className="h-16 w-16 text-gray-400 group-hover:text-primary transition-colors duration-300" />
