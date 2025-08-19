@@ -182,7 +182,6 @@ const Events = () => {
         <>
           {/* Événements à venir */}
           {filter === 'upcoming' && (
-            <>
             upcomingEvents.length > 0 ? (
               <>
               <section className="py-16 bg-gradient-to-br from-slate-50 via-gray-50 to-blue-50">
@@ -361,7 +360,6 @@ const Events = () => {
                 </div>
               </section>
             )
-            </>
           )}
 
           {/* Événements passés */}
