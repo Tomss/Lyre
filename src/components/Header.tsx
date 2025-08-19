@@ -32,11 +32,9 @@ const Header = () => {
 
   return (
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-      isScrolled
-        ? 'bg-white shadow-lg border-b border-orange-100' 
-        : isHeroPage 
-          ? 'bg-gradient-to-b from-black/60 via-black/40 to-transparent backdrop-blur-sm'
-          : 'bg-white shadow-lg border-b border-orange-100'
+      isHeroPage && !isScrolled
+        ? 'bg-gradient-to-b from-black/60 via-black/40 to-transparent backdrop-blur-sm'
+        : 'bg-white shadow-lg border-b border-orange-100'
     }`}>
       <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 lg:h-20">
