@@ -100,7 +100,7 @@ const Home = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center animate-fade-in">
             <h2 className="font-poppins font-bold text-3xl md:text-4xl text-orange-800 mb-8">
-              Notre Histoire
+              Bienvenue
             </h2>
             <div className="space-y-6 text-lg leading-relaxed text-gray-800">
               <p className="font-inter">
