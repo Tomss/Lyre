@@ -225,7 +225,3 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({ files, mediaType, className
 };
 
 export default MediaPreview;
-        )
-    }
-  }
-}
