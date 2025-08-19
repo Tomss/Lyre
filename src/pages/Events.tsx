@@ -260,10 +260,6 @@ const Events = () => {
                                   </div>
                                   <span className="font-medium text-sm">{event.location}</span>
                                 </div>
-                              )}
-                              
-                              {event.orchestras && event.orchestras.length > 0 && (
-                                <div className="flex items-center space-x-3 text-gray-500">
                                   <div className="bg-gray-100 p-2 rounded-lg">
                                     <Users className="h-4 w-4" />
                                   </div>
@@ -271,6 +267,41 @@ const Events = () => {
                                 </div>
                               )}
                               
+                              {event.description && (
+                                <div className="text-sm text-gray-600">
+                                  {event.description}
+                                </div>
+                              )}
+                              
+                                {event.orchestras && event.orchestras.length > 0 && (
+                                  <div className="flex items-center space-x-2">
+                                    <Users className="h-3 w-3" />
+                                    <span className="truncate">{event.orchestras.map(o => o.name).join(', ')}</span>
+                                  </div>
+          
+          {/* Filtres */}
+          {events.length > 0 && (
+            <div className="flex items-center justify-center space-x-4 mt-8">
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => setFilter('upcoming')}
+                  className={`inline-flex items-center space-x-2 px-6 py-3 rounded-full font-semibold transition-all duration-300 shadow-lg ${
+                    filter === 'upcoming'
+                      ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white'
+                      : 'bg-white text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                  }`}
+                >
+                  <Star className="h-4 w-4" />
+                  <span>À venir ({upcomingEvents.length})</span>
+                </button>
+                <button
+                  onClick={() => setFilter('past')}
+                  className={`inline-flex items-center space-x-2 px-6 py-3 rounded-full font-semibold transition-all duration-300 shadow-lg ${
+                    filter === 'past'
+                      ? 'bg-gradient-to-r from-gray-500 to-slate-600 text-white'
+                                )}
+                                </div>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -333,13 +364,6 @@ const Events = () => {
                                 <div className="flex items-center space-x-2">
                                   <MapPin className="h-3 w-3" />
                                   <span className="truncate">{event.location}</span>
-                                </div>
-                              )}
-                              
-                              {event.orchestras && event.orchestras.length > 0 && (
-                                <div className="flex items-center space-x-2">
-                                  <Users className="h-3 w-3" />
-                                  <span className="truncate">{event.orchestras.map(o => o.name).join(', ')}</span>
                                 </div>
                               )}
                               
