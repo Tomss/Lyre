@@ -189,13 +189,6 @@ const School = () => {
                 </div>
               )}
             </div>
-
-            {/* Conclusion */}
-            <div className="animate-fade-in">
-              <p className="font-inter text-lg text-gray-700 leading-relaxed text-center bg-white/60 backdrop-blur-sm p-6 rounded-xl border border-white/50 shadow-sm">
-                Si les activités d'éveil sont ludiques, la récompense, pour les néophytes, est l'intégration progressive dans les orchestres d'élèves, jusqu'à l'accession au Grand Orchestre d'Harmonie.
-              </p>
-            </div>
           </div>
         </div>
       </section>
