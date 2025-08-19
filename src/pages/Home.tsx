@@ -43,12 +43,12 @@ const Home = () => {
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat bg-gray-900" 
         style={{
-          backgroundImage: 'linear-gradient(rgba(0, 0, 0, 0.6), rgba(234, 88, 12, 0.3)), url("https://images.pexels.com/photos/1407322/pexels-photo-1407322.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop")'
+          backgroundImage: 'linear-gradient(rgba(0, 0, 0, 0.6), rgba(234, 88, 12, 0.3)), url("https://images.pexels.com/photos/164743/pexels-photo-164743.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop")'
         }}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center animate-fade-in">
             <h1 className="font-poppins font-bold text-4xl md:text-6xl text-white mb-6">
-              Bienvenue à la Lyre
+              Lyre Cheminote et Municipale de Chalindrey
             </h1>
             <p className="font-inter text-xl text-orange-100 mb-8 leading-relaxed">
               Rejoignez notre communauté musicale dynamique !
@@ -56,21 +56,6 @@ const Home = () => {
             <p className="font-inter text-lg text-orange-300 font-medium mb-12">
               Depuis 1931, nous cultivons la passion musicale
             </p>
-            <div className="mt-12">
-              <div className="bg-gradient-to-br from-primary/10 to-accent/10 rounded-xl p-8">
-              <div className="bg-white/95 backdrop-blur-sm rounded-xl p-8 shadow-2xl border border-orange-200">
-                  <div className="bg-orange-100 p-4 rounded-full">
-                    <Music2 className="h-12 w-12 text-orange-600" />
-                  </div>
-                </div>
-                <h3 className="font-poppins font-semibold text-2xl text-orange-800 mb-4">
-                  Depuis 1931
-                </h3>
-                <p className="font-inter text-gray-700 text-lg">
-                  Plus de 90 ans d'histoire musicale au service de la passion et de l'apprentissage
-                </p>
-              </div>
-            </div>
           </div>
         </div>
       </section>
