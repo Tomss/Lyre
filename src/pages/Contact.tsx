@@ -28,7 +28,7 @@ const Contact = () => {
   return (
     <div className="font-inter pt-20">
       {/* Header Section */}
-      <section className="py-20 bg-gradient-to-r from-primary/10 to-accent/10">
+      <section className="py-20 bg-gradient-to-br from-orange-100 via-amber-50 to-yellow-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center animate-fade-in">
             <h1 className="font-poppins font-bold text-4xl md:text-5xl text-dark mb-6">
@@ -43,13 +43,13 @@ const Contact = () => {
       </section>
 
       {/* Contact Information */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {contactInfo.map((info, index) => (
-              <div key={index} className="text-center animate-fade-in">
-                <div className="bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <info.icon className="h-8 w-8 text-primary" />
+              <div key={index} className="text-center animate-fade-in bg-white/60 backdrop-blur-sm rounded-xl p-6 border border-white/50 shadow-md hover:shadow-lg transition-all duration-300">
+                <div className="bg-gradient-to-br from-indigo-400 to-purple-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                  <info.icon className="h-8 w-8 text-white" />
                 </div>
                 <h3 className="font-poppins font-semibold text-xl text-dark mb-4">
                   {info.title}
@@ -68,18 +68,18 @@ const Contact = () => {
       </section>
 
       {/* Map Placeholder and Additional Info */}
-      <section className="py-20 bg-gray-50">
+      <section className="py-20 bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             {/* Map Placeholder */}
             <div className="animate-fade-in">
-              <div className="bg-gradient-to-br from-primary/20 to-accent/20 rounded-lg h-80 flex items-center justify-center">
-                <MapPin className="h-16 w-16 text-primary/50" />
+              <div className="bg-gradient-to-br from-teal-400 to-cyan-500 rounded-lg h-80 flex items-center justify-center shadow-lg">
+                <MapPin className="h-16 w-16 text-white/80" />
               </div>
             </div>
             
             {/* Additional Information */}
-            <div className="animate-fade-in">
+            <div className="animate-fade-in bg-white/60 backdrop-blur-sm rounded-xl p-8 border border-white/50 shadow-md">
               <h2 className="font-poppins font-bold text-3xl text-dark mb-6">
                 Venez nous rendre visite
               </h2>
@@ -90,8 +90,8 @@ const Contact = () => {
               </p>
               <div className="space-y-4">
                 <div className="flex items-start space-x-3">
-                  <div className="bg-accent/20 p-2 rounded-full mt-1">
-                    <MapPin className="h-4 w-4 text-accent" />
+                  <div className="bg-gradient-to-br from-teal-400 to-cyan-500 p-2 rounded-full mt-1 shadow-md">
+                    <MapPin className="h-4 w-4 text-white" />
                   </div>
                   <div>
                     <h4 className="font-poppins font-semibold text-dark">Transport</h4>
@@ -101,8 +101,8 @@ const Contact = () => {
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
-                  <div className="bg-primary/20 p-2 rounded-full mt-1">
-                    <Clock className="h-4 w-4 text-primary" />
+                  <div className="bg-gradient-to-br from-amber-400 to-orange-500 p-2 rounded-full mt-1 shadow-md">
+                    <Clock className="h-4 w-4 text-white" />
                   </div>
                   <div>
                     <h4 className="font-poppins font-semibold text-dark">Rendez-vous</h4>

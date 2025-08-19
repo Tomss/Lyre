@@ -29,7 +29,7 @@ const Connexion = () => {
   };
 
   return (
-    <div className="font-inter pt-32 pb-20">
+    <div className="font-inter pt-32 pb-20 bg-gradient-to-br from-orange-100 via-amber-50 to-yellow-50 min-h-screen">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-md">
         <div className="text-center mb-8">
           <h1 className="font-poppins font-bold text-3xl text-dark mb-2">
@@ -40,7 +40,7 @@ const Connexion = () => {
           </p>
         </div>
         
-        <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+        <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-white/50 overflow-hidden">
           <div className="p-8">
             <form onSubmit={handleLogin} className="space-y-6">
               <div>

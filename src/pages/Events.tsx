@@ -44,7 +44,7 @@ const Events = () => {
   return (
     <div className="font-inter pt-20">
       {/* Header Section */}
-      <section className="py-20 bg-gradient-to-r from-accent/10 to-primary/10">
+      <section className="py-20 bg-gradient-to-br from-orange-100 via-amber-50 to-yellow-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center animate-fade-in">
             <h1 className="font-poppins font-bold text-4xl md:text-5xl text-dark mb-6">
@@ -68,7 +68,7 @@ const Events = () => {
       </section>
 
       {/* Events List */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           {loading ? (
             <div className="text-center animate-fade-in">
@@ -78,11 +78,11 @@ const Events = () => {
           ) : events.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {events.map((event) => (
-                <div key={event.id} className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 animate-fade-in">
+                <div key={event.id} className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-white/50 overflow-hidden hover:shadow-xl transition-all duration-300 animate-fade-in">
                   <div className="p-6">
                     <div className="flex items-center space-x-3 mb-4">
-                      <div className="bg-primary/10 p-2 rounded-lg">
-                        <Calendar className="h-6 w-6 text-primary" />
+                      <div className="bg-gradient-to-br from-indigo-400 to-purple-500 p-2 rounded-lg shadow-md">
+                        <Calendar className="h-6 w-6 text-white" />
                       </div>
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                         Concert
@@ -125,8 +125,8 @@ const Events = () => {
             </div>
           ) : (
             <div className="text-center animate-fade-in">
-              <div className="bg-gradient-to-br from-primary/20 to-accent/20 rounded-full w-32 h-32 flex items-center justify-center mx-auto mb-8">
-                <Calendar className="h-16 w-16 text-primary" />
+              <div className="bg-gradient-to-br from-indigo-400 to-purple-500 rounded-full w-32 h-32 flex items-center justify-center mx-auto mb-8 shadow-lg">
+                <Calendar className="h-16 w-16 text-white" />
               </div>
               <h2 className="font-poppins font-semibold text-2xl text-dark mb-4">
                 Aucun concert programmé
@@ -141,12 +141,12 @@ const Events = () => {
       </section>
 
       {/* Event Categories Preview */}
-      <section className="py-20 bg-gray-50">
+      <section className="py-20 bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-white rounded-lg p-8 shadow-md text-center animate-fade-in">
-              <div className="bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Calendar className="h-8 w-8 text-primary" />
+            <div className="bg-white/80 backdrop-blur-sm rounded-lg p-8 shadow-md text-center animate-fade-in border border-white/50 hover:shadow-lg transition-all duration-300">
+              <div className="bg-gradient-to-br from-teal-400 to-cyan-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                <Calendar className="h-8 w-8 text-white" />
               </div>
               <h3 className="font-poppins font-semibold text-xl text-dark mb-4">
                 Concerts
@@ -155,9 +155,9 @@ const Events = () => {
                 Nos concerts publics mettant en avant nos élèves et professeurs.
               </p>
             </div>
-            <div className="bg-white rounded-lg p-8 shadow-md text-center animate-fade-in">
-              <div className="bg-accent/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Clock className="h-8 w-8 text-accent" />
+            <div className="bg-white/80 backdrop-blur-sm rounded-lg p-8 shadow-md text-center animate-fade-in border border-white/50 hover:shadow-lg transition-all duration-300">
+              <div className="bg-gradient-to-br from-amber-400 to-orange-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                <Clock className="h-8 w-8 text-white" />
               </div>
               <h3 className="font-poppins font-semibold text-xl text-dark mb-4">
                 Masterclasses
@@ -166,9 +166,9 @@ const Events = () => {
                 Des sessions spécialisées avec des musiciens professionnels invités.
               </p>
             </div>
-            <div className="bg-white rounded-lg p-8 shadow-md text-center animate-fade-in">
-              <div className="bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
-                <MapPin className="h-8 w-8 text-primary" />
+            <div className="bg-white/80 backdrop-blur-sm rounded-lg p-8 shadow-md text-center animate-fade-in border border-white/50 hover:shadow-lg transition-all duration-300">
+              <div className="bg-gradient-to-br from-rose-400 to-pink-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                <MapPin className="h-8 w-8 text-white" />
               </div>
               <h3 className="font-poppins font-semibold text-xl text-dark mb-4">
                 Événements
