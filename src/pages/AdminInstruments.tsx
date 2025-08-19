@@ -49,24 +49,64 @@ const AdminInstruments = () => {
 
   // Logos prédéfinis pour les instruments
   const predefinedLogos = {
+    // Instruments à cordes
     'Piano': '🎹',
     'Violon': '🎻',
-    'Guitare': '🎸',
-    'Batterie': '🥁',
-    'Trompette': '🎺',
-    'Saxophone': '🎷',
-    'Flûte': '🪈',
-    'Clarinette': '🎵',
-    'Trombone': '🎺',
-    'Cor': '📯',
-    'Tuba': '🎺',
-    'Percussion': '🥁',
-    'Xylophone': '🎵',
-    'Harpe': '🎵',
     'Violoncelle': '🎻',
     'Contrebasse': '🎻',
+    'Alto': '🎻',
+    'Guitare': '🎸',
+    'Guitare classique': '🎸',
+    'Guitare électrique': '🎸',
+    'Basse': '🎸',
+    'Harpe': '🎵',
+    'Mandoline': '🎸',
+    
+    // Instruments à vent - Bois
+    'Flûte': '🪈',
+    'Flûte traversière': '🪈',
+    'Piccolo': '🪈',
+    'Clarinette': '🎵',
+    'Saxophone': '🎷',
+    'Saxophone alto': '🎷',
+    'Saxophone ténor': '🎷',
+    'Saxophone soprano': '🎷',
+    'Hautbois': '🎵',
+    'Basson': '🎵',
+    'Cor anglais': '🎵',
+    
+    // Instruments à vent - Cuivres
+    'Trompette': '🎺',
+    'Cornet': '🎺',
+    'Trombone': '🎺',
+    'Cor': '📯',
+    'Cor d\'harmonie': '📯',
+    'Tuba': '🎺',
+    'Euphonium': '🎺',
+    'Bugle': '🎺',
+    
+    // Percussions
+    'Batterie': '🥁',
+    'Percussion': '🥁',
+    'Percussions': '🥁',
+    'Timbales': '🥁',
+    'Xylophone': '🎵',
+    'Vibraphone': '🎵',
+    'Marimba': '🎵',
+    'Cymbales': '🥁',
+    'Caisse claire': '🥁',
+    'Grosse caisse': '🥁',
+    
+    // Autres instruments
     'Accordéon': '🪗',
-    'Harmonica': '🎵'
+    'Harmonica': '🎵',
+    'Orgue': '🎹',
+    'Synthétiseur': '🎹',
+    'Clavier': '🎹',
+    'Chant': '🎤',
+    'Voix': '🎤',
+    'Formation musicale': '🎼',
+    'Solfège': '🎼'
   };
 
   // Fonction pour afficher une notification
