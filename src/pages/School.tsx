@@ -5,6 +5,7 @@ interface Orchestra {
   id: string;
   name: string;
   description: string | null;
+  photo_url: string | null;
 }
 
 const School = () => {
@@ -102,23 +103,42 @@ const School = () => {
                   {/* Description de l'orchestre sélectionné */}
                   {selectedOrchestra && (
                     <div className="bg-orange-50 rounded-xl p-8 border border-orange-100 animate-fade-in">
-                      <div className="flex items-center space-x-3 mb-4">
-                        <div className="bg-primary/10 p-3 rounded-lg">
-                          <Users className="h-6 w-6 text-primary" />
+                      <div className="flex flex-col lg:flex-row lg:items-start lg:space-x-8 space-y-6 lg:space-y-0">
+                        {/* Photo de l'orchestre */}
+                        {selectedOrchestra.photo_url && (
+                          <div className="lg:w-1/3 flex-shrink-0">
+                            <img
+                              src={selectedOrchestra.photo_url}
+                              alt={selectedOrchestra.name}
+                              className="w-full h-64 lg:h-48 object-cover rounded-lg shadow-md"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                              }}
+                            />
+                          </div>
+                        )}
+                        
+                        {/* Contenu textuel */}
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-3 mb-4">
+                            <div className="bg-primary/10 p-3 rounded-lg">
+                              <Users className="h-6 w-6 text-primary" />
+                            </div>
+                            <h3 className="font-poppins font-semibold text-2xl text-dark">
+                              {selectedOrchestra.name}
+                            </h3>
+                          </div>
+                          {selectedOrchestra.description ? (
+                            <div className="font-inter text-gray-700 leading-relaxed text-lg whitespace-pre-line">
+                              {selectedOrchestra.description}
+                            </div>
+                          ) : (
+                            <p className="font-inter text-gray-500 italic">
+                              Description à venir pour cet orchestre.
+                            </p>
+                          )}
                         </div>
-                        <h3 className="font-poppins font-semibold text-2xl text-dark">
-                          {selectedOrchestra.name}
-                        </h3>
                       </div>
-                      {selectedOrchestra.description ? (
-                        <div className="font-inter text-gray-700 leading-relaxed text-lg whitespace-pre-line">
-                          {selectedOrchestra.description}
-                        </div>
-                      ) : (
-                        <p className="font-inter text-gray-500 italic">
-                          Description à venir pour cet orchestre.
-                        </p>
-                      )}
                     </div>
                   )}
                 </>

@@ -7,6 +7,7 @@ interface Orchestra {
   id: string;
   name: string;
   description: string | null;
+  photo_url: string | null;
   created_at: string;
 }
 
@@ -40,6 +41,7 @@ const AdminOrchestras = () => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
+    photo_url: '',
   });
 
   // Fonction pour afficher une notification
@@ -102,6 +104,7 @@ const AdminOrchestras = () => {
           action: 'create',
           name: formData.name,
           description: formData.description || null,
+          photo_url: formData.photo_url || null,
         }),
       });
 
@@ -139,6 +142,7 @@ const AdminOrchestras = () => {
           id: editingOrchestra.id,
           name: formData.name,
           description: formData.description || null,
+          photo_url: formData.photo_url || null,
         }),
       });
 
@@ -207,6 +211,7 @@ const AdminOrchestras = () => {
     setFormData({
       name: orchestra.name,
       description: orchestra.description || '',
+      photo_url: orchestra.photo_url || '',
     });
     setShowAddForm(true);
   };
@@ -217,6 +222,7 @@ const AdminOrchestras = () => {
     setFormData({
       name: '',
       description: '',
+      photo_url: '',
     });
   };
 
@@ -341,6 +347,23 @@ const AdminOrchestras = () => {
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary resize-none"
                       placeholder="Description de l'orchestre..."
                     />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-dark mb-2">
+                      Photo (URL - optionnel)
+                    </label>
+                    <input
+                      type="url"
+                      name="photo_url"
+                      value={formData.photo_url}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                      placeholder="https://exemple.com/photo-orchestre.jpg"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      URL de la photo de l'orchestre (optionnel)
+                    </p>
                   </div>
 
                   <div className="flex space-x-3 pt-4">
@@ -478,6 +501,11 @@ const AdminOrchestras = () => {
                         {orchestra.description && (
                           <div className="text-sm text-gray-600 mt-1">
                             {orchestra.description}
+                          </div>
+                        )}
+                        {orchestra.photo_url && (
+                          <div className="text-xs text-gray-500 mt-1">
+                            📷 Photo disponible
                           </div>
                         )}
                       </div>
