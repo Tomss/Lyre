@@ -291,36 +291,6 @@ const Media = () => {
         </section>
       )}
 
-      {/* Barre de statut */}
-      {mediaItems.length > 0 && (
-        <section className="py-3 bg-gradient-to-r from-purple-25 to-pink-25 border-b border-white/50">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between text-sm">
-              <div className="flex items-center space-x-4">
-                {[
-                  { key: 'album', count: mediaItems.filter(m => m.media_type === 'album').length, label: 'Albums', icon: Camera },
-                  { key: 'enregistrement', count: mediaItems.filter(m => m.media_type === 'enregistrement').length, label: 'Enregistrements', icon: Music },
-                  { key: 'journal', count: mediaItems.filter(m => m.media_type === 'journal').length, label: 'Journaux', icon: FileText },
-                  { key: 'lyrissimot', count: mediaItems.filter(m => m.media_type === 'lyrissimot').length, label: 'Lyrissimots', icon: File }
-                ].filter(item => item.count > 0).map(({ key, count, label, icon: Icon }) => (
-                  <div key={key} className="flex items-center space-x-1 text-gray-600">
-                    <Icon className="h-4 w-4" />
-                    <span>{count} {label.toLowerCase()}</span>
-                  </div>
-                ))}
-              </div>
-              
-              {featuredMedia.length > 0 && (
-                <div className="flex items-center space-x-1 text-amber-600">
-                  <span>⭐</span>
-                  <span>{featuredMedia.length} mis en avant</span>
-                </div>
-              )}
-            </div>
-          </div>
-        </section>
-      )}
-
       {/* Médias mis en avant */}
       {featuredMedia.length > 0 && (
         <section className="py-12 bg-gradient-to-br from-emerald-25 via-teal-25 to-cyan-25">
