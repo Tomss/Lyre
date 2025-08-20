@@ -198,6 +198,13 @@ const Dashboard = () => {
                 <FileText className="h-5 w-5" />
                 <span>Partitions</span>
               </Link>
+              <Link
+                to="/admin/morceaux"
+                className="inline-flex items-center space-x-2 bg-amber-600 hover:bg-amber-700 text-white font-semibold px-6 py-3 rounded-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg text-center justify-center"
+              >
+                <Music className="h-5 w-5" />
+                <span>Morceaux</span>
+              </Link>
             </div>
           </div>
         )}
@@ -255,13 +262,6 @@ const Dashboard = () => {
               className="text-primary hover:text-primary/80 font-medium text-sm transition-colors"
             >
               Voir mes partitions →
-            </Link>
-            <Link
-              to="/admin/morceaux"
-              className="inline-flex items-center space-x-2 bg-amber-600 hover:bg-amber-700 text-white font-semibold px-6 py-3 rounded-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg text-center justify-center"
-            >
-              <Music className="h-5 w-5" />
-              <span>Morceaux</span>
             </Link>
           </div>
 
