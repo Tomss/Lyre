@@ -25,7 +25,6 @@ Deno.serve(async (req: Request) => {
       .select(`
         *,
         morceau_orchestras (
-          orchestra_id,
           orchestras (
             id,
             name
@@ -41,7 +40,7 @@ Deno.serve(async (req: Request) => {
     // Format the data to include orchestras array
     const formattedMorceaux = morceaux?.map(morceau => ({
       ...morceau,
-      orchestras: morceau.morceau_orchestras?.map(mo => mo.orchestras) || []
+      orchestras: morceau.morceau_orchestras?.map(mo => mo.orchestras).filter(Boolean) || []
     })) || [];
 
     return new Response(
