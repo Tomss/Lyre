@@ -492,26 +492,13 @@ const AdminPartitions = () => {
     setExpandedMorceaux(new Set());
   };
 
-  // Grouper les partitions par morceau
-  const partitionsByMorceau = filteredPartitions.reduce((acc, partition) => {
-    const morceauId = partition.morceau_id;
-    if (!acc[morceauId]) {
-      acc[morceauId] = {
-        morceau: partition.morceaux,
-        partitions: []
-      };
-    }
-    acc[morceauId].partitions.push(partition);
-    return acc;
-  }, {} as Record<string, { morceau: any; partitions: Partition[] }>);
-
   // Filtrer les partitions
   const filteredPartitions = partitions.filter(partition => {
     const searchLower = searchTerm.toLowerCase();
     const matchesSearch = (
       partition.nom.toLowerCase().includes(searchLower) ||
       partition.morceaux.nom.toLowerCase().includes(searchLower) ||
-      (morceau.orchestras && morceau.orchestras.some(o => o.name.toLowerCase().includes(searchLower)))
+      (partition.morceaux.orchestras && partition.morceaux.orchestras.some(o => o.name.toLowerCase().includes(searchLower)))
     );
     
     // Filtrer par orchestre (via le morceau)
@@ -530,6 +517,19 @@ const AdminPartitions = () => {
     
     return matchesSearch && matchesOrchestra && matchesMorceau && matchesInstrument;
   });
+
+  // Grouper les partitions par morceau
+  const partitionsByMorceau = filteredPartitions.reduce((acc, partition) => {
+    const morceauId = partition.morceau_id;
+    if (!acc[morceauId]) {
+      acc[morceauId] = {
+        morceau: partition.morceaux,
+        partitions: []
+      };
+    }
+    acc[morceauId].partitions.push(partition);
+    return acc;
+  }, {} as Record<string, { morceau: any; partitions: Partition[] }>);
 
   const openFile = (partition: Partition) => {
     if (partition.file_path) {
