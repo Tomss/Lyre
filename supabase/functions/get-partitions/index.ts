@@ -124,8 +124,17 @@ Deno.serve(async (req: Request) => {
     );
   } catch (error) {
     console.error('Error in get-partitions function:', error);
+    
+    // Capture detailed error information
+    const errorDetails = {
+      message: error.message,
+      details: error.details || null,
+      hint: error.hint || null,
+      code: error.code || null
+    };
+    
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: errorDetails }),
       {
         status: 400,
         headers: {
