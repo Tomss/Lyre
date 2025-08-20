@@ -107,10 +107,6 @@ const Events = () => {
         }}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center animate-fade-in relative z-10 pt-16">
-            <div className="inline-flex items-center space-x-3 bg-white/20 backdrop-blur-sm rounded-full px-6 py-3 mb-8 border border-white/30 shadow-lg">
-              <Music className="h-6 w-6 text-white" />
-              <span className="text-white font-semibold">Nos événements musicaux</span>
-            </div>
             <h1 className="font-poppins font-bold text-4xl md:text-5xl text-white mb-6">Nos Événements</h1>
             {loading ? (
               <div className="flex items-center justify-center space-x-3 text-white/80">
@@ -121,26 +117,6 @@ const Events = () => {
               <p className="font-inter text-lg text-white/90 max-w-2xl mx-auto leading-relaxed">
                 {events.length > 0 ? 'Découvrez notre calendrier de concerts et rejoignez-nous pour ces moments musicaux exceptionnels' : 'Notre calendrier musical se prépare... Revenez bientôt pour découvrir nos prochains concerts !'}
               </p>
-            )}
-            
-            {/* Filtres */}
-            {!loading && events.length > 0 && (
-              <div className="flex items-center justify-center space-x-4 mt-8">
-                <button
-                  onClick={() => setFilter('upcoming')}
-                  className={`inline-flex items-center space-x-2 px-6 py-3 rounded-full font-semibold transition-all duration-300 shadow-lg ${filter === 'upcoming' ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white' : 'bg-white/90 text-gray-700 hover:bg-white hover:text-gray-800'}`}
-                >
-                  <Star className="h-4 w-4" />
-                  <span>À venir ({upcomingEvents.length})</span>
-                </button>
-                <button
-                  onClick={() => setFilter('past')}
-                  className={`inline-flex items-center space-x-2 px-6 py-3 rounded-full font-semibold transition-all duration-300 shadow-lg ${filter === 'past' ? 'bg-gradient-to-r from-gray-500 to-slate-600 text-white' : 'bg-white/90 text-gray-700 hover:bg-white hover:text-gray-800'}`}
-                >
-                  <Clock className="h-4 w-4" />
-                  <span>Passés ({pastEvents.length})</span>
-                </button>
-              </div>
             )}
           </div>
         </div>
