@@ -257,10 +257,10 @@ const School = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12 animate-fade-in">
-              <h2 className="font-poppins font-bold text-5xl md:text-6xl text-dark mb-6 bg-gradient-to-r from-orange-200 via-amber-200 to-orange-200 bg-clip-text text-transparent">
+              <h2 className="font-poppins font-bold text-5xl md:text-6xl text-dark mb-6">
                 Nos Orchestres
               </h2>
-              <p className="font-inter text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
+              <p className="font-inter text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
                 Découvrez nos différents ensembles musicaux
               </p>
             </div>
