@@ -17,7 +17,7 @@ interface Partition {
     id: string;
     name: string;
   };
-  morceaux: {
+  morceaux?: {
     id: string;
     nom: string;
     compositeur: string | null;
@@ -439,6 +439,11 @@ const AdminPartitions = () => {
 
   // Préparer l'édition
   const handleEdit = (partition: Partition) => {
+    if (!partition.morceaux) {
+      showNotification('Impossible de modifier cette partition : données du morceau manquantes', 'error');
+      return;
+    }
+    
     setEditingPartition(partition);
     // Récupérer tous les orchestres du morceau pour pré-remplir le formulaire
     const morceauOrchestras = partition.orchestras?.map(o => o.id) || [];
@@ -484,23 +489,28 @@ const AdminPartitions = () => {
 
   // Filtrer les partitions
   const filteredPartitions = partitions.filter(partition => {
+    // Skip partitions without morceaux data
+    if (!partition.morceaux) return false;
+    
     const searchLower = searchTerm.toLowerCase();
     const matchesSearch = (
-      partition.morceaux.nom.toLowerCase().includes(searchLower) ||
+      partition.morceaux?.nom?.toLowerCase().includes(searchLower) ||
       (partition.voice && partition.voice.toLowerCase().includes(searchLower)) ||
       partition.instruments.name.toLowerCase().includes(searchLower) ||
-      (partition.morceaux.compositeur && partition.morceaux.compositeur.toLowerCase().includes(searchLower)) ||
-      (partition.morceaux.arrangement && partition.morceaux.arrangement.toLowerCase().includes(searchLower))
+      (partition.morceaux?.compositeur && partition.morceaux.compositeur.toLowerCase().includes(searchLower)) ||
+      (partition.morceaux?.arrangement && partition.morceaux.arrangement.toLowerCase().includes(searchLower))
     );
     
     const matchesInstrument = instrumentFilter.length === 0 || instrumentFilter.includes(partition.instruments.id);
-    const matchesMorceau = !morceauFilter || partition.morceaux.id === morceauFilter;
+    const matchesMorceau = !morceauFilter || partition.morceaux?.id === morceauFilter;
     
     return matchesSearch && matchesInstrument && matchesMorceau;
   });
 
   // Grouper par morceau
   const partitionsByMorceau = filteredPartitions.reduce((acc, partition) => {
+    if (!partition.morceaux) return acc;
+    
     const morceauKey = partition.morceaux.id;
     if (!acc[morceauKey]) {
       acc[morceauKey] = {
@@ -801,7 +811,7 @@ const AdminPartitions = () => {
                     <p className="text-sm text-gray-600">
                       Cette action est irréversible
                     </p>
-                  </div>
+                        {deleteConfirmation.partition.morceaux?.nom || 'Morceau inconnu'} - {deleteConfirmation.partition.instruments.name}
                 </div>
                 
                 <div className="mb-6">
@@ -970,11 +980,11 @@ const AdminPartitions = () => {
                                 <Music className="h-3 w-3 mr-1" />
                                 {partition.instruments.name}
                               </span>
-                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getFileTypeColor(partition.file_type)}`}>
+                              {morceau?.arrangement && (
                                 {partition.file_type.toUpperCase()}
                               </span>
                             </div>
-                            
+                            {morceau?.morceau_orchestras && (
                             {partition.voice && (
                               <p className="text-sm text-gray-600 mb-2">
                                 Voie : {partition.voice}
@@ -989,7 +999,7 @@ const AdminPartitions = () => {
                               <span>
                                 Ajouté le {new Date(partition.created_at).toLocaleDateString('fr-FR')}
                               </span>
-                              {partition.profiles && (
+                              {morceau?.compositeur && (
                                 <span>Par {partition.profiles.first_name} {partition.profiles.last_name}</span>
                               )}
                             </div>
