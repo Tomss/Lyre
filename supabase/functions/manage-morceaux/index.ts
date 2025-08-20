@@ -10,7 +10,7 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const { action, id, nom, compositeur, arrangement, annees, orchestra_ids } = await req.json();
+    const { action, id, nom, compositeur, arrangement, orchestra_ids } = await req.json();
     
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
@@ -33,7 +33,7 @@ Deno.serve(async (req: Request) => {
         // Créer le morceau
         const { data: createData, error: createError } = await supabase
           .from('morceaux')
-          .insert({ nom, compositeur, arrangement, annees: annees || [] })
+          .insert({ nom, compositeur, arrangement })
           .select()
           .single();
         
@@ -63,7 +63,7 @@ Deno.serve(async (req: Request) => {
         // Mettre à jour le morceau
         const { data: updateData, error: updateError } = await supabase
           .from('morceaux')
-          .update({ nom, compositeur, arrangement, annees: annees || [] })
+          .update({ nom, compositeur, arrangement })
           .eq('id', id)
           .select()
           .single();

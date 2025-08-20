@@ -50,7 +50,6 @@ const AdminMorceaux = () => {
     nom: '',
     compositeur: '',
     arrangement: '',
-    annees: [] as string[],
     orchestra_ids: [] as string[],
   });
 
@@ -130,14 +129,6 @@ const AdminMorceaux = () => {
     }));
   };
 
-  const handleAnneeChange = (annee: string, checked: boolean) => {
-    setFormData(prev => ({
-      ...prev,
-      annees: checked 
-        ? [...prev.annees, annee]
-        : prev.annees.filter(a => a !== annee)
-    }));
-  };
 
   // Créer un morceau
   const handleCreate = async (e: FormEvent) => {
@@ -259,7 +250,6 @@ const AdminMorceaux = () => {
       nom: morceau.nom,
       compositeur: morceau.compositeur || '',
       arrangement: morceau.arrangement || '',
-      annees: morceau.annees || [],
       orchestra_ids: morceau.orchestras?.map(o => o.id) || [],
     });
     setShowAddForm(true);
@@ -272,7 +262,6 @@ const AdminMorceaux = () => {
       nom: '',
       compositeur: '',
       arrangement: '',
-      annees: [],
       orchestra_ids: [],
     });
   };
@@ -283,16 +272,13 @@ const AdminMorceaux = () => {
     const matchesSearch = (
       morceau.nom.toLowerCase().includes(searchLower) ||
       (morceau.compositeur && morceau.compositeur.toLowerCase().includes(searchLower)) ||
-      (morceau.arrangement && morceau.arrangement.toLowerCase().includes(searchLower)) ||
-      morceau.orchestras.some(o => o.name.toLowerCase().includes(searchLower)) ||
+           morceau.orchestras.some(o => o.name.toLowerCase().includes(searchLower));
       morceau.annees.some(a => a.includes(searchTerm))
     );
     
     return matchesSearch;
   });
 
-  // Générer les années disponibles (de 2020 à 2030)
-  const availableYears = Array.from({ length: 11 }, (_, i) => (2020 + i).toString());
 
   if (profile && !['Admin', 'Gestionnaire'].includes(profile.role)) {
     return <Navigate to="/dashboard" />;
@@ -448,27 +434,6 @@ const AdminMorceaux = () => {
                     </p>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-dark mb-3">
-                      Années de représentation (optionnel)
-                    </label>
-                    <div className="grid grid-cols-4 gap-2 max-h-32 overflow-y-auto border border-gray-200 rounded-lg p-3">
-                      {availableYears.map((year) => (
-                        <label key={year} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
-                          <input
-                            type="checkbox"
-                            checked={formData.annees.includes(year)}
-                            onChange={(e) => handleAnneeChange(year, e.target.checked)}
-                            className="rounded border-gray-300 text-primary focus:ring-primary"
-                          />
-                          <span className="text-sm text-gray-700">{year}</span>
-                        </label>
-                      ))}
-                    </div>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Sélectionnez les années où ce morceau est/sera joué
-                    </p>
-                  </div>
 
                   <div className="flex space-x-3 pt-4">
                     <button
@@ -626,12 +591,6 @@ const AdminMorceaux = () => {
                             <div className="flex items-center space-x-1 text-gray-500">
                               <Users className="h-3 w-3" />
                               <span>{morceau.orchestras.map(o => o.name).join(', ')}</span>
-                            </div>
-                          )}
-                          {morceau.annees && morceau.annees.length > 0 && (
-                            <div className="flex items-center space-x-1 text-gray-500">
-                              <Calendar className="h-3 w-3" />
-                              <span>{morceau.annees.join(', ')}</span>
                             </div>
                           )}
                         </div>
