@@ -84,7 +84,6 @@ const AdminPartitions = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [morceauFilter, setMorceauFilter] = useState<string>(selectedMorceauId || '');
   const [instrumentFilter, setInstrumentFilter] = useState<string[]>([]);
-  const [orchestraFilter, setOrchestraFilter] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingPartition, setEditingPartition] = useState<Partition | null>(null);
@@ -472,6 +471,14 @@ const AdminPartitions = () => {
       prev.includes(instrumentId) 
         ? prev.filter(id => id !== instrumentId)
         : [...prev, instrumentId]
+    );
+  };
+
+  const toggleOrchestraFilter = (orchestraId: string) => {
+    setOrchestraFilter(prev => 
+      prev.includes(orchestraId) 
+        ? prev.filter(id => id !== orchestraId)
+        : [...prev, orchestraId]
     );
   };
 
