@@ -86,7 +86,7 @@ const Contact = () => {
               <h2 className="font-poppins font-bold text-3xl text-dark mb-6">
                 Venez nous rendre visite
               </h2>
-              <p className="font-inter text-sm text-gray-600 mb-6 leading-relaxed">
+              <p className="font-inter text-gray-600 mb-6 leading-relaxed">
                 Notre école de musique est située au cœur de Paris, dans un quartier 
                 facilement accessible en transport en commun. Nous disposons d'espaces 
                 d'accueil confortables pour les parents et les élèves.
@@ -98,7 +98,7 @@ const Contact = () => {
                   </div>
                   <div>
                     <h4 className="font-poppins font-semibold text-dark">Transport</h4>
-                    <p className="font-inter text-gray-600 text-sm">
+                    <p className="font-inter text-gray-600">
                       Métro ligne 1 et 4, Bus 21, 27, 39
                     </p>
                   </div>
@@ -109,7 +109,7 @@ const Contact = () => {
                   </div>
                   <div>
                     <h4 className="font-poppins font-semibold text-dark">Rendez-vous</h4>
-                    <p className="font-inter text-gray-600 text-sm">
+                    <p className="font-inter text-gray-600">
                       Sur rendez-vous pour les visites et inscriptions
                     </p>
                   </div>
