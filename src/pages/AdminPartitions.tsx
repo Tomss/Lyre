@@ -204,6 +204,7 @@ const AdminPartitions = () => {
     if (profile?.role === 'Admin' || profile?.role === 'Gestionnaire') {
       fetchMorceaux();
       fetchInstruments();
+      fetchOrchestras();
     }
   }, [profile]);
 
