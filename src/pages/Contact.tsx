@@ -34,7 +34,6 @@ const Contact = () => {
         }}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center animate-fade-in relative z-10">
-            <h1 className="font-poppins font-bold text-3xl md:text-4xl text-white mb-6">
             <h1 className="font-poppins font-bold text-4xl md:text-5xl text-white mb-6">
               Contactez-nous.
             </h1>

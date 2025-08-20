@@ -93,7 +93,6 @@ const School = () => {
             {/* Description principale */}
             <div className="mb-12">
               <p className="font-inter text-base text-white/90 leading-relaxed mb-8">
-              <p className="font-inter text-base text-white/90 leading-relaxed mb-8">
                 L'école propose une formation musicale du niveau Éveil au niveau Supérieur, par des professeurs diplômés de Conservatoires à Rayonnement Régional ou possédant un niveau équivalent.
               </p>
               <p className="font-inter text-base text-white/90 leading-relaxed mb-8">
