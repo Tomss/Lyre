@@ -186,6 +186,7 @@ const Events = () => {
                   <div className="inline-block mb-8">
                     <div className="flex items-center justify-center space-x-4 mb-6">
                       <div className="w-16 h-0.5 bg-gradient-to-r from-transparent via-orange-400 to-orange-400"></div>
+                      <Calendar className="h-8 w-8 text-orange-400 animate-pulse" />
                       <div className="w-16 h-0.5 bg-gradient-to-l from-transparent via-orange-400 to-orange-400"></div>
                     </div>
                   </div>
@@ -234,9 +235,6 @@ const Events = () => {
                     
                     <div className="relative z-10 flex items-center justify-between">
                       <div className="flex items-center space-x-6">
-                        <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/20">
-                          <Calendar className="h-8 w-8 text-orange-300" />
-                        </div>
                         <div>
                           <h3 className="font-poppins font-bold text-2xl mb-2">Nos Rendez-vous Musicaux</h3>
                           <p className="text-gray-300 text-lg">Chaque note compte, chaque moment est unique</p>
