@@ -91,206 +91,112 @@ const Contact = () => {
   return (
     <div className="font-inter">
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat bg-gray-900" 
+      <section className="relative h-[70vh] flex items-center justify-center bg-cover bg-center bg-no-repeat bg-gray-900" 
         style={{ 
-          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url("https://images.pexels.com/photos/1407322/pexels-photo-1407322.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop")` 
+          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url("https://images.pexels.com/photos/1407322/pexels-photo-1407322.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop")` 
         }}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center animate-fade-in relative z-10">
-            <h1 className="font-poppins font-bold text-4xl md:text-5xl text-white mb-6">
+            <h1 className="font-poppins font-bold text-3xl md:text-4xl text-white mb-4">
               Contactez-nous
             </h1>
-            <p className="font-inter text-lg text-white/90 max-w-3xl mx-auto leading-relaxed">
-              Une question sur nos cours ? Envie de rejoindre notre famille musicale ? 
-              Nous sommes là pour vous accompagner dans votre parcours musical.
+            <p className="font-inter text-base text-white/90 max-w-2xl mx-auto leading-relaxed">
+              Une question ? Envie de nous rejoindre ? Nous sommes là pour vous accompagner.
             </p>
           </div>
         </div>
       </section>
 
-      {/* Contact Cards Section */}
-      <section className="py-20 bg-gradient-to-br from-orange-25 via-amber-25 to-yellow-25 relative overflow-hidden">
-        {/* Particules d'arrière-plan */}
-        <div className="absolute inset-0">
-          {[...Array(20)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute w-2 h-2 bg-orange-400/15 rounded-full animate-pulse"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 3}s`,
-                animationDuration: `${2 + Math.random() * 2}s`
-              }}
-            />
-          ))}
-        </div>
-
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="text-center mb-16 animate-fade-in">
-            <h2 className="font-poppins font-bold text-3xl md:text-4xl text-dark mb-4">
-              Nos Coordonnées
-            </h2>
-            <p className="font-inter text-lg text-gray-600 max-w-2xl mx-auto">
-              Plusieurs moyens de nous joindre pour tous vos besoins musicaux
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
-            {contactInfo.map((info, index) => (
-              <div 
-                key={index} 
-                className="group text-center animate-fade-in bg-white/80 backdrop-blur-sm rounded-2xl p-8 border border-white/50 shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 relative overflow-hidden"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                {/* Effet de brillance au survol */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-                
-                <div className={`bg-gradient-to-br ${info.color} w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 relative z-10`}>
-                  <info.icon className="h-8 w-8 text-white" />
-                </div>
-                <h3 className="font-poppins font-semibold text-xl text-dark mb-4 relative z-10">
-                  {info.title}
-                </h3>
-                <div className="space-y-2 relative z-10">
-                  {info.content.map((line, lineIndex) => (
-                    <p key={lineIndex} className="font-inter text-gray-600 leading-relaxed">
-                      {line}
-                    </p>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Main Content Section - Form + Map */}
-      <section className="py-20 bg-gradient-to-br from-slate-900 via-gray-800 to-slate-900 relative overflow-hidden">
-        {/* Particules d'arrière-plan */}
-        <div className="absolute inset-0">
-          {[...Array(25)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute w-1 h-1 bg-orange-400/20 rounded-full animate-pulse"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 3}s`,
-                animationDuration: `${2 + Math.random() * 2}s`
-              }}
-            />
-          ))}
-        </div>
-
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 max-w-7xl mx-auto">
+      {/* Formulaire et Carte */}
+      <section className="py-16 bg-gradient-to-br from-orange-25 via-amber-25 to-rose-25">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
             
             {/* Formulaire de Contact */}
             <div className="animate-fade-in">
-              <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 overflow-hidden">
-                <div className="bg-gradient-to-r from-orange-600 to-amber-600 p-8 text-white relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
-                  <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12"></div>
-                  
-                  <div className="relative z-10">
-                    <div className="flex items-center space-x-4 mb-4">
-                      <div className="bg-white/20 p-3 rounded-2xl shadow-lg">
-                        <MessageSquare className="h-8 w-8 text-white" />
-                      </div>
-                      <div>
-                        <h2 className="font-poppins font-bold text-2xl">Écrivez-nous</h2>
-                        <p className="text-orange-100">Nous vous répondrons rapidement</p>
-                      </div>
+              <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 overflow-hidden">
+                <div className="bg-gradient-to-r from-orange-500 to-amber-500 p-6 text-white">
+                  <div className="flex items-center space-x-3">
+                    <div className="bg-white/20 p-2 rounded-lg">
+                      <MessageSquare className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <h2 className="font-poppins font-bold text-xl">Écrivez-nous</h2>
+                      <p className="text-orange-100 text-sm">Nous vous répondrons rapidement</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="p-8">
+                <div className="p-6">
                   {/* Notification de statut */}
                   {formStatus.type !== 'idle' && (
-                    <div className={`mb-6 p-4 rounded-xl border ${
+                    <div className={`mb-4 p-3 rounded-lg border ${
                       formStatus.type === 'success' 
                         ? 'bg-green-50 border-green-200 text-green-800' 
                         : formStatus.type === 'error'
                         ? 'bg-red-50 border-red-200 text-red-800'
                         : 'bg-orange-50 border-orange-200 text-orange-800'
                     }`}>
-                      <div className="flex items-center space-x-3">
+                      <div className="flex items-center space-x-2">
                         {formStatus.type === 'success' && <CheckCircle className="h-5 w-5 text-green-600" />}
                         {formStatus.type === 'error' && <AlertCircle className="h-5 w-5 text-red-600" />}
                         {formStatus.type === 'loading' && (
-                          <div className="animate-spin rounded-full h-5 w-5 border-2 border-orange-600 border-t-transparent"></div>
+                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-orange-600 border-t-transparent"></div>
                         )}
-                        <span className="font-medium">{formStatus.message}</span>
+                        <span className="text-sm font-medium">{formStatus.message}</span>
                       </div>
                     </div>
                   )}
 
-                  <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-3">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
                           Nom complet *
                         </label>
-                        <div className="relative">
-                          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <User className="h-5 w-5 text-gray-400" />
-                          </div>
-                          <input
-                            type="text"
-                            name="name"
-                            value={formData.name}
-                            onChange={handleInputChange}
-                            required
-                            className="w-full pl-12 pr-4 py-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-300 bg-white/80 backdrop-blur-sm"
-                            placeholder="Votre nom et prénom"
-                          />
-                        </div>
+                        <input
+                          type="text"
+                          name="name"
+                          value={formData.name}
+                          onChange={handleInputChange}
+                          required
+                          className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200"
+                          placeholder="Votre nom et prénom"
+                        />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-3">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
                           Email *
                         </label>
-                        <div className="relative">
-                          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <Mail className="h-5 w-5 text-gray-400" />
-                          </div>
-                          <input
-                            type="email"
-                            name="email"
-                            value={formData.email}
-                            onChange={handleInputChange}
-                            required
-                            className="w-full pl-12 pr-4 py-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-300 bg-white/80 backdrop-blur-sm"
-                            placeholder="votre@email.com"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-3">
-                        Téléphone (optionnel)
-                      </label>
-                      <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                          <Phone className="h-5 w-5 text-gray-400" />
-                        </div>
                         <input
-                          type="tel"
-                          name="phone"
-                          value={formData.phone}
+                          type="email"
+                          name="email"
+                          value={formData.email}
                           onChange={handleInputChange}
-                          className="w-full pl-12 pr-4 py-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-300 bg-white/80 backdrop-blur-sm"
-                          placeholder="06 12 34 56 78"
+                          required
+                          className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200"
+                          placeholder="votre@email.com"
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-3">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Téléphone (optionnel)
+                      </label>
+                      <input
+                        type="tel"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200"
+                        placeholder="06 12 34 56 78"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
                         Sujet *
                       </label>
                       <select
@@ -298,7 +204,7 @@ const Contact = () => {
                         value={formData.subject}
                         onChange={handleInputChange}
                         required
-                        className="w-full px-4 py-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-300 bg-white/80 backdrop-blur-sm"
+                        className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200"
                       >
                         <option value="">Sélectionnez un sujet</option>
                         {subjectOptions.map((option, index) => (
@@ -308,7 +214,7 @@ const Contact = () => {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-3">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
                         Message *
                       </label>
                       <textarea
@@ -316,8 +222,8 @@ const Contact = () => {
                         value={formData.message}
                         onChange={handleInputChange}
                         required
-                        rows={6}
-                        className="w-full px-4 py-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-300 bg-white/80 backdrop-blur-sm resize-none"
+                        rows={5}
+                        className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 resize-none"
                         placeholder="Décrivez votre demande, vos questions ou votre projet musical..."
                       />
                     </div>
@@ -325,15 +231,15 @@ const Contact = () => {
                     <button
                       type="submit"
                       disabled={formStatus.type === 'loading'}
-                      className="w-full bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white font-bold py-4 px-8 rounded-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none group"
+                      className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                     >
-                      <div className="flex items-center justify-center space-x-3">
+                      <div className="flex items-center justify-center space-x-2">
                         {formStatus.type === 'loading' ? (
-                          <div className="animate-spin rounded-full h-5 w-5 border-2 border-white/30 border-t-white"></div>
+                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white"></div>
                         ) : (
-                          <Send className="h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
+                          <Send className="h-4 w-4" />
                         )}
-                        <span className="text-lg">
+                        <span>
                           {formStatus.type === 'loading' ? 'Envoi en cours...' : 'Envoyer le message'}
                         </span>
                       </div>
@@ -347,26 +253,24 @@ const Contact = () => {
               </div>
             </div>
 
-            {/* Google Maps + Informations */}
-            <div className="animate-fade-in space-y-8">
-              {/* Carte Google Maps */}
-              <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 overflow-hidden">
-                <div className="bg-gradient-to-r from-slate-700 to-gray-800 p-6 text-white relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-24 h-24 bg-orange-400/10 rounded-full -translate-y-12 translate-x-12"></div>
-                  <div className="relative z-10 flex items-center space-x-4">
-                    <div className="bg-white/20 p-3 rounded-2xl shadow-lg">
+            {/* Google Maps */}
+            <div className="animate-fade-in">
+              <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 overflow-hidden">
+                <div className="bg-gradient-to-r from-blue-500 to-indigo-500 p-6 text-white">
+                  <div className="flex items-center space-x-3">
+                    <div className="bg-white/20 p-2 rounded-lg">
                       <MapPin className="h-6 w-6 text-white" />
                     </div>
                     <div>
                       <h3 className="font-poppins font-bold text-xl">Notre Localisation</h3>
-                      <p className="text-gray-200">Chalindrey, Haute-Marne</p>
+                      <p className="text-blue-100 text-sm">1 bis rue Jean Jaurès, Chalindrey</p>
                     </div>
                   </div>
                 </div>
                 
-                <div className="aspect-[4/3] relative">
+                <div className="h-96 relative">
                   <iframe
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2679.8234567890123!2d5.3456789!3d47.8901234!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sChalindrey%2C%20France!5e0!3m2!1sfr!2sfr!4v1234567890123!5m2!1sfr!2sfr"
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2679.123!2d5.3456!3d47.8901!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47f1e1234567890a%3A0x1234567890abcdef!2s1%20bis%20Rue%20Jean%20Jaur%C3%A8s%2C%2052600%20Chalindrey%2C%20France!5e0!3m2!1sfr!2sfr!4v1234567890!5m2!1sfr!2sfr"
                     width="100%"
                     height="100%"
                     style={{ border: 0 }}
@@ -377,75 +281,19 @@ const Contact = () => {
                     className="w-full h-full"
                   ></iframe>
                   
-                  {/* Overlay avec informations */}
-                  <div className="absolute bottom-4 left-4 right-4">
-                    <div className="bg-white/95 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-white/50">
-                      <div className="flex items-center space-x-3">
-                        <div className="bg-gradient-to-br from-orange-500 to-amber-600 p-2 rounded-lg shadow-md">
+                  {/* Overlay discret */}
+                  <div className="absolute bottom-3 left-3 right-3">
+                    <div className="bg-white/95 backdrop-blur-sm rounded-lg p-3 shadow-md">
+                      <div className="flex items-center space-x-2">
+                        <div className="bg-primary/10 p-1.5 rounded-lg">
                           <MapPin className="h-5 w-5 text-white" />
                         </div>
                         <div>
-                          <h4 className="font-poppins font-semibold text-gray-800">Lyre Cheminote et Municipale</h4>
-                          <p className="text-sm text-gray-600">Chalindrey, Haute-Marne</p>
+                          <h4 className="font-poppins font-medium text-sm text-gray-800">Lyre Cheminote et Municipale</h4>
+                          <p className="text-xs text-gray-600">1 bis rue Jean Jaurès, 52600 Chalindrey</p>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Informations Pratiques */}
-              <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 p-8">
-                <div className="text-center mb-8">
-                  <div className="bg-gradient-to-br from-amber-500 to-orange-600 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-                    <Clock className="h-8 w-8 text-white" />
-                  </div>
-                  <h3 className="font-poppins font-bold text-2xl text-dark mb-2">
-                    Informations Pratiques
-                  </h3>
-                  <p className="text-gray-600">
-                    Tout ce qu'il faut savoir pour nous rejoindre
-                  </p>
-                </div>
-
-                <div className="space-y-6">
-                  <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-2xl p-6 border border-orange-100">
-                    <h4 className="font-poppins font-semibold text-lg text-dark mb-3 flex items-center space-x-2">
-                      <div className="bg-gradient-to-br from-orange-500 to-amber-600 p-2 rounded-lg shadow-md">
-                        <User className="h-5 w-5 text-white" />
-                      </div>
-                      <span>Inscriptions</span>
-                    </h4>
-                    <p className="text-gray-700 leading-relaxed">
-                      Les inscriptions sont ouvertes toute l'année. Contactez-nous pour organiser 
-                      un cours d'essai gratuit et découvrir l'instrument qui vous correspond.
-                    </p>
-                  </div>
-
-                  <div className="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-2xl p-6 border border-amber-100">
-                    <h4 className="font-poppins font-semibold text-lg text-dark mb-3 flex items-center space-x-2">
-                      <div className="bg-gradient-to-br from-amber-500 to-yellow-600 p-2 rounded-lg shadow-md">
-                        <Clock className="h-5 w-5 text-white" />
-                      </div>
-                      <span>Horaires des Cours</span>
-                    </h4>
-                    <p className="text-gray-700 leading-relaxed">
-                      Les cours sont organisés selon le rythme scolaire. Chaque élève bénéficie 
-                      d'un cours de solfège, d'une demi-heure d'instrument et d'une activité orchestrale par semaine.
-                    </p>
-                  </div>
-
-                  <div className="bg-gradient-to-r from-orange-50 to-red-50 rounded-2xl p-6 border border-orange-100">
-                    <h4 className="font-poppins font-semibold text-lg text-dark mb-3 flex items-center space-x-2">
-                      <div className="bg-gradient-to-br from-orange-500 to-red-500 p-2 rounded-lg shadow-md">
-                        <MessageSquare className="h-5 w-5 text-white" />
-                      </div>
-                      <span>Réponse Rapide</span>
-                    </h4>
-                    <p className="text-gray-700 leading-relaxed">
-                      Nous nous engageons à répondre à tous vos messages dans les 48h. 
-                      Pour les urgences, n'hésitez pas à nous appeler directement.
-                    </p>
                   </div>
                 </div>
               </div>
@@ -454,68 +302,127 @@ const Contact = () => {
         </div>
       </section>
 
-      {/* Section Appel à l'Action */}
-      <section className="py-20 bg-gradient-to-br from-blue-25 via-indigo-25 to-purple-25 relative overflow-hidden">
-        {/* Particules d'arrière-plan */}
-        <div className="absolute inset-0">
-          {[...Array(15)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute w-2 h-2 bg-orange-400/10 rounded-full animate-pulse"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 3}s`,
-                animationDuration: `${2 + Math.random() * 2}s`
-              }}
-            />
-          ))}
-        </div>
+      {/* Coordonnées */}
+      <section className="py-16 bg-gradient-to-br from-blue-25 via-indigo-25 to-purple-25">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="font-poppins font-bold text-2xl md:text-3xl text-dark mb-3">
+              Nos Coordonnées
+            </h2>
+            <p className="font-inter text-gray-600 max-w-xl mx-auto">
+              Plusieurs moyens de nous joindre
+            </p>
+          </div>
 
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="max-w-4xl mx-auto text-center animate-fade-in">
-            <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-12 shadow-2xl border border-white/50 relative overflow-hidden group">
-              {/* Effet de brillance au survol */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-              
-              <div className="relative z-10">
-                <div className="bg-gradient-to-br from-orange-500 to-amber-600 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-8 shadow-xl group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
-                  <MessageSquare className="h-10 w-10 text-white" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-4xl mx-auto">
+            {contactInfo.map((info, index) => (
+              <div 
+                key={index} 
+                className="text-center bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-white/50 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300"
+              >
+                <div className={`bg-gradient-to-br ${info.color} w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-4 shadow-sm`}>
+                  <info.icon className="h-6 w-6 text-white" />
                 </div>
-                
-                <h2 className="font-poppins font-bold text-3xl md:text-4xl text-dark mb-6 bg-gradient-to-r from-orange-600 via-amber-600 to-orange-600 bg-clip-text text-transparent">
-                  Prêt à Commencer Votre Aventure Musicale ?
-                </h2>
-                
-                <p className="font-inter text-lg text-gray-700 leading-relaxed mb-8 max-w-2xl mx-auto">
-                  Depuis 1931, nous accompagnons les passionnés de musique dans leur épanouissement artistique. 
-                  Rejoignez notre famille musicale et découvrez le plaisir de jouer ensemble !
+                <h3 className="font-poppins font-semibold text-lg text-dark mb-3">
+                  {info.title}
+                </h3>
+                <div className="space-y-1">
+                  {info.content.map((line, lineIndex) => (
+                    <p key={lineIndex} className="font-inter text-sm text-gray-600">
+                      {line}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Informations Pratiques */}
+      <section className="py-16 bg-gradient-to-br from-rose-25 via-pink-25 to-orange-25">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="font-poppins font-bold text-2xl md:text-3xl text-dark mb-3">
+                Informations Pratiques
+              </h2>
+              <p className="font-inter text-gray-600">
+                Tout ce qu'il faut savoir pour nous rejoindre
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-white/50 shadow-sm">
+                <div className="bg-gradient-to-br from-orange-400 to-amber-500 w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-4">
+                  <User className="h-6 w-6 text-white" />
+                </div>
+                <h3 className="font-poppins font-semibold text-lg text-dark mb-3">Inscriptions</h3>
+                <p className="font-inter text-sm text-gray-600 leading-relaxed">
+                  Ouvertes toute l'année. Cours d'essai gratuit pour découvrir votre instrument.
                 </p>
-                
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="bg-gradient-to-br from-orange-100 to-amber-100 rounded-2xl p-6 shadow-lg group-hover:shadow-xl transition-all duration-300">
-                    <div className="bg-gradient-to-br from-orange-500 to-amber-600 w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-md">
-                      <User className="h-6 w-6 text-white" />
-                    </div>
-                    <h3 className="font-poppins font-semibold text-lg text-dark mb-2">Cours d'Essai</h3>
-                    <p className="text-sm text-gray-600">Gratuit et sans engagement</p>
+              </div>
+
+              <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-white/50 shadow-sm">
+                <div className="bg-gradient-to-br from-blue-400 to-indigo-500 w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-4">
+                  <Clock className="h-6 w-6 text-white" />
+                </div>
+                <h3 className="font-poppins font-semibold text-lg text-dark mb-3">Horaires</h3>
+                <p className="font-inter text-sm text-gray-600 leading-relaxed">
+                  Cours selon le rythme scolaire : solfège, instrument et orchestre par semaine.
+                </p>
+              </div>
+
+              <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-white/50 shadow-sm">
+                <div className="bg-gradient-to-br from-green-400 to-emerald-500 w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-4">
+                  <MessageSquare className="h-6 w-6 text-white" />
+                </div>
+                <h3 className="font-poppins font-semibold text-lg text-dark mb-3">Réponse</h3>
+                <p className="font-inter text-sm text-gray-600 leading-relaxed">
+                  Nous répondons à tous vos messages dans les 48h maximum.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Appel à l'Action */}
+      <section className="py-16 bg-gradient-to-br from-slate-50 via-gray-50 to-blue-50">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="max-w-3xl mx-auto text-center">
+            <div className="bg-white/80 backdrop-blur-sm rounded-xl p-8 shadow-sm border border-white/50">
+              <div className="bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
+                <MessageSquare className="h-8 w-8 text-primary" />
+              </div>
+              <h2 className="font-poppins font-bold text-2xl text-dark mb-4">
+                Rejoignez Notre Famille Musicale
+              </h2>
+              <p className="font-inter text-gray-600 leading-relaxed mb-6">
+                Depuis 1931, nous accompagnons les passionnés de musique dans leur épanouissement artistique. 
+                Découvrez le plaisir de jouer ensemble !
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="text-center p-4">
+                  <div className="bg-orange-100 w-10 h-10 rounded-lg flex items-center justify-center mx-auto mb-2">
+                    <User className="h-5 w-5 text-orange-600" />
                   </div>
-                  
-                  <div className="bg-gradient-to-br from-amber-100 to-yellow-100 rounded-2xl p-6 shadow-lg group-hover:shadow-xl transition-all duration-300">
-                    <div className="bg-gradient-to-br from-amber-500 to-yellow-600 w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-md">
-                      <Clock className="h-6 w-6 text-white" />
-                    </div>
-                    <h3 className="font-poppins font-semibold text-lg text-dark mb-2">Flexibilité</h3>
-                    <p className="text-sm text-gray-600">Horaires adaptés à vos besoins</p>
+                  <h4 className="font-medium text-dark text-sm mb-1">Cours d'Essai</h4>
+                  <p className="text-xs text-gray-600">Gratuit et sans engagement</p>
+                </div>
+                <div className="text-center p-4">
+                  <div className="bg-blue-100 w-10 h-10 rounded-lg flex items-center justify-center mx-auto mb-2">
+                    <Clock className="h-5 w-5 text-blue-600" />
                   </div>
-                  
-                  <div className="bg-gradient-to-br from-orange-100 to-red-100 rounded-2xl p-6 shadow-lg group-hover:shadow-xl transition-all duration-300">
-                    <div className="bg-gradient-to-br from-orange-500 to-red-500 w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-md">
-                      <MessageSquare className="h-6 w-6 text-white" />
-                    </div>
-                    <h3 className="font-poppins font-semibold text-lg text-dark mb-2">Accompagnement</h3>
-                    <p className="text-sm text-gray-600">Suivi personnalisé et bienveillant</p>
+                  <h4 className="font-medium text-dark text-sm mb-1">Flexibilité</h4>
+                  <p className="text-xs text-gray-600">Horaires adaptés</p>
+                </div>
+                <div className="text-center p-4">
+                  <div className="bg-green-100 w-10 h-10 rounded-lg flex items-center justify-center mx-auto mb-2">
+                    <MessageSquare className="h-5 w-5 text-green-600" />
                   </div>
+                  <h4 className="font-medium text-dark text-sm mb-1">Accompagnement</h4>
+                  <p className="text-xs text-gray-600">Suivi personnalisé</p>
                 </div>
               </div>
             </div>
