@@ -1,12 +1,11 @@
 import React, { useState, useEffect, FormEvent } from 'react';
-import { Edit, Trash2, Plus, FileText, Search, X, CheckCircle, ArrowLeft, Upload, Music, Users } from 'lucide-react';
+import { Edit, Trash2, Plus, FileText, Search, X, CheckCircle, ArrowLeft, Upload, Music, Users, Download, Eye } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { Navigate, Link } from 'react-router-dom';
+import { Navigate, Link, useSearchParams } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 
 interface Partition {
   id: string;
-  title: string;
   voice: string | null;
   file_name: string;
   file_path: string;
@@ -18,9 +17,18 @@ interface Partition {
     id: string;
     name: string;
   };
-  orchestras: {
+  morceaux: {
     id: string;
-    name: string;
+    nom: string;
+    compositeur: string | null;
+    arrangement: string | null;
+    morceau_orchestras: Array<{
+      orchestra_id: string;
+      orchestras: {
+        id: string;
+        name: string;
+      };
+    }>;
   };
   profiles?: {
     first_name: string;
@@ -28,12 +36,18 @@ interface Partition {
   };
 }
 
-interface Instrument {
+interface Morceau {
   id: string;
-  name: string;
+  nom: string;
+  compositeur: string | null;
+  arrangement: string | null;
+  orchestras: Array<{
+    id: string;
+    name: string;
+  }>;
 }
 
-interface Orchestra {
+interface Instrument {
   id: string;
   name: string;
 }
@@ -51,12 +65,15 @@ interface Notification {
 
 const AdminPartitions = () => {
   const { profile } = useAuth();
+  const [searchParams] = useSearchParams();
+  const selectedMorceauId = searchParams.get('morceau');
+  
   const [partitions, setPartitions] = useState<Partition[]>([]);
+  const [morceaux, setMorceaux] = useState<Morceau[]>([]);
   const [instruments, setInstruments] = useState<Instrument[]>([]);
-  const [orchestras, setOrchestras] = useState<Orchestra[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [morceauFilter, setMorceauFilter] = useState<string>(selectedMorceauId || '');
   const [instrumentFilter, setInstrumentFilter] = useState<string[]>([]);
-  const [orchestraFilter, setOrchestraFilter] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingPartition, setEditingPartition] = useState<Partition | null>(null);
@@ -70,10 +87,9 @@ const AdminPartitions = () => {
     type: 'success',
   });
   const [formData, setFormData] = useState({
-    title: '',
+    morceau_id: selectedMorceauId || '',
     instrument_id: '',
     voice: '',
-    orchestra_id: '',
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
@@ -90,7 +106,12 @@ const AdminPartitions = () => {
   const fetchPartitions = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-partitions?type=admin`, {
+      let url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-partitions?type=admin`;
+      if (morceauFilter) {
+        url += `&morceauId=${morceauFilter}`;
+      }
+
+      const response = await fetch(url, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
@@ -109,6 +130,26 @@ const AdminPartitions = () => {
       showNotification('Erreur lors du chargement des partitions', 'error');
     }
     setLoading(false);
+  };
+
+  // Récupérer tous les morceaux
+  const fetchMorceaux = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-morceaux`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setMorceaux(data || []);
+      }
+    } catch (err) {
+      console.error('Erreur lors de la récupération des morceaux:', err);
+    }
   };
 
   // Récupérer tous les instruments
@@ -131,33 +172,18 @@ const AdminPartitions = () => {
     }
   };
 
-  // Récupérer tous les orchestres
-  const fetchOrchestras = async () => {
-    try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-orchestras`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setOrchestras(data || []);
-      }
-    } catch (err) {
-      console.error('Erreur lors de la récupération des orchestres:', err);
-    }
-  };
-
   useEffect(() => {
     if (profile?.role === 'Admin' || profile?.role === 'Gestionnaire') {
-      fetchPartitions();
+      fetchMorceaux();
       fetchInstruments();
-      fetchOrchestras();
     }
   }, [profile]);
+
+  useEffect(() => {
+    if (morceaux.length > 0) {
+      fetchPartitions();
+    }
+  }, [morceauFilter, morceaux]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -377,10 +403,9 @@ const AdminPartitions = () => {
   const handleEdit = (partition: Partition) => {
     setEditingPartition(partition);
     setFormData({
-      title: partition.title,
+      morceau_id: partition.morceaux.id,
       instrument_id: partition.instruments.id,
       voice: partition.voice || '',
-      orchestra_id: partition.orchestras.id,
     });
     setSelectedFile(null);
     setFilePreview(null);
@@ -391,10 +416,9 @@ const AdminPartitions = () => {
     setEditingPartition(null);
     setShowAddForm(false);
     setFormData({
-      title: '',
+      morceau_id: selectedMorceauId || '',
       instrument_id: '',
       voice: '',
-      orchestra_id: '',
     });
     setSelectedFile(null);
     setFilePreview(null);
@@ -408,29 +432,43 @@ const AdminPartitions = () => {
     );
   };
 
-  const toggleOrchestraFilter = (orchestraId: string) => {
-    setOrchestraFilter(prev => 
-      prev.includes(orchestraId) 
-        ? prev.filter(id => id !== orchestraId)
-        : [...prev, orchestraId]
-    );
+  const getFileTypeColor = (type: string) => {
+    switch (type) {
+      case 'pdf': return 'bg-red-100 text-red-800';
+      case 'image': return 'bg-purple-100 text-purple-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
   };
 
   // Filtrer les partitions
   const filteredPartitions = partitions.filter(partition => {
     const searchLower = searchTerm.toLowerCase();
     const matchesSearch = (
-      partition.title.toLowerCase().includes(searchLower) ||
+      partition.morceaux.nom.toLowerCase().includes(searchLower) ||
       (partition.voice && partition.voice.toLowerCase().includes(searchLower)) ||
       partition.instruments.name.toLowerCase().includes(searchLower) ||
-      partition.orchestras.name.toLowerCase().includes(searchLower)
+      (partition.morceaux.compositeur && partition.morceaux.compositeur.toLowerCase().includes(searchLower)) ||
+      (partition.morceaux.arrangement && partition.morceaux.arrangement.toLowerCase().includes(searchLower))
     );
     
     const matchesInstrument = instrumentFilter.length === 0 || instrumentFilter.includes(partition.instruments.id);
-    const matchesOrchestra = orchestraFilter.length === 0 || orchestraFilter.includes(partition.orchestras.id);
+    const matchesMorceau = !morceauFilter || partition.morceaux.id === morceauFilter;
     
-    return matchesSearch && matchesInstrument && matchesOrchestra;
+    return matchesSearch && matchesInstrument && matchesMorceau;
   });
+
+  // Grouper par morceau
+  const partitionsByMorceau = filteredPartitions.reduce((acc, partition) => {
+    const morceauKey = partition.morceaux.id;
+    if (!acc[morceauKey]) {
+      acc[morceauKey] = {
+        morceau: partition.morceaux,
+        partitions: []
+      };
+    }
+    acc[morceauKey].partitions.push(partition);
+    return acc;
+  }, {} as Record<string, { morceau: any; partitions: Partition[] }>);
 
   if (profile && !['Admin', 'Gestionnaire'].includes(profile.role)) {
     return <Navigate to="/dashboard" />;
@@ -462,9 +500,9 @@ const AdminPartitions = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <Link
-                to="/dashboard"
+                to={selectedMorceauId ? "/admin/morceaux" : "/dashboard"}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors mr-2"
-                title="Retour au dashboard"
+                title={selectedMorceauId ? "Retour aux morceaux" : "Retour au dashboard"}
               >
                 <ArrowLeft className="h-6 w-6 text-gray-600" />
               </Link>
@@ -476,8 +514,13 @@ const AdminPartitions = () => {
                   Gestion des partitions
                 </h1>
                 <p className="font-inter text-gray-600">
-                  Gérez les partitions par instrument et orchestre
+                  Gérez les partitions par morceau et instrument
                 </p>
+                {selectedMorceauId && morceaux.length > 0 && (
+                  <p className="font-inter text-sm text-primary mt-1">
+                    Filtré par : {morceaux.find(m => m.id === selectedMorceauId)?.nom}
+                  </p>
+                )}
               </div>
             </div>
             <button
@@ -493,6 +536,12 @@ const AdminPartitions = () => {
               <FileText className="h-4 w-4" />
               <span>{filteredPartitions.length} partition{filteredPartitions.length > 1 ? 's' : ''} {searchTerm && `sur ${partitions.length}`}</span>
             </span>
+            <Link
+              to="/admin/morceaux"
+              className="text-primary hover:text-primary/80 font-medium"
+            >
+              Gérer les morceaux →
+            </Link>
           </div>
         </div>
 
@@ -519,22 +568,27 @@ const AdminPartitions = () => {
                 </div>
 
                 <form onSubmit={editingPartition ? handleUpdate : handleCreate} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-dark mb-2">
-                      Titre de la partition
-                    </label>
-                    <input
-                      type="text"
-                      name="title"
-                      value={formData.title}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                      placeholder="Ex: Marche militaire..."
-                      required
-                    />
-                  </div>
-
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-dark mb-2">
+                        Morceau
+                      </label>
+                      <select
+                        name="morceau_id"
+                        value={formData.morceau_id}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                        required
+                      >
+                        <option value="">Sélectionner un morceau</option>
+                        {morceaux.map((morceau) => (
+                          <option key={morceau.id} value={morceau.id}>
+                            {morceau.nom} {morceau.compositeur && `- ${morceau.compositeur}`}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
                     <div>
                       <label className="block text-sm font-medium text-dark mb-2">
                         Instrument
@@ -550,26 +604,6 @@ const AdminPartitions = () => {
                         {instruments.map((instrument) => (
                           <option key={instrument.id} value={instrument.id}>
                             {instrument.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-dark mb-2">
-                        Orchestre
-                      </label>
-                      <select
-                        name="orchestra_id"
-                        value={formData.orchestra_id}
-                        onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                        required
-                      >
-                        <option value="">Sélectionner un orchestre</option>
-                        {orchestras.map((orchestra) => (
-                          <option key={orchestra.id} value={orchestra.id}>
-                            {orchestra.name}
                           </option>
                         ))}
                       </select>
@@ -705,7 +739,7 @@ const AdminPartitions = () => {
                   <p className="text-gray-700">
                     Êtes-vous sûr de vouloir supprimer la partition{' '}
                     <span className="font-semibold text-dark">
-                      {deleteConfirmation.partition.title}
+                      {deleteConfirmation.partition.morceaux.nom} - {deleteConfirmation.partition.instruments.name}
                     </span>{' '}
                     ?
                   </p>
@@ -730,37 +764,50 @@ const AdminPartitions = () => {
           </div>
         )}
 
-        {/* Liste des partitions */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="p-6 border-b border-gray-100">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-poppins font-semibold text-lg text-dark">
-                Liste des partitions
-              </h3>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Search className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  type="text"
-                  placeholder="Rechercher une partition..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary w-64"
-                />
-                {searchTerm && (
-                  <button
-                    onClick={() => setSearchTerm('')}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                  >
-                    <X className="h-4 w-4 text-gray-400 hover:text-gray-600" />
-                  </button>
-                )}
+        {/* Filtres et recherche */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+            {/* Recherche */}
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search className="h-5 w-5 text-gray-400" />
               </div>
+              <input
+                type="text"
+                placeholder="Rechercher une partition..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary w-64"
+              />
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm('')}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                >
+                  <X className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                </button>
+              )}
             </div>
-            
+
             {/* Filtres */}
             <div className="flex flex-wrap items-center gap-4">
+              {/* Filtre par morceau */}
+              <div className="flex items-center space-x-2">
+                <span className="text-sm font-medium text-gray-700">Morceau :</span>
+                <select
+                  value={morceauFilter}
+                  onChange={(e) => setMorceauFilter(e.target.value)}
+                  className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                >
+                  <option value="">Tous les morceaux</option>
+                  {morceaux.map((morceau) => (
+                    <option key={morceau.id} value={morceau.id}>
+                      {morceau.nom}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               {/* Filtre par instrument */}
               <div className="flex items-center space-x-2">
                 <span className="text-sm font-medium text-gray-700">Instruments :</span>
@@ -781,130 +828,149 @@ const AdminPartitions = () => {
                   ))}
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
 
-              {/* Filtre par orchestre */}
-              <div className="flex items-center space-x-2">
-                <span className="text-sm font-medium text-gray-700">Orchestres :</span>
-                <div className="flex flex-wrap gap-1">
-                  {orchestras.map((orchestra) => (
-                    <button
-                      key={orchestra.id}
-                      onClick={() => toggleOrchestraFilter(orchestra.id)}
-                      className={`inline-flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
-                        orchestraFilter.includes(orchestra.id)
-                          ? 'bg-green-100 text-green-800 border border-green-200'
-                          : 'bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200'
-                      }`}
-                    >
-                      <Users className="h-3 w-3" />
-                      <span>{orchestra.name}</span>
-                    </button>
+        {/* Liste des partitions groupées par morceau */}
+        {loading ? (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+            <p className="mt-2 text-gray-600">Chargement...</p>
+          </div>
+        ) : Object.keys(partitionsByMorceau).length === 0 && searchTerm ? (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center text-gray-500">
+            <Search className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+            <p>Aucune partition trouvée pour "{searchTerm}"</p>
+            <button onClick={() => setSearchTerm('')} className="text-primary hover:text-primary/80 mt-2">Effacer la recherche</button>
+          </div>
+        ) : partitions.length === 0 ? (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center text-gray-500">
+            <FileText className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+            <p className="text-lg font-medium mb-2">Aucune partition trouvée</p>
+            <p className="text-sm">Commencez par créer des morceaux, puis ajoutez leurs partitions.</p>
+            <Link
+              to="/admin/morceaux"
+              className="inline-block mt-4 text-primary hover:text-primary/80 font-medium"
+            >
+              Gérer les morceaux →
+            </Link>
+          </div>
+        ) : (
+          <div className="space-y-8">
+            {Object.entries(partitionsByMorceau).map(([morceauId, { morceau, partitions }]) => (
+              <div key={morceauId} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-primary/5 to-accent/5">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="font-poppins font-semibold text-xl text-dark flex items-center space-x-2">
+                        <Music className="h-6 w-6 text-primary" />
+                        <span>{morceau.nom}</span>
+                      </h2>
+                      <div className="flex items-center space-x-4 text-sm text-gray-600 mt-2">
+                        {morceau.compositeur && (
+                          <span>Compositeur : {morceau.compositeur}</span>
+                        )}
+                        {morceau.arrangement && (
+                          <span>Arrangement : {morceau.arrangement}</span>
+                        )}
+                      </div>
+                      {morceau.morceau_orchestras && (
+                        <div className="flex items-center space-x-1 text-xs text-gray-500 mt-1">
+                          <Users className="h-3 w-3" />
+                          <span>{morceau.morceau_orchestras.map(mo => mo.orchestras.name).join(', ')}</span>
+                        </div>
+                      )}
+                    </div>
+                    <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium">
+                      {partitions.length} partition{partitions.length > 1 ? 's' : ''}
+                    </span>
+                  </div>
+                </div>
+                <div className="divide-y divide-gray-200">
+                  {partitions.map((partition) => (
+                    <div key={partition.id} className="p-6 hover:bg-gray-50 transition-colors">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-start space-x-4 flex-1">
+                          <div className="bg-primary/10 p-3 rounded-lg">
+                            <FileText className="h-6 w-6 text-primary" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-3 mb-2">
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                <Music className="h-3 w-3 mr-1" />
+                                {partition.instruments.name}
+                              </span>
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getFileTypeColor(partition.file_type)}`}>
+                                {partition.file_type.toUpperCase()}
+                              </span>
+                            </div>
+                            
+                            {partition.voice && (
+                              <p className="text-sm text-gray-600 mb-2">
+                                Voie : {partition.voice}
+                              </p>
+                            )}
+                            
+                            <div className="flex items-center space-x-4 text-sm text-gray-500 mb-2">
+                              <span className="flex items-center space-x-1">
+                                <FileText className="h-4 w-4" />
+                                <span>{partition.file_name}</span>
+                              </span>
+                              <span>
+                                Ajouté le {new Date(partition.created_at).toLocaleDateString('fr-FR')}
+                              </span>
+                              {partition.profiles && (
+                                <span>Par {partition.profiles.first_name} {partition.profiles.last_name}</span>
+                              )}
+                            </div>
+                            
+                            <div className="flex items-center space-x-2">
+                              <span className="text-xs text-gray-400">
+                                {(partition.file_size / 1024 / 1024).toFixed(2)} MB
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2 ml-4">
+                          <button
+                            onClick={() => window.open(partition.file_path, '_blank')}
+                            className="p-2 text-green-600 hover:text-green-800 hover:bg-green-50 rounded-lg transition-all duration-200"
+                            title="Voir la partition"
+                          >
+                            <Eye className="h-5 w-5" />
+                          </button>
+                          <a
+                            href={partition.file_path}
+                            download={partition.file_name}
+                            className="p-2 text-purple-600 hover:text-purple-800 hover:bg-purple-50 rounded-lg transition-all duration-200"
+                            title="Télécharger"
+                          >
+                            <Download className="h-5 w-5" />
+                          </a>
+                          <button
+                            onClick={() => handleEdit(partition)}
+                            className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-all duration-200"
+                            title="Modifier"
+                          >
+                            <Edit className="h-5 w-5" />
+                          </button>
+                          <button
+                            onClick={() => confirmDelete(partition)}
+                            className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-all duration-200"
+                            title="Supprimer"
+                          >
+                            <Trash2 className="h-5 w-5" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
-            </div>
+            ))}
           </div>
-          
-          {loading ? (
-            <div className="p-8 text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-              <p className="mt-2 text-gray-600">Chargement...</p>
-            </div>
-          ) : filteredPartitions.length === 0 && searchTerm ? (
-            <div className="p-8 text-center text-gray-500">
-              <Search className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-              <p>Aucune partition trouvée pour "{searchTerm}"</p>
-              <button onClick={() => setSearchTerm('')} className="text-primary hover:text-primary/80 mt-2">Effacer la recherche</button>
-            </div>
-          ) : partitions.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">
-              <FileText className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-              <p>Aucune partition trouvée</p>
-            </div>
-          ) : (
-            <div className="divide-y divide-gray-200">
-              {filteredPartitions.map((partition) => (
-                <div key={partition.id} className="p-6 hover:bg-gray-50 transition-colors">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start space-x-4 flex-1">
-                      <div className="bg-primary/10 p-3 rounded-lg">
-                        <FileText className="h-6 w-6 text-primary" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-3 mb-2">
-                          <h3 className="font-semibold text-dark text-lg">
-                            {partition.title}
-                          </h3>
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                            <Music className="h-3 w-3 mr-1" />
-                            {partition.instruments.name}
-                          </span>
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            <Users className="h-3 w-3 mr-1" />
-                            {partition.orchestras.name}
-                          </span>
-                        </div>
-                        
-                        {partition.voice && (
-                          <p className="text-sm text-gray-600 mb-2">
-                            Voie : {partition.voice}
-                          </p>
-                        )}
-                        
-                        <div className="flex items-center space-x-4 text-sm text-gray-500 mb-2">
-                          <span className="flex items-center space-x-1">
-                            <FileText className="h-4 w-4" />
-                            <span>{partition.file_name}</span>
-                          </span>
-                          <span>
-                            {new Date(partition.created_at).toLocaleDateString('fr-FR')}
-                          </span>
-                          {partition.profiles && (
-                            <span>Par {partition.profiles.first_name} {partition.profiles.last_name}</span>
-                          )}
-                        </div>
-                        
-                        <div className="flex items-center space-x-2">
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                            partition.file_type === 'pdf' ? 'bg-red-100 text-red-800' : 'bg-purple-100 text-purple-800'
-                          }`}>
-                            {partition.file_type.toUpperCase()}
-                          </span>
-                          <span className="text-xs text-gray-400">
-                            {(partition.file_size / 1024 / 1024).toFixed(2)} MB
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-2 ml-4">
-                      <button
-                        onClick={() => window.open(partition.file_path, '_blank')}
-                        className="p-2 text-green-600 hover:text-green-800 hover:bg-green-50 rounded-lg transition-all duration-200"
-                        title="Voir le fichier"
-                      >
-                        <FileText className="h-5 w-5" />
-                      </button>
-                      <button
-                        onClick={() => handleEdit(partition)}
-                        className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-all duration-200"
-                        title="Modifier"
-                      >
-                        <Edit className="h-5 w-5" />
-                      </button>
-                      <button
-                        onClick={() => confirmDelete(partition)}
-                        className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-all duration-200"
-                        title="Supprimer"
-                      >
-                        <Trash2 className="h-5 w-5" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        )}
       </div>
     </div>
   );

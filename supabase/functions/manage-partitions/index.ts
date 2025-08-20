@@ -10,7 +10,7 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const { action, id, title, instrument_id, voice, orchestra_id, file_name, file_path, file_type, file_size, mime_type } = await req.json();
+    const { action, id, morceau_id, instrument_id, voice, file_name, file_path, file_type, file_size, mime_type } = await req.json();
     
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
@@ -26,17 +26,16 @@ Deno.serve(async (req: Request) => {
 
     switch (action) {
       case 'create':
-        if (!title || !instrument_id || !orchestra_id || !file_name || !file_path || !file_type) {
-          throw new Error("Titre, instrument, orchestre et fichier requis");
+        if (!morceau_id || !instrument_id || !file_name || !file_path || !file_type) {
+          throw new Error("Morceau, instrument et fichier requis");
         }
         
         const { data: createData, error: createError } = await supabase
           .from('partitions')
           .insert({ 
-            title, 
+            morceau_id,
             instrument_id, 
             voice, 
-            orchestra_id, 
             file_name, 
             file_path, 
             file_type, 
@@ -46,7 +45,16 @@ Deno.serve(async (req: Request) => {
           .select(`
             *,
             instruments (id, name),
-            orchestras (id, name)
+            morceaux (
+              id,
+              nom,
+              compositeur,
+              arrangement,
+              morceau_orchestras (
+                orchestra_id,
+                orchestras (id, name)
+              )
+            )
           `)
           .single();
         
@@ -56,15 +64,14 @@ Deno.serve(async (req: Request) => {
         break;
 
       case 'update':
-        if (!id || !title || !instrument_id || !orchestra_id) {
-          throw new Error("ID, titre, instrument et orchestre requis");
+        if (!id || !morceau_id || !instrument_id) {
+          throw new Error("ID, morceau et instrument requis");
         }
         
         const updateData: any = { 
-          title, 
+          morceau_id,
           instrument_id, 
-          voice, 
-          orchestra_id 
+          voice
         };
 
         // Ajouter les données du fichier seulement si un nouveau fichier est fourni
@@ -83,7 +90,16 @@ Deno.serve(async (req: Request) => {
           .select(`
             *,
             instruments (id, name),
-            orchestras (id, name)
+            morceaux (
+              id,
+              nom,
+              compositeur,
+              arrangement,
+              morceau_orchestras (
+                orchestra_id,
+                orchestras (id, name)
+              )
+            )
           `)
           .single();
         
