@@ -55,7 +55,6 @@ const Contact = () => {
                   <info.icon className="h-8 w-8 text-white" />
                 </div>
                 <h3 className="font-poppins font-semibold text-xl text-dark mb-4">
-                <h3 className="font-poppins font-semibold text-xl text-dark mb-4">
                   {info.title}
                 </h3>
                 <div className="space-y-1">
@@ -84,7 +83,6 @@ const Contact = () => {
             
             {/* Additional Information */}
             <div className="animate-fade-in bg-white/60 backdrop-blur-sm rounded-xl p-8 border border-white/50 shadow-md">
-              <h2 className="font-poppins font-bold text-2xl text-dark mb-6">
               <h2 className="font-poppins font-bold text-3xl text-dark mb-6">
                 Venez nous rendre visite
               </h2>
@@ -101,7 +99,6 @@ const Contact = () => {
                   <div>
                     <h4 className="font-poppins font-semibold text-dark">Transport</h4>
                     <p className="font-inter text-gray-600 text-sm">
-                    <p className="font-inter text-gray-600 text-sm">
                       Métro ligne 1 et 4, Bus 21, 27, 39
                     </p>
                   </div>
@@ -112,7 +109,6 @@ const Contact = () => {
                   </div>
                   <div>
                     <h4 className="font-poppins font-semibold text-dark">Rendez-vous</h4>
-                    <p className="font-inter text-gray-600 text-sm">
                     <p className="font-inter text-gray-600 text-sm">
                       Sur rendez-vous pour les visites et inscriptions
                     </p>
