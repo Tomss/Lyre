@@ -464,7 +464,7 @@ const AdminPartitions = () => {
 
     // Vérifier si la partition appartient aux orchestres sélectionnés
     const matchesOrchestra = selectedOrchestras.length === 0 || 
-      partition.morceaux.morceau_orchestras.some(mo => selectedOrchestras.includes(mo.orchestra_id));
+      partition.morceaux?.morceau_orchestras?.some(mo => selectedOrchestras.includes(mo.orchestra_id));
 
     return matchesSearch && matchesMorceau && matchesInstrument && matchesOrchestra;
   });
