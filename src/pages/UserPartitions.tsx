@@ -3,9 +3,21 @@ import { Link, Navigate } from 'react-router-dom';
 import { ArrowLeft, FileText, Music, Users, Search, X, Filter, Download, Eye } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
+interface Morceau {
+  id: string;
+  nom: string;
+  compositeur: string | null;
+  arrangement: string | null;
+  created_at: string;
+  orchestras: Array<{
+    id: string;
+    name: string;
+  }>;
+  partitions: Partition[];
+}
+
 interface Partition {
   id: string;
-  title: string;
   voice: string | null;
   file_name: string;
   file_path: string;
@@ -13,17 +25,9 @@ interface Partition {
   file_size: number;
   mime_type: string;
   created_at: string;
-  instruments: {
+  instrument: {
     id: string;
     name: string;
-  };
-  orchestras: {
-    id: string;
-    name: string;
-  };
-  profiles?: {
-    first_name: string;
-    last_name: string;
   };
 }
 
@@ -34,7 +38,7 @@ interface Orchestra {
 
 const UserPartitions = () => {
   const { user, profile } = useAuth();
-  const [partitions, setPartitions] = useState<Partition[]>([]);
+  const [morceauxWithPartitions, setMorceauxWithPartitions] = useState<Morceau[]>([]);
   const [userOrchestras, setUserOrchestras] = useState<Orchestra[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -62,7 +66,7 @@ const UserPartitions = () => {
     }
   };
 
-  // Récupérer toutes les partitions de l'utilisateur
+  // Récupérer toutes les partitions de l'utilisateur groupées par morceau
   const fetchUserPartitions = async (userId: string) => {
     try {
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-partitions?type=user&userId=${userId}`, {
@@ -75,7 +79,7 @@ const UserPartitions = () => {
 
       if (response.ok) {
         const data = await response.json();
-        setPartitions(data || []);
+        setMorceauxWithPartitions(data || []);
       }
     } catch (err) {
       console.error('Erreur lors de la récupération des partitions:', err);
@@ -127,31 +131,27 @@ const UserPartitions = () => {
     setOrchestraFilter([]);
   };
 
-  // Filtrer les partitions
-  const filteredPartitions = partitions.filter(partition => {
+  // Filtrer les morceaux
+  const filteredMorceaux = morceauxWithPartitions.filter(morceau => {
     const searchLower = searchTerm.toLowerCase();
     const matchesSearch = (
-      partition.title.toLowerCase().includes(searchLower) ||
-      (partition.voice && partition.voice.toLowerCase().includes(searchLower)) ||
-      partition.instruments.name.toLowerCase().includes(searchLower) ||
-      partition.orchestras.name.toLowerCase().includes(searchLower)
+      morceau.nom.toLowerCase().includes(searchLower) ||
+      (morceau.compositeur && morceau.compositeur.toLowerCase().includes(searchLower)) ||
+      (morceau.arrangement && morceau.arrangement.toLowerCase().includes(searchLower)) ||
+      morceau.partitions.some(p => 
+        p.instrument.name.toLowerCase().includes(searchLower) ||
+        (p.voice && p.voice.toLowerCase().includes(searchLower))
+      )
     );
     
     const matchesOrchestra = orchestraFilter.length === 0 || 
-      orchestraFilter.includes(partition.orchestras.id);
+      morceau.orchestras.some(o => orchestraFilter.includes(o.id));
     
     return matchesSearch && matchesOrchestra;
   });
 
-  // Grouper par orchestre
-  const partitionsByOrchestra = filteredPartitions.reduce((acc, partition) => {
-    const orchestraName = partition.orchestras.name;
-    if (!acc[orchestraName]) {
-      acc[orchestraName] = [];
-    }
-    acc[orchestraName].push(partition);
-    return acc;
-  }, {} as Record<string, Partition[]>);
+  // Compter le total de partitions
+  const totalPartitions = filteredMorceaux.reduce((total, morceau) => total + morceau.partitions.length, 0);
 
   if (!user) {
     return <Navigate to="/connexion" />;
@@ -179,7 +179,7 @@ const UserPartitions = () => {
                   Mes Partitions
                 </h1>
                 <p className="font-inter text-gray-600">
-                  Vos partitions selon vos instruments et orchestres
+                  Vos partitions organisées par morceau
                 </p>
               </div>
             </div>
@@ -187,7 +187,7 @@ const UserPartitions = () => {
           <div className="flex items-center space-x-4 text-sm text-gray-500 mt-4">
             <span className="flex items-center space-x-1">
               <FileText className="h-4 w-4" />
-              <span>{filteredPartitions.length} partition{filteredPartitions.length > 1 ? 's' : ''} {searchTerm && `sur ${partitions.length}`}</span>
+              <span>{totalPartitions} partition{totalPartitions > 1 ? 's' : ''} dans {filteredMorceaux.length} morceau{filteredMorceaux.length > 1 ? 'x' : ''}</span>
             </span>
             <span className="flex items-center space-x-1">
               <Users className="h-4 w-4" />
@@ -206,7 +206,7 @@ const UserPartitions = () => {
               </div>
               <input
                 type="text"
-                placeholder="Rechercher une partition..."
+                placeholder="Rechercher un morceau ou partition..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-purple-600 w-64"
@@ -255,13 +255,13 @@ const UserPartitions = () => {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto"></div>
             <p className="mt-2 text-gray-600">Chargement de vos partitions...</p>
           </div>
-        ) : filteredPartitions.length === 0 && searchTerm ? (
+        ) : filteredMorceaux.length === 0 && searchTerm ? (
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center text-gray-500">
             <Search className="h-12 w-12 text-gray-300 mx-auto mb-4" />
             <p>Aucune partition trouvée pour "{searchTerm}"</p>
             <button onClick={() => setSearchTerm('')} className="text-purple-600 hover:text-purple-700 mt-2">Effacer la recherche</button>
           </div>
-        ) : partitions.length === 0 ? (
+        ) : morceauxWithPartitions.length === 0 ? (
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center text-gray-500">
             <FileText className="h-12 w-12 text-gray-300 mx-auto mb-4" />
             <p className="text-lg font-medium mb-2">Aucune partition disponible</p>
@@ -269,16 +269,37 @@ const UserPartitions = () => {
           </div>
         ) : (
           <div className="space-y-8">
-            {Object.entries(partitionsByOrchestra).map(([orchestraName, orchestraPartitions]) => (
-              <div key={orchestraName} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="p-6 border-b border-gray-100 bg-purple-50">
-                  <h2 className="font-poppins font-semibold text-xl text-dark flex items-center space-x-2">
-                    <Users className="h-6 w-6 text-purple-600" />
-                    <span>{orchestraName} ({orchestraPartitions.length})</span>
-                  </h2>
+            {filteredMorceaux.map((morceau) => (
+              <div key={morceau.id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-purple-50 to-indigo-50">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="font-poppins font-semibold text-xl text-dark flex items-center space-x-2">
+                        <Music className="h-6 w-6 text-purple-600" />
+                        <span>{morceau.nom}</span>
+                      </h2>
+                      <div className="flex items-center space-x-4 text-sm text-gray-600 mt-2">
+                        {morceau.compositeur && (
+                          <span>Compositeur : {morceau.compositeur}</span>
+                        )}
+                        {morceau.arrangement && (
+                          <span>Arrangement : {morceau.arrangement}</span>
+                        )}
+                      </div>
+                      {morceau.orchestras && morceau.orchestras.length > 0 && (
+                        <div className="flex items-center space-x-1 text-xs text-gray-500 mt-1">
+                          <Users className="h-3 w-3" />
+                          <span>{morceau.orchestras.map(o => o.name).join(', ')}</span>
+                        </div>
+                      )}
+                    </div>
+                    <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">
+                      {morceau.partitions.length} partition{morceau.partitions.length > 1 ? 's' : ''}
+                    </span>
+                  </div>
                 </div>
                 <div className="divide-y divide-gray-200">
-                  {orchestraPartitions.map((partition) => (
+                  {morceau.partitions.map((partition) => (
                     <div key={partition.id} className="p-6 hover:bg-gray-50 transition-colors">
                       <div className="flex items-start justify-between">
                         <div className="flex items-start space-x-4 flex-1">
@@ -287,12 +308,9 @@ const UserPartitions = () => {
                           </div>
                           <div className="flex-1">
                             <div className="flex items-center space-x-3 mb-2">
-                              <h3 className="font-semibold text-dark text-lg">
-                                {partition.title}
-                              </h3>
                               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                                 <Music className="h-3 w-3 mr-1" />
-                                {partition.instruments.name}
+                                {partition.instrument.name}
                               </span>
                               <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getFileTypeColor(partition.file_type)}`}>
                                 {partition.file_type.toUpperCase()}
@@ -313,9 +331,6 @@ const UserPartitions = () => {
                               <span>
                                 Ajouté le {formatDate(partition.created_at)}
                               </span>
-                              {partition.profiles && (
-                                <span>Par {partition.profiles.first_name} {partition.profiles.last_name}</span>
-                              )}
                             </div>
                             
                             <div className="flex items-center space-x-2">
@@ -350,7 +365,7 @@ const UserPartitions = () => {
             ))}
 
             {/* Message si aucune partition après filtrage */}
-            {Object.keys(partitionsByOrchestra).length === 0 && filteredPartitions.length === 0 && (
+            {filteredMorceaux.length === 0 && morceauxWithPartitions.length > 0 && (
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center text-gray-500">
                 <Filter className="h-12 w-12 text-gray-300 mx-auto mb-4" />
                 <p>Aucune partition ne correspond aux filtres sélectionnés</p>
