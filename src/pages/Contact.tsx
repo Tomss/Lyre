@@ -126,6 +126,38 @@ const Contact = () => {
         </div>
         
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Infos pratiques */}
+          <div className="text-center mb-12 relative z-10">
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 max-w-3xl mx-auto border border-white/20">
+              <h2 className="font-poppins font-bold text-2xl text-white mb-4">
+                Contactez-nous facilement
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
+                <div className="text-center">
+                  <div className="bg-orange-400/20 p-2 rounded-lg w-fit mx-auto mb-2">
+                    <User className="h-5 w-5 text-orange-300" />
+                  </div>
+                  <p className="text-orange-200 font-medium">Inscriptions ouvertes</p>
+                  <p className="text-gray-300">toute l'année</p>
+                </div>
+                <div className="text-center">
+                  <div className="bg-blue-400/20 p-2 rounded-lg w-fit mx-auto mb-2">
+                    <Clock className="h-5 w-5 text-blue-300" />
+                  </div>
+                  <p className="text-blue-200 font-medium">Réponse rapide</p>
+                  <p className="text-gray-300">sous 48h maximum</p>
+                </div>
+                <div className="text-center">
+                  <div className="bg-green-400/20 p-2 rounded-lg w-fit mx-auto mb-2">
+                    <MessageSquare className="h-5 w-5 text-green-300" />
+                  </div>
+                  <p className="text-green-200 font-medium">Cours d'essai</p>
+                  <p className="text-gray-300">gratuit et sans engagement</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-6xl mx-auto relative z-10">
             
             {/* Formulaire de Contact */}
@@ -355,96 +387,6 @@ const Contact = () => {
         </div>
       </section>
 
-      {/* Informations Pratiques */}
-      <section className="py-16 bg-gradient-to-br from-rose-25 via-pink-25 to-orange-25">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="font-poppins font-bold text-2xl md:text-3xl text-dark mb-3">
-                Informations Pratiques
-              </h2>
-              <p className="font-inter text-gray-600">
-                Tout ce qu'il faut savoir pour nous rejoindre
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-white/50 shadow-sm">
-                <div className="bg-gradient-to-br from-orange-400 to-amber-500 w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <User className="h-6 w-6 text-white" />
-                </div>
-                <h3 className="font-poppins font-semibold text-lg text-dark mb-3">Inscriptions</h3>
-                <p className="font-inter text-sm text-gray-600 leading-relaxed">
-                  Ouvertes toute l'année. Cours d'essai gratuit pour découvrir votre instrument.
-                </p>
-              </div>
-
-              <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-white/50 shadow-sm">
-                <div className="bg-gradient-to-br from-blue-400 to-indigo-500 w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <Clock className="h-6 w-6 text-white" />
-                </div>
-                <h3 className="font-poppins font-semibold text-lg text-dark mb-3">Horaires</h3>
-                <p className="font-inter text-sm text-gray-600 leading-relaxed">
-                  Cours selon le rythme scolaire : solfège, instrument et orchestre par semaine.
-                </p>
-              </div>
-
-              <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-white/50 shadow-sm">
-                <div className="bg-gradient-to-br from-green-400 to-emerald-500 w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <MessageSquare className="h-6 w-6 text-white" />
-                </div>
-                <h3 className="font-poppins font-semibold text-lg text-dark mb-3">Réponse</h3>
-                <p className="font-inter text-sm text-gray-600 leading-relaxed">
-                  Nous répondons à tous vos messages dans les 48h maximum.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Appel à l'Action */}
-      <section className="py-16 bg-gradient-to-br from-slate-50 via-gray-50 to-blue-50">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="max-w-3xl mx-auto text-center">
-            <div className="bg-white/80 backdrop-blur-sm rounded-xl p-8 shadow-sm border border-white/50">
-              <div className="bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
-                <MessageSquare className="h-8 w-8 text-primary" />
-              </div>
-              <h2 className="font-poppins font-bold text-2xl text-dark mb-4">
-                Rejoignez Notre Famille Musicale
-              </h2>
-              <p className="font-inter text-gray-600 leading-relaxed mb-6">
-                Depuis 1931, nous accompagnons les passionnés de musique dans leur épanouissement artistique. 
-                Découvrez le plaisir de jouer ensemble !
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="text-center p-4">
-                  <div className="bg-orange-100 w-10 h-10 rounded-lg flex items-center justify-center mx-auto mb-2">
-                    <User className="h-5 w-5 text-orange-600" />
-                  </div>
-                  <h4 className="font-medium text-dark text-sm mb-1">Cours d'Essai</h4>
-                  <p className="text-xs text-gray-600">Gratuit et sans engagement</p>
-                </div>
-                <div className="text-center p-4">
-                  <div className="bg-blue-100 w-10 h-10 rounded-lg flex items-center justify-center mx-auto mb-2">
-                    <Clock className="h-5 w-5 text-blue-600" />
-                  </div>
-                  <h4 className="font-medium text-dark text-sm mb-1">Flexibilité</h4>
-                  <p className="text-xs text-gray-600">Horaires adaptés</p>
-                </div>
-                <div className="text-center p-4">
-                  <div className="bg-green-100 w-10 h-10 rounded-lg flex items-center justify-center mx-auto mb-2">
-                    <MessageSquare className="h-5 w-5 text-green-600" />
-                  </div>
-                  <h4 className="font-medium text-dark text-sm mb-1">Accompagnement</h4>
-                  <p className="text-xs text-gray-600">Suivi personnalisé</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
     </div>
   );
 };
