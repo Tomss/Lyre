@@ -186,6 +186,7 @@ const Events = () => {
                   <div className="inline-block mb-8">
                     <div className="flex items-center justify-center space-x-4 mb-6">
                       <div className="w-16 h-0.5 bg-gradient-to-r from-transparent via-orange-400 to-orange-400"></div>
+                      <Calendar className="h-8 w-8 text-orange-400 animate-pulse" />
                       <div className="w-16 h-0.5 bg-gradient-to-l from-transparent via-orange-400 to-orange-400"></div>
                     </div>
                   </div>
