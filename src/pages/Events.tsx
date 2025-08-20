@@ -422,25 +422,6 @@ const Events = () => {
         </>
       )}
 
-      {/* Section d'appel à l'action */}
-      <section className="py-20 bg-gradient-to-br from-slate-100 via-gray-100 to-blue-100">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto text-center">
-            <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border border-white/50">
-              <div className="bg-gradient-to-br from-slate-500 to-gray-600 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-8 shadow-lg"><Music className="h-10 w-10 text-white" /></div>
-              <h2 className="font-poppins font-bold text-3xl text-gray-800 mb-6">Rejoignez-nous</h2>
-              <p className="font-inter text-gray-600 leading-relaxed mb-6">
-                Chaque concert est une nouvelle page de notre histoire musicale. Venez partager ces moments d'émotion et de partage avec La Lyre Cheminote et Municipale de Chalindrey.
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-                <div className="text-center"><div className="bg-gradient-to-br from-slate-100 to-gray-100 rounded-2xl p-6 mb-4"><Calendar className="h-8 w-8 text-slate-600 mx-auto mb-3" /><h3 className="font-semibold text-gray-800">Concerts réguliers</h3><p className="text-gray-600 mt-2">Plusieurs représentations par an</p></div></div>
-                <div className="text-center"><div className="bg-gradient-to-br from-indigo-100 to-purple-100 rounded-2xl p-6 mb-4"><Users className="h-8 w-8 text-indigo-600 mx-auto mb-3" /><h3 className="font-semibold text-gray-800">Tous niveaux</h3><p className="text-gray-600 mt-2">De l'éveil au niveau supérieur</p></div></div>
-                <div className="text-center"><div className="bg-gradient-to-br from-blue-100 to-slate-100 rounded-2xl p-6 mb-4"><Music className="h-8 w-8 text-blue-600 mx-auto mb-3" /><h3 className="font-semibold text-gray-800">Répertoire varié</h3><p className="text-gray-600 mt-2">Classique, moderne, populaire</p></div></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
     </div>
   );
 };
