@@ -99,7 +99,6 @@ const Home = () => {
       <section className="py-20 bg-gradient-to-br from-orange-25 via-amber-25 to-yellow-25">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center animate-fade-in">
-            <h2 className="font-poppins font-bold text-2xl md:text-3xl text-orange-800 mb-8">
             <h2 className="font-poppins font-bold text-3xl md:text-4xl text-orange-800 mb-8">
               Bienvenue
             </h2>
@@ -113,7 +112,6 @@ const Home = () => {
               <p className="font-inter">
                 Spectateur(s) à l'ouïe fine, futur(e)s virtuose(s) ou simplement curieux(ses), n'hésitez pas à prendre le temps de parcourir notre site afin de nous connaître un peu mieux.
               </p>
-              <p className="font-inter font-medium text-orange-600 text-lg">
               <p className="font-inter font-medium text-orange-600 text-xl">
                 En ayant l'espoir de vous voir à notre prochain concert ou au sein de notre groupe, nous vous souhaitons une agréable journée et vous remercions de votre visite.
               </p>
@@ -135,7 +133,6 @@ const Home = () => {
                   <feature.icon className="h-8 w-8 text-white" />
                 </div>
                 <h3 className="font-poppins font-semibold text-xl text-dark mb-4">
-                <h3 className="font-poppins font-semibold text-xl text-dark mb-4">
                   {feature.title}
                 </h3>
                 <p className="font-inter text-sm text-gray-700 leading-relaxed">
@@ -151,7 +148,6 @@ const Home = () => {
       <section className="py-20 bg-gradient-to-br from-emerald-25 via-teal-25 to-cyan-25">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="animate-on-scroll text-center mb-12">
-            <h2 className="font-poppins font-bold text-2xl md:text-3xl text-dark mb-4">
             <h2 className="font-poppins font-bold text-3xl md:text-4xl text-dark mb-4">
               Nos Événements
             </h2>
@@ -168,7 +164,6 @@ const Home = () => {
                 className="bg-white/80 backdrop-blur-sm rounded-lg shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group border border-white/50"
               >
                 <div className="p-6">
-                  <h3 className="font-poppins font-semibold text-xl text-dark mb-2">
                   <h3 className="font-poppins font-semibold text-xl text-dark mb-2">
                     Événement à venir
                   </h3>
