@@ -455,12 +455,12 @@ const AdminPartitions = () => {
     const matchesSearch = (
       partition.title.toLowerCase().includes(searchLower) ||
       partition.morceaux.nom.toLowerCase().includes(searchLower) ||
-      (partition.instrument?.name && partition.instrument.name.toLowerCase().includes(searchLower)) ||
+      partition.instrument?.name.toLowerCase().includes(searchLower) ||
       (partition.morceaux.compositeur && partition.morceaux.compositeur.toLowerCase().includes(searchLower))
     );
 
     const matchesMorceau = selectedMorceaux.length === 0 || selectedMorceaux.includes(partition.morceaux.id);
-    const matchesInstrument = selectedInstruments.length === 0 || (partition.instrument && selectedInstruments.includes(partition.instrument.id));
+    const matchesInstrument = selectedInstruments.length === 0 || selectedInstruments.includes(partition.instrument?.id || '');
 
     // Vérifier si la partition appartient aux orchestres sélectionnés
     const matchesOrchestra = selectedOrchestras.length === 0 || 
@@ -731,13 +731,6 @@ const AdminPartitions = () => {
             )}
           </div>
         </div>
-                >
-                  Réinitialiser tous les filtres
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
 
         {/* Formulaire d'ajout/modification (Modal) */}
         {showAddForm && (
@@ -962,7 +955,7 @@ const AdminPartitions = () => {
                           </h3>
                           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                             <Music className="h-3 w-3 mr-1" />
-                            {partition.instrument?.name || 'Instrument non défini'}
+                            {partition.instrument?.name}
                           </span>
                         </div>
                         
