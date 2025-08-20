@@ -113,8 +113,10 @@ const Contact = () => {
                 <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-orange-100/50 p-8">
                   <div className="mb-6">
                     <div className="bg-gradient-to-br from-orange-100 to-amber-100 p-3 rounded-lg inline-block mb-4 shadow-sm">
-                      Envoyez-nous un message
-                    </h2>
+                      <h2 className="font-poppins font-semibold text-xl text-gray-800">
+                        Envoyez-nous un message
+                      </h2>
+                    </div>
                     <p className="font-inter text-gray-600">
                       Nous vous répondrons dans les plus brefs délais
                     </p>
