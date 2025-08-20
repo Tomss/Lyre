@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Image, Play, Camera, Music, FileText, File, Filter, Search, X, ChevronRight } from 'lucide-react';
+import { Image, Play, Camera, Music, FileText, File, Filter, Search, X, ChevronRight, Star } from 'lucide-react';
 import MediaGallery from '../components/MediaGallery';
 import MediaPreview from '../components/MediaPreview';
 
@@ -224,7 +224,7 @@ const Media = () => {
               <h2 className="font-poppins font-bold text-4xl md:text-5xl text-dark mb-6 bg-gradient-to-r from-orange-600 via-amber-600 to-orange-600 bg-clip-text text-transparent">
                 Médias mis en avant
               </h2>
-              <p className="font-inter text-lg text-gray-700 max-w-3xl mx-auto leading-relaxed">
+              <p className="font-inter text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
                 Découvrez notre sélection de contenus exceptionnels
               </p>
             </div>
@@ -319,7 +319,7 @@ const Media = () => {
                   <h2 className="font-poppins font-bold text-5xl md:text-6xl text-white mb-6 bg-gradient-to-r from-orange-200 via-amber-200 to-orange-200 bg-clip-text text-transparent">
                     Notre Médiathèque
                   </h2>
-                  <p className="text-lg text-gray-300 max-w-3xl mx-auto leading-relaxed mb-12">
+                  <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed mb-12">
                     Explorez notre collection de souvenirs musicaux et découvertes artistiques
                   </p>
                 </div>
@@ -580,7 +580,7 @@ const Media = () => {
               <h2 className="font-poppins font-bold text-3xl md:text-4xl text-dark mb-6 bg-gradient-to-r from-orange-600 via-amber-600 to-orange-600 bg-clip-text text-transparent">
                 Partagez vos souvenirs !
               </h2>
-              <p className="text-lg text-gray-700 max-w-3xl mx-auto leading-relaxed mb-8">
+              <p className="text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed mb-8">
                 Vous avez des photos, vidéos ou enregistrements de nos concerts et événements ? 
                 Aidez-nous à enrichir notre médiathèque en partageant vos précieux souvenirs !
               </p>
@@ -618,7 +618,7 @@ const Media = () => {
                 </div>
                 
                 <div className="text-center">
-                  <p className="text-gray-700 mb-8 text-lg leading-relaxed">
+                  <p className="text-gray-700 mb-8 text-xl leading-relaxed">
                     Chaque souvenir compte ! Vos contributions nous aident à préserver et partager 
                     l'histoire musicale de notre école. 
                   </p>
@@ -627,7 +627,7 @@ const Media = () => {
                     to="/contact"
                     className="inline-flex items-center space-x-3 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white font-bold px-8 py-4 rounded-2xl transition-all duration-300 hover:-translate-y-1 hover:shadow-xl shadow-lg group/btn"
                   >
-                    <span className="text-lg">Nous contacter</span>
+                    <span className="text-xl">Nous contacter</span>
                     <div className="bg-white/20 p-2 rounded-full group-hover/btn:bg-white/30 transition-colors duration-300">
                       <ChevronRight className="h-5 w-5 group-hover/btn:translate-x-1 transition-transform duration-300" />
                     </div>
