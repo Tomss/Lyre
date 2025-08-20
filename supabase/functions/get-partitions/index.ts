@@ -111,7 +111,7 @@ Deno.serve(async (req: Request) => {
     // Formater les données pour inclure les orchestres
     const formattedPartitions = partitions?.map(partition => ({
       ...partition,
-      orchestras: partition.morceaux?.morceau_orchestras?.map(mo => mo.orchestras) || []
+      orchestras: partition.morceaux?.morceau_orchestras?.map(mo => mo.orchestras).filter(Boolean) || []
     })) || [];
 
     return new Response(

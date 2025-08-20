@@ -34,6 +34,10 @@ interface Partition {
     first_name: string;
     last_name: string;
   };
+  orchestras?: Array<{
+    id: string;
+    name: string;
+  }>;
 }
 
 interface Morceau {
