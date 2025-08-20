@@ -13,7 +13,7 @@ interface Partition {
   file_size: number;
   mime_type: string;
   created_at: string;
-  instrument: {
+  instrument?: {
     id: string;
     name: string;
   };
@@ -424,7 +424,7 @@ const AdminPartitions = () => {
     setFormData({
       title: partition.title,
       morceau_id: partition.morceaux.id,
-      instrument_id: partition.instrument.id,
+      instrument_id: partition.instrument?.id || '',
     });
     setSelectedFile(null);
     setShowAddForm(true);
@@ -455,12 +455,12 @@ const AdminPartitions = () => {
     const matchesSearch = (
       partition.title.toLowerCase().includes(searchLower) ||
       partition.morceaux.nom.toLowerCase().includes(searchLower) ||
-      partition.instrument.name.toLowerCase().includes(searchLower) ||
+      (partition.instrument?.name && partition.instrument.name.toLowerCase().includes(searchLower)) ||
       (partition.morceaux.compositeur && partition.morceaux.compositeur.toLowerCase().includes(searchLower))
     );
 
     const matchesMorceau = selectedMorceaux.length === 0 || selectedMorceaux.includes(partition.morceaux.id);
-    const matchesInstrument = selectedInstruments.length === 0 || selectedInstruments.includes(partition.instrument.id);
+    const matchesInstrument = selectedInstruments.length === 0 || (partition.instrument && selectedInstruments.includes(partition.instrument.id));
 
     // Vérifier si la partition appartient aux orchestres sélectionnés
     const matchesOrchestra = selectedOrchestras.length === 0 || 
@@ -568,7 +568,7 @@ const AdminPartitions = () => {
         </div>
 
         {/* Filtres compacts */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
           <div className="space-y-4">
             {/* Recherche */}
             <div className="flex items-center justify-between">
@@ -724,6 +724,13 @@ const AdminPartitions = () => {
                 <button
                   onClick={clearAllFilters}
                   className="text-sm text-red-600 hover:text-red-700 font-medium"
+                >
+                  Réinitialiser tous les filtres
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
                 >
                   Réinitialiser tous les filtres
                 </button>
@@ -955,7 +962,7 @@ const AdminPartitions = () => {
                           </h3>
                           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                             <Music className="h-3 w-3 mr-1" />
-                            {partition.instrument.name}
+                            {partition.instrument?.name || 'Instrument non défini'}
                           </span>
                         </div>
                         
