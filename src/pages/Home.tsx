@@ -71,7 +71,6 @@ const Home = () => {
         ))}
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="max-w-4xl mx-auto text-center animate-fade-in">
-            <h1 className="font-poppins font-bold text-3xl md:text-5xl text-white mb-6">
             <h1 className="font-poppins font-bold text-4xl md:text-5xl text-white mb-6">
               Lyre Cheminote et Municipale de Chalindrey
             </h1>
