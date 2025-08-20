@@ -272,8 +272,7 @@ const AdminMorceaux = () => {
     const matchesSearch = (
       morceau.nom.toLowerCase().includes(searchLower) ||
       (morceau.compositeur && morceau.compositeur.toLowerCase().includes(searchLower)) ||
-           morceau.orchestras.some(o => o.name.toLowerCase().includes(searchLower));
-      morceau.annees.some(a => a.includes(searchTerm))
+      morceau.orchestras.some(o => o.name.toLowerCase().includes(searchLower))
     );
     
     return matchesSearch;
