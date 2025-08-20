@@ -12,10 +12,13 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Utiliser la syntaxe abrégée pour plus de robustesse
     const { data: partitions, error } = await supabase
       .from('partitions')
-      .select('*, instruments(*), morceaux(*)');
+      .select(`
+        *,
+        instruments(id, name),
+        morceaux(id, nom, compositeur, arrangement, morceau_orchestras(orchestras(id, name)))
+      `);
 
     if (error) {
       throw error;
