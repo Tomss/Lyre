@@ -1,5 +1,5 @@
 import React, { useState, useEffect, FormEvent } from 'react';
-import { Edit, Trash2, Plus, FileText, Search, X, CheckCircle, ArrowLeft, Upload, Music, Download } from 'lucide-react';
+import { Edit, Trash2, Plus, FileText, Search, X, CheckCircle, ArrowLeft, Upload, Music, Download, Users, Music2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Navigate, Link } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
@@ -475,8 +475,7 @@ const AdminPartitions = () => {
     const matchesSearch = (
       partition.nom.toLowerCase().includes(searchLower) ||
       partition.morceaux.nom.toLowerCase().includes(searchLower) ||
-      partition.instruments.name.toLowerCase().includes(searchLower) ||
-      (partition.morceaux.compositeur && partition.morceaux.compositeur.toLowerCase().includes(searchLower))
+      (morceau.orchestras && morceau.orchestras.some(o => o.name.toLowerCase().includes(searchLower)))
     );
     
     // Filtrer par orchestre (via le morceau)
