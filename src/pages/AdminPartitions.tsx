@@ -63,7 +63,6 @@ const AdminPartitions = () => {
   const [orchestras, setOrchestras] = useState<Orchestra[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [orchestraFilter, setOrchestraFilter] = useState<string[]>([]);
-  const [morceauFilter, setMorceauFilter] = useState<string[]>([]);
   const [instrumentFilter, setInstrumentFilter] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -448,13 +447,6 @@ const AdminPartitions = () => {
     );
   };
 
-  const toggleMorceauFilter = (morceauId: string) => {
-    setMorceauFilter(prev => 
-      prev.includes(morceauId) 
-        ? prev.filter(id => id !== morceauId)
-        : [...prev, morceauId]
-    );
-  };
 
   const toggleInstrumentFilter = (instrumentId: string) => {
     setInstrumentFilter(prev => 
@@ -466,7 +458,6 @@ const AdminPartitions = () => {
 
   const clearAllFilters = () => {
     setOrchestraFilter([]);
-    setMorceauFilter([]);
     setInstrumentFilter([]);
     setSearchTerm('');
   };
@@ -507,15 +498,11 @@ const AdminPartitions = () => {
         partition.morceaux.orchestras?.some(o => o.id === orchestraId)
       );
     
-    // Filtrer par morceau
-    const matchesMorceau = morceauFilter.length === 0 || 
-      morceauFilter.includes(partition.morceau_id);
-    
     // Filtrer par instrument
     const matchesInstrument = instrumentFilter.length === 0 || 
       instrumentFilter.includes(partition.instrument_id);
     
-    return matchesSearch && matchesOrchestra && matchesMorceau && matchesInstrument;
+    return matchesSearch && matchesOrchestra && matchesInstrument;
   });
 
   // Grouper les partitions par morceau
@@ -882,29 +869,6 @@ const AdminPartitions = () => {
                 </div>
               </div>
 
-              {/* Filtres par morceau */}
-              <div>
-                <h4 className="text-sm font-medium text-gray-700 mb-3 flex items-center space-x-2">
-                  <Music className="h-4 w-4 text-gray-500" />
-                  <span>Filtrer par morceau :</span>
-                </h4>
-                <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
-                  {morceaux.map((morceau) => (
-                    <button
-                      key={morceau.id}
-                      onClick={() => toggleMorceauFilter(morceau.id)}
-                      className={`inline-flex items-center space-x-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
-                        morceauFilter.includes(morceau.id)
-                          ? 'bg-green-100 text-green-800 border border-green-200 shadow-sm'
-                          : 'bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200'
-                      }`}
-                    >
-                      <Music className="h-3 w-3" />
-                      <span>{morceau.nom}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
 
               {/* Filtres par instrument */}
               <div>
@@ -935,7 +899,7 @@ const AdminPartitions = () => {
                 <div className="flex items-center space-x-4 text-sm text-gray-500">
                   <span>{filteredPartitions.length} partition{filteredPartitions.length > 1 ? 's' : ''} trouvée{filteredPartitions.length > 1 ? 's' : ''}</span>
                   <span>• {Object.keys(partitionsByMorceau).length} morceau{Object.keys(partitionsByMorceau).length > 1 ? 'x' : ''}</span>
-                  {(orchestraFilter.length > 0 || morceauFilter.length > 0 || instrumentFilter.length > 0 || searchTerm) && (
+                  {(orchestraFilter.length > 0 || instrumentFilter.length > 0 || searchTerm) && (
                     <span className="text-orange-600">
                       • Filtres actifs
                     </span>
@@ -958,7 +922,7 @@ const AdminPartitions = () => {
                       </button>
                     </>
                   )}
-                  {(orchestraFilter.length > 0 || morceauFilter.length > 0 || instrumentFilter.length > 0 || searchTerm) && (
+                  {(orchestraFilter.length > 0 || instrumentFilter.length > 0 || searchTerm) && (
                     <button
                       onClick={clearAllFilters}
                       className="inline-flex items-center space-x-2 text-sm text-red-600 hover:text-red-700 font-medium transition-colors bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg border border-red-200"
