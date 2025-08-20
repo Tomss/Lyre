@@ -221,6 +221,12 @@ const AdminPartitions = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  useEffect(() => {
+    if (orchestras.length > 0) {
+      setOrchestraFilter(orchestras.map(o => o.id));
+    }
+  }, [orchestras]);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
