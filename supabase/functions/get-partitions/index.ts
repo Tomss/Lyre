@@ -21,7 +21,7 @@ Deno.serve(async (req) => {
       .from('partitions')
       .select(`
         *,
-        morceaux(*),
+        morceaux(*, morceau_orchestras(*)),
         instruments(*),
         profiles(first_name, last_name)
       `)
