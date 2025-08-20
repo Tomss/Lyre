@@ -112,7 +112,7 @@ const Home = () => {
               <p className="font-inter">
                 Spectateur(s) à l'ouïe fine, futur(e)s virtuose(s) ou simplement curieux(ses), n'hésitez pas à prendre le temps de parcourir notre site afin de nous connaître un peu mieux.
               </p>
-              <p className="font-inter font-medium text-orange-600 text-xl">
+              <p className="font-inter text-gray-700 leading-relaxed">
                 En ayant l'espoir de vous voir à notre prochain concert ou au sein de notre groupe, nous vous souhaitons une agréable journée et vous remercions de votre visite.
               </p>
             </div>
@@ -167,7 +167,7 @@ const Home = () => {
                   <h3 className="font-poppins font-semibold text-xl text-dark mb-2">
                     Événement à venir
                   </h3>
-                  <p className="font-inter text-sm text-gray-600 mb-4">
+                  <p className="font-inter text-gray-600 mb-4">
                     Les détails seront bientôt disponibles. Restez connectés !
                   </p>
                   <div className="flex items-center text-sm text-teal-600">
