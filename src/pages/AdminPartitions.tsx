@@ -955,7 +955,7 @@ const AdminPartitions = () => {
                           </h3>
                           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                             <Music className="h-3 w-3 mr-1" />
-                            {partition.instrument?.name || 'Instrument non défini'}
+                            {partition.instrument?.name}
                           </span>
                         </div>
                         
