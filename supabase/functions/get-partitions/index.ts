@@ -93,8 +93,7 @@ Deno.serve(async (req: Request) => {
             orchestra_id,
             orchestras (id, name)
           )
-        ),
-        profiles (first_name, last_name)
+        )
       `)
       .order('created_at', { ascending: false });
 
