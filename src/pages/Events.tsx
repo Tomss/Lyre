@@ -101,12 +101,12 @@ const Events = () => {
       )}
 
       {/* Header Section */}
-      <section className="relative py-32 bg-cover bg-center bg-no-repeat bg-gray-900" 
+      <section className="relative min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat bg-gray-900" 
         style={{ 
           backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url("https://images.pexels.com/photos/1327430/pexels-photo-1327430.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop")` 
         }}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center animate-fade-in relative z-10 pt-16">
+          <div className="text-center animate-fade-in relative z-10">
             <h1 className="font-poppins font-bold text-4xl md:text-5xl text-white mb-6">Nos Événements</h1>
             {loading ? (
               <div className="flex items-center justify-center space-x-3 text-white/80">
