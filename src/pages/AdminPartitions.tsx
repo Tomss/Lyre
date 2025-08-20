@@ -1,5 +1,5 @@
 import React, { useState, useEffect, FormEvent } from 'react';
-import { Edit, Trash2, Plus, FileText, Search, X, CheckCircle, ArrowLeft, Upload, Music, Download, Users, Music2 } from 'lucide-react';
+import { Edit, Trash2, Plus, FileText, Search, X, CheckCircle, ArrowLeft, Upload, Music, Download, Users, Music2, ChevronRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Navigate, Link } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
@@ -67,6 +67,7 @@ const AdminPartitions = () => {
   const [instrumentFilter, setInstrumentFilter] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [expandedMorceaux, setExpandedMorceaux] = useState<Set<string>>(new Set());
   const [editingPartition, setEditingPartition] = useState<Partition | null>(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState<DeleteConfirmation>({
     isOpen: false,
@@ -469,6 +470,40 @@ const AdminPartitions = () => {
     setInstrumentFilter([]);
     setSearchTerm('');
   };
+
+  const toggleMorceauExpansion = (morceauId: string) => {
+    setExpandedMorceaux(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(morceauId)) {
+        newSet.delete(morceauId);
+      } else {
+        newSet.add(morceauId);
+      }
+      return newSet;
+    });
+  };
+
+  const expandAllMorceaux = () => {
+    const allMorceauIds = new Set(filteredPartitions.map(p => p.morceau_id));
+    setExpandedMorceaux(allMorceauIds);
+  };
+
+  const collapseAllMorceaux = () => {
+    setExpandedMorceaux(new Set());
+  };
+
+  // Grouper les partitions par morceau
+  const partitionsByMorceau = filteredPartitions.reduce((acc, partition) => {
+    const morceauId = partition.morceau_id;
+    if (!acc[morceauId]) {
+      acc[morceauId] = {
+        morceau: partition.morceaux,
+        partitions: []
+      };
+    }
+    acc[morceauId].partitions.push(partition);
+    return acc;
+  }, {} as Record<string, { morceau: any; partitions: Partition[] }>);
 
   // Filtrer les partitions
   const filteredPartitions = partitions.filter(partition => {
@@ -899,21 +934,40 @@ const AdminPartitions = () => {
               <div className="flex items-center justify-between pt-4 border-t border-gray-200">
                 <div className="flex items-center space-x-4 text-sm text-gray-500">
                   <span>{filteredPartitions.length} partition{filteredPartitions.length > 1 ? 's' : ''} trouvée{filteredPartitions.length > 1 ? 's' : ''}</span>
+                  <span>• {Object.keys(partitionsByMorceau).length} morceau{Object.keys(partitionsByMorceau).length > 1 ? 'x' : ''}</span>
                   {(orchestraFilter.length > 0 || morceauFilter.length > 0 || instrumentFilter.length > 0 || searchTerm) && (
                     <span className="text-orange-600">
                       • Filtres actifs
                     </span>
                   )}
                 </div>
-                {(orchestraFilter.length > 0 || morceauFilter.length > 0 || instrumentFilter.length > 0 || searchTerm) && (
-                  <button
-                    onClick={clearAllFilters}
-                    className="inline-flex items-center space-x-2 text-sm text-red-600 hover:text-red-700 font-medium transition-colors bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg border border-red-200"
-                  >
-                    <X className="h-3 w-3" />
-                    <span>Réinitialiser tous les filtres</span>
-                  </button>
-                )}
+                <div className="flex items-center space-x-2">
+                  {Object.keys(partitionsByMorceau).length > 0 && (
+                    <>
+                      <button
+                        onClick={expandAllMorceaux}
+                        className="text-xs text-blue-600 hover:text-blue-700 font-medium transition-colors bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded border border-blue-200"
+                      >
+                        Tout déplier
+                      </button>
+                      <button
+                        onClick={collapseAllMorceaux}
+                        className="text-xs text-gray-600 hover:text-gray-700 font-medium transition-colors bg-gray-50 hover:bg-gray-100 px-2 py-1 rounded border border-gray-200"
+                      >
+                        Tout replier
+                      </button>
+                    </>
+                  )}
+                  {(orchestraFilter.length > 0 || morceauFilter.length > 0 || instrumentFilter.length > 0 || searchTerm) && (
+                    <button
+                      onClick={clearAllFilters}
+                      className="inline-flex items-center space-x-2 text-sm text-red-600 hover:text-red-700 font-medium transition-colors bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg border border-red-200"
+                    >
+                      <X className="h-3 w-3" />
+                      <span>Reset filtres</span>
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -935,77 +989,144 @@ const AdminPartitions = () => {
               <p>Aucune partition trouvée</p>
             </div>
           ) : (
-            <div className="divide-y divide-gray-200">
-              {filteredPartitions.map((partition) => (
-                <div key={partition.id} className="p-6 hover:bg-gray-50 transition-colors">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start space-x-4 flex-1">
-                      <div className="bg-primary/10 p-3 rounded-lg">
-                        <FileText className="h-6 w-6 text-primary" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-3 mb-2">
-                          <h3 className="font-semibold text-dark text-lg">
-                            {partition.nom}
-                          </h3>
-                          {partition.file_path && (
-                            <button
-                              onClick={() => openFile(partition)}
-                              className="inline-flex items-center space-x-1 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full hover:bg-blue-200 transition-colors"
-                            >
-                              <Download className="h-3 w-3" />
-                              <span>Ouvrir</span>
-                            </button>
-                          )}
-                        </div>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600 mb-3">
+            <div className="space-y-4">
+              {Object.entries(partitionsByMorceau).map(([morceauId, { morceau, partitions }]) => {
+                const isExpanded = expandedMorceaux.has(morceauId);
+                
+                return (
+                  <div key={morceauId} className="border border-gray-200 rounded-xl overflow-hidden">
+                    {/* Header du morceau - cliquable pour plier/déplier */}
+                    <button
+                      onClick={() => toggleMorceauExpansion(morceauId)}
+                      className="w-full p-6 bg-gradient-to-r from-amber-50 to-orange-50 hover:from-amber-100 hover:to-orange-100 transition-all duration-200 text-left border-b border-gray-200"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          <div className="bg-gradient-to-br from-amber-500 to-orange-600 p-3 rounded-lg shadow-md">
+                            <Music className="h-6 w-6 text-white" />
+                          </div>
                           <div>
-                            <span className="font-medium">Morceau :</span> {partition.morceaux.nom}
-                            {partition.morceaux.compositeur && (
-                              <span className="text-gray-500"> - {partition.morceaux.compositeur}</span>
+                            <h3 className="font-poppins font-bold text-xl text-dark mb-1">
+                              {morceau.nom}
+                            </h3>
+                            <div className="flex items-center space-x-4 text-sm text-gray-600">
+                              {morceau.compositeur && (
+                                <span>
+                                  <span className="font-medium">Compositeur :</span> {morceau.compositeur}
+                                </span>
+                              )}
+                              {morceau.arrangement && (
+                                <span>
+                                  <span className="font-medium">Arrangement :</span> {morceau.arrangement}
+                                </span>
+                              )}
+                            </div>
+                            {morceau.orchestras && morceau.orchestras.length > 0 && (
+                              <div className="flex items-center space-x-1 text-xs text-gray-500 mt-1">
+                                <Users className="h-3 w-3" />
+                                <span>{morceau.orchestras.map(o => o.name).join(', ')}</span>
+                              </div>
                             )}
                           </div>
-                          <div>
-                            <span className="font-medium">Instrument :</span> {partition.instruments.name}
+                        </div>
+                        <div className="flex items-center space-x-3">
+                          <div className="text-right">
+                            <div className="bg-white/80 backdrop-blur-sm rounded-lg px-3 py-2 border border-amber-200">
+                              <div className="text-lg font-bold text-amber-700">
+                                {partitions.length}
+                              </div>
+                              <div className="text-xs text-amber-600">
+                                partition{partitions.length > 1 ? 's' : ''}
+                              </div>
+                            </div>
+                          </div>
+                          <div className={`transform transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}>
+                            <ChevronRight className="h-6 w-6 text-gray-400" />
                           </div>
                         </div>
-                        
-                        <div className="flex items-center space-x-4 text-sm text-gray-500 mb-2">
-                          <span>
-                            Créée le {new Date(partition.created_at).toLocaleDateString('fr-FR')}
-                          </span>
-                          {partition.file_path && (
-                            <span className="flex items-center space-x-1">
-                              <FileText className="h-3 w-3" />
-                              <span>{partition.file_type?.toUpperCase()}</span>
-                              {partition.file_size && (
-                                <span>• {(partition.file_size / 1024 / 1024).toFixed(2)} MB</span>
-                              )}
-                            </span>
-                          )}
-                        </div>
+                      </div>
+                    </button>
+                    
+                    {/* Liste des partitions - collapsible */}
+                    <div className={`transition-all duration-300 overflow-hidden ${
+                      isExpanded ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
+                    }`}>
+                      <div className="divide-y divide-gray-100">
+                        {partitions.map((partition) => (
+                          <div key={partition.id} className="p-6 hover:bg-gray-50 transition-colors">
+                            <div className="flex items-start justify-between">
+                              <div className="flex items-start space-x-4 flex-1">
+                                <div className="bg-primary/10 p-3 rounded-lg">
+                                  <FileText className="h-6 w-6 text-primary" />
+                                </div>
+                                <div className="flex-1">
+                                  <div className="flex items-center space-x-3 mb-2">
+                                    <h4 className="font-semibold text-dark text-lg">
+                                      {partition.nom}
+                                    </h4>
+                                    {partition.file_path && (
+                                      <button
+                                        onClick={() => openFile(partition)}
+                                        className="inline-flex items-center space-x-1 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full hover:bg-blue-200 transition-colors"
+                                      >
+                                        <Download className="h-3 w-3" />
+                                        <span>Ouvrir</span>
+                                      </button>
+                                    )}
+                                  </div>
+                                  
+                                  <div className="text-sm text-gray-600 mb-3">
+                                    <div className="flex items-center space-x-2">
+                                      <div className="bg-purple-100 p-1.5 rounded-lg">
+                                        <Music2 className="h-4 w-4 text-purple-600" />
+                                      </div>
+                                      <span className="font-medium">Instrument :</span> 
+                                      <span className="bg-purple-50 text-purple-700 px-2 py-1 rounded-full text-xs font-medium">
+                                        {partition.instruments.name}
+                                      </span>
+                                    </div>
+                                  </div>
+                                  
+                                  <div className="flex items-center space-x-4 text-sm text-gray-500">
+                                    <span>
+                                      Créée le {new Date(partition.created_at).toLocaleDateString('fr-FR')}
+                                    </span>
+                                    {partition.file_path && (
+                                      <span className="flex items-center space-x-1">
+                                        <FileText className="h-3 w-3" />
+                                        <span>{partition.file_type?.toUpperCase()}</span>
+                                        {partition.file_size && (
+                                          <span>• {(partition.file_size / 1024 / 1024).toFixed(2)} MB</span>
+                                        )}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="flex items-center space-x-2 ml-4">
+                                <button
+                                  onClick={() => handleEdit(partition)}
+                                  className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-all duration-200"
+                                  title="Modifier"
+                                >
+                                  <Edit className="h-5 w-5" />
+                                </button>
+                                <button
+                                  onClick={() => confirmDelete(partition)}
+                                  className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-all duration-200"
+                                  title="Supprimer"
+                                >
+                                  <Trash2 className="h-5 w-5" />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
-                    <div className="flex items-center space-x-2 ml-4">
-                      <button
-                        onClick={() => handleEdit(partition)}
-                        className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-all duration-200"
-                        title="Modifier"
-                      >
-                        <Edit className="h-5 w-5" />
-                      </button>
-                      <button
-                        onClick={() => confirmDelete(partition)}
-                        className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-all duration-200"
-                        title="Supprimer"
-                      >
-                        <Trash2 className="h-5 w-5" />
-                      </button>
-                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
