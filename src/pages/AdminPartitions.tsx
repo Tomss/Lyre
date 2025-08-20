@@ -1,5 +1,5 @@
 import React, { useState, useEffect, FormEvent } from 'react';
-import { Edit, Trash2, Plus, FileText, Search, X, CheckCircle, ArrowLeft, Upload, Music, Users, Download, Eye } from 'lucide-react';
+import { Edit, Trash2, Plus, FileText, Search, X, CheckCircle, ArrowLeft, Upload, Music, Users, Download, Eye, Music2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Navigate, Link, useSearchParams } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
@@ -82,7 +82,8 @@ const AdminPartitions = () => {
   const [orchestras, setOrchestras] = useState<Orchestra[]>([]);
   const [instruments, setInstruments] = useState<Instrument[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [morceauFilter, setMorceauFilter] = useState<string>(selectedMorceauId || '');
+  const [morceauFilter, setMorceauFilter] = useState<string[]>([]);
+  const [orchestraFilter, setOrchestraFilter] = useState<string[]>([]);
   const [instrumentFilter, setInstrumentFilter] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -115,13 +116,54 @@ const AdminPartitions = () => {
     }, 3000);
   };
 
+  // Fonctions pour les filtres
+  const selectAllInstruments = () => {
+    setInstrumentFilter(instruments.map(i => i.id));
+  };
+
+  const clearAllInstruments = () => {
+    setInstrumentFilter([]);
+  };
+
+  const selectAllOrchestras = () => {
+    setOrchestraFilter(orchestras.map(o => o.id));
+  };
+
+  const clearAllOrchestras = () => {
+    setOrchestraFilter([]);
+  };
+
+  const selectAllMorceaux = () => {
+    setMorceauFilter(morceaux.map(m => m.id));
+  };
+
+  const clearAllMorceaux = () => {
+    setMorceauFilter([]);
+  };
+
+  const toggleOrchestraFilter = (orchestraId: string) => {
+    setOrchestraFilter(prev => 
+      prev.includes(orchestraId) 
+        ? prev.filter(id => id !== orchestraId)
+        : [...prev, orchestraId]
+    );
+  };
+
+  const toggleMorceauFilter = (morceauId: string) => {
+    setMorceauFilter(prev => 
+      prev.includes(morceauId) 
+        ? prev.filter(id => id !== morceauId)
+        : [...prev, morceauId]
+    );
+  };
+
   // Récupérer toutes les partitions
   const fetchPartitions = async () => {
     setLoading(true);
     try {
       let url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-partitions?type=admin`;
-      if (morceauFilter) {
-        url += `&morceauId=${morceauFilter}`;
+      if (selectedMorceauId) {
+        url += `&morceauId=${selectedMorceauId}`;
       }
 
       const response = await fetch(url, {
@@ -210,10 +252,14 @@ const AdminPartitions = () => {
   }, [profile]);
 
   useEffect(() => {
-    if (morceaux.length > 0) {
+    if (morceaux.length > 0 && orchestras.length > 0 && instruments.length > 0) {
+      // Initialiser les filtres avec tous les éléments sélectionnés
+      setOrchestraFilter(orchestras.map(o => o.id));
+      setMorceauFilter(morceaux.map(m => m.id));
+      setInstrumentFilter(instruments.map(i => i.id));
       fetchPartitions();
     }
-  }, [morceauFilter, morceaux]);
+  }, [morceaux, orchestras, instruments]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -474,14 +520,6 @@ const AdminPartitions = () => {
     );
   };
 
-  const toggleOrchestraFilter = (orchestraId: string) => {
-    setOrchestraFilter(prev => 
-      prev.includes(orchestraId) 
-        ? prev.filter(id => id !== orchestraId)
-        : [...prev, orchestraId]
-    );
-  };
-
   const getFileTypeColor = (type: string) => {
     switch (type) {
       case 'pdf': return 'bg-red-100 text-red-800';
@@ -505,15 +543,22 @@ const AdminPartitions = () => {
     );
     
     const matchesInstrument = instrumentFilter.length === 0 || instrumentFilter.includes(partition.instruments.id);
-    const matchesMorceau = !morceauFilter || partition.morceaux?.id === morceauFilter;
+    const matchesMorceau = morceauFilter.length === 0 || morceauFilter.includes(partition.morceaux.id);
+    const matchesOrchestra = orchestraFilter.length === 0 || partition.morceaux.morceau_orchestras?.some(mo => orchestraFilter.includes(mo.orchestra_id));
     
-    return matchesSearch && matchesInstrument && matchesMorceau;
+    return matchesSearch && matchesInstrument && matchesMorceau && matchesOrchestra;
   });
 
   // Filtrer les morceaux par orchestre pour le formulaire
   const filteredMorceauxForForm = morceaux.filter(morceau => {
     if (!selectedOrchestraForForm) return true;
     return morceau.orchestras.some(o => o.id === selectedOrchestraForForm);
+  });
+
+  // Filtrer les morceaux pour les filtres (selon les orchestres sélectionnés)
+  const filteredMorceauxForFilter = morceaux.filter(morceau => {
+    if (orchestraFilter.length === 0) return true;
+    return morceau.orchestras.some(o => orchestraFilter.includes(o.id));
   });
 
   // Effet pour auto-sélectionner l'orchestra_id quand un morceau est choisi
@@ -911,17 +956,6 @@ const AdminPartitions = () => {
         )}
 
         {/* Filtres et recherche */}
-        <div className="bg-gradient-to-br from-slate-900 via-gray-800 to-slate-900 rounded-2xl shadow-2xl border border-white/10 p-8 mb-8 relative overflow-hidden">
-          {/* Particules d'arrière-plan */}
-          <div className="absolute inset-0">
-            {[...Array(15)].map((_, i) => (
-              <div
-                key={i}
-                className="absolute w-1 h-1 bg-orange-400/20 rounded-full animate-pulse"
-                style={{
-                  left: `${Math.random() * 100}%`,
-                  top: `${Math.random() * 100}%`,
-                  animationDelay: `${Math.random() * 3}s`,
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
           <div className="space-y-6">
             {/* Recherche */}
@@ -1073,7 +1107,7 @@ const AdminPartitions = () => {
               )}
             </div>
           </div>
-        }
+        </div>
 
         {/* Liste des partitions groupées par morceau */}
         {loading ? (
