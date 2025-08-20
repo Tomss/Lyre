@@ -207,6 +207,7 @@ const AdminPartitions = () => {
       fetchMorceaux();
       fetchInstruments();
       fetchOrchestras();
+      fetchOrchestras();
     }
   }, [profile]);
 
@@ -220,12 +221,6 @@ const AdminPartitions = () => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
-
-  useEffect(() => {
-    if (orchestras.length > 0) {
-      setOrchestraFilter(orchestras.map(o => o.id));
-    }
-  }, [orchestras]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -555,7 +550,6 @@ const AdminPartitions = () => {
     return morceau.orchestras.some(o => o.id === selectedOrchestraForForm);
   });
 
-  // Filtrer les morceaux pour les filtres
   const filteredMorceauxForFilter = morceaux.filter(morceau => {
     if (orchestraFilter.length === 0) return true;
     return morceau.orchestras.some(o => orchestraFilter.includes(o.id));
