@@ -108,14 +108,30 @@ const Contact = () => {
       </section>
 
       {/* Formulaire et Carte */}
-      <section className="py-16 bg-gradient-to-br from-orange-25 via-amber-25 to-rose-25">
+      <section className="py-16 bg-gradient-to-br from-slate-900 via-gray-800 to-slate-900 relative overflow-hidden">
+        {/* Particules d'arrière-plan */}
+        <div className="absolute inset-0">
+          {[...Array(25)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute w-1 h-1 bg-orange-400/15 rounded-full animate-pulse"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                animationDelay: `${Math.random() * 3}s`,
+                animationDuration: `${2 + Math.random() * 2}s`
+              }}
+            />
+          ))}
+        </div>
+        
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-6xl mx-auto relative z-10">
             
             {/* Formulaire de Contact */}
             <div className="animate-fade-in">
-              <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 overflow-hidden">
-                <div className="bg-gradient-to-r from-orange-500 to-amber-500 p-6 text-white">
+              <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 overflow-hidden">
+                <div className="bg-gradient-to-r from-orange-600 to-amber-600 p-6 text-white">
                   <div className="flex items-center space-x-3">
                     <div className="bg-white/20 p-2 rounded-lg">
                       <MessageSquare className="h-6 w-6 text-white" />
@@ -255,15 +271,15 @@ const Contact = () => {
 
             {/* Google Maps */}
             <div className="animate-fade-in">
-              <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 overflow-hidden">
-                <div className="bg-gradient-to-r from-blue-500 to-indigo-500 p-6 text-white">
+              <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 overflow-hidden">
+                <div className="bg-gradient-to-r from-slate-600 to-gray-700 p-6 text-white">
                   <div className="flex items-center space-x-3">
                     <div className="bg-white/20 p-2 rounded-lg">
                       <MapPin className="h-6 w-6 text-white" />
                     </div>
                     <div>
                       <h3 className="font-poppins font-bold text-xl">Notre Localisation</h3>
-                      <p className="text-blue-100 text-sm">1 bis rue Jean Jaurès, Chalindrey</p>
+                      <p className="text-gray-100 text-sm">1 bis rue Jean Jaurès, Chalindrey</p>
                     </div>
                   </div>
                 </div>
@@ -283,10 +299,10 @@ const Contact = () => {
                   
                   {/* Overlay discret */}
                   <div className="absolute bottom-3 left-3 right-3">
-                    <div className="bg-white/95 backdrop-blur-sm rounded-lg p-3 shadow-md">
+                    <div className="bg-white/95 backdrop-blur-sm rounded-lg p-3 shadow-lg">
                       <div className="flex items-center space-x-2">
-                        <div className="bg-primary/10 p-1.5 rounded-lg">
-                          <MapPin className="h-5 w-5 text-white" />
+                        <div className="bg-orange-500/10 p-1.5 rounded-lg">
+                          <MapPin className="h-5 w-5 text-orange-600" />
                         </div>
                         <div>
                           <h4 className="font-poppins font-medium text-sm text-gray-800">Lyre Cheminote et Municipale</h4>
