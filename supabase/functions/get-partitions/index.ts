@@ -17,10 +17,14 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Requête simplifiée sans jointures complexes
     const { data: partitions, error } = await supabase
       .from('partitions')
-      .select('*')
+      .select(`
+        *,
+        morceaux(*),
+        instruments(*),
+        profiles(first_name, last_name)
+      `)
       .order('created_at', { ascending: false });
 
     if (error) {
