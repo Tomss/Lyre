@@ -765,7 +765,7 @@ const AdminPartitions = () => {
               <div className="flex items-center space-x-2">
                 <span className="text-sm font-medium text-gray-700">Instruments :</span>
                 <div className="flex flex-wrap gap-1">
-                  {instruments.slice(0, 5).map((instrument) => (
+                  {instruments.map((instrument) => (
                     <button
                       key={instrument.id}
                       onClick={() => toggleInstrumentFilter(instrument.id)}
