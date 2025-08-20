@@ -284,9 +284,9 @@ const Events = () => {
                               {/* Effet de brillance au survol */}
                               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
                               
-                              <div className="flex items-center space-x-6 p-6 relative z-10">
+                              <div className="flex flex-col sm:flex-row sm:items-center space-y-4 sm:space-y-0 sm:space-x-6 p-4 sm:p-6 relative z-10">
                                 {/* Date stylisée */}
-                                <div className={`flex-shrink-0 text-center p-4 rounded-2xl shadow-lg ${
+                                <div className={`flex-shrink-0 text-center p-3 sm:p-4 rounded-2xl shadow-lg w-20 sm:w-auto mx-auto sm:mx-0 ${
                                   isNext && !isPastEvent
                                     ? 'bg-gradient-to-br from-orange-500 to-amber-600 text-white shadow-orange-200' 
                                     : isSecond && !isPastEvent
@@ -295,69 +295,68 @@ const Events = () => {
                                     ? 'bg-gradient-to-br from-gray-400 to-slate-500 text-white shadow-gray-200'
                                     : 'bg-gradient-to-br from-gray-100 to-gray-200 text-gray-700 border-2 border-gray-300'
                                 }`}>
-                                  <div className="text-xs font-bold opacity-90 uppercase tracking-wider mb-1">
+                                  <div className="text-xs sm:text-xs font-bold opacity-90 uppercase tracking-wider mb-1">
                                     {dateInfo.month}
                                   </div>
-                                  <div className="text-3xl font-bold leading-none mb-1">
+                                  <div className="text-2xl sm:text-3xl font-bold leading-none mb-1">
                                     {dateInfo.day}
                                   </div>
-                                  <div className="text-xs opacity-90 font-medium">
+                                  <div className="text-xs sm:text-xs opacity-90 font-medium">
                                     {dateInfo.year}
                                   </div>
                                 </div>
                                 
                                 {/* Détails de l'événement */}
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center space-x-3 mb-3">
-                                    <h4 className={`font-poppins font-bold text-xl truncate ${
+                                <div className="flex-1 min-w-0 text-center sm:text-left">
+                                  <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 mb-3">
+                                    <h4 className={`font-poppins font-bold text-lg sm:text-xl ${
                                       isNext && !isPastEvent ? 'text-orange-800' : isSecond && !isPastEvent ? 'text-slate-800' : isPastEvent ? 'text-gray-700' : 'text-gray-800'
                                     }`}>
                                       {event.title}
                                     </h4>
-                                    {isNext && (
-                                      <div className="flex items-center space-x-2">
+                                    <div className="flex items-center justify-center sm:justify-start space-x-2">
+                                      {isNext && (
                                         <span className="bg-gradient-to-r from-orange-600 to-amber-600 text-white text-xs px-3 py-1 rounded-full font-bold shadow-lg animate-pulse">
                                           🎵 PROCHAIN
                                         </span>
-                                        <div className="w-2 h-2 bg-orange-500 rounded-full animate-ping"></div>
-                                      </div>
-                                    )}
-                                    {isSecond && !isPastEvent && (
-                                      <span className="bg-gradient-to-r from-slate-600 to-gray-700 text-white text-xs px-3 py-1 rounded-full font-medium shadow-md">
-                                        Bientôt
-                                      </span>
-                                    )}
+                                      )}
+                                      {isSecond && !isPastEvent && (
+                                        <span className="bg-gradient-to-r from-slate-600 to-gray-700 text-white text-xs px-3 py-1 rounded-full font-medium shadow-md">
+                                          Bientôt
+                                        </span>
+                                      )}
+                                    </div>
                                   </div>
                                   
                                   {event.description && (
-                                    <p className="text-gray-600 mb-3 text-sm leading-relaxed line-clamp-2">
+                                    <p className="text-gray-600 mb-3 text-sm leading-relaxed line-clamp-2 text-center sm:text-left">
                                       {event.description}
                                     </p>
                                   )}
                                   
-                                  <div className="flex items-center space-x-6 text-sm">
-                                    <div className="flex items-center space-x-2 text-gray-500">
+                                  <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-6 text-sm">
+                                    <div className="flex items-center space-x-2 text-gray-500 justify-center sm:justify-start">
                                       <div className={`p-1.5 rounded-lg ${isNext && !isPastEvent ? 'bg-orange-100' : 'bg-gray-100'}`}>
                                         <Clock className="h-4 w-4" />
                                       </div>
                                       <span className="font-medium">{dateInfo.weekday} • {dateInfo.time}</span>
                                     </div>
                                     {event.location && (
-                                      <div className="flex items-center space-x-2 text-gray-500">
+                                      <div className="flex items-center space-x-2 text-gray-500 justify-center sm:justify-start">
                                         <div className={`p-1.5 rounded-lg ${isNext && !isPastEvent ? 'bg-orange-100' : 'bg-gray-100'}`}>
                                           <MapPin className="h-4 w-4" />
                                         </div>
-                                        <span className="font-medium truncate">{event.location}</span>
+                                        <span className="font-medium">{event.location}</span>
                                       </div>
                                     )}
                                   </div>
                                 </div>
                                 
                                 {/* Orchestres et action */}
-                                <div className="flex-shrink-0 text-right">
+                                <div className="flex-shrink-0 text-center sm:text-right">
                                   {event.orchestras.length > 0 && (
                                     <div className="mb-3">
-                                      <div className="flex items-center justify-end space-x-2 text-xs text-gray-500 bg-gray-50 px-3 py-2 rounded-full">
+                                      <div className="flex items-center justify-center sm:justify-end space-x-2 text-xs text-gray-500 bg-gray-50 px-3 py-2 rounded-full">
                                         <Users className="h-3 w-3" />
                                         <span className="font-medium">
                                           {event.orchestras[0].name}
@@ -366,7 +365,7 @@ const Events = () => {
                                       </div>
                                     </div>
                                   )}
-                                  <div className="flex items-center space-x-2 text-gray-400">
+                                  <div className="flex items-center justify-center sm:justify-end space-x-2 text-gray-400">
                                     <span className="text-xs font-medium">Voir détails</span>
                                     <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
                                   </div>
