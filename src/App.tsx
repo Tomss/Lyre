@@ -18,6 +18,7 @@ import AdminEvents from './pages/AdminEvents'; // Importer la page d'administrat
 import UserEvents from './pages/UserEvents'; // Importer la page des événements utilisateur
 import AdminMedia from './pages/AdminMedia'; // Importer la page d'administration des médias
 import AdminMorceaux from './pages/AdminMorceaux'; // Importer la page d'administration des morceaux
+import AdminPartitions from './pages/AdminPartitions'; // Importer la page d'administration des partitions
 
 function App() {
   return (
@@ -40,6 +41,7 @@ function App() {
           <Route path="/user/events" element={<UserEvents />} /> {/* Route pour les événements utilisateur */}
           <Route path="/admin/media" element={<AdminMedia />} /> {/* Route pour l'administration des médias */}
           <Route path="/admin/morceaux" element={<AdminMorceaux />} /> {/* Route pour l'administration des morceaux */}
+          <Route path="/admin/partitions" element={<AdminPartitions />} /> {/* Route pour l'administration des partitions */}
         </Routes>
       </main>
       <Footer />
