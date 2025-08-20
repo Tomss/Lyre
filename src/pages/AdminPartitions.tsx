@@ -539,6 +539,23 @@ const AdminPartitions = () => {
                 <FileText className="h-8 w-8 text-primary" />
               </div>
               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Orchestre (pour filtrer les morceaux)
+                </label>
+                <select
+                  value={selectedOrchestra}
+                  onChange={(e) => setSelectedOrchestra(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Tous les orchestres</option>
+                  {orchestras.map((orchestra) => (
+                    <option key={orchestra.id} value={orchestra.id}>
+                      {orchestra.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
                 <h1 className="font-poppins font-bold text-3xl text-dark">
                   Gestion des partitions
                 </h1>
