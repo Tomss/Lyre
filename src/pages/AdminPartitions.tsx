@@ -82,7 +82,7 @@ const AdminPartitions = () => {
   const [orchestras, setOrchestras] = useState<Orchestra[]>([]);
   const [instruments, setInstruments] = useState<Instrument[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [morceauFilter, setMorceauFilter] = useState<string[]>(selectedMorceauId ? [selectedMorceauId] : []);
+  const [morceauFilter, setMorceauFilter] = useState<string>(selectedMorceauId || '');
   const [instrumentFilter, setInstrumentFilter] = useState<string[]>([]);
   const [orchestraFilter, setOrchestraFilter] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -121,8 +121,8 @@ const AdminPartitions = () => {
     setLoading(true);
     try {
       let url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-partitions?type=admin`;
-      if (morceauFilter.length > 0) {
-        url += `&morceauId=${morceauFilter[0]}`;
+      if (morceauFilter) {
+        url += `&morceauId=${morceauFilter}`;
       }
 
       const response = await fetch(url, {
@@ -215,19 +215,6 @@ const AdminPartitions = () => {
       fetchPartitions();
     }
   }, [morceauFilter, morceaux]);
-
-  // Initialize filters when data is loaded
-  useEffect(() => {
-    if (orchestras.length > 0 && orchestraFilter.length === 0) {
-      setOrchestraFilter(orchestras.map(o => o.id));
-    }
-    if (morceaux.length > 0 && morceauFilter.length === 0 && !selectedMorceauId) {
-      setMorceauFilter(morceaux.map(m => m.id));
-    }
-    if (instruments.length > 0 && instrumentFilter.length === 0) {
-      setInstrumentFilter(instruments.map(i => i.id));
-    }
-  }, [orchestras, morceaux, instruments, selectedMorceauId]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -551,23 +538,21 @@ const AdminPartitions = () => {
     );
     
     const matchesInstrument = instrumentFilter.length === 0 || instrumentFilter.includes(partition.instruments.id);
-    const matchesMorceau = morceauFilter.length === 0 || morceauFilter.includes(partition.morceaux?.id);
-    const matchesOrchestra = orchestraFilter.length === 0 || 
-      partition.morceaux?.morceau_orchestras?.some(mo => orchestraFilter.includes(mo.orchestra_id));
+    const matchesMorceau = !morceauFilter || partition.morceaux?.id === morceauFilter;
     
-    return matchesSearch && matchesInstrument && matchesMorceau && matchesOrchestra;
+    return matchesSearch && matchesInstrument && matchesMorceau;
   });
-
-  // Filtrer les morceaux selon l'orchestre sélectionné pour le filtre morceau
-  const filteredMorceauxForFilter = morceaux.filter(morceau => 
-    orchestraFilter.length === 0 || 
-    morceau.orchestras.some(o => orchestraFilter.includes(o.id))
-  );
 
   // Filtrer les morceaux par orchestre pour le formulaire
   const filteredMorceauxForForm = morceaux.filter(morceau => {
     if (!selectedOrchestraForForm) return true;
     return morceau.orchestras.some(o => o.id === selectedOrchestraForForm);
+  });
+
+  // Filtrer les morceaux pour les filtres
+  const filteredMorceauxForFilter = morceaux.filter(morceau => {
+    if (orchestraFilter.length === 0) return true;
+    return morceau.orchestras.some(o => orchestraFilter.includes(o.id));
   });
 
   // Effet pour auto-sélectionner l'orchestra_id quand un morceau est choisi
@@ -965,6 +950,23 @@ const AdminPartitions = () => {
         )}
 
         {/* Filtres et recherche */}
+        <div className="bg-gradient-to-br from-slate-900 via-gray-800 to-slate-900 rounded-2xl shadow-2xl border border-white/10 p-8 mb-8 relative overflow-hidden">
+          {/* Particules d'arrière-plan */}
+          <div className="absolute inset-0">
+            {[...Array(15)].map((_, i) => (
+              <div
+                key={i}
+                className="absolute w-1 h-1 bg-orange-400/20 rounded-full animate-pulse"
+                style={{
+                  left: `${Math.random() * 100}%`,
+                  top: `${Math.random() * 100}%`,
+                  animationDelay: `${Math.random() * 3}s`,
+                }}
+              />
+            ))}
+          </div>
+        </div>
+
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
           <div className="space-y-6">
             {/* Recherche */}
