@@ -74,6 +74,7 @@ const AdminPartitions = () => {
   
   const [partitions, setPartitions] = useState<Partition[]>([]);
   const [morceaux, setMorceaux] = useState<Morceau[]>([]);
+  const [orchestras, setOrchestras] = useState<Orchestra[]>([]);
   const [instruments, setInstruments] = useState<Instrument[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [morceauFilter, setMorceauFilter] = useState<string>(selectedMorceauId || '');
@@ -81,6 +82,7 @@ const AdminPartitions = () => {
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingPartition, setEditingPartition] = useState<Partition | null>(null);
+  const [selectedOrchestra, setSelectedOrchestra] = useState<string>('');
   const [deleteConfirmation, setDeleteConfirmation] = useState<DeleteConfirmation>({
     isOpen: false,
     partition: null,
@@ -173,6 +175,22 @@ const AdminPartitions = () => {
       }
     } catch (err) {
       console.error('Erreur lors de la récupération des instruments:', err);
+  const fetchOrchestras = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-orchestras`, {
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      if (!response.ok) throw new Error('HTTP error! status: ' + response.status);
+      const data = await response.json();
+      setOrchestras(data);
+    } catch (error) {
+      console.error('Erreur lors de la récupération des orchestres:', error);
+    }
+  };
+
     }
   };
 
@@ -249,7 +267,8 @@ const AdminPartitions = () => {
       // Récupération de l'URL publique
       const { data: urlData } = supabase.storage
         .from('media-files')
-        .getPublicUrl(filePath);
+      const orchestraParam = selectedOrchestra ? `?orchestra_id=${selectedOrchestra}` : '';
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-morceaux${orchestraParam}`, {
         
       return {
         file_name: file.name,
