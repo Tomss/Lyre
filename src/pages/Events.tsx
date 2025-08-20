@@ -192,7 +192,7 @@ const Events = () => {
                   </div>
                   <h2 className="font-poppins font-bold text-5xl md:text-6xl text-white mb-6 bg-gradient-to-r from-orange-200 via-amber-200 to-orange-200 bg-clip-text text-transparent">
                     Calendrier Musical
-                  <h2 className="font-poppins font-bold text-3xl text-gray-800 mb-4">Le rideau se lève bientôt...</h2>
+                  </h2>
                   <p className="font-inter text-lg text-gray-600 leading-relaxed">
                     Découvrez notre programmation artistique dans un calendrier interactif élégant
                   </p>
@@ -415,7 +415,7 @@ const Events = () => {
                     )}
                   </div>
                 </div>
-                <h2 className="font-poppins font-bold text-5xl md:text-6xl text-white mb-6 bg-gradient-to-r from-orange-200 via-amber-200 to-orange-200 bg-clip-text text-transparent">
+              </div>
             </div>
           </section>
 
