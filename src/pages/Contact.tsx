@@ -91,16 +91,16 @@ const Contact = () => {
   return (
     <div className="font-inter">
       {/* Hero Section */}
-      <section className="relative h-[70vh] flex items-center justify-center bg-cover bg-center bg-no-repeat bg-gray-900" 
+      <section className="relative min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat bg-gray-900" 
         style={{ 
           backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url("https://images.pexels.com/photos/1407322/pexels-photo-1407322.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop")` 
         }}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center animate-fade-in relative z-10">
-            <h1 className="font-poppins font-bold text-3xl md:text-4xl text-white mb-4">
+            <h1 className="font-poppins font-bold text-4xl md:text-5xl text-white mb-6">
               Contactez-nous
             </h1>
-            <p className="font-inter text-base text-white/90 max-w-2xl mx-auto leading-relaxed">
+            <p className="font-inter text-lg text-white/90 max-w-2xl mx-auto leading-relaxed">
               Une question ? Envie de nous rejoindre ? Nous sommes là pour vous accompagner.
             </p>
           </div>
