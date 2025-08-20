@@ -64,7 +64,7 @@ const Contact = () => {
     {
       icon: MapPin,
       title: 'Adresse',
-      content: 'Lyre Cheminote et Municipale\nChalindrey, Haute-Marne'
+      content: '1 bis rue Jean Jaurès\n52600 CHALINDREY'
     },
     {
       icon: Phone,
@@ -88,7 +88,7 @@ const Contact = () => {
       {/* Hero Section Simple */}
       <section className="relative min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat bg-gray-900" 
         style={{ 
-          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url("https://images.pexels.com/photos/1407322/pexels-photo-1407322.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop")` 
+          backgroundImage: `linear-gradient(rgba(234, 88, 12, 0.1), rgba(0, 0, 0, 0.6)), url("https://images.pexels.com/photos/1407322/pexels-photo-1407322.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop")` 
         }}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto animate-fade-in relative z-10">
@@ -103,16 +103,16 @@ const Contact = () => {
       </section>
 
       {/* Section Formulaire + Maps */}
-      <section className="py-20 bg-gradient-to-br from-blue-25 via-indigo-25 to-purple-25">
+      <section className="py-20 bg-gradient-to-br from-orange-25 via-amber-25 to-yellow-25">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-6xl mx-auto">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
               
               {/* Formulaire de Contact - Gauche */}
               <div className="animate-fade-in">
-                <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-white/50 p-8">
+                <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-orange-100/50 p-8">
                   <div className="mb-6">
-                    <h2 className="font-poppins font-semibold text-2xl text-dark mb-2">
+                    <div className="bg-gradient-to-br from-orange-100 to-amber-100 p-3 rounded-lg inline-block mb-4 shadow-sm">
                       Envoyez-nous un message
                     </h2>
                     <p className="font-inter text-gray-600">
@@ -156,7 +156,7 @@ const Contact = () => {
                             value={formData.name}
                             onChange={handleInputChange}
                             required
-                            className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200"
+                            className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition-all duration-200 hover:border-orange-300"
                             placeholder="Votre nom"
                           />
                         </div>
@@ -176,7 +176,7 @@ const Contact = () => {
                             value={formData.email}
                             onChange={handleInputChange}
                             required
-                            className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200"
+                            className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition-all duration-200 hover:border-orange-300"
                             placeholder="votre@email.com"
                           />
                         </div>
@@ -196,7 +196,7 @@ const Contact = () => {
                           name="phone"
                           value={formData.phone}
                           onChange={handleInputChange}
-                          className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200"
+                          className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition-all duration-200 hover:border-orange-300"
                           placeholder="06 12 34 56 78"
                         />
                       </div>
@@ -211,7 +211,7 @@ const Contact = () => {
                         value={formData.subject}
                         onChange={handleInputChange}
                         required
-                        className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200"
+                        className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition-all duration-200 hover:border-orange-300"
                       >
                         <option value="">Choisissez un sujet</option>
                         {subjectOptions.map((option, index) => (
@@ -230,7 +230,7 @@ const Contact = () => {
                         onChange={handleInputChange}
                         required
                         rows={6}
-                        className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 resize-none"
+                        className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition-all duration-200 resize-none hover:border-orange-300"
                         placeholder="Votre message..."
                       />
                     </div>
@@ -238,7 +238,7 @@ const Contact = () => {
                     <button
                       type="submit"
                       disabled={formStatus.type === 'loading'}
-                      className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none group"
+                      className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none group shadow-md"
                     >
                       <div className="flex items-center justify-center space-x-2">
                         {formStatus.type === 'loading' ? (
@@ -261,11 +261,11 @@ const Contact = () => {
 
               {/* Google Maps - Droite */}
               <div className="animate-fade-in">
-                <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-white/50 overflow-hidden h-full">
+                <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-orange-100/50 overflow-hidden h-full">
                   <div className="p-6 border-b border-gray-100">
                     <div className="flex items-center space-x-3">
-                      <div className="bg-primary/10 p-2 rounded-lg">
-                        <MapPin className="h-5 w-5 text-primary" />
+                      <div className="bg-gradient-to-br from-orange-100 to-amber-100 p-2 rounded-lg shadow-sm">
+                        <MapPin className="h-5 w-5 text-orange-600" />
                       </div>
                       <div>
                         <h3 className="font-poppins font-semibold text-lg text-dark">
@@ -279,7 +279,7 @@ const Contact = () => {
                   {/* Carte Google Maps */}
                   <div className="relative h-96">
                     <iframe
-                      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2679.8234567890123!2d5.3456789!3d47.8901234!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sChalindrey%2C%20France!5e0!3m2!1sfr!2sfr!4v1234567890123!5m2!1sfr!2sfr"
+                      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2679.123456789!2d5.3456789!3d47.8901234!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47f1c8b123456789%3A0x123456789abcdef!2s1%20bis%20Rue%20Jean%20Jaur%C3%A8s%2C%2052600%20Chalindrey%2C%20France!5e0!3m2!1sfr!2sfr!4v1234567890123!5m2!1sfr!2sfr"
                       width="100%"
                       height="100%"
                       style={{ border: 0 }}
@@ -292,12 +292,12 @@ const Contact = () => {
                     
                     {/* Overlay discret */}
                     <div className="absolute bottom-4 left-4 right-4">
-                      <div className="bg-white/95 backdrop-blur-sm rounded-lg p-3 shadow-md border border-white/50">
+                      <div className="bg-white/95 backdrop-blur-sm rounded-lg p-3 shadow-md border border-orange-100/50">
                         <div className="flex items-center space-x-2">
-                          <Music className="h-4 w-4 text-primary" />
+                          <Music className="h-4 w-4 text-orange-600" />
                           <div>
                             <h4 className="font-medium text-sm text-gray-800">École de Musique La Lyre</h4>
-                            <p className="text-xs text-gray-600">Chalindrey, Haute-Marne</p>
+                            <p className="text-xs text-gray-600">1 bis rue Jean Jaurès, 52600 Chalindrey</p>
                           </div>
                         </div>
                       </div>
@@ -311,7 +311,7 @@ const Contact = () => {
       </section>
 
       {/* Section Coordonnées */}
-      <section className="py-16 bg-gradient-to-br from-rose-25 via-pink-25 to-orange-25">
+      <section className="py-16 bg-gradient-to-br from-blue-25 via-indigo-25 to-purple-25">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12 animate-fade-in">
@@ -327,11 +327,11 @@ const Contact = () => {
               {contactInfo.map((info, index) => (
                 <div 
                   key={index} 
-                  className="group text-center animate-fade-in bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-white/50 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300"
+                  className="group text-center animate-fade-in bg-white/90 backdrop-blur-sm rounded-xl p-6 border border-white/50 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
-                  <div className="bg-primary/10 w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
-                    <info.icon className="h-6 w-6 text-primary" />
+                  <div className="bg-gradient-to-br from-orange-100 to-amber-100 w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300 shadow-sm">
+                    <info.icon className="h-6 w-6 text-orange-600" />
                   </div>
                   <h3 className="font-poppins font-semibold text-lg text-dark mb-2">
                     {info.title}
@@ -347,13 +347,13 @@ const Contact = () => {
       </section>
 
       {/* Section Informations Pratiques */}
-      <section className="py-16 bg-gradient-to-br from-emerald-25 via-teal-25 to-cyan-25">
+      <section className="py-16 bg-gradient-to-br from-rose-25 via-pink-25 to-orange-25">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto">
-            <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-white/50 p-8">
+            <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-white/50 p-8">
               <div className="text-center mb-8">
-                <div className="bg-primary/10 w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <Music className="h-8 w-8 text-primary" />
+                <div className="bg-gradient-to-br from-orange-100 to-amber-100 w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-md">
+                  <Music className="h-8 w-8 text-orange-600" />
                 </div>
                 <h2 className="font-poppins font-bold text-2xl text-dark mb-2">
                   Rejoignez notre famille musicale
@@ -365,24 +365,24 @@ const Contact = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="text-center bg-gray-50 rounded-xl p-6">
-                  <div className="bg-primary/10 w-10 h-10 rounded-lg flex items-center justify-center mx-auto mb-3">
-                    <User className="h-5 w-5 text-primary" />
+                  <div className="bg-gradient-to-br from-blue-100 to-indigo-100 w-10 h-10 rounded-lg flex items-center justify-center mx-auto mb-3 shadow-sm">
+                    <User className="h-5 w-5 text-blue-600" />
                   </div>
                   <h3 className="font-poppins font-semibold text-lg text-dark mb-2">Cours d'essai</h3>
                   <p className="text-sm text-gray-600">Gratuit et sans engagement</p>
                 </div>
                 
                 <div className="text-center bg-gray-50 rounded-xl p-6">
-                  <div className="bg-primary/10 w-10 h-10 rounded-lg flex items-center justify-center mx-auto mb-3">
-                    <Clock className="h-5 w-5 text-primary" />
+                  <div className="bg-gradient-to-br from-green-100 to-emerald-100 w-10 h-10 rounded-lg flex items-center justify-center mx-auto mb-3 shadow-sm">
+                    <Clock className="h-5 w-5 text-green-600" />
                   </div>
                   <h3 className="font-poppins font-semibold text-lg text-dark mb-2">Flexibilité</h3>
                   <p className="text-sm text-gray-600">Horaires adaptés</p>
                 </div>
                 
                 <div className="text-center bg-gray-50 rounded-xl p-6">
-                  <div className="bg-primary/10 w-10 h-10 rounded-lg flex items-center justify-center mx-auto mb-3">
-                    <MessageSquare className="h-5 w-5 text-primary" />
+                  <div className="bg-gradient-to-br from-purple-100 to-violet-100 w-10 h-10 rounded-lg flex items-center justify-center mx-auto mb-3 shadow-sm">
+                    <MessageSquare className="h-5 w-5 text-purple-600" />
                   </div>
                   <h3 className="font-poppins font-semibold text-lg text-dark mb-2">Suivi</h3>
                   <p className="text-sm text-gray-600">Accompagnement personnalisé</p>
