@@ -541,14 +541,14 @@ const Media = () => {
         </div>
       </section>
 
-      {/* Media Categories */}
-      <section className="py-20 bg-gradient-to-br from-orange-25 via-amber-25 to-yellow-25 relative overflow-hidden">
+      {/* Section d'appel à contribution */}
+      <section className="py-20 bg-gradient-to-br from-emerald-25 via-teal-25 to-cyan-25 relative overflow-hidden">
         {/* Particules d'arrière-plan */}
         <div className="absolute inset-0">
-          {[...Array(20)].map((_, i) => (
+          {[...Array(15)].map((_, i) => (
             <div
               key={i}
-              className="absolute w-2 h-2 bg-orange-400/10 rounded-full animate-pulse"
+              className="absolute w-2 h-2 bg-teal-400/15 rounded-full animate-pulse"
               style={{
                 left: `${Math.random() * 100}%`,
                 top: `${Math.random() * 100}%`,
@@ -559,76 +559,84 @@ const Media = () => {
           ))}
         </div>
         
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16 relative z-10">
-            <div className="inline-block mb-6">
-              <div className="flex items-center justify-center space-x-4 mb-4">
-                <div className="w-12 h-0.5 bg-gradient-to-r from-transparent to-orange-400"></div>
-                <div className="bg-gradient-to-br from-orange-400 to-amber-500 p-2 rounded-full shadow-lg">
-                  <Image className="h-6 w-6 text-white animate-pulse" />
+        {/* Formes géométriques décoratives */}
+        <div className="absolute top-10 left-10 w-32 h-32 border border-teal-400/10 rounded-full"></div>
+        <div className="absolute bottom-20 right-20 w-24 h-24 border-2 border-cyan-600/20 rounded-lg rotate-45"></div>
+        <div className="absolute top-1/2 right-1/4 w-16 h-16 bg-gradient-to-br from-teal-400/5 to-cyan-500/5 rounded-full"></div>
+        
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-12 animate-fade-in">
+              <div className="inline-block mb-8">
+                <div className="flex items-center justify-center space-x-4 mb-6">
+                  <div className="w-16 h-0.5 bg-gradient-to-r from-transparent via-teal-400 to-teal-400"></div>
+                  <div className="bg-gradient-to-br from-teal-400 to-cyan-500 p-3 rounded-full shadow-lg">
+                    <Camera className="h-8 w-8 text-white animate-pulse" />
+                  </div>
+                  <div className="w-16 h-0.5 bg-gradient-to-l from-transparent via-teal-400 to-teal-400"></div>
                 </div>
-                <div className="w-12 h-0.5 bg-gradient-to-l from-transparent to-orange-400"></div>
               </div>
-            </div>
-            <h2 className="font-poppins font-bold text-4xl md:text-5xl text-dark mb-6 bg-gradient-to-r from-orange-600 via-amber-600 to-orange-600 bg-clip-text text-transparent">
-              Nos différents types de médias
-            </h2>
-            <p className="text-gray-700 text-xl max-w-3xl mx-auto leading-relaxed">
-              Explorez nos différentes catégories de contenus musicaux et découvrez la richesse de notre école
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 relative z-10">
-            <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-xl text-center animate-fade-in hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 group border border-white/60 relative overflow-hidden">
-              {/* Effet de brillance au survol */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-              <div className="bg-gradient-to-br from-blue-400 to-indigo-500 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg relative z-10">
-                <Camera className="h-8 w-8 text-white group-hover:scale-110 transition-transform duration-300" />
-              </div>
-              <h3 className="font-poppins font-semibold text-xl text-dark mb-4 relative z-10">
-                Albums
-              </h3>
-              <p className="font-inter text-gray-700 text-sm leading-relaxed relative z-10">
-                Nos albums photos et vidéos des concerts, répétitions et événements de l'école.
+              <h2 className="font-poppins font-bold text-5xl md:text-6xl text-dark mb-6 bg-gradient-to-r from-teal-600 via-cyan-600 to-teal-600 bg-clip-text text-transparent">
+                Partagez vos souvenirs !
+              </h2>
+              <p className="text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed mb-8">
+                Vous avez des photos, vidéos ou enregistrements de nos concerts et événements ? 
+                Aidez-nous à enrichir notre médiathèque en partageant vos précieux souvenirs !
               </p>
             </div>
-            <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-xl text-center animate-fade-in hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 group border border-white/60 relative overflow-hidden">
+            
+            <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-8 md:p-12 shadow-2xl border border-white/50 animate-fade-in group hover:shadow-3xl transition-all duration-500 relative overflow-hidden">
               {/* Effet de brillance au survol */}
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-              <div className="bg-gradient-to-br from-green-400 to-emerald-500 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg relative z-10">
-                <Music className="h-8 w-8 text-white group-hover:scale-110 transition-transform duration-300" />
+              
+              <div className="relative z-10">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
+                  <div className="text-center">
+                    <div className="bg-gradient-to-br from-blue-100 to-indigo-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                      <Camera className="h-10 w-10 text-blue-600" />
+                    </div>
+                    <h3 className="font-poppins font-semibold text-lg text-dark mb-2">Photos & Vidéos</h3>
+                    <p className="text-sm text-gray-600">Concerts, répétitions, moments de convivialité</p>
+                  </div>
+                  
+                  <div className="text-center">
+                    <div className="bg-gradient-to-br from-green-100 to-emerald-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                      <Music className="h-10 w-10 text-green-600" />
+                    </div>
+                    <h3 className="font-poppins font-semibold text-lg text-dark mb-2">Enregistrements</h3>
+                    <p className="text-sm text-gray-600">Captations audio de nos performances</p>
+                  </div>
+                  
+                  <div className="text-center">
+                    <div className="bg-gradient-to-br from-yellow-100 to-amber-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                      <FileText className="h-10 w-10 text-yellow-600" />
+                    </div>
+                    <h3 className="font-poppins font-semibold text-lg text-dark mb-2">Articles de Presse</h3>
+                    <p className="text-sm text-gray-600">Coupures de journaux, interviews</p>
+                  </div>
+                </div>
+                
+                <div className="text-center">
+                  <p className="text-gray-700 mb-8 text-lg leading-relaxed">
+                    Chaque souvenir compte ! Vos contributions nous aident à préserver et partager 
+                    l'histoire musicale de notre école. 
+                  </p>
+                  
+                  <Link
+                    to="/contact"
+                    className="inline-flex items-center space-x-3 bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 text-white font-bold px-8 py-4 rounded-2xl transition-all duration-300 hover:-translate-y-1 hover:shadow-xl shadow-lg group/btn"
+                  >
+                    <span className="text-lg">Nous contacter</span>
+                    <div className="bg-white/20 p-2 rounded-full group-hover/btn:bg-white/30 transition-colors duration-300">
+                      <ChevronRight className="h-5 w-5 group-hover/btn:translate-x-1 transition-transform duration-300" />
+                    </div>
+                  </Link>
+                  
+                  <p className="text-sm text-gray-500 mt-4">
+                    💌 Envoyez-nous vos médias par email ou contactez-nous pour plus d'informations
+                  </p>
+                </div>
               </div>
-              <h3 className="font-poppins font-semibold text-xl text-dark mb-4 relative z-10">
-                Enregistrements
-              </h3>
-              <p className="font-inter text-gray-700 text-sm leading-relaxed relative z-10">
-                Écoutez nos enregistrements audio de concerts et répétitions.
-              </p>
-            </div>
-            <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-xl text-center animate-fade-in hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 group border border-white/60 relative overflow-hidden">
-              {/* Effet de brillance au survol */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-              <div className="bg-gradient-to-br from-yellow-400 to-amber-500 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg relative z-10">
-                <FileText className="h-8 w-8 text-white group-hover:scale-110 transition-transform duration-300" />
-              </div>
-              <h3 className="font-poppins font-semibold text-xl text-dark mb-4 relative z-10">
-                Journaux
-              </h3>
-              <p className="font-inter text-gray-700 text-sm leading-relaxed relative z-10">
-                "On parle de nous" - Découvrez les articles de presse sur notre école.
-              </p>
-            </div>
-            <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-xl text-center animate-fade-in hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 group border border-white/60 relative overflow-hidden">
-              {/* Effet de brillance au survol */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-              <div className="bg-gradient-to-br from-purple-400 to-indigo-500 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg relative z-10">
-                <File className="h-8 w-8 text-white group-hover:scale-110 transition-transform duration-300" />
-              </div>
-              <h3 className="font-poppins font-semibold text-xl text-dark mb-4 relative z-10">
-                Lyrissimots
-              </h3>
-              <p className="font-inter text-gray-700 text-sm leading-relaxed relative z-10">
-                Notre petit journal d'actualités avec toutes les nouvelles de l'école.
-              </p>
             </div>
           </div>
         </div>
