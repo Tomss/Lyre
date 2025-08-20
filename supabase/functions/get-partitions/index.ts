@@ -1,5 +1,10 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { corsHeaders } from '../_shared/cors.ts'
+import { createClient } from 'npm:@supabase/supabase-js@2'
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+}
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL') ?? '',
@@ -12,27 +17,29 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Requête simplifiée sans jointures complexes
     const { data: partitions, error } = await supabase
       .from('partitions')
-      .select(`
-        *,
-        instruments(id, name),
-        morceaux(id, nom, compositeur, arrangement, morceau_orchestras(orchestras(id, name)))
-      `);
+      .select('*')
+      .order('created_at', { ascending: false });
 
     if (error) {
+      console.error('Database error:', error);
       throw error;
     }
 
-    return new Response(JSON.stringify(partitions), {
+    return new Response(JSON.stringify(partitions || []), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
   } catch (error) {
-    // Retourner un message d'erreur clair en cas de problème
-    return new Response(JSON.stringify({ error: `Erreur de base de données : ${error.message}` }), {
+    console.error('Function error:', error);
+    return new Response(JSON.stringify({ 
+      error: 'Erreur lors de la récupération des partitions',
+      details: error.message 
+    }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 400,
+      status: 500,
     });
   }
 })
