@@ -380,7 +380,7 @@ const Contact = () => {
                 <h3 className="font-poppins font-semibold text-lg text-dark mb-3">Réponse</h3>
                 <p className="font-inter text-sm text-gray-600 leading-relaxed">
                   Nous répondons à tous vos messages dans les 48h maximum.
-                </div>
+                </p>
               </div>
             </div>
           </div>
