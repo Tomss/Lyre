@@ -83,8 +83,8 @@ const AdminPartitions = () => {
   const [instruments, setInstruments] = useState<Instrument[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [morceauFilter, setMorceauFilter] = useState<string>(selectedMorceauId || '');
-  const [instrumentFilter, setInstrumentFilter] = useState<string[]>([]);
   const [orchestraFilter, setOrchestraFilter] = useState<string[]>([]);
+  const [instrumentFilter, setInstrumentFilter] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingPartition, setEditingPartition] = useState<Partition | null>(null);
