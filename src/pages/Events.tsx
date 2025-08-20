@@ -186,9 +186,6 @@ const Events = () => {
                   <div className="inline-block mb-8">
                     <div className="flex items-center justify-center space-x-4 mb-6">
                       <div className="w-16 h-0.5 bg-gradient-to-r from-transparent via-orange-400 to-orange-400"></div>
-                      <div className="bg-gradient-to-br from-orange-400 to-amber-500 p-4 rounded-2xl shadow-2xl">
-                        <Calendar className="h-10 w-10 text-white animate-pulse" />
-                      </div>
                       <div className="w-16 h-0.5 bg-gradient-to-l from-transparent via-orange-400 to-orange-400"></div>
                     </div>
                   </div>
@@ -247,9 +244,15 @@ const Events = () => {
                       </div>
                       <div className="text-right">
                         <div className="bg-gradient-to-br from-orange-400 to-amber-500 rounded-2xl p-4 shadow-xl">
-                          <div className="text-3xl font-bold text-white">{upcomingEvents.length}</div>
-                          <div className="text-sm text-orange-100">Concert{upcomingEvents.length > 1 ? 's' : ''}</div>
-                          <div className="text-sm text-orange-100">à venir</div>
+                          <div className="text-3xl font-bold text-white">
+                            {filter === 'upcoming' ? upcomingEvents.length : pastEvents.length}
+                          </div>
+                          <div className="text-sm text-orange-100">
+                            Concert{(filter === 'upcoming' ? upcomingEvents.length : pastEvents.length) > 1 ? 's' : ''}
+                          </div>
+                          <div className="text-sm text-orange-100">
+                            {filter === 'upcoming' ? 'à venir' : 'passés'}
+                          </div>
                         </div>
                       </div>
                     </div>
