@@ -362,60 +362,153 @@ const Events = () => {
             )
           )}
 
-          {/* Événements passés */}
-          {filter === 'past' && (
-            pastEvents.length > 0 ? (
-              <section className="py-16 bg-gradient-to-br from-gray-50 via-slate-50 to-gray-100">
-                <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-                  <div className="text-center mb-12"><h2 className="font-poppins font-bold text-3xl text-gray-800 mb-6">Événements Passés</h2></div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
-                    {pastEvents.slice(0, 8).map((event, index) => {
-                      const dateInfo = formatDate(event.event_date);
-                      return (
-                        <div key={event.id} onClick={() => openEventModal(event)} className="group animate-fade-in cursor-pointer" style={{ animationDelay: `${index * 0.05}s` }}>
-                          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 opacity-80 hover:opacity-100">
-                            <div className="p-4">
-                              <h3 className="font-poppins font-semibold text-base text-gray-800 mb-3 group-hover:text-gray-900 transition-colors line-clamp-2">{event.title}</h3>
-                              <div className="space-y-2 text-xs text-gray-500">
-                                <div className="flex items-center space-x-2"><Clock className="h-3 w-3" /><span>{dateInfo.fullDate}</span></div>
-                                {event.location && <div className="flex items-center space-x-2"><MapPin className="h-3 w-3" /><span className="truncate">{event.location}</span></div>}
-                              </div>
-                              <div className="text-center pt-2 mt-2 border-t border-gray-100"><span className="text-xs text-gray-400 group-hover:text-gray-600 transition-colors">Cliquer pour détails</span></div>
-                            </div>
-                          </div>
+          {/* Calendrier Musical Amélioré */}
+          <section className="py-20 bg-gradient-to-br from-slate-900 via-gray-800 to-slate-900 relative overflow-hidden">
+            {/* Particules d'arrière-plan */}
+            <div className="absolute inset-0">
+              {[...Array(30)].map((_, i) => (
+                <div
+                  key={i}
+                  className="absolute w-1 h-1 bg-orange-400/20 rounded-full animate-pulse"
+                  style={{
+                    left: `${Math.random() * 100}%`,
+                    top: `${Math.random() * 100}%`,
+                    animationDelay: `${Math.random() * 3}s`,
+                    animationDuration: `${2 + Math.random() * 2}s`
+                  }}
+                />
+              ))}
+            </div>
+            
+            {/* Formes géométriques décoratives */}
+            <div className="absolute top-10 left-10 w-32 h-32 border border-orange-400/10 rounded-full"></div>
+            <div className="absolute bottom-20 right-20 w-24 h-24 border-2 border-slate-600/30 rounded-lg rotate-45"></div>
+            <div className="absolute top-1/2 left-1/4 w-16 h-16 bg-gradient-to-br from-orange-400/5 to-amber-500/5 rounded-full"></div>
+            
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+              <div className="max-w-6xl mx-auto">
+                <div className="text-center mb-16">
+                  <div className="inline-block mb-8">
+                    <div className="flex items-center justify-center space-x-4 mb-6">
+                      <div className="w-16 h-0.5 bg-gradient-to-r from-transparent via-orange-400 to-orange-400"></div>
+                      <div className="bg-gradient-to-br from-orange-400 to-amber-500 p-4 rounded-2xl shadow-2xl">
+                        <Calendar className="h-10 w-10 text-white animate-pulse" />
+                      </div>
+                      <div className="w-16 h-0.5 bg-gradient-to-l from-transparent via-orange-400 to-orange-400"></div>
+                    </div>
+                  </div>
+                  <h2 className="font-poppins font-bold text-5xl md:text-6xl text-white mb-6 bg-gradient-to-r from-orange-200 via-amber-200 to-orange-200 bg-clip-text text-transparent">
+                    📅 Calendrier Musical
+                  </h2>
+                  <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
+                    Découvrez notre programmation artistique dans un calendrier interactif élégant
+                  </p>
+                </div>
+                
+                <div className="bg-gradient-to-br from-white/95 via-gray-50/95 to-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 overflow-hidden">
+                  {/* Header du calendrier premium */}
+                  <div className="bg-gradient-to-r from-slate-800 via-gray-700 to-slate-800 p-8 text-white relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-40 h-40 bg-orange-400/5 rounded-full -translate-y-20 translate-x-20"></div>
+                    <div className="absolute bottom-0 left-0 w-32 h-32 bg-amber-400/5 rounded-full translate-y-16 -translate-x-16"></div>
+                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 border border-white/5 rounded-full"></div>
+                    
+                    <div className="relative z-10 flex items-center justify-between">
+                      <div className="flex items-center space-x-6">
+                        <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/20">
+                          <Calendar className="h-8 w-8 text-orange-300" />
                         </div>
-                      );
-                    })}
-                  </div>
-                  {pastEvents.length > 8 && (
-                    <div className="text-center mt-8">
-                      <button className="inline-flex items-center space-x-2 bg-white hover:bg-gray-50 text-gray-700 font-semibold px-8 py-4 rounded-full shadow-lg border border-gray-200 transition-all duration-300 hover:-translate-y-1">
-                        <span>Voir plus de concerts</span><ChevronRight className="h-4 w-4" />
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </section>
-            ) : (
-              <section className="py-16 bg-gradient-to-br from-gray-50 via-slate-50 to-gray-100">
-                <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-                  <div className="text-center">
-                    <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-12 shadow-xl border border-white/50 max-w-2xl mx-auto">
-                      <div className="bg-gradient-to-br from-gray-400 to-slate-500 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6 shadow-lg"><Clock className="h-10 w-10 text-white" /></div>
-                      <h2 className="font-poppins font-bold text-2xl text-gray-800 mb-4">Aucun concert passé</h2>
-                      <p className="font-inter text-gray-600 leading-relaxed">L'historique de nos concerts apparaîtra ici après nos premières représentations.</p>
+                        <div>
+                          <h3 className="font-poppins font-bold text-2xl mb-2">Nos Rendez-vous Musicaux</h3>
+                          <p className="text-gray-300 text-lg">Chaque note compte, chaque moment est unique</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="bg-gradient-to-br from-orange-400 to-amber-500 rounded-2xl p-4 shadow-xl">
+                          <div className="text-3xl font-bold text-white">{upcomingEvents.length}</div>
+                          <div className="text-sm text-orange-100">Concert{upcomingEvents.length > 1 ? 's' : ''}</div>
+                          <div className="text-sm text-orange-100">à venir</div>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </section>
-            )
-          )}
-        </>
-      )}
-
-      {/* Section d'information */}
-      <section className="py-16 bg-gradient-to-br from-blue-50 via-indigo-50 to-slate-50">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+                  
+                  {/* Corps du calendrier premium */}
+                  <div className="p-8">
+                    {upcomingEvents.length > 0 ? (
+                      <div className="space-y-6">
+                        {upcomingEvents.slice(0, 5).map((event, index) => {
+                          const dateInfo = formatDate(event.event_date);
+                          const isNext = index === 0;
+                          const isSecond = index === 1;
+                          
+                          return (
+                            <div 
+                              key={event.id} 
+                              className={`group relative overflow-hidden rounded-2xl transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 cursor-pointer ${
+                                isNext 
+                                  ? 'bg-gradient-to-r from-orange-50 via-amber-50 to-orange-50 border-2 border-orange-200 shadow-xl scale-105' 
+                                  : isSecond
+                                  ? 'bg-gradient-to-r from-slate-50 to-gray-50 border-2 border-slate-200 shadow-lg'
+                                  : 'bg-white hover:bg-gray-50 border border-gray-200 shadow-md'
+                              }`}
+                              onClick={() => openEventModal(event)}
+                            >
+                              {/* Effet de brillance au survol */}
+                              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                              
+                              <div className="flex items-center space-x-6 p-6 relative z-10">
+                                {/* Date stylisée */}
+                                <div className={`flex-shrink-0 text-center p-4 rounded-2xl shadow-lg ${
+                                  isNext 
+                                    ? 'bg-gradient-to-br from-orange-500 to-amber-600 text-white shadow-orange-200' 
+                                    : isSecond
+                                    ? 'bg-gradient-to-br from-slate-600 to-gray-700 text-white shadow-slate-200'
+                                    : 'bg-gradient-to-br from-gray-100 to-gray-200 text-gray-700 border-2 border-gray-300'
+                                }`}>
+                                  <div className="text-xs font-bold opacity-90 uppercase tracking-wider mb-1">
+                                    {dateInfo.month}
+                                  </div>
+                                  <div className="text-3xl font-bold leading-none mb-1">
+                                    {dateInfo.day}
+                                  </div>
+                                  <div className="text-xs opacity-90 font-medium">
+                                    {dateInfo.year}
+                                  </div>
+                                </div>
+                                
+                                {/* Détails de l'événement */}
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center space-x-3 mb-3">
+                                    <h4 className={`font-poppins font-bold text-xl truncate ${
+                                      isNext ? 'text-orange-800' : isSecond ? 'text-slate-800' : 'text-gray-800'
+                                    }`}>
+                                      {event.title}
+                                    </h4>
+                                    {isNext && (
+                                      <div className="flex items-center space-x-2">
+                                        <span className="bg-gradient-to-r from-orange-600 to-amber-600 text-white text-xs px-3 py-1 rounded-full font-bold shadow-lg animate-pulse">
+                                          🎵 PROCHAIN
+                                        </span>
+                                        <div className="w-2 h-2 bg-orange-500 rounded-full animate-ping"></div>
+                                      </div>
+                                    )}
+                                    {isSecond && (
+                                      <span className="bg-gradient-to-r from-slate-600 to-gray-700 text-white text-xs px-3 py-1 rounded-full font-medium shadow-md">
+                                        Bientôt
+                                      </span>
+                                    )}
+                                  </div>
+                                  
+                                  {event.description && (
+                                    <p className="text-gray-600 mb-3 text-sm leading-relaxed line-clamp-2">
+                                      {event.description}
+                                    </p>
+                                  )}
+                                  
+                                  <div className="flex items-center space-x-6 text-sm">
+                                    <div className="flex items-center space-x-2 text-gray-500">
+                                      <div className={`p-1.5 rounded-lg ${isNext ? 'bg-orange-100' : 'bg-gray-100'}`}>
+                                        <Clock className="h-4 w-4" />
           <div className="max-w-4xl mx-auto text-center">
             <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border border-white/50">
               <div className="bg-gradient-to-br from-slate-500 to-gray-600 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-8 shadow-lg"><Music className="h-10 w-10 text-white" /></div>
