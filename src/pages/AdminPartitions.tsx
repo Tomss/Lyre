@@ -56,6 +56,11 @@ interface Instrument {
   name: string;
 }
 
+interface Orchestra {
+  id: string;
+  name: string;
+}
+
 interface DeleteConfirmation {
   isOpen: boolean;
   partition: Partition | null;
@@ -141,7 +146,8 @@ const AdminPartitions = () => {
   // Récupérer tous les morceaux
   const fetchMorceaux = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-morceaux`, {
+      const orchestraParam = selectedOrchestra ? `?orchestra_id=${selectedOrchestra}` : '';
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-morceaux${orchestraParam}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
@@ -175,6 +181,9 @@ const AdminPartitions = () => {
       }
     } catch (err) {
       console.error('Erreur lors de la récupération des instruments:', err);
+    }
+  };
+
   const fetchOrchestras = async () => {
     try {
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-orchestras`, {
@@ -188,9 +197,6 @@ const AdminPartitions = () => {
       setOrchestras(data);
     } catch (error) {
       console.error('Erreur lors de la récupération des orchestres:', error);
-    }
-  };
-
     }
   };
 
@@ -267,8 +273,7 @@ const AdminPartitions = () => {
       // Récupération de l'URL publique
       const { data: urlData } = supabase.storage
         .from('media-files')
-      const orchestraParam = selectedOrchestra ? `?orchestra_id=${selectedOrchestra}` : '';
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-morceaux${orchestraParam}`, {
+        .getPublicUrl(filePath);
         
       return {
         file_name: file.name,
@@ -531,23 +536,6 @@ const AdminPartitions = () => {
               </Link>
               <div className="bg-primary/10 p-3 rounded-lg">
                 <FileText className="h-8 w-8 text-primary" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Orchestre (pour filtrer les morceaux)
-                </label>
-                <select
-                  value={selectedOrchestra}
-                  onChange={(e) => setSelectedOrchestra(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">Tous les orchestres</option>
-                  {orchestras.map((orchestra) => (
-                    <option key={orchestra.id} value={orchestra.id}>
-                      {orchestra.name}
-                    </option>
-                  ))}
-                </select>
               </div>
               <div>
                 <h1 className="font-poppins font-bold text-3xl text-dark">
