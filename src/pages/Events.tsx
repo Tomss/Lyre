@@ -222,6 +222,34 @@ const Events = () => {
                   <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
                     Découvrez notre programmation artistique dans un calendrier interactif élégant
                   </p>
+                  
+                  {/* Filtres discrets intégrés */}
+                  {events.length > 0 && (
+                    <div className="flex items-center justify-center space-x-3 mt-8">
+                      <button
+                        onClick={() => setFilter('upcoming')}
+                        className={`inline-flex items-center space-x-2 px-6 py-3 rounded-2xl font-medium transition-all duration-300 backdrop-blur-sm border ${
+                          filter === 'upcoming' 
+                            ? 'bg-gradient-to-r from-orange-500/90 to-amber-600/90 text-white border-orange-400/50 shadow-lg shadow-orange-500/25' 
+                            : 'bg-white/10 text-gray-300 border-white/20 hover:bg-white/20 hover:text-white'
+                        }`}
+                      >
+                        <Star className="h-4 w-4" />
+                        <span>À venir ({upcomingEvents.length})</span>
+                      </button>
+                      <button
+                        onClick={() => setFilter('past')}
+                        className={`inline-flex items-center space-x-2 px-6 py-3 rounded-2xl font-medium transition-all duration-300 backdrop-blur-sm border ${
+                          filter === 'past' 
+                            ? 'bg-gradient-to-r from-slate-600/90 to-gray-700/90 text-white border-slate-500/50 shadow-lg shadow-slate-500/25' 
+                            : 'bg-white/10 text-gray-300 border-white/20 hover:bg-white/20 hover:text-white'
+                        }`}
+                      >
+                        <Clock className="h-4 w-4" />
+                        <span>Passés ({pastEvents.length})</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
                 
                 <div className="bg-gradient-to-br from-white/95 via-gray-50/95 to-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 overflow-hidden">
@@ -253,21 +281,24 @@ const Events = () => {
                   
                   {/* Corps du calendrier premium */}
                   <div className="p-8">
-                    {upcomingEvents.length > 0 ? (
+                    {(filter === 'upcoming' ? upcomingEvents : pastEvents).length > 0 ? (
                       <div className="space-y-6">
-                        {upcomingEvents.slice(0, 5).map((event, index) => {
+                        {(filter === 'upcoming' ? upcomingEvents : pastEvents).slice(0, 5).map((event, index) => {
                           const dateInfo = formatDate(event.event_date);
-                          const isNext = index === 0;
+                          const isNext = index === 0 && filter === 'upcoming';
                           const isSecond = index === 1;
+                          const isPastEvent = filter === 'past';
                           
                           return (
                             <div 
                               key={event.id} 
                               className={`group relative overflow-hidden rounded-2xl transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 cursor-pointer ${
-                                isNext 
+                                isNext && !isPastEvent
                                   ? 'bg-gradient-to-r from-orange-50 via-amber-50 to-orange-50 border-2 border-orange-200 shadow-xl scale-105' 
-                                  : isSecond
+                                  : isSecond && !isPastEvent
                                   ? 'bg-gradient-to-r from-slate-50 to-gray-50 border-2 border-slate-200 shadow-lg'
+                                  : isPastEvent
+                                  ? 'bg-gradient-to-r from-gray-50 to-slate-50 border border-gray-300 shadow-md opacity-75'
                                   : 'bg-white hover:bg-gray-50 border border-gray-200 shadow-md'
                               }`}
                               onClick={() => openEventModal(event)}
@@ -278,10 +309,12 @@ const Events = () => {
                               <div className="flex items-center space-x-6 p-6 relative z-10">
                                 {/* Date stylisée */}
                                 <div className={`flex-shrink-0 text-center p-4 rounded-2xl shadow-lg ${
-                                  isNext 
+                                  isNext && !isPastEvent
                                     ? 'bg-gradient-to-br from-orange-500 to-amber-600 text-white shadow-orange-200' 
-                                    : isSecond
+                                    : isSecond && !isPastEvent
                                     ? 'bg-gradient-to-br from-slate-600 to-gray-700 text-white shadow-slate-200'
+                                    : isPastEvent
+                                    ? 'bg-gradient-to-br from-gray-400 to-slate-500 text-white shadow-gray-200'
                                     : 'bg-gradient-to-br from-gray-100 to-gray-200 text-gray-700 border-2 border-gray-300'
                                 }`}>
                                   <div className="text-xs font-bold opacity-90 uppercase tracking-wider mb-1">
@@ -299,7 +332,7 @@ const Events = () => {
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center space-x-3 mb-3">
                                     <h4 className={`font-poppins font-bold text-xl truncate ${
-                                      isNext ? 'text-orange-800' : isSecond ? 'text-slate-800' : 'text-gray-800'
+                                      isNext && !isPastEvent ? 'text-orange-800' : isSecond && !isPastEvent ? 'text-slate-800' : isPastEvent ? 'text-gray-700' : 'text-gray-800'
                                     }`}>
                                       {event.title}
                                     </h4>
@@ -311,7 +344,7 @@ const Events = () => {
                                         <div className="w-2 h-2 bg-orange-500 rounded-full animate-ping"></div>
                                       </div>
                                     )}
-                                    {isSecond && (
+                                    {isSecond && !isPastEvent && (
                                       <span className="bg-gradient-to-r from-slate-600 to-gray-700 text-white text-xs px-3 py-1 rounded-full font-medium shadow-md">
                                         Bientôt
                                       </span>
@@ -326,14 +359,14 @@ const Events = () => {
                                   
                                   <div className="flex items-center space-x-6 text-sm">
                                     <div className="flex items-center space-x-2 text-gray-500">
-                                      <div className={`p-1.5 rounded-lg ${isNext ? 'bg-orange-100' : 'bg-gray-100'}`}>
+                                      <div className={`p-1.5 rounded-lg ${isNext && !isPastEvent ? 'bg-orange-100' : 'bg-gray-100'}`}>
                                         <Clock className="h-4 w-4" />
                                       </div>
                                       <span className="font-medium">{dateInfo.weekday} • {dateInfo.time}</span>
                                     </div>
                                     {event.location && (
                                       <div className="flex items-center space-x-2 text-gray-500">
-                                        <div className={`p-1.5 rounded-lg ${isNext ? 'bg-orange-100' : 'bg-gray-100'}`}>
+                                        <div className={`p-1.5 rounded-lg ${isNext && !isPastEvent ? 'bg-orange-100' : 'bg-gray-100'}`}>
                                           <MapPin className="h-4 w-4" />
                                         </div>
                                         <span className="font-medium truncate">{event.location}</span>
@@ -365,11 +398,15 @@ const Events = () => {
                           );
                         })}
                         
-                        {upcomingEvents.length > 5 && (
+                        {(filter === 'upcoming' ? upcomingEvents : pastEvents).length > 5 && (
                           <div className="text-center pt-6 border-t border-gray-100">
-                            <div className="bg-gradient-to-r from-gray-50 to-slate-50 rounded-2xl p-6 border border-gray-200">
+                            <div className={`rounded-2xl p-6 border ${
+                              filter === 'upcoming' 
+                                ? 'bg-gradient-to-r from-orange-50 to-amber-50 border-orange-200' 
+                                : 'bg-gradient-to-r from-gray-50 to-slate-50 border-gray-200'
+                            }`}>
                               <h4 className="font-poppins font-semibold text-gray-800 mb-2">
-                                +{upcomingEvents.length - 5} autre{upcomingEvents.length - 5 > 1 ? 's' : ''} concert{upcomingEvents.length - 5 > 1 ? 's' : ''}
+                                +{(filter === 'upcoming' ? upcomingEvents : pastEvents).length - 5} autre{(filter === 'upcoming' ? upcomingEvents : pastEvents).length - 5 > 1 ? 's' : ''} concert{(filter === 'upcoming' ? upcomingEvents : pastEvents).length - 5 > 1 ? 's' : ''}
                               </h4>
                               <p className="text-sm text-gray-600">Consultez notre calendrier complet pour découvrir tous nos événements</p>
                             </div>
