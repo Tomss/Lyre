@@ -163,14 +163,14 @@ const Contact = () => {
             {/* Formulaire de Contact */}
             <div className="animate-fade-in">
               <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 overflow-hidden">
-                <div className="bg-gradient-to-r from-orange-600 to-amber-600 p-6 text-white">
+                <div className="bg-gradient-to-r from-orange-800/80 to-amber-700/80 p-6 text-white backdrop-blur-sm">
                   <div className="flex items-center space-x-3">
                     <div className="bg-white/20 p-2 rounded-lg">
                       <MessageSquare className="h-6 w-6 text-white" />
                     </div>
                     <div>
                       <h2 className="font-poppins font-bold text-xl">Écrivez-nous</h2>
-                      <p className="text-orange-100 text-sm">Nous vous répondrons rapidement</p>
+                      <p className="text-orange-200 text-sm">Nous vous répondrons rapidement</p>
                     </div>
                   </div>
                 </div>
