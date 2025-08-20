@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, Navigate } from 'react-router-dom';
-import { Settings, LogOut, Users, Music, Music2, Calendar, Image } from 'lucide-react';
+import { Settings, LogOut, Users, Music, Music2, Calendar, Image, FileText } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const Dashboard = () => {
@@ -191,12 +191,19 @@ const Dashboard = () => {
                 <Image className="h-5 w-5" />
                 <span>Médias</span>
               </Link>
+              <Link
+                to="/admin/partitions"
+                className="inline-flex items-center space-x-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-3 rounded-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg text-center justify-center"
+              >
+                <FileText className="h-5 w-5" />
+                <span>Partitions</span>
+              </Link>
             </div>
           </div>
         )}
 
         {/* Main Dashboard Content */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-white/50 p-6">
             <div className="flex items-center space-x-3 mb-4">
               <div className="bg-gradient-to-br from-indigo-400 to-purple-500 p-2 rounded-lg shadow-md">
@@ -229,6 +236,26 @@ const Dashboard = () => {
             <button className="text-primary hover:text-primary/80 font-medium text-sm transition-colors">
               Voir mes cours →
             </button>
+          </div>
+
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-white/50 p-6">
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="bg-gradient-to-br from-purple-400 to-indigo-500 p-2 rounded-lg shadow-md">
+                <FileText className="h-6 w-6 text-white" />
+              </div>
+              <h3 className="font-poppins font-semibold text-lg text-dark">
+                Mes Partitions
+              </h3>
+            </div>
+            <p className="font-inter text-gray-600 mb-4">
+              Accédez à vos partitions selon vos instruments et orchestres.
+            </p>
+            <Link
+              to="/user/partitions"
+              className="text-primary hover:text-primary/80 font-medium text-sm transition-colors"
+            >
+              Voir mes partitions →
+            </Link>
           </div>
 
           <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-white/50 p-6">
