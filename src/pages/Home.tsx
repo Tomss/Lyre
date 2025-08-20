@@ -120,30 +120,6 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section id="features" className="py-20 bg-gradient-to-br from-blue-25 via-indigo-25 to-purple-25">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {features.map((feature, index) => (
-              <div 
-                key={index} 
-                className="animate-on-scroll text-center group hover:transform hover:-translate-y-2 transition-all duration-300 bg-white/60 backdrop-blur-sm rounded-xl p-6 border border-white/50 shadow-md hover:shadow-lg"
-              >
-                <div className="bg-gradient-to-br from-indigo-400 to-purple-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300">
-                  <feature.icon className="h-8 w-8 text-white" />
-                </div>
-                <h3 className="font-poppins font-semibold text-xl text-dark mb-4">
-                  {feature.title}
-                </h3>
-                <p className="font-inter text-sm text-gray-700 leading-relaxed">
-                  {feature.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Section Rejoignez-nous */}
       <section className="py-20 bg-gradient-to-br from-slate-100 via-gray-100 to-blue-100">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
