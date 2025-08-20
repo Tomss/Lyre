@@ -207,7 +207,6 @@ const AdminPartitions = () => {
       fetchMorceaux();
       fetchInstruments();
       fetchOrchestras();
-      fetchOrchestras();
     }
   }, [profile]);
 
@@ -550,6 +549,7 @@ const AdminPartitions = () => {
     return morceau.orchestras.some(o => o.id === selectedOrchestraForForm);
   });
 
+  // Filtrer les morceaux pour les filtres
   const filteredMorceauxForFilter = morceaux.filter(morceau => {
     if (orchestraFilter.length === 0) return true;
     return morceau.orchestras.some(o => orchestraFilter.includes(o.id));
