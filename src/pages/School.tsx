@@ -85,7 +85,6 @@ const School = () => {
         }}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto animate-fade-in relative z-10">
-            <h1 className="font-poppins font-bold text-3xl md:text-4xl text-white mb-8 text-center">
             <h1 className="font-poppins font-bold text-4xl md:text-5xl text-white mb-8 text-center">
               L'école de musique
             </h1>
@@ -130,7 +129,6 @@ const School = () => {
                 <div className="w-12 h-0.5 bg-gradient-to-l from-transparent to-orange-400"></div>
               </div>
             </div>
-            <h2 className="font-poppins font-bold text-4xl md:text-5xl text-white mb-6 bg-gradient-to-r from-orange-200 via-amber-200 to-orange-200 bg-clip-text text-transparent">
             <h2 className="font-poppins font-bold text-5xl md:text-6xl text-white mb-6 bg-gradient-to-r from-orange-200 via-amber-200 to-orange-200 bg-clip-text text-transparent">
               Nos classes d'instruments
             </h2>
@@ -236,7 +234,6 @@ const School = () => {
               {/* Message d'encouragement */}
               <div className="text-center mt-16 animate-fade-in">
                 <div className="bg-gradient-to-r from-orange-900/20 via-amber-900/20 to-orange-900/20 backdrop-blur-sm rounded-2xl p-8 max-w-2xl mx-auto border border-orange-400/15">
-                  <h3 className="font-poppins font-bold text-xl text-orange-200 mb-4">
                   <h3 className="font-poppins font-bold text-xl text-orange-200 mb-4">
                     🎵 Trouvez votre instrument !
                   </h3>
@@ -351,7 +348,6 @@ const School = () => {
                 <Users className="h-8 w-8 text-white" />
               </div>
               <h3 className="font-poppins font-semibold text-xl text-dark mb-4">
-              <h3 className="font-poppins font-semibold text-xl text-dark mb-4">
                 Communauté
               </h3>
               <p className="font-inter text-sm text-gray-600">
@@ -363,7 +359,6 @@ const School = () => {
                 <Award className="h-8 w-8 text-white" />
               </div>
               <h3 className="font-poppins font-semibold text-xl text-dark mb-4">
-              <h3 className="font-poppins font-semibold text-xl text-dark mb-4">
                 Excellence
               </h3>
               <p className="font-inter text-sm text-gray-600">
@@ -374,7 +369,6 @@ const School = () => {
               <div className="bg-gradient-to-br from-purple-400 to-indigo-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
                 <Music className="h-8 w-8 text-white" />
               </div>
-              <h3 className="font-poppins font-semibold text-xl text-dark mb-4">
               <h3 className="font-poppins font-semibold text-xl text-dark mb-4">
                 Passion
               </h3>
