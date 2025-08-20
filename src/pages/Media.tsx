@@ -192,101 +192,78 @@ const Media = () => {
 
       {/* Filtres et recherche */}
       {mediaItems.length > 0 && (
-        <section className="py-8 bg-gradient-to-r from-slate-900 via-gray-800 to-slate-900 border-b border-orange-400/20 sticky top-20 z-40 shadow-xl backdrop-blur-sm relative overflow-hidden">
-          {/* Particules d'arrière-plan */}
-          <div className="absolute inset-0">
-            {[...Array(15)].map((_, i) => (
-              <div
-                key={i}
-                className="absolute w-1 h-1 bg-orange-400/20 rounded-full animate-pulse"
-                style={{
-                  left: `${Math.random() * 100}%`,
-                  top: `${Math.random() * 100}%`,
-                  animationDelay: `${Math.random() * 3}s`,
-                  animationDuration: `${2 + Math.random() * 2}s`
-                }}
-              />
-            ))}
-          </div>
-          
+        <section className="py-16 bg-gradient-to-br from-blue-25 via-indigo-25 to-purple-25">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col space-y-6 relative z-10">
+            <div className="max-w-4xl mx-auto">
               {/* Recherche */}
-              <div className="relative max-w-lg mx-auto">
+              <div className="relative max-w-md mx-auto mb-8">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Search className="h-5 w-5 text-orange-400" />
+                  <Search className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
                   type="text"
                   placeholder="Rechercher dans nos médias..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 pr-4 py-4 bg-white/95 backdrop-blur-sm border-2 border-orange-200/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400 w-full text-base shadow-xl placeholder-gray-500"
+                  className="pl-10 pr-4 py-3 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary w-full shadow-md placeholder-gray-500"
                 />
                 {searchTerm && (
                   <button
                     onClick={() => setSearchTerm('')}
-                    className="absolute inset-y-0 right-0 pr-4 flex items-center hover:bg-orange-50 rounded-r-2xl transition-colors"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
                   >
-                    <X className="h-4 w-4 text-orange-400 hover:text-orange-600" />
+                    <X className="h-4 w-4 text-gray-400 hover:text-gray-600" />
                   </button>
                 )}
               </div>
 
               {/* Filtres par type */}
-              <div className="flex flex-col space-y-4">
-                <div className="flex items-center justify-center">
-                  <div className="flex items-center space-x-4 flex-wrap gap-3 justify-center">
-                    <span className="text-sm font-medium text-orange-200 mr-2 bg-orange-900/30 px-3 py-1 rounded-full">Catégories :</span>
+              <div className="text-center">
+                <div className="inline-flex items-center space-x-2 bg-white/60 backdrop-blur-sm rounded-xl p-2 shadow-md border border-white/50">
                   <button
                     onClick={() => selectType('all')}
-                    className={`inline-flex items-center space-x-2 px-6 py-3 rounded-2xl text-sm font-medium transition-all duration-300 hover:scale-105 backdrop-blur-sm border ${
+                    className={`inline-flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                       selectedType === 'all'
-                        ? 'bg-gradient-to-r from-orange-500/90 to-amber-600/90 text-white border-orange-400/50 shadow-lg shadow-orange-500/25'
-                        : 'bg-white/20 text-orange-200 border-white/20 hover:bg-white/30 hover:text-white'
+                        ? 'bg-primary text-white shadow-md'
+                        : 'text-gray-600 hover:text-primary hover:bg-gray-50'
                     }`}
                   >
                     <span>Tout</span>
                   </button>
                   {[
-                    { key: 'album', label: 'Albums', icon: Camera, color: 'blue' },
-                    { key: 'enregistrement', label: 'Enregistrements', icon: Music, color: 'green' },
-                    { key: 'journal', label: 'Journaux', icon: FileText, color: 'yellow' },
-                    { key: 'lyrissimot', label: 'Lyrissimots', icon: File, color: 'purple' }
-                  ].map(({ key, label, icon: Icon, color }) => (
+                    { key: 'album', label: 'Albums', icon: Camera },
+                    { key: 'enregistrement', label: 'Enregistrements', icon: Music },
+                    { key: 'journal', label: 'Journaux', icon: FileText },
+                    { key: 'lyrissimot', label: 'Lyrissimots', icon: File }
+                  ].map(({ key, label, icon: Icon }) => (
                     <button
                       key={key}
                       onClick={() => selectType(key)}
-                      className={`inline-flex items-center space-x-2 px-6 py-3 rounded-2xl text-sm font-medium transition-all duration-300 hover:scale-105 backdrop-blur-sm border ${
+                      className={`inline-flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                         selectedType === key
-                          ? (
-                              color === 'blue' ? 'bg-gradient-to-r from-blue-500/90 to-indigo-600/90 text-white border-blue-400/50 shadow-lg shadow-blue-500/25' :
-                              color === 'green' ? 'bg-gradient-to-r from-green-500/90 to-emerald-600/90 text-white border-green-400/50 shadow-lg shadow-green-500/25' :
-                              color === 'yellow' ? 'bg-gradient-to-r from-yellow-500/90 to-amber-600/90 text-white border-yellow-400/50 shadow-lg shadow-yellow-500/25' :
-                              color === 'purple' ? 'bg-gradient-to-r from-purple-500/90 to-indigo-600/90 text-white border-purple-400/50 shadow-lg shadow-purple-500/25' :
-                              'bg-gradient-to-r from-gray-500/90 to-slate-600/90 text-white border-gray-400/50 shadow-lg shadow-gray-500/25'
-                            )
-                          : 'bg-white/20 text-orange-200 border-white/20 hover:bg-white/30 hover:text-white'
+                          ? 'bg-primary text-white shadow-md'
+                          : 'text-gray-600 hover:text-primary hover:bg-gray-50'
                       }`}
                     >
                       <Icon className="h-4 w-4" />
                       <span>{label}</span>
                     </button>
                   ))}
-                  </div>
                 </div>
-                
-                {/* Compteur de résultats */}
-                <div className="text-center">
-                  <div className="inline-block text-sm text-orange-200 bg-orange-900/30 backdrop-blur-sm px-4 py-2 rounded-full border border-orange-400/20">
-                    {filteredMedia.length} résultat{filteredMedia.length > 1 ? 's' : ''}
-                  </div>
-                </div>
+              </div>
               
-                {/* Actions rapides */}
-                <div className="flex items-center justify-center space-x-6 pt-4 border-t border-orange-400/20">
+              {/* Compteur de résultats */}
+              <div className="text-center mt-6">
+                <div className="inline-block text-sm text-gray-600 bg-white/60 backdrop-blur-sm px-4 py-2 rounded-full border border-white/50">
+                  {filteredMedia.length} résultat{filteredMedia.length > 1 ? 's' : ''}
+                </div>
+              </div>
+              
+              {/* Actions rapides */}
+              {(selectedType !== 'all' || searchTerm) && (
+                <div className="flex items-center justify-center space-x-4 mt-4">
                   {selectedType !== 'all' && (
-                    <div className="text-sm text-orange-200 bg-orange-900/30 backdrop-blur-sm px-4 py-2 rounded-full border border-orange-400/20">
+                    <div className="text-sm text-gray-600 bg-white/60 backdrop-blur-sm px-3 py-1 rounded-full border border-white/50">
                       Filtré par : {
                         selectedType === 'album' ? 'Albums' :
                         selectedType === 'enregistrement' ? 'Enregistrements' :
@@ -295,18 +272,18 @@ const Media = () => {
                       }
                     </div>
                   )}
-                
+                  
                   {searchTerm && (
                     <button
                       onClick={() => setSearchTerm('')}
-                      className="text-sm text-orange-200 hover:text-white font-medium transition-colors flex items-center space-x-2 bg-orange-900/30 backdrop-blur-sm px-4 py-2 rounded-full border border-orange-400/20 hover:bg-orange-800/40"
+                      className="text-sm text-gray-600 hover:text-primary font-medium transition-colors flex items-center space-x-2 bg-white/60 backdrop-blur-sm px-3 py-1 rounded-full border border-white/50 hover:bg-white/80"
                     >
                       <X className="h-3 w-3" />
-                      <span>Effacer la recherche</span>
+                      <span>Effacer</span>
                     </button>
                   )}
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </section>
