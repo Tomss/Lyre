@@ -811,14 +811,14 @@ const AdminPartitions = () => {
                     <p className="text-sm text-gray-600">
                       Cette action est irréversible
                     </p>
-                        {deleteConfirmation.partition.morceaux?.nom || 'Morceau inconnu'} - {deleteConfirmation.partition.instruments.name}
+                  </div>
                 </div>
                 
                 <div className="mb-6">
                   <p className="text-gray-700">
                     Êtes-vous sûr de vouloir supprimer la partition{' '}
                     <span className="font-semibold text-dark">
-                      {deleteConfirmation.partition.morceaux.nom} - {deleteConfirmation.partition.instruments.name}
+                      {deleteConfirmation.partition.morceaux?.nom || 'Morceau inconnu'} - {deleteConfirmation.partition.instruments.name}
                     </span>{' '}
                     ?
                   </p>
@@ -980,11 +980,11 @@ const AdminPartitions = () => {
                                 <Music className="h-3 w-3 mr-1" />
                                 {partition.instruments.name}
                               </span>
-                              {morceau?.arrangement && (
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getFileTypeColor(partition.file_type)}`}>
                                 {partition.file_type.toUpperCase()}
                               </span>
                             </div>
-                            {morceau?.morceau_orchestras && (
+                            
                             {partition.voice && (
                               <p className="text-sm text-gray-600 mb-2">
                                 Voie : {partition.voice}
@@ -999,7 +999,7 @@ const AdminPartitions = () => {
                               <span>
                                 Ajouté le {new Date(partition.created_at).toLocaleDateString('fr-FR')}
                               </span>
-                              {morceau?.compositeur && (
+                              {partition.profiles && (
                                 <span>Par {partition.profiles.first_name} {partition.profiles.last_name}</span>
                               )}
                             </div>
