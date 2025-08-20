@@ -903,69 +903,192 @@ const AdminPartitions = () => {
         )}
 
         {/* Filtres et recherche */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
-            {/* Recherche */}
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Search className="h-5 w-5 text-gray-400" />
-              </div>
-              <input
-                type="text"
-                placeholder="Rechercher une partition..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary w-64"
+        <div className="bg-gradient-to-br from-slate-900 via-gray-800 to-slate-900 rounded-2xl shadow-2xl border border-white/10 p-8 mb-8 relative overflow-hidden">
+          {/* Particules d'arrière-plan */}
+          <div className="absolute inset-0">
+            {[...Array(15)].map((_, i) => (
+              <div
+                key={i}
+                className="absolute w-1 h-1 bg-orange-400/20 rounded-full animate-pulse"
+                style={{
+                  left: `${Math.random() * 100}%`,
+                  top: `${Math.random() * 100}%`,
+                  animationDelay: `${Math.random() * 3}s`,
+                  animationDuration: `${2 + Math.random() * 2}s`
+                }}
               />
-              {searchTerm && (
-                <button
-                  onClick={() => setSearchTerm('')}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                >
-                  <X className="h-4 w-4 text-gray-400 hover:text-gray-600" />
-                </button>
-              )}
+            ))}
+          </div>
+          
+          <div className="relative z-10">
+            {/* Header des filtres */}
+            <div className="text-center mb-8">
+              <div className="inline-block mb-4">
+                <div className="flex items-center justify-center space-x-4 mb-4">
+                  <div className="w-12 h-0.5 bg-gradient-to-r from-transparent to-orange-400"></div>
+                  <div className="bg-gradient-to-br from-orange-400 to-amber-500 p-2 rounded-full shadow-lg">
+                    <Search className="h-6 w-6 text-white animate-pulse" />
+                  </div>
+                  <div className="w-12 h-0.5 bg-gradient-to-l from-transparent to-orange-400"></div>
+                </div>
+              </div>
+              <h3 className="font-poppins font-bold text-2xl text-white mb-2 bg-gradient-to-r from-orange-200 via-amber-200 to-orange-200 bg-clip-text text-transparent">
+                Filtres & Recherche
+              </h3>
+              <p className="text-gray-300 text-sm">Trouvez rapidement vos partitions</p>
             </div>
 
-            {/* Filtres */}
-            <div className="flex flex-wrap items-center gap-4">
-              {/* Filtre par morceau */}
-              <div className="flex items-center space-x-2">
-                <span className="text-sm font-medium text-gray-700">Morceau :</span>
-                <select
-                  value={morceauFilter}
-                  onChange={(e) => setMorceauFilter(e.target.value)}
-                  className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                >
-                  <option value="">Tous les morceaux</option>
-                  {morceaux.map((morceau) => (
-                    <option key={morceau.id} value={morceau.id}>
-                      {morceau.nom}
-                    </option>
-                  ))}
-                </select>
+            {/* Barre de recherche premium */}
+            <div className="mb-8">
+              <div className="relative max-w-md mx-auto">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <Search className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Rechercher une partition, morceau, instrument..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-12 pr-12 py-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400 text-white placeholder-gray-400 transition-all duration-300 hover:bg-white/15 text-center"
+                />
+                {searchTerm && (
+                  <button
+                    onClick={() => setSearchTerm('')}
+                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-white transition-colors"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                )}
               </div>
+            </div>
 
-              {/* Filtre par instrument */}
-              <div className="flex items-center space-x-2">
-                <span className="text-sm font-medium text-gray-700">Instruments :</span>
-                <div className="flex flex-wrap gap-1">
-                  {instruments.map((instrument) => (
+            {/* Filtres visuels */}
+            <div className="space-y-6">
+              {/* Filtre par morceau */}
+              <div>
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className="bg-gradient-to-br from-purple-400 to-indigo-500 p-2 rounded-lg shadow-md">
+                    <Music className="h-5 w-5 text-white" />
+                  </div>
+                  <h4 className="font-poppins font-semibold text-white text-lg">Filtrer par morceau</h4>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  <button
+                    onClick={() => setMorceauFilter('')}
+                    className={`inline-flex items-center space-x-2 px-4 py-3 rounded-xl font-medium transition-all duration-300 backdrop-blur-sm border ${
+                      morceauFilter === ''
+                        ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white border-orange-400/50 shadow-lg shadow-orange-500/25'
+                        : 'bg-white/10 text-gray-300 border-white/20 hover:bg-white/20 hover:text-white hover:border-white/40'
+                    }`}
+                  >
+                    <Music className="h-4 w-4" />
+                    <span>Tous les morceaux</span>
+                    <span className="bg-white/20 text-xs px-2 py-1 rounded-full">
+                      {morceaux.length}
+                    </span>
+                  </button>
+                  {morceaux.map((morceau) => (
                     <button
-                      key={instrument.id}
-                      onClick={() => toggleInstrumentFilter(instrument.id)}
-                      className={`inline-flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
-                        instrumentFilter.includes(instrument.id)
-                          ? 'bg-blue-100 text-blue-800 border border-blue-200'
-                          : 'bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200'
+                      key={morceau.id}
+                      onClick={() => setMorceauFilter(morceau.id)}
+                      className={`inline-flex items-center space-x-2 px-4 py-3 rounded-xl font-medium transition-all duration-300 backdrop-blur-sm border ${
+                        morceauFilter === morceau.id
+                          ? 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white border-purple-400/50 shadow-lg shadow-purple-500/25'
+                          : 'bg-white/10 text-gray-300 border-white/20 hover:bg-white/20 hover:text-white hover:border-white/40'
                       }`}
                     >
-                      <Music className="h-3 w-3" />
-                      <span>{instrument.name}</span>
+                      <Music className="h-4 w-4" />
+                      <div className="text-left">
+                        <div className="text-sm font-medium">{morceau.nom}</div>
+                        {morceau.compositeur && (
+                          <div className="text-xs opacity-75">{morceau.compositeur}</div>
+                        )}
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <Users className="h-3 w-3" />
+                        <span className="text-xs">{morceau.orchestras.length}</span>
+                      </div>
                     </button>
                   ))}
                 </div>
               </div>
+
+              {/* Filtre par instrument */}
+              <div>
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className="bg-gradient-to-br from-blue-400 to-cyan-500 p-2 rounded-lg shadow-md">
+                    <Music className="h-5 w-5 text-white" />
+                  </div>
+                  <h4 className="font-poppins font-semibold text-white text-lg">Filtrer par instrument</h4>
+                  <div className="flex items-center space-x-2 text-xs">
+                    <button 
+                      onClick={() => setInstrumentFilter(instruments.map(i => i.id))}
+                      className="text-blue-300 hover:text-blue-200 font-medium bg-blue-900/20 px-3 py-1 rounded-lg border border-blue-400/20 hover:bg-blue-800/30 transition-all duration-300"
+                    >
+                      Tout sélectionner
+                    </button>
+                    <span className="text-gray-400">|</span>
+                    <button 
+                      onClick={() => setInstrumentFilter([])}
+                      className="text-gray-400 hover:text-gray-300 font-medium bg-gray-900/20 px-3 py-1 rounded-lg border border-gray-400/20 hover:bg-gray-800/30 transition-all duration-300"
+                    >
+                      Tout désélectionner
+                    </button>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
+                  {instruments.map((instrument) => (
+                    <button
+                      key={instrument.id}
+                      onClick={() => toggleInstrumentFilter(instrument.id)}
+                      className={`inline-flex items-center space-x-2 px-4 py-3 rounded-xl font-medium transition-all duration-300 backdrop-blur-sm border text-center justify-center ${
+                        instrumentFilter.includes(instrument.id)
+                          ? 'bg-gradient-to-r from-blue-500 to-cyan-600 text-white border-blue-400/50 shadow-lg shadow-blue-500/25 scale-105'
+                          : 'bg-white/10 text-gray-300 border-white/20 hover:bg-white/20 hover:text-white hover:border-white/40 hover:scale-105'
+                      }`}
+                    >
+                      <Music className="h-4 w-4" />
+                      <span className="text-sm font-medium">{instrument.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Informations et actions */}
+            <div className="flex flex-col sm:flex-row items-center justify-between mt-8 pt-6 border-t border-white/10">
+              <div className="flex items-center space-x-4 text-sm text-gray-300 mb-4 sm:mb-0">
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-orange-400 rounded-full animate-pulse"></div>
+                  <span>{filteredPartitions.length} partition{filteredPartitions.length > 1 ? 's' : ''}</span>
+                </div>
+                {(morceauFilter || instrumentFilter.length > 0 || searchTerm) && (
+                  <div className="flex items-center space-x-2">
+                    <div className="w-1 h-4 bg-white/20 rounded-full"></div>
+                    <span className="text-orange-200">
+                      {morceauFilter && `Morceau: ${morceaux.find(m => m.id === morceauFilter)?.nom}`}
+                      {morceauFilter && instrumentFilter.length > 0 && ' • '}
+                      {instrumentFilter.length > 0 && `${instrumentFilter.length} instrument${instrumentFilter.length > 1 ? 's' : ''}`}
+                      {(morceauFilter || instrumentFilter.length > 0) && searchTerm && ' • '}
+                      {searchTerm && `"${searchTerm}"`}
+                    </span>
+                  </div>
+                )}
+              </div>
+              
+              {(morceauFilter || instrumentFilter.length > 0 || searchTerm) && (
+                <button
+                  onClick={() => {
+                    setMorceauFilter('');
+                    setInstrumentFilter([]);
+                    setSearchTerm('');
+                  }}
+                  className="inline-flex items-center space-x-2 text-sm text-orange-300 hover:text-orange-200 font-medium transition-colors bg-orange-900/20 backdrop-blur-sm px-4 py-2 rounded-xl border border-orange-400/20 hover:bg-orange-800/30"
+                >
+                  <X className="h-3 w-3" />
+                  <span>Réinitialiser tous les filtres</span>
+                </button>
+              )}
             </div>
           </div>
         </div>
