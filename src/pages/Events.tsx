@@ -191,7 +191,7 @@ const Events = () => {
                     </div>
                   </div>
                   <h2 className="font-poppins font-bold text-5xl md:text-6xl text-white mb-6 bg-gradient-to-r from-orange-200 via-amber-200 to-orange-200 bg-clip-text text-transparent">
-                    📅 Calendrier Musical
+                    Calendrier Musical
                   </h2>
                   <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
                     Découvrez notre programmation artistique dans un calendrier interactif élégant
@@ -235,6 +235,7 @@ const Events = () => {
                     
                     <div className="relative z-10 flex items-center justify-between">
                       <div className="flex items-center space-x-6">
+                        <Calendar className="h-8 w-8 text-orange-400 animate-pulse" />
                         <div>
                           <h3 className="font-poppins font-bold text-2xl mb-2">Nos Rendez-vous Musicaux</h3>
                           <p className="text-gray-300 text-lg">Chaque note compte, chaque moment est unique</p>
