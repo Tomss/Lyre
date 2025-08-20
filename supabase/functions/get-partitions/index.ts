@@ -31,7 +31,13 @@ Deno.serve(async (req: Request) => {
           id,
           nom,
           compositeur,
-          arrangement
+          arrangement,
+          morceau_orchestras (
+            orchestras (
+              id,
+              name
+            )
+          )
         ),
         instruments (
           id,
@@ -56,8 +62,17 @@ Deno.serve(async (req: Request) => {
       throw error;
     }
 
+    // Format the data to include orchestras in morceaux
+    const formattedPartitions = partitions?.map(partition => ({
+      ...partition,
+      morceaux: {
+        ...partition.morceaux,
+        orchestras: partition.morceaux.morceau_orchestras?.map(mo => mo.orchestras).filter(Boolean) || []
+      }
+    })) || [];
+
     return new Response(
-      JSON.stringify(partitions || []),
+      JSON.stringify(formattedPartitions),
       {
         headers: {
           'Content-Type': 'application/json',

@@ -19,6 +19,7 @@ interface Partition {
     nom: string;
     compositeur: string | null;
     arrangement: string | null;
+    orchestras?: Orchestra[];
   };
   instruments: {
     id: string;
@@ -34,6 +35,11 @@ interface Morceau {
 }
 
 interface Instrument {
+  id: string;
+  name: string;
+}
+
+interface Orchestra {
   id: string;
   name: string;
 }
@@ -54,7 +60,11 @@ const AdminPartitions = () => {
   const [partitions, setPartitions] = useState<Partition[]>([]);
   const [morceaux, setMorceaux] = useState<Morceau[]>([]);
   const [instruments, setInstruments] = useState<Instrument[]>([]);
+  const [orchestras, setOrchestras] = useState<Orchestra[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [orchestraFilter, setOrchestraFilter] = useState<string[]>([]);
+  const [morceauFilter, setMorceauFilter] = useState<string[]>([]);
+  const [instrumentFilter, setInstrumentFilter] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingPartition, setEditingPartition] = useState<Partition | null>(null);
@@ -152,11 +162,34 @@ const AdminPartitions = () => {
     }
   };
 
+  // Récupérer tous les orchestres
+  const fetchOrchestras = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-orchestras`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setOrchestras(data || []);
+    } catch (err) {
+      console.error('Erreur lors de la récupération des orchestres:', err);
+    }
+  };
+
   useEffect(() => {
     if (profile?.role === 'Admin' || profile?.role === 'Gestionnaire') {
       fetchPartitions();
       fetchMorceaux();
       fetchInstruments();
+      fetchOrchestras();
     }
   }, [profile]);
 
@@ -404,15 +437,63 @@ const AdminPartitions = () => {
     setFilePreview(null);
   };
 
+  // Fonctions de filtrage
+  const toggleOrchestraFilter = (orchestraId: string) => {
+    setOrchestraFilter(prev => 
+      prev.includes(orchestraId) 
+        ? prev.filter(id => id !== orchestraId)
+        : [...prev, orchestraId]
+    );
+  };
+
+  const toggleMorceauFilter = (morceauId: string) => {
+    setMorceauFilter(prev => 
+      prev.includes(morceauId) 
+        ? prev.filter(id => id !== morceauId)
+        : [...prev, morceauId]
+    );
+  };
+
+  const toggleInstrumentFilter = (instrumentId: string) => {
+    setInstrumentFilter(prev => 
+      prev.includes(instrumentId) 
+        ? prev.filter(id => id !== instrumentId)
+        : [...prev, instrumentId]
+    );
+  };
+
+  const clearAllFilters = () => {
+    setOrchestraFilter([]);
+    setMorceauFilter([]);
+    setInstrumentFilter([]);
+    setSearchTerm('');
+  };
+
   // Filtrer les partitions
   const filteredPartitions = partitions.filter(partition => {
     const searchLower = searchTerm.toLowerCase();
-    return (
+    const matchesSearch = (
       partition.nom.toLowerCase().includes(searchLower) ||
       partition.morceaux.nom.toLowerCase().includes(searchLower) ||
       partition.instruments.name.toLowerCase().includes(searchLower) ||
       (partition.morceaux.compositeur && partition.morceaux.compositeur.toLowerCase().includes(searchLower))
     );
+    
+    // Filtrer par orchestre (via le morceau)
+    const matchesOrchestra = orchestraFilter.length === 0 || 
+      orchestraFilter.some(orchestraId => 
+        partition.morceaux.orchestras?.some(o => o.id === orchestraId)
+      );
+    
+    // Filtrer par morceau
+    const matchesMorceau = morceauFilter.length === 0 || 
+      morceauFilter.includes(partition.morceau_id);
+    
+    // Filtrer par instrument
+    const matchesInstrument = instrumentFilter.length === 0 || 
+      instrumentFilter.includes(partition.instrument_id);
+    
+    return matchesSearch && matchesOrchestra && matchesMorceau && matchesInstrument;
   });
 
   const openFile = (partition: Partition) => {
@@ -714,7 +795,7 @@ const AdminPartitions = () => {
         {/* Liste des partitions */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="p-6 border-b border-gray-100">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mb-6">
               <h3 className="font-poppins font-semibold text-lg text-dark">
                 Liste des partitions
               </h3>
@@ -735,6 +816,102 @@ const AdminPartitions = () => {
                     className="absolute inset-y-0 right-0 pr-3 flex items-center"
                   >
                     <X className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                  </button>
+                )}
+              </div>
+            </div>
+            
+            {/* Filtres dynamiques */}
+            <div className="space-y-4">
+              {/* Filtres par orchestre */}
+              <div>
+                <h4 className="text-sm font-medium text-gray-700 mb-3 flex items-center space-x-2">
+                  <Users className="h-4 w-4 text-gray-500" />
+                  <span>Filtrer par orchestre :</span>
+                </h4>
+                <div className="flex flex-wrap gap-2">
+                  {orchestras.map((orchestra) => (
+                    <button
+                      key={orchestra.id}
+                      onClick={() => toggleOrchestraFilter(orchestra.id)}
+                      className={`inline-flex items-center space-x-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
+                        orchestraFilter.includes(orchestra.id)
+                          ? 'bg-blue-100 text-blue-800 border border-blue-200 shadow-sm'
+                          : 'bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200'
+                      }`}
+                    >
+                      <Users className="h-3 w-3" />
+                      <span>{orchestra.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Filtres par morceau */}
+              <div>
+                <h4 className="text-sm font-medium text-gray-700 mb-3 flex items-center space-x-2">
+                  <Music className="h-4 w-4 text-gray-500" />
+                  <span>Filtrer par morceau :</span>
+                </h4>
+                <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
+                  {morceaux.map((morceau) => (
+                    <button
+                      key={morceau.id}
+                      onClick={() => toggleMorceauFilter(morceau.id)}
+                      className={`inline-flex items-center space-x-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
+                        morceauFilter.includes(morceau.id)
+                          ? 'bg-green-100 text-green-800 border border-green-200 shadow-sm'
+                          : 'bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200'
+                      }`}
+                    >
+                      <Music className="h-3 w-3" />
+                      <span>{morceau.nom}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Filtres par instrument */}
+              <div>
+                <h4 className="text-sm font-medium text-gray-700 mb-3 flex items-center space-x-2">
+                  <Music2 className="h-4 w-4 text-gray-500" />
+                  <span>Filtrer par instrument :</span>
+                </h4>
+                <div className="flex flex-wrap gap-2">
+                  {instruments.map((instrument) => (
+                    <button
+                      key={instrument.id}
+                      onClick={() => toggleInstrumentFilter(instrument.id)}
+                      className={`inline-flex items-center space-x-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
+                        instrumentFilter.includes(instrument.id)
+                          ? 'bg-purple-100 text-purple-800 border border-purple-200 shadow-sm'
+                          : 'bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200'
+                      }`}
+                    >
+                      <Music2 className="h-3 w-3" />
+                      <span>{instrument.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Actions de filtrage */}
+              <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+                <div className="flex items-center space-x-4 text-sm text-gray-500">
+                  <span>{filteredPartitions.length} partition{filteredPartitions.length > 1 ? 's' : ''} trouvée{filteredPartitions.length > 1 ? 's' : ''}</span>
+                  {(orchestraFilter.length > 0 || morceauFilter.length > 0 || instrumentFilter.length > 0 || searchTerm) && (
+                    <span className="text-orange-600">
+                      • Filtres actifs
+                    </span>
+                  )}
+                </div>
+                {(orchestraFilter.length > 0 || morceauFilter.length > 0 || instrumentFilter.length > 0 || searchTerm) && (
+                  <button
+                    onClick={clearAllFilters}
+                    className="inline-flex items-center space-x-2 text-sm text-red-600 hover:text-red-700 font-medium transition-colors bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg border border-red-200"
+                  >
+                    <X className="h-3 w-3" />
+                    <span>Réinitialiser tous les filtres</span>
                   </button>
                 )}
               </div>
