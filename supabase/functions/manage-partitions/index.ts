@@ -10,7 +10,7 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const { action, id, title, morceau_id, instrument_id, voice, file_name, file_path, file_type, file_size, mime_type } = await req.json();
+    const { action, id, title, morceau_id, instrument_id, file_name, file_path, file_type, file_size, mime_type } = await req.json();
     
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
@@ -36,7 +36,6 @@ Deno.serve(async (req: Request) => {
             title,
             morceau_id,
             instrument_id, 
-            voice, 
             file_name, 
             file_path, 
             file_type, 
@@ -72,8 +71,7 @@ Deno.serve(async (req: Request) => {
         const updateData: any = { 
           title,
           morceau_id,
-          instrument_id, 
-          voice
+          instrument_id
         };
 
         // Ajouter les données du fichier seulement si un nouveau fichier est fourni

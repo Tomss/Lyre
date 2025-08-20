@@ -7,7 +7,6 @@ import { supabase } from '../supabaseClient';
 interface Partition {
   id: string;
   title: string;
-  voice: string | null;
   file_name: string;
   file_path: string;
   file_type: 'pdf' | 'image';
@@ -99,10 +98,8 @@ const AdminPartitions = () => {
     type: 'success',
   });
   const [formData, setFormData] = useState({
-    orchestra_ids: [] as string[],
     morceau_id: selectedMorceauId || '',
     instrument_id: '',
-    voice: '',
     title: '',
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -219,15 +216,6 @@ const AdminPartitions = () => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleOrchestraChange = (orchestraId: string, checked: boolean) => {
-    setFormData(prev => ({
-      ...prev,
-      orchestra_ids: checked 
-        ? [...prev.orchestra_ids, orchestraId]
-        : prev.orchestra_ids.filter(id => id !== orchestraId)
-    }));
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -447,13 +435,10 @@ const AdminPartitions = () => {
     }
     
     setEditingPartition(partition);
-    // Récupérer tous les orchestres du morceau pour pré-remplir le formulaire
-    const morceauOrchestras = partition.orchestras?.map(o => o.id) || [];
     setFormData({
-      orchestra_ids: morceauOrchestras,
       morceau_id: partition.morceaux.id,
       instrument_id: partition.instruments.id,
-      voice: partition.voice || '',
+      title: partition.title,
     });
     setSelectedFile(null);
     setFilePreview(null);
@@ -464,10 +449,8 @@ const AdminPartitions = () => {
     setEditingPartition(null);
     setShowAddForm(false);
     setFormData({
-      orchestra_ids: [],
       morceau_id: selectedMorceauId || '',
       instrument_id: '',
-      voice: '',
       title: '',
     });
     setSelectedFile(null);
@@ -498,7 +481,7 @@ const AdminPartitions = () => {
     const searchLower = searchTerm.toLowerCase();
     const matchesSearch = (
       partition.morceaux?.nom?.toLowerCase().includes(searchLower) ||
-      (partition.voice && partition.voice.toLowerCase().includes(searchLower)) ||
+      partition.title.toLowerCase().includes(searchLower) ||
       partition.instruments.name.toLowerCase().includes(searchLower) ||
       (partition.morceaux?.compositeur && partition.morceaux.compositeur.toLowerCase().includes(searchLower)) ||
       (partition.morceaux?.arrangement && partition.morceaux.arrangement.toLowerCase().includes(searchLower))
@@ -623,28 +606,6 @@ const AdminPartitions = () => {
                 </div>
 
                 <form onSubmit={editingPartition ? handleUpdate : handleCreate} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-dark mb-2">
-                      Orchestres (pour filtrer les morceaux)
-                    </label>
-                    <div className="grid grid-cols-1 gap-2 max-h-40 overflow-y-auto border border-gray-200 rounded-lg p-3">
-                      {orchestras.map((orchestra) => (
-                        <label key={orchestra.id} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
-                          <input
-                            type="checkbox"
-                            checked={formData.orchestra_ids.includes(orchestra.id)}
-                            onChange={(e) => handleOrchestraChange(orchestra.id, e.target.checked)}
-                            className="rounded border-gray-300 text-primary focus:ring-primary"
-                          />
-                          <span className="text-sm text-gray-700">{orchestra.name}</span>
-                        </label>
-                      ))}
-                    </div>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Sélectionnez au moins un orchestre pour voir ses morceaux
-                    </p>
-                  </div>
-
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-dark mb-2">
@@ -656,14 +617,9 @@ const AdminPartitions = () => {
                         onChange={handleInputChange}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                         required
-                        disabled={formData.orchestra_ids.length === 0}
                       >
-                        <option value="">
-                          {formData.orchestra_ids.length === 0 ? 'Sélectionnez d\'abord un orchestre' : 'Sélectionner un morceau'}
-                        </option>
-                        {morceaux
-                          .filter(morceau => formData.orchestra_ids.length === 0 || morceau.orchestras.some(o => formData.orchestra_ids.includes(o.id)))
-                          .map((morceau) => (
+                        <option value="">Sélectionner un morceau</option>
+                        {morceaux.map((morceau) => (
                           <option key={morceau.id} value={morceau.id}>
                             {morceau.nom} {morceau.compositeur && `- ${morceau.compositeur}`}
                           </option>
@@ -706,20 +662,6 @@ const AdminPartitions = () => {
                      required
                    />
                  </div>
-
-                 <div>
-                   <label className="block text-sm font-medium text-dark mb-2">
-                      Voie (optionnel)
-                    </label>
-                    <textarea
-                      name="voice"
-                      value={formData.voice}
-                      onChange={handleInputChange}
-                      rows={2}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary resize-none"
-                      placeholder="Ex: 1ère voix, Solo, Accompagnement..."
-                    />
-                  </div>
 
                   <div>
                     <label className="block text-sm font-medium text-dark mb-2">
@@ -794,7 +736,7 @@ const AdminPartitions = () => {
                   <div className="flex space-x-3 pt-4">
                     <button
                       type="submit"
-                      disabled={loading || formData.orchestra_ids.length === 0}
+                      disabled={loading}
                       className="flex-1 bg-primary hover:bg-primary/90 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 disabled:opacity-50"
                     >
                       {loading ? 'En cours...' : (editingPartition ? 'Mettre à jour' : 'Créer')}
@@ -1003,11 +945,9 @@ const AdminPartitions = () => {
                               </span>
                             </div>
                             
-                            {partition.voice && (
-                              <p className="text-sm text-gray-600 mb-2">
-                                Voie : {partition.voice}
-                              </p>
-                            )}
+                            <h4 className="font-medium text-gray-800 mb-2">
+                              {partition.title}
+                            </h4>
                             
                             <div className="flex items-center space-x-4 text-sm text-gray-500 mb-2">
                               <span className="flex items-center space-x-1">
