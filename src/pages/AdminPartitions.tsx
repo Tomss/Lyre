@@ -694,6 +694,21 @@ const AdminPartitions = () => {
 
                   <div>
                     <label className="block text-sm font-medium text-dark mb-2">
+                     Titre de la partition
+                   </label>
+                   <input
+                     type="text"
+                     name="title"
+                     value={formData.title}
+                     onChange={handleInputChange}
+                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                     placeholder="Ex: Partition principale, Solo, etc."
+                     required
+                   />
+                 </div>
+
+                 <div>
+                   <label className="block text-sm font-medium text-dark mb-2">
                       Voie (optionnel)
                     </label>
                     <textarea
