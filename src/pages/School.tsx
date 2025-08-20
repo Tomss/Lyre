@@ -86,11 +86,13 @@ const School = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto animate-fade-in relative z-10">
             <h1 className="font-poppins font-bold text-3xl md:text-4xl text-white mb-8 text-center">
+            <h1 className="font-poppins font-bold text-4xl md:text-5xl text-white mb-8 text-center">
               L'école de musique
             </h1>
             
             {/* Description principale */}
             <div className="mb-12">
+              <p className="font-inter text-base text-white/90 leading-relaxed mb-8">
               <p className="font-inter text-base text-white/90 leading-relaxed mb-8">
                 L'école propose une formation musicale du niveau Éveil au niveau Supérieur, par des professeurs diplômés de Conservatoires à Rayonnement Régional ou possédant un niveau équivalent.
               </p>
@@ -130,6 +132,7 @@ const School = () => {
               </div>
             </div>
             <h2 className="font-poppins font-bold text-4xl md:text-5xl text-white mb-6 bg-gradient-to-r from-orange-200 via-amber-200 to-orange-200 bg-clip-text text-transparent">
+            <h2 className="font-poppins font-bold text-5xl md:text-6xl text-white mb-6 bg-gradient-to-r from-orange-200 via-amber-200 to-orange-200 bg-clip-text text-transparent">
               Nos classes d'instruments
             </h2>
             <p className="font-inter text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
@@ -140,7 +143,7 @@ const School = () => {
           {instrumentsLoading ? (
             <div className="text-center py-12 relative z-10">
               <div className="animate-spin rounded-full h-12 w-12 border-4 border-amber-400/30 border-t-amber-400 mx-auto mb-4"></div>
-              <p className="text-gray-300 text-lg">Chargement de nos instruments...</p>
+              <p className="text-gray-300 text-xl">Chargement de nos instruments...</p>
             </div>
           ) : instruments.length > 0 ? (
             <div className="relative z-10">
@@ -187,7 +190,7 @@ const School = () => {
                   
                   {/* Informations sous l'hexagone */}
                   <div className="mt-6 text-center">
-                    <h3 className="font-poppins font-bold text-lg text-white mb-2 group-hover:text-orange-200 transition-colors duration-300">
+                    <h3 className="font-poppins font-bold text-xl text-white mb-2 group-hover:text-orange-200 transition-colors duration-300">
                       {instrument.name}
                     </h3>
                     
@@ -200,7 +203,7 @@ const School = () => {
                     )}
                     
                     {instrument.description && (
-                      <p className="text-xs text-gray-400 leading-tight line-clamp-2 max-w-32 mx-auto">
+                      <p className="text-sm text-gray-400 leading-tight line-clamp-2 max-w-32 mx-auto">
                         {instrument.description.length > 50 
                           ? `${instrument.description.substring(0, 50)}...` 
                           : instrument.description
@@ -209,7 +212,7 @@ const School = () => {
                     )}
                     
                     {!instrument.teacher && !instrument.description && (
-                      <p className="text-xs text-gray-500 italic">
+                      <p className="text-sm text-gray-500 italic">
                         Informations à venir
                       </p>
                     )}
@@ -235,6 +238,7 @@ const School = () => {
               <div className="text-center mt-16 animate-fade-in">
                 <div className="bg-gradient-to-r from-orange-900/20 via-amber-900/20 to-orange-900/20 backdrop-blur-sm rounded-2xl p-8 max-w-2xl mx-auto border border-orange-400/15">
                   <h3 className="font-poppins font-bold text-xl text-orange-200 mb-4">
+                  <h3 className="font-poppins font-bold text-xl text-orange-200 mb-4">
                     🎵 Trouvez votre instrument !
                   </h3>
                   <p className="text-sm text-gray-300 leading-relaxed">
@@ -257,7 +261,7 @@ const School = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12 animate-fade-in">
-              <h2 className="font-poppins font-bold text-2xl md:text-3xl text-dark mb-4">
+              <h2 className="font-poppins font-bold text-3xl md:text-4xl text-dark mb-4">
                 Nos Orchestres
               </h2>
               <p className="font-inter text-base text-gray-600 max-w-2xl mx-auto">
@@ -295,7 +299,7 @@ const School = () => {
                     <div className="animate-fade-in">
                       {/* Titre centré */}
                       <div className="text-center mb-8">
-                        <h3 className="font-poppins font-bold text-2xl text-dark mb-2">
+                        <h3 className="font-poppins font-bold text-3xl text-dark mb-2">
                           {selectedOrchestra.name}
                         </h3>
                         <div className="h-1 w-16 bg-gradient-to-r from-orange-500 to-amber-500 rounded-full mx-auto mb-6"></div>
@@ -348,6 +352,7 @@ const School = () => {
                 <Users className="h-8 w-8 text-white" />
               </div>
               <h3 className="font-poppins font-semibold text-xl text-dark mb-4">
+              <h3 className="font-poppins font-semibold text-xl text-dark mb-4">
                 Communauté
               </h3>
               <p className="font-inter text-sm text-gray-600">
@@ -359,6 +364,7 @@ const School = () => {
                 <Award className="h-8 w-8 text-white" />
               </div>
               <h3 className="font-poppins font-semibold text-xl text-dark mb-4">
+              <h3 className="font-poppins font-semibold text-xl text-dark mb-4">
                 Excellence
               </h3>
               <p className="font-inter text-sm text-gray-600">
@@ -369,6 +375,7 @@ const School = () => {
               <div className="bg-gradient-to-br from-purple-400 to-indigo-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
                 <Music className="h-8 w-8 text-white" />
               </div>
+              <h3 className="font-poppins font-semibold text-xl text-dark mb-4">
               <h3 className="font-poppins font-semibold text-xl text-dark mb-4">
                 Passion
               </h3>

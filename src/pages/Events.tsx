@@ -107,9 +107,9 @@ const Events = () => {
         }}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center animate-fade-in relative z-10">
-            <h1 className="font-poppins font-bold text-3xl md:text-4xl text-white mb-6">Nos Événements</h1>
+            <h1 className="font-poppins font-bold text-4xl md:text-5xl text-white mb-6">Nos Événements</h1>
             {loading ? (
-              <div className="flex items-center justify-center space-x-3 text-white/80">
+              <div className="flex items-center justify-center space-x-3 text-white/90">
                 <div className="animate-spin rounded-full h-6 w-6 border-2 border-white/30 border-t-white"></div>
                 <span>Chargement de notre calendrier musical...</span>
               </div>
@@ -309,7 +309,7 @@ const Events = () => {
                                 {/* Détails de l'événement */}
                                 <div className="flex-1 min-w-0 text-center sm:text-left">
                                   <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 mb-3">
-                                    <h4 className={`font-poppins font-bold text-lg sm:text-xl ${
+                                    <h4 className={`font-poppins font-bold text-xl sm:text-2xl ${
                                       isNext && !isPastEvent ? 'text-orange-800' : isSecond && !isPastEvent ? 'text-slate-800' : isPastEvent ? 'text-gray-700' : 'text-gray-800'
                                     }`}>
                                       {event.title}
@@ -395,7 +395,7 @@ const Events = () => {
                         <div className="bg-gradient-to-br from-gray-100 to-slate-100 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6 shadow-lg">
                           <Calendar className="h-12 w-12 text-gray-400" />
                         </div>
-                        <h3 className="font-poppins font-bold text-lg text-gray-800 mb-3">Calendrier en préparation</h3>
+                        <h3 className="font-poppins font-bold text-xl text-gray-800 mb-3">Calendrier en préparation</h3>
                         <p className="text-sm text-gray-600 max-w-md mx-auto leading-relaxed">
                           Notre équipe artistique travaille actuellement sur la programmation de nos prochains concerts. 
                           Revenez bientôt pour découvrir nos dates !
@@ -428,7 +428,7 @@ const Events = () => {
           <div className="max-w-4xl mx-auto text-center">
             <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border border-white/50">
               <div className="bg-gradient-to-br from-slate-500 to-gray-600 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-8 shadow-lg"><Music className="h-10 w-10 text-white" /></div>
-              <h2 className="font-poppins font-bold text-2xl text-gray-800 mb-6">Rejoignez-nous</h2>
+              <h2 className="font-poppins font-bold text-3xl text-gray-800 mb-6">Rejoignez-nous</h2>
               <p className="font-inter text-base text-gray-600 leading-relaxed mb-6">
                 Chaque concert est une nouvelle page de notre histoire musicale. Venez partager ces moments d'émotion et de partage avec La Lyre Cheminote et Municipale de Chalindrey.
               </p>
