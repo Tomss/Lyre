@@ -84,7 +84,6 @@ const AdminPartitions = () => {
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
-  const [isDuplicate, setIsDuplicate] = useState(false);
 
   // Fonction pour afficher une notification
   const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
@@ -197,25 +196,8 @@ const AdminPartitions = () => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    
-    // Vérifier les doublons lors de la création
-    if (!editingPartition && (name === 'morceau_id' || name === 'instrument_id')) {
-      const newFormData = { ...formData, [name]: value };
-      checkForDuplicate(newFormData.morceau_id, newFormData.instrument_id);
-    }
   };
 
-  // Vérifier si une partition existe déjà pour ce morceau + instrument
-  const checkForDuplicate = (morceauId: string, instrumentId: string) => {
-    if (morceauId && instrumentId) {
-      const exists = partitions.some(partition => 
-        partition.morceau_id === morceauId && partition.instrument_id === instrumentId
-      );
-      setIsDuplicate(exists);
-    } else {
-      setIsDuplicate(false);
-    }
-  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -454,7 +436,6 @@ const AdminPartitions = () => {
     });
     setSelectedFile(null);
     setFilePreview(null);
-    setIsDuplicate(false);
   };
 
   // Fonctions de filtrage
@@ -666,21 +647,6 @@ const AdminPartitions = () => {
                     </div>
                   </div>
 
-                  {/* Message d'avertissement pour les doublons */}
-                  {isDuplicate && !editingPartition && (
-                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                      <div className="flex items-center space-x-2">
-                        <X className="h-5 w-5 text-red-600" />
-                        <span className="text-red-800 font-medium">
-                          Une partition existe déjà pour ce morceau et cet instrument
-                        </span>
-                      </div>
-                      <p className="text-red-700 text-sm mt-1">
-                        Veuillez choisir une autre combinaison morceau/instrument.
-                      </p>
-                    </div>
-                  )}
-
                   <div>
                     <label className="block text-sm font-medium text-dark mb-3">
                       Fichier partition (PDF ou image)
@@ -759,7 +725,7 @@ const AdminPartitions = () => {
                   <div className="flex space-x-3 pt-4">
                     <button
                       type="submit"
-                      disabled={loading || (isDuplicate && !editingPartition)}
+                      disabled={loading}
                       className="flex-1 bg-primary hover:bg-primary/90 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 disabled:opacity-50"
                     >
                       {loading ? 'En cours...' : (editingPartition ? 'Mettre à jour' : 'Créer')}
