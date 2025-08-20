@@ -543,13 +543,13 @@ const Media = () => {
       </section>
 
       {/* Section d'appel à contribution */}
-      <section className="py-20 bg-gradient-to-br from-emerald-25 via-teal-25 to-cyan-25 relative overflow-hidden">
+      <section className="py-20 bg-gradient-to-br from-orange-25 via-amber-25 to-yellow-25 relative overflow-hidden">
         {/* Particules d'arrière-plan */}
         <div className="absolute inset-0">
           {[...Array(15)].map((_, i) => (
             <div
               key={i}
-              className="absolute w-2 h-2 bg-teal-400/15 rounded-full animate-pulse"
+              className="absolute w-2 h-2 bg-orange-400/15 rounded-full animate-pulse"
               style={{
                 left: `${Math.random() * 100}%`,
                 top: `${Math.random() * 100}%`,
@@ -561,23 +561,23 @@ const Media = () => {
         </div>
         
         {/* Formes géométriques décoratives */}
-        <div className="absolute top-10 left-10 w-32 h-32 border border-teal-400/10 rounded-full"></div>
-        <div className="absolute bottom-20 right-20 w-24 h-24 border-2 border-cyan-600/20 rounded-lg rotate-45"></div>
-        <div className="absolute top-1/2 right-1/4 w-16 h-16 bg-gradient-to-br from-teal-400/5 to-cyan-500/5 rounded-full"></div>
+        <div className="absolute top-10 left-10 w-32 h-32 border border-orange-400/10 rounded-full"></div>
+        <div className="absolute bottom-20 right-20 w-24 h-24 border-2 border-amber-600/20 rounded-lg rotate-45"></div>
+        <div className="absolute top-1/2 right-1/4 w-16 h-16 bg-gradient-to-br from-orange-400/5 to-amber-500/5 rounded-full"></div>
         
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12 animate-fade-in">
               <div className="inline-block mb-8">
                 <div className="flex items-center justify-center space-x-4 mb-6">
-                  <div className="w-16 h-0.5 bg-gradient-to-r from-transparent via-teal-400 to-teal-400"></div>
-                  <div className="bg-gradient-to-br from-teal-400 to-cyan-500 p-3 rounded-full shadow-lg">
+                  <div className="w-16 h-0.5 bg-gradient-to-r from-transparent via-orange-400 to-orange-400"></div>
+                  <div className="bg-gradient-to-br from-orange-400 to-amber-500 p-3 rounded-full shadow-lg">
                     <Camera className="h-8 w-8 text-white animate-pulse" />
                   </div>
-                  <div className="w-16 h-0.5 bg-gradient-to-l from-transparent via-teal-400 to-teal-400"></div>
+                  <div className="w-16 h-0.5 bg-gradient-to-l from-transparent via-orange-400 to-orange-400"></div>
                 </div>
               </div>
-              <h2 className="font-poppins font-bold text-5xl md:text-6xl text-dark mb-6 bg-gradient-to-r from-teal-600 via-cyan-600 to-teal-600 bg-clip-text text-transparent">
+              <h2 className="font-poppins font-bold text-3xl md:text-4xl text-dark mb-6 bg-gradient-to-r from-orange-600 via-amber-600 to-orange-600 bg-clip-text text-transparent">
                 Partagez vos souvenirs !
               </h2>
               <p className="text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed mb-8">
@@ -593,24 +593,24 @@ const Media = () => {
               <div className="relative z-10">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
                   <div className="text-center">
-                    <div className="bg-gradient-to-br from-blue-100 to-indigo-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300">
-                      <Camera className="h-10 w-10 text-blue-600" />
+                    <div className="bg-gradient-to-br from-orange-100 to-amber-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                      <Camera className="h-10 w-10 text-orange-600" />
                     </div>
                     <h3 className="font-poppins font-semibold text-lg text-dark mb-2">Photos & Vidéos</h3>
                     <p className="text-sm text-gray-600">Concerts, répétitions, moments de convivialité</p>
                   </div>
                   
                   <div className="text-center">
-                    <div className="bg-gradient-to-br from-green-100 to-emerald-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300">
-                      <Music className="h-10 w-10 text-green-600" />
+                    <div className="bg-gradient-to-br from-amber-100 to-yellow-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                      <Music className="h-10 w-10 text-amber-600" />
                     </div>
                     <h3 className="font-poppins font-semibold text-lg text-dark mb-2">Enregistrements</h3>
                     <p className="text-sm text-gray-600">Captations audio de nos performances</p>
                   </div>
                   
                   <div className="text-center">
-                    <div className="bg-gradient-to-br from-yellow-100 to-amber-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300">
-                      <FileText className="h-10 w-10 text-yellow-600" />
+                    <div className="bg-gradient-to-br from-orange-100 to-red-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                      <FileText className="h-10 w-10 text-red-600" />
                     </div>
                     <h3 className="font-poppins font-semibold text-lg text-dark mb-2">Articles de Presse</h3>
                     <p className="text-sm text-gray-600">Coupures de journaux, interviews</p>
@@ -625,7 +625,7 @@ const Media = () => {
                   
                   <Link
                     to="/contact"
-                    className="inline-flex items-center space-x-3 bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 text-white font-bold px-8 py-4 rounded-2xl transition-all duration-300 hover:-translate-y-1 hover:shadow-xl shadow-lg group/btn"
+                    className="inline-flex items-center space-x-3 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white font-bold px-8 py-4 rounded-2xl transition-all duration-300 hover:-translate-y-1 hover:shadow-xl shadow-lg group/btn"
                   >
                     <span className="text-lg">Nous contacter</span>
                     <div className="bg-white/20 p-2 rounded-full group-hover/btn:bg-white/30 transition-colors duration-300">
