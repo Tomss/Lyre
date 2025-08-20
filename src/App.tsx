@@ -17,8 +17,6 @@ import AdminOrchestras from './pages/AdminOrchestras'; // Importer la page d'adm
 import AdminEvents from './pages/AdminEvents'; // Importer la page d'administration des événements
 import UserEvents from './pages/UserEvents'; // Importer la page des événements utilisateur
 import AdminMedia from './pages/AdminMedia'; // Importer la page d'administration des médias
-import AdminPartitions from './pages/AdminPartitions'; // Importer la page d'administration des partitions
-import UserPartitions from './pages/UserPartitions'; // Importer la page des partitions utilisateur
 import AdminMorceaux from './pages/AdminMorceaux'; // Importer la page d'administration des morceaux
 
 function App() {
@@ -41,8 +39,6 @@ function App() {
           <Route path="/admin/events" element={<AdminEvents />} /> {/* Route pour l'administration des événements */}
           <Route path="/user/events" element={<UserEvents />} /> {/* Route pour les événements utilisateur */}
           <Route path="/admin/media" element={<AdminMedia />} /> {/* Route pour l'administration des médias */}
-          <Route path="/admin/partitions" element={<AdminPartitions />} /> {/* Route pour l'administration des partitions */}
-          <Route path="/user/partitions" element={<UserPartitions />} /> {/* Route pour les partitions utilisateur */}
           <Route path="/admin/morceaux" element={<AdminMorceaux />} /> {/* Route pour l'administration des morceaux */}
         </Routes>
       </main>

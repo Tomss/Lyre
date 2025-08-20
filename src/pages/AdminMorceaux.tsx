@@ -1,5 +1,5 @@
 import React, { useState, useEffect, FormEvent } from 'react';
-import { Edit, Trash2, Plus, Music, Search, X, CheckCircle, ArrowLeft, Users } from 'lucide-react';
+import { Edit, Trash2, Plus, Music, Search, X, CheckCircle, ArrowLeft, Users, Calendar } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Navigate, Link } from 'react-router-dom';
 
@@ -8,6 +8,7 @@ interface Morceau {
   nom: string;
   compositeur: string | null;
   arrangement: string | null;
+  annees: string[];
   created_at: string;
   orchestras: Orchestra[];
 }
@@ -49,6 +50,7 @@ const AdminMorceaux = () => {
     nom: '',
     compositeur: '',
     arrangement: '',
+    annees: [] as string[],
     orchestra_ids: [] as string[],
   });
 
@@ -125,6 +127,15 @@ const AdminMorceaux = () => {
       orchestra_ids: checked 
         ? [...prev.orchestra_ids, orchestraId]
         : prev.orchestra_ids.filter(id => id !== orchestraId)
+    }));
+  };
+
+  const handleAnneeChange = (annee: string, checked: boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      annees: checked 
+        ? [...prev.annees, annee]
+        : prev.annees.filter(a => a !== annee)
     }));
   };
 
@@ -248,6 +259,7 @@ const AdminMorceaux = () => {
       nom: morceau.nom,
       compositeur: morceau.compositeur || '',
       arrangement: morceau.arrangement || '',
+      annees: morceau.annees || [],
       orchestra_ids: morceau.orchestras?.map(o => o.id) || [],
     });
     setShowAddForm(true);
@@ -260,6 +272,7 @@ const AdminMorceaux = () => {
       nom: '',
       compositeur: '',
       arrangement: '',
+      annees: [],
       orchestra_ids: [],
     });
   };
@@ -271,11 +284,15 @@ const AdminMorceaux = () => {
       morceau.nom.toLowerCase().includes(searchLower) ||
       (morceau.compositeur && morceau.compositeur.toLowerCase().includes(searchLower)) ||
       (morceau.arrangement && morceau.arrangement.toLowerCase().includes(searchLower)) ||
-      morceau.orchestras.some(o => o.name.toLowerCase().includes(searchLower))
+      morceau.orchestras.some(o => o.name.toLowerCase().includes(searchLower)) ||
+      morceau.annees.some(a => a.includes(searchTerm))
     );
     
     return matchesSearch;
   });
+
+  // Générer les années disponibles (de 2020 à 2030)
+  const availableYears = Array.from({ length: 11 }, (_, i) => (2020 + i).toString());
 
   if (profile && !['Admin', 'Gestionnaire'].includes(profile.role)) {
     return <Navigate to="/dashboard" />;
@@ -431,6 +448,28 @@ const AdminMorceaux = () => {
                     </p>
                   </div>
 
+                  <div>
+                    <label className="block text-sm font-medium text-dark mb-3">
+                      Années de représentation (optionnel)
+                    </label>
+                    <div className="grid grid-cols-4 gap-2 max-h-32 overflow-y-auto border border-gray-200 rounded-lg p-3">
+                      {availableYears.map((year) => (
+                        <label key={year} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
+                          <input
+                            type="checkbox"
+                            checked={formData.annees.includes(year)}
+                            onChange={(e) => handleAnneeChange(year, e.target.checked)}
+                            className="rounded border-gray-300 text-primary focus:ring-primary"
+                          />
+                          <span className="text-sm text-gray-700">{year}</span>
+                        </label>
+                      ))}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Sélectionnez les années où ce morceau est/sera joué
+                    </p>
+                  </div>
+
                   <div className="flex space-x-3 pt-4">
                     <button
                       type="submit"
@@ -479,9 +518,6 @@ const AdminMorceaux = () => {
                       {deleteConfirmation.morceau.nom}
                     </span>{' '}
                     ?
-                  </p>
-                  <p className="text-sm text-red-600 mt-2">
-                    ⚠️ Toutes les partitions associées à ce morceau seront également supprimées.
                   </p>
                 </div>
                 
@@ -585,22 +621,23 @@ const AdminMorceaux = () => {
                           </span>
                         </div>
                         
-                        {morceau.orchestras && morceau.orchestras.length > 0 && (
-                          <div className="flex items-center space-x-1 text-xs text-gray-500">
-                            <Users className="h-3 w-3" />
-                            <span>{morceau.orchestras.map(o => o.name).join(', ')}</span>
-                          </div>
-                        )}
+                        <div className="flex items-center space-x-4 text-xs">
+                          {morceau.orchestras && morceau.orchestras.length > 0 && (
+                            <div className="flex items-center space-x-1 text-gray-500">
+                              <Users className="h-3 w-3" />
+                              <span>{morceau.orchestras.map(o => o.name).join(', ')}</span>
+                            </div>
+                          )}
+                          {morceau.annees && morceau.annees.length > 0 && (
+                            <div className="flex items-center space-x-1 text-gray-500">
+                              <Calendar className="h-3 w-3" />
+                              <span>{morceau.annees.join(', ')}</span>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                     <div className="flex items-center space-x-2 ml-4">
-                      <Link
-                        to={`/admin/partitions?morceau=${morceau.id}`}
-                        className="p-2 text-green-600 hover:text-green-800 hover:bg-green-50 rounded-lg transition-all duration-200"
-                        title="Gérer les partitions"
-                      >
-                        <Music className="h-5 w-5" />
-                      </Link>
                       <button
                         onClick={() => handleEdit(morceau)}
                         className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-all duration-200"
