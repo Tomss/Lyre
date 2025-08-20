@@ -509,6 +509,164 @@ const Events = () => {
                                     <div className="flex items-center space-x-2 text-gray-500">
                                       <div className={`p-1.5 rounded-lg ${isNext ? 'bg-orange-100' : 'bg-gray-100'}`}>
                                         <Clock className="h-4 w-4" />
+                                      </div>
+                                      <span className="font-medium">{dateInfo.weekday} • {dateInfo.time}</span>
+                                    </div>
+                                    {event.location && (
+                                      <div className="flex items-center space-x-2 text-gray-500">
+                                        <div className={`p-1.5 rounded-lg ${isNext ? 'bg-orange-100' : 'bg-gray-100'}`}>
+                                          <MapPin className="h-4 w-4" />
+                                        </div>
+                                        <span className="font-medium truncate">{event.location}</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                                
+                                {/* Orchestres et action */}
+                                <div className="flex-shrink-0 text-right">
+                                  {event.orchestras.length > 0 && (
+                                    <div className="mb-3">
+                                      <div className="flex items-center justify-end space-x-2 text-xs text-gray-500 bg-gray-50 px-3 py-2 rounded-full">
+                                        <Users className="h-3 w-3" />
+                                        <span className="font-medium">
+                                          {event.orchestras[0].name}
+                                          {event.orchestras.length > 1 && ` +${event.orchestras.length - 1}`}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  )}
+                                  <div className="flex items-center space-x-2 text-gray-400">
+                                    <span className="text-xs font-medium">Voir détails</span>
+                                    <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                        
+                        {upcomingEvents.length > 5 && (
+                          <div className="text-center pt-6 border-t border-gray-100">
+                            <div className="bg-gradient-to-r from-gray-50 to-slate-50 rounded-2xl p-6 border border-gray-200">
+                              <h4 className="font-poppins font-semibold text-gray-800 mb-2">
+                                +{upcomingEvents.length - 5} autre{upcomingEvents.length - 5 > 1 ? 's' : ''} concert{upcomingEvents.length - 5 > 1 ? 's' : ''}
+                              </h4>
+                              <p className="text-sm text-gray-600">Consultez notre calendrier complet pour découvrir tous nos événements</p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="text-center py-12">
+                        <div className="bg-gradient-to-br from-gray-100 to-slate-100 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6 shadow-lg">
+                          <Calendar className="h-12 w-12 text-gray-400" />
+                        </div>
+                        <h3 className="font-poppins font-bold text-xl text-gray-800 mb-3">Calendrier en préparation</h3>
+                        <p className="text-gray-600 max-w-md mx-auto leading-relaxed">
+                          Notre équipe artistique travaille actuellement sur la programmation de nos prochains concerts. 
+                          Revenez bientôt pour découvrir nos dates !
+                        </p>
+                        <div className="mt-6 flex justify-center">
+                          <div className="flex space-x-2">
+                            {[...Array(3)].map((_, i) => (
+                              <div 
+                                key={i} 
+                                className="w-3 h-3 bg-orange-400 rounded-full animate-bounce" 
+                                style={{ animationDelay: `${i * 0.2}s` }} 
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Événements passés */}
+          {filter === 'past' && (
+            pastEvents.length > 0 ? (
+              <section className="py-16 bg-gradient-to-br from-gray-50 via-slate-50 to-gray-50">
+                <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+                  <div className="text-center mb-12">
+                    <h2 className="font-poppins font-bold text-3xl text-gray-800 mb-6">Nos Concerts Passés</h2>
+                    <p className="text-gray-600 max-w-2xl mx-auto">Revivez les moments musicaux que nous avons partagés ensemble</p>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                    {pastEvents.map((event, index) => {
+                      const dateInfo = formatDate(event.event_date);
+                      return (
+                        <div key={event.id} onClick={() => openEventModal(event)} className="group animate-fade-in cursor-pointer" style={{ animationDelay: `${index * 0.1}s` }}>
+                          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-white/50 overflow-hidden hover:shadow-xl hover:-translate-y-2 transition-all duration-300 opacity-90 hover:opacity-100">
+                            <div className="bg-gradient-to-r from-gray-500 to-slate-600 p-4 text-white relative overflow-hidden">
+                              <div className="absolute top-0 right-0 w-12 h-12 bg-white/10 rounded-full -translate-y-6 translate-x-6"></div>
+                              <div className="absolute bottom-0 left-0 w-10 h-10 bg-white/10 rounded-full translate-y-5 -translate-x-5"></div>
+                              <div className="relative z-10">
+                                <div className="flex items-center justify-between mb-3">
+                                  <div className="bg-white/20 backdrop-blur-sm rounded-full px-4 py-2">
+                                    <span className="text-sm font-semibold">Concert passé</span>
+                                  </div>
+                                  <div className="text-right">
+                                    <div className="text-2xl font-bold">{dateInfo.day}</div>
+                                    <div className="text-sm opacity-90">{dateInfo.month} {dateInfo.year}</div>
+                                  </div>
+                                </div>
+                                <h3 className="font-poppins font-bold text-lg mb-1 group-hover:scale-105 transition-transform duration-300 line-clamp-2">{event.title}</h3>
+                                <div className="text-gray-200 text-sm">{dateInfo.weekday} • {dateInfo.time}</div>
+                              </div>
+                            </div>
+                            <div className="p-4 space-y-4">
+                              {event.location && (
+                                <div className="flex items-center space-x-3 text-gray-500">
+                                  <div className="bg-gray-100 p-2 rounded-lg">
+                                    <MapPin className="h-4 w-4" />
+                                  </div>
+                                  <span className="font-medium text-sm">{event.location}</span>
+                                </div>
+                              )}
+                              {event.orchestras.length > 0 && (
+                                <div className="flex items-center space-x-3 text-gray-500">
+                                  <div className="bg-gray-100 p-2 rounded-lg">
+                                    <Users className="h-4 w-4" />
+                                  </div>
+                                  <span className="font-medium text-sm">{event.orchestras.map(o => o.name).join(', ')}</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </section>
+            ) : (
+              <section className="py-16 bg-gradient-to-br from-gray-50 via-slate-50 to-gray-50">
+                <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+                  <div className="text-center">
+                    <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-12 shadow-xl border border-white/50 max-w-2xl mx-auto">
+                      <div className="bg-gradient-to-br from-gray-400 to-slate-500 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6 shadow-lg">
+                        <Clock className="h-10 w-10 text-white" />
+                      </div>
+                      <h2 className="font-poppins font-bold text-2xl text-gray-800 mb-4">Aucun concert passé</h2>
+                      <p className="font-inter text-gray-600 leading-relaxed">
+                        Notre histoire musicale commence maintenant. Revenez bientôt pour découvrir nos premiers concerts !
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            )
+          )}
+        </>
+      )}
+
+      {/* Section d'appel à l'action */}
+      <section className="py-20 bg-gradient-to-br from-slate-100 via-gray-100 to-blue-100">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center">
             <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border border-white/50">
               <div className="bg-gradient-to-br from-slate-500 to-gray-600 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-8 shadow-lg"><Music className="h-10 w-10 text-white" /></div>
