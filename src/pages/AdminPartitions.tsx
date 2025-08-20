@@ -102,6 +102,7 @@ const AdminPartitions = () => {
     instrument_id: '',
     title: '',
   });
+  const [selectedOrchestraForForm, setSelectedOrchestraForForm] = useState<string>('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
 
@@ -453,6 +454,7 @@ const AdminPartitions = () => {
       instrument_id: '',
       title: '',
     });
+    setSelectedOrchestraForForm('');
     setSelectedFile(null);
     setFilePreview(null);
   };
@@ -491,6 +493,12 @@ const AdminPartitions = () => {
     const matchesMorceau = !morceauFilter || partition.morceaux?.id === morceauFilter;
     
     return matchesSearch && matchesInstrument && matchesMorceau;
+  });
+
+  // Filtrer les morceaux par orchestre pour le formulaire
+  const filteredMorceauxForForm = morceaux.filter(morceau => {
+    if (!selectedOrchestraForForm) return true;
+    return morceau.orchestras.some(o => o.id === selectedOrchestraForForm);
   });
 
   // Grouper par morceau
@@ -606,6 +614,42 @@ const AdminPartitions = () => {
                 </div>
 
                 <form onSubmit={editingPartition ? handleUpdate : handleCreate} className="space-y-4">
+                  {/* Filtre par orchestre pour les morceaux */}
+                  <div>
+                    <label className="block text-sm font-medium text-dark mb-2">
+                      Filtrer les morceaux par orchestre (optionnel)
+                    </label>
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedOrchestraForForm('')}
+                        className={`inline-flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                          selectedOrchestraForForm === ''
+                            ? 'bg-primary text-white shadow-md'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300'
+                        }`}
+                      >
+                        <Users className="h-4 w-4" />
+                        <span>Tous les orchestres</span>
+                      </button>
+                      {orchestras.map((orchestra) => (
+                        <button
+                          key={orchestra.id}
+                          type="button"
+                          onClick={() => setSelectedOrchestraForForm(orchestra.id)}
+                          className={`inline-flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                            selectedOrchestraForForm === orchestra.id
+                              ? 'bg-primary text-white shadow-md'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300'
+                          }`}
+                        >
+                          <Users className="h-4 w-4" />
+                          <span>{orchestra.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-dark mb-2">
@@ -619,12 +663,17 @@ const AdminPartitions = () => {
                         required
                       >
                         <option value="">Sélectionner un morceau</option>
-                        {morceaux.map((morceau) => (
+                        {filteredMorceauxForForm.map((morceau) => (
                           <option key={morceau.id} value={morceau.id}>
                             {morceau.nom} {morceau.compositeur && `- ${morceau.compositeur}`}
                           </option>
                         ))}
                       </select>
+                      {selectedOrchestraForForm && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          Affichage des morceaux de : {orchestras.find(o => o.id === selectedOrchestraForForm)?.name}
+                        </p>
+                      )}
                     </div>
 
                     <div>
