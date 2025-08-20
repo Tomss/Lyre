@@ -10,7 +10,7 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const { action, id, title, morceau_id, instrument_id, file_name, file_path, file_type, file_size, mime_type } = await req.json();
+    const { action, id, title, morceau_id, instrument_id, orchestra_id, file_name, file_path, file_type, file_size, mime_type } = await req.json();
     
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
@@ -26,8 +26,8 @@ Deno.serve(async (req: Request) => {
 
     switch (action) {
       case 'create':
-        if (!title || !morceau_id || !instrument_id || !file_name || !file_path || !file_type) {
-          throw new Error("Titre, morceau, instrument et fichier requis");
+        if (!title || !morceau_id || !instrument_id || !orchestra_id || !file_name || !file_path || !file_type) {
+          throw new Error("Titre, morceau, instrument, orchestre et fichier requis");
         }
         
         const { data: createData, error: createError } = await supabase
@@ -36,6 +36,7 @@ Deno.serve(async (req: Request) => {
             title,
             morceau_id,
             instrument_id, 
+            orchestra_id,
             file_name, 
             file_path, 
             file_type, 
@@ -64,14 +65,15 @@ Deno.serve(async (req: Request) => {
         break;
 
       case 'update':
-        if (!id || !title || !morceau_id || !instrument_id) {
-          throw new Error("ID, titre, morceau et instrument requis");
+        if (!id || !title || !morceau_id || !instrument_id || !orchestra_id) {
+          throw new Error("ID, titre, morceau, instrument et orchestre requis");
         }
         
         const updateData: any = { 
           title,
           morceau_id,
-          instrument_id
+          instrument_id,
+          orchestra_id
         };
 
         // Ajouter les données du fichier seulement si un nouveau fichier est fourni

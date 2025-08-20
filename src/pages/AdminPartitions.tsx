@@ -101,6 +101,7 @@ const AdminPartitions = () => {
     morceau_id: selectedMorceauId || '',
     instrument_id: '',
     title: '',
+    orchestra_id: '',
   });
   const [selectedOrchestraForForm, setSelectedOrchestraForForm] = useState<string>('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -435,12 +436,17 @@ const AdminPartitions = () => {
       return;
     }
     
+    // Trouver l'orchestre de cette partition via le morceau
+    const orchestraId = partition.morceaux.morceau_orchestras?.[0]?.orchestra_id || '';
+    
     setEditingPartition(partition);
     setFormData({
       morceau_id: partition.morceaux.id,
       instrument_id: partition.instruments.id,
       title: partition.title,
+      orchestra_id: orchestraId,
     });
+    setSelectedOrchestraForForm(orchestraId);
     setSelectedFile(null);
     setFilePreview(null);
     setShowAddForm(true);
@@ -453,6 +459,7 @@ const AdminPartitions = () => {
       morceau_id: selectedMorceauId || '',
       instrument_id: '',
       title: '',
+      orchestra_id: '',
     });
     setSelectedOrchestraForForm('');
     setSelectedFile(null);
@@ -500,6 +507,20 @@ const AdminPartitions = () => {
     if (!selectedOrchestraForForm) return true;
     return morceau.orchestras.some(o => o.id === selectedOrchestraForForm);
   });
+
+  // Effet pour auto-sélectionner l'orchestra_id quand un morceau est choisi
+  useEffect(() => {
+    if (formData.morceau_id) {
+      const selectedMorceau = morceaux.find(m => m.id === formData.morceau_id);
+      if (selectedMorceau?.orchestras.length === 1) {
+        // Auto-sélection si un seul orchestre
+        setFormData(prev => ({ ...prev, orchestra_id: selectedMorceau.orchestras[0].id }));
+      } else if (selectedMorceau?.orchestras.length === 0) {
+        // Réinitialiser si aucun orchestre
+        setFormData(prev => ({ ...prev, orchestra_id: '' }));
+      }
+    }
+  }, [formData.morceau_id, morceaux]);
 
   // Grouper par morceau
   const partitionsByMorceau = filteredPartitions.reduce((acc, partition) => {
@@ -649,6 +670,35 @@ const AdminPartitions = () => {
                       ))}
                     </div>
                   </div>
+
+                  {/* Sélection d'orchestre si le morceau en a plusieurs */}
+                  {formData.morceau_id && (() => {
+                    const selectedMorceau = morceaux.find(m => m.id === formData.morceau_id);
+                    return selectedMorceau?.orchestras.length > 1 ? (
+                      <div>
+                        <label className="block text-sm font-medium text-dark mb-2">
+                          Orchestre <span className="text-red-500">*</span>
+                        </label>
+                        <select
+                          name="orchestra_id"
+                          value={formData.orchestra_id}
+                          onChange={handleInputChange}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                          required
+                        >
+                          <option value="">Sélectionner un orchestre</option>
+                          {selectedMorceau.orchestras.map((orchestra) => (
+                            <option key={orchestra.id} value={orchestra.id}>
+                              {orchestra.name}
+                            </option>
+                          ))}
+                        </select>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Ce morceau est joué par plusieurs orchestres
+                        </p>
+                      </div>
+                    ) : null;
+                  })()}
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
