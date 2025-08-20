@@ -171,19 +171,19 @@ const Media = () => {
         }}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center animate-fade-in relative z-10">
-            <h1 className="font-poppins font-bold text-4xl md:text-5xl text-white mb-6">
+            <h1 className="font-poppins font-bold text-3xl md:text-4xl text-white mb-6">
               Galerie de nos moments musicaux.
             </h1>
             {loading ? (
-              <p className="font-inter text-lg text-white/80 max-w-2xl mx-auto">
+              <p className="font-inter text-base text-white/80 max-w-2xl mx-auto">
                 Chargement de nos médias...
               </p>
             ) : mediaItems.length > 0 ? (
-              <p className="font-inter text-lg text-white/90 max-w-2xl mx-auto">
+              <p className="font-inter text-base text-white/90 max-w-2xl mx-auto">
                 Découvrez nos albums, enregistrements, articles de presse et actualités !
               </p>
             ) : (
-              <p className="font-inter text-lg text-white/90 max-w-2xl mx-auto">
+              <p className="font-inter text-base text-white/90 max-w-2xl mx-auto">
                 Nos médias seront bientôt disponibles. Revenez nous voir !
               </p>
             )}
@@ -224,7 +224,7 @@ const Media = () => {
               <h2 className="font-poppins font-bold text-4xl md:text-5xl text-dark mb-6 bg-gradient-to-r from-orange-600 via-amber-600 to-orange-600 bg-clip-text text-transparent">
                 Médias mis en avant
               </h2>
-              <p className="font-inter text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
+              <p className="font-inter text-lg text-gray-700 max-w-3xl mx-auto leading-relaxed">
                 Découvrez notre sélection de contenus exceptionnels
               </p>
             </div>
@@ -319,7 +319,7 @@ const Media = () => {
                   <h2 className="font-poppins font-bold text-5xl md:text-6xl text-white mb-6 bg-gradient-to-r from-orange-200 via-amber-200 to-orange-200 bg-clip-text text-transparent">
                     Notre Médiathèque
                   </h2>
-                  <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed mb-12">
+                  <p className="text-lg text-gray-300 max-w-3xl mx-auto leading-relaxed mb-12">
                     Explorez notre collection de souvenirs musicaux et découvertes artistiques
                   </p>
                 </div>
@@ -580,7 +580,7 @@ const Media = () => {
               <h2 className="font-poppins font-bold text-3xl md:text-4xl text-dark mb-6 bg-gradient-to-r from-orange-600 via-amber-600 to-orange-600 bg-clip-text text-transparent">
                 Partagez vos souvenirs !
               </h2>
-              <p className="text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed mb-8">
+              <p className="text-lg text-gray-700 max-w-3xl mx-auto leading-relaxed mb-8">
                 Vous avez des photos, vidéos ou enregistrements de nos concerts et événements ? 
                 Aidez-nous à enrichir notre médiathèque en partageant vos précieux souvenirs !
               </p>

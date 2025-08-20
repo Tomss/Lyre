@@ -85,16 +85,16 @@ const School = () => {
         }}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto animate-fade-in relative z-10">
-            <h1 className="font-poppins font-bold text-4xl md:text-5xl text-white mb-8 text-center">
+            <h1 className="font-poppins font-bold text-3xl md:text-4xl text-white mb-8 text-center">
               L'école de musique
             </h1>
             
             {/* Description principale */}
             <div className="mb-12">
-              <p className="font-inter text-lg text-white/90 leading-relaxed mb-8">
+              <p className="font-inter text-base text-white/90 leading-relaxed mb-8">
                 L'école propose une formation musicale du niveau Éveil au niveau Supérieur, par des professeurs diplômés de Conservatoires à Rayonnement Régional ou possédant un niveau équivalent.
               </p>
-              <p className="font-inter text-lg text-white/90 leading-relaxed mb-8">
+              <p className="font-inter text-base text-white/90 leading-relaxed mb-8">
                 Les cours suivent le rythme scolaire : un cours de solfège, une demi-heure d'instrument et une activité orchestrale par semaine dans l'un des orchestres suivants
               </p>
             </div>
@@ -234,10 +234,10 @@ const School = () => {
               {/* Message d'encouragement */}
               <div className="text-center mt-16 animate-fade-in">
                 <div className="bg-gradient-to-r from-orange-900/20 via-amber-900/20 to-orange-900/20 backdrop-blur-sm rounded-2xl p-8 max-w-2xl mx-auto border border-orange-400/15">
-                  <h3 className="font-poppins font-bold text-2xl text-orange-200 mb-4">
+                  <h3 className="font-poppins font-bold text-xl text-orange-200 mb-4">
                     🎵 Trouvez votre instrument !
                   </h3>
-                  <p className="text-gray-300 leading-relaxed">
+                  <p className="text-sm text-gray-300 leading-relaxed">
                     Chaque instrument a sa propre personnalité. Laissez-vous guider par votre cœur et découvrez celui qui résonnera avec votre âme musicale.
                   </p>
                 </div>
@@ -257,10 +257,10 @@ const School = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12 animate-fade-in">
-              <h2 className="font-poppins font-bold text-3xl md:text-4xl text-dark mb-4">
+              <h2 className="font-poppins font-bold text-2xl md:text-3xl text-dark mb-4">
                 Nos Orchestres
               </h2>
-              <p className="font-inter text-lg text-gray-600 max-w-2xl mx-auto">
+              <p className="font-inter text-base text-gray-600 max-w-2xl mx-auto">
                 Découvrez nos différents ensembles musicaux
               </p>
             </div>
@@ -295,7 +295,7 @@ const School = () => {
                     <div className="animate-fade-in">
                       {/* Titre centré */}
                       <div className="text-center mb-8">
-                        <h3 className="font-poppins font-bold text-3xl text-dark mb-2">
+                        <h3 className="font-poppins font-bold text-2xl text-dark mb-2">
                           {selectedOrchestra.name}
                         </h3>
                         <div className="h-1 w-16 bg-gradient-to-r from-orange-500 to-amber-500 rounded-full mx-auto mb-6"></div>
@@ -317,11 +317,11 @@ const School = () => {
                       
                       {/* Description directe */}
                       {selectedOrchestra.description ? (
-                        <div className="font-inter text-gray-800 leading-relaxed text-lg whitespace-pre-line max-w-4xl mx-auto text-center">
+                        <div className="font-inter text-gray-800 leading-relaxed text-base whitespace-pre-line max-w-4xl mx-auto text-center">
                           {selectedOrchestra.description}
                         </div>
                       ) : (
-                        <p className="font-inter text-gray-500 italic text-center max-w-2xl mx-auto">
+                        <p className="font-inter text-sm text-gray-500 italic text-center max-w-2xl mx-auto">
                           Description à venir pour cet orchestre.
                         </p>
                       )}
@@ -350,7 +350,7 @@ const School = () => {
               <h3 className="font-poppins font-semibold text-xl text-dark mb-4">
                 Communauté
               </h3>
-              <p className="font-inter text-gray-600">
+              <p className="font-inter text-sm text-gray-600">
                 Une communauté musicale bienveillante et passionnée.
               </p>
             </div>
@@ -361,7 +361,7 @@ const School = () => {
               <h3 className="font-poppins font-semibold text-xl text-dark mb-4">
                 Excellence
               </h3>
-              <p className="font-inter text-gray-600">
+              <p className="font-inter text-sm text-gray-600">
                 Un enseignement de qualité adapté à chaque niveau.
               </p>
             </div>
@@ -372,7 +372,7 @@ const School = () => {
               <h3 className="font-poppins font-semibold text-xl text-dark mb-4">
                 Passion
               </h3>
-              <p className="font-inter text-gray-600">
+              <p className="font-inter text-sm text-gray-600">
                 La musique au cœur de notre pédagogie quotidienne.
               </p>
             </div>

@@ -71,13 +71,13 @@ const Home = () => {
         ))}
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="max-w-4xl mx-auto text-center animate-fade-in">
-            <h1 className="font-poppins font-bold text-4xl md:text-6xl text-white mb-6">
+            <h1 className="font-poppins font-bold text-3xl md:text-5xl text-white mb-6">
               Lyre Cheminote et Municipale de Chalindrey
             </h1>
-            <p className="font-inter text-xl text-white mb-8 leading-relaxed">
+            <p className="font-inter text-lg text-white mb-8 leading-relaxed">
               Rejoignez notre communauté musicale dynamique !
             </p>
-            <p className="font-inter text-lg text-orange-200 font-medium mb-12">
+            <p className="font-inter text-base text-orange-200 font-medium mb-12">
               Depuis 1931, nous cultivons la passion musicale
             </p>
           </div>
@@ -99,10 +99,10 @@ const Home = () => {
       <section className="py-20 bg-gradient-to-br from-orange-25 via-amber-25 to-yellow-25">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center animate-fade-in">
-            <h2 className="font-poppins font-bold text-3xl md:text-4xl text-orange-800 mb-8">
+            <h2 className="font-poppins font-bold text-2xl md:text-3xl text-orange-800 mb-8">
               Bienvenue
             </h2>
-            <div className="space-y-6 text-lg leading-relaxed text-gray-800">
+            <div className="space-y-6 text-base leading-relaxed text-gray-800">
               <p className="font-inter">
                 Association musicale fondée en 1931, la Lyre n'a cessé, de croches en noires, de répétitions en répétitions, de concerts en concerts, de voyages en rivages et presque sans anicroches, de motiver jeunes et sages à vivre et partager ce langage aux mille et une harmoniques...
               </p>
@@ -112,7 +112,7 @@ const Home = () => {
               <p className="font-inter">
                 Spectateur(s) à l'ouïe fine, futur(e)s virtuose(s) ou simplement curieux(ses), n'hésitez pas à prendre le temps de parcourir notre site afin de nous connaître un peu mieux.
               </p>
-              <p className="font-inter font-medium text-orange-600 text-xl">
+              <p className="font-inter font-medium text-orange-600 text-lg">
                 En ayant l'espoir de vous voir à notre prochain concert ou au sein de notre groupe, nous vous souhaitons une agréable journée et vous remercions de votre visite.
               </p>
             </div>
@@ -135,7 +135,7 @@ const Home = () => {
                 <h3 className="font-poppins font-semibold text-xl text-dark mb-4">
                   {feature.title}
                 </h3>
-                <p className="font-inter text-gray-700 leading-relaxed">
+                <p className="font-inter text-sm text-gray-700 leading-relaxed">
                   {feature.description}
                 </p>
               </div>
@@ -148,10 +148,10 @@ const Home = () => {
       <section className="py-20 bg-gradient-to-br from-emerald-25 via-teal-25 to-cyan-25">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="animate-on-scroll text-center mb-12">
-            <h2 className="font-poppins font-bold text-3xl md:text-4xl text-dark mb-4">
+            <h2 className="font-poppins font-bold text-2xl md:text-3xl text-dark mb-4">
               Nos Événements
             </h2>
-            <p className="font-inter text-lg text-gray-600 max-w-2xl mx-auto">
+            <p className="font-inter text-base text-gray-600 max-w-2xl mx-auto">
               Découvrez nos prochains concerts et événements musicaux
             </p>
           </div>
@@ -167,7 +167,7 @@ const Home = () => {
                   <h3 className="font-poppins font-semibold text-xl text-dark mb-2">
                     Événement à venir
                   </h3>
-                  <p className="font-inter text-gray-600 mb-4">
+                  <p className="font-inter text-sm text-gray-600 mb-4">
                     Les détails seront bientôt disponibles. Restez connectés !
                   </p>
                   <div className="flex items-center text-sm text-teal-600">

@@ -34,10 +34,10 @@ const Contact = () => {
         }}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center animate-fade-in relative z-10">
-            <h1 className="font-poppins font-bold text-4xl md:text-5xl text-white mb-6">
+            <h1 className="font-poppins font-bold text-3xl md:text-4xl text-white mb-6">
               Contactez-nous.
             </h1>
-            <p className="font-inter text-lg text-white/90 max-w-2xl mx-auto">
+            <p className="font-inter text-base text-white/90 max-w-2xl mx-auto">
               Nous sommes là pour répondre à toutes vos questions sur nos cours, 
               nos événements et notre école de musique.
             </p>
@@ -83,10 +83,10 @@ const Contact = () => {
             
             {/* Additional Information */}
             <div className="animate-fade-in bg-white/60 backdrop-blur-sm rounded-xl p-8 border border-white/50 shadow-md">
-              <h2 className="font-poppins font-bold text-3xl text-dark mb-6">
+              <h2 className="font-poppins font-bold text-2xl text-dark mb-6">
                 Venez nous rendre visite
               </h2>
-              <p className="font-inter text-gray-600 mb-6 leading-relaxed">
+              <p className="font-inter text-sm text-gray-600 mb-6 leading-relaxed">
                 Notre école de musique est située au cœur de Paris, dans un quartier 
                 facilement accessible en transport en commun. Nous disposons d'espaces 
                 d'accueil confortables pour les parents et les élèves.
