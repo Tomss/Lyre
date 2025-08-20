@@ -6,6 +6,7 @@ import { supabase } from '../supabaseClient';
 
 interface Partition {
   id: string;
+  title: string;
   voice: string | null;
   file_name: string;
   file_path: string;
@@ -102,6 +103,7 @@ const AdminPartitions = () => {
     morceau_id: selectedMorceauId || '',
     instrument_id: '',
     voice: '',
+    title: '',
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
@@ -466,6 +468,7 @@ const AdminPartitions = () => {
       morceau_id: selectedMorceauId || '',
       instrument_id: '',
       voice: '',
+      title: '',
     });
     setSelectedFile(null);
     setFilePreview(null);
