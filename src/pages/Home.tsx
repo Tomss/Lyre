@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { Users, Calendar, Heart, Music2, Star, Award } from 'lucide-react';
-import MusicalNotesBackground from '../components/MusicalNotesBackground';
 
 const Home = () => {
   const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
@@ -98,37 +97,6 @@ const Home = () => {
 
       {/* About Section */}
       <section className="py-20 bg-gradient-to-br from-orange-25 via-amber-25 to-yellow-25 relative overflow-hidden">
-        {/* Notes de musique harmonieuses pour la section Bienvenue */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          {[...Array(12)].map((_, i) => {
-            const notes = ['♪', '♫', '♬', '♩', '♭', '♯'];
-            const note = notes[i % notes.length];
-            const delay = i * 2;
-            const left = 5 + (i * 8) % 90;
-            const top = 10 + (i * 7) % 80;
-            const size = 16 + Math.random() * 8;
-            const rotation = Math.random() * 360;
-            
-            return (
-              <div
-                key={i}
-                className="absolute text-amber-600/25 animate-pulse select-none"
-                style={{
-                  fontSize: `${size}px`,
-                  left: `${left}%`,
-                  top: `${top}%`,
-                  transform: `rotate(${rotation}deg)`,
-                  animationDelay: `${delay}s`,
-                  animationDuration: '3s',
-                  textShadow: '0 0 10px rgba(245, 158, 11, 0.3)'
-                }}
-              >
-                {note}
-              </div>
-            );
-          })}
-        </div>
-        
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center animate-fade-in relative z-10">
             <h2 className="font-poppins font-bold text-3xl md:text-4xl text-orange-800 mb-8">
@@ -154,37 +122,6 @@ const Home = () => {
 
       {/* Section Rejoignez-nous */}
       <section className="py-20 bg-gradient-to-br from-slate-100 via-gray-100 to-blue-100 relative overflow-hidden">
-        {/* Notes de musique élégantes pour la section Rejoignez-nous */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          {[...Array(10)].map((_, i) => {
-            const notes = ['♭', '♯', '♪', '♫', '♬', '♩'];
-            const note = notes[i % notes.length];
-            const delay = i * 1.8;
-            const left = 8 + (i * 9) % 84;
-            const top = 12 + (i * 8) % 76;
-            const size = 14 + Math.random() * 6;
-            const rotation = Math.random() * 360;
-            
-            return (
-              <div
-                key={i}
-                className="absolute text-slate-500/20 animate-bounce select-none"
-                style={{
-                  fontSize: `${size}px`,
-                  left: `${left}%`,
-                  top: `${top}%`,
-                  transform: `rotate(${rotation}deg)`,
-                  animationDelay: `${delay}s`,
-                  animationDuration: '2.5s',
-                  textShadow: '0 0 8px rgba(100, 116, 139, 0.2)'
-                }}
-              >
-                {note}
-              </div>
-            );
-          })}
-        </div>
-        
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center relative z-10">
             <div className="bg-gradient-to-br from-slate-500 to-gray-600 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-8 shadow-lg">
