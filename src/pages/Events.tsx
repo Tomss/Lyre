@@ -177,24 +177,29 @@ const Events = () => {
               ))}
             </div>
             
-            {/* Notes de musique pour le calendrier */}
+            {/* Notes de musique dorées scintillantes pour le calendrier musical */}
             <div className="absolute inset-0 pointer-events-none overflow-hidden">
-              {[...Array(7)].map((_, i) => {
-                const notes = ['♪', '♫', '♬', '♩', '♭'];
+              {[...Array(22)].map((_, i) => {
+                const notes = ['♪', '♫', '♬', '♩', '♭', '♯', '𝄞', '𝄢', '𝄡'];
                 const note = notes[i % notes.length];
-                const delay = i * 3;
-                const left = 12 + (i * 14) % 76;
-                const top = 18 + (i * 22) % 64;
+                const delay = i * 0.9;
+                const left = 1 + (i * 4.5) % 98;
+                const top = 3 + (i * 4.2) % 94;
+                const size = 18 + Math.random() * 14;
+                const rotation = Math.random() * 360;
                 
                 return (
                   <div
                     key={i}
-                    className="absolute text-orange-300/25 text-2xl animate-pulse"
+                    className="absolute text-amber-200/12 animate-pulse select-none"
                     style={{
+                      fontSize: `${size}px`,
                       left: `${left}%`,
                       top: `${top}%`,
+                      transform: `rotate(${rotation}deg)`,
                       animationDelay: `${delay}s`,
-                      animationDuration: '5s'
+                      animationDuration: '4.5s',
+                      textShadow: '0 0 18px rgba(254, 243, 199, 0.6)'
                     }}
                   >
                     {note}

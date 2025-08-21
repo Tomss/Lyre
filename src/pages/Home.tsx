@@ -98,24 +98,29 @@ const Home = () => {
 
       {/* About Section */}
       <section className="py-20 bg-gradient-to-br from-orange-25 via-amber-25 to-yellow-25 relative overflow-hidden">
-        {/* Notes de musique pour la section Bienvenue */}
+        {/* Notes de musique harmonieuses pour la section Bienvenue */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          {[...Array(6)].map((_, i) => {
-            const notes = ['♪', '♫', '♬', '♩'];
+          {[...Array(12)].map((_, i) => {
+            const notes = ['♪', '♫', '♬', '♩', '♭', '♯'];
             const note = notes[i % notes.length];
-            const delay = i * 3;
-            const left = 10 + (i * 15) % 80;
-            const top = 20 + (i * 25) % 60;
+            const delay = i * 2;
+            const left = 5 + (i * 8) % 90;
+            const top = 10 + (i * 7) % 80;
+            const size = 16 + Math.random() * 8;
+            const rotation = Math.random() * 360;
             
             return (
               <div
                 key={i}
-                className="absolute text-orange-400/30 text-2xl animate-pulse"
+                className="absolute text-amber-600/25 animate-pulse select-none"
                 style={{
+                  fontSize: `${size}px`,
                   left: `${left}%`,
                   top: `${top}%`,
+                  transform: `rotate(${rotation}deg)`,
                   animationDelay: `${delay}s`,
-                  animationDuration: '4s'
+                  animationDuration: '3s',
+                  textShadow: '0 0 10px rgba(245, 158, 11, 0.3)'
                 }}
               >
                 {note}
@@ -149,24 +154,29 @@ const Home = () => {
 
       {/* Section Rejoignez-nous */}
       <section className="py-20 bg-gradient-to-br from-slate-100 via-gray-100 to-blue-100 relative overflow-hidden">
-        {/* Notes de musique pour la section Rejoignez-nous */}
+        {/* Notes de musique élégantes pour la section Rejoignez-nous */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          {[...Array(5)].map((_, i) => {
-            const notes = ['♭', '♯', '♪', '♫'];
+          {[...Array(10)].map((_, i) => {
+            const notes = ['♭', '♯', '♪', '♫', '♬', '♩'];
             const note = notes[i % notes.length];
-            const delay = i * 2.5;
-            const left = 15 + (i * 18) % 70;
-            const top = 15 + (i * 30) % 70;
+            const delay = i * 1.8;
+            const left = 8 + (i * 9) % 84;
+            const top = 12 + (i * 8) % 76;
+            const size = 14 + Math.random() * 6;
+            const rotation = Math.random() * 360;
             
             return (
               <div
                 key={i}
-                className="absolute text-slate-400/25 text-3xl animate-bounce"
+                className="absolute text-slate-500/20 animate-bounce select-none"
                 style={{
+                  fontSize: `${size}px`,
                   left: `${left}%`,
                   top: `${top}%`,
+                  transform: `rotate(${rotation}deg)`,
                   animationDelay: `${delay}s`,
-                  animationDuration: '3s'
+                  animationDuration: '2.5s',
+                  textShadow: '0 0 8px rgba(100, 116, 139, 0.2)'
                 }}
               >
                 {note}
