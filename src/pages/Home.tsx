@@ -59,7 +59,6 @@ const Home = () => {
 
   return (
     <div className="font-inter">
-      <MusicalNotesBackground />
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat bg-gray-900" 
       >
@@ -98,33 +97,7 @@ const Home = () => {
       </section>
 
       {/* About Section */}
-      <section className="py-20 bg-gradient-to-br from-orange-25 via-amber-25 to-yellow-25">
-        {/* Notes de musique pour la section Bienvenue */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          {[...Array(6)].map((_, i) => {
-            const notes = ['♪', '♫', '♬', '♩'];
-            const note = notes[i % notes.length];
-            const delay = i * 3;
-            const left = 10 + (i * 15) % 80;
-            const top = 20 + (i * 25) % 60;
-            
-            return (
-              <div
-                key={i}
-                className="absolute text-orange-400/30 text-2xl animate-pulse"
-                style={{
-                  left: `${left}%`,
-                  top: `${top}%`,
-                  animationDelay: `${delay}s`,
-                  animationDuration: '4s'
-                }}
-              >
-                {note}
-              </div>
-            );
-          })}
-        </div>
-        
+      <section className="py-20 bg-gradient-to-br from-orange-25 via-amber-25 to-yellow-25 relative overflow-hidden">
         {/* Notes de musique pour la section Bienvenue */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           {[...Array(6)].map((_, i) => {
@@ -152,7 +125,7 @@ const Home = () => {
         </div>
         
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto text-center animate-fade-in">
+          <div className="max-w-4xl mx-auto text-center animate-fade-in relative z-10">
             <h2 className="font-poppins font-bold text-3xl md:text-4xl text-orange-800 mb-8">
               Bienvenue
             </h2>
@@ -175,33 +148,7 @@ const Home = () => {
       </section>
 
       {/* Section Rejoignez-nous */}
-      <section className="py-20 bg-gradient-to-br from-slate-100 via-gray-100 to-blue-100">
-        {/* Notes de musique pour la section Rejoignez-nous */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          {[...Array(5)].map((_, i) => {
-            const notes = ['♭', '♯', '♪', '♫'];
-            const note = notes[i % notes.length];
-            const delay = i * 2.5;
-            const left = 15 + (i * 18) % 70;
-            const top = 15 + (i * 30) % 70;
-            
-            return (
-              <div
-                key={i}
-                className="absolute text-slate-400/25 text-3xl animate-bounce"
-                style={{
-                  left: `${left}%`,
-                  top: `${top}%`,
-                  animationDelay: `${delay}s`,
-                  animationDuration: '3s'
-                }}
-              >
-                {note}
-              </div>
-            );
-          })}
-        </div>
-        
+      <section className="py-20 bg-gradient-to-br from-slate-100 via-gray-100 to-blue-100 relative overflow-hidden">
         {/* Notes de musique pour la section Rejoignez-nous */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           {[...Array(5)].map((_, i) => {
@@ -229,7 +176,7 @@ const Home = () => {
         </div>
         
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto text-center">
+          <div className="max-w-4xl mx-auto text-center relative z-10">
             <div className="bg-gradient-to-br from-slate-500 to-gray-600 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-8 shadow-lg">
               <Music2 className="h-10 w-10 text-white" />
             </div>
