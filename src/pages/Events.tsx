@@ -1,10 +1,12 @@
 import React from 'react';
 import { Calendar, Clock, MapPin, Users, Star, Music, ChevronRight, X } from 'lucide-react';
+import MusicalNotesBackground from '../components/MusicalNotesBackground';
 
 // --- Ajout des types pour la cohérence du projet et corriger les erreurs implicites ---
 interface Orchestra {
   id: string;
   name: string;
+}
 
 interface Event {
   id: string;
@@ -82,6 +84,7 @@ const Events = () => {
   };
 
   return (
+    <div className="font-inter">
       {/* Modal détails événement */}
       {isModalOpen && selectedEvent && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
