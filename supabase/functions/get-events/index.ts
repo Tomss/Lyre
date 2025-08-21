@@ -12,7 +12,6 @@ Deno.serve(async (req: Request) => {
   try {
     const url = new URL(req.url);
     const type = url.searchParams.get('type'); // 'public' ou 'user'
-    const userId = url.searchParams.get('userId');
     
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
@@ -41,17 +40,6 @@ Deno.serve(async (req: Request) => {
     if (type === 'public') {
       // Événements publics : seulement les concerts
       query = query.eq('event_type', 'concert');
-    } else if (type === 'user' && userId) {
-      // Événements utilisateur : concerts et répétitions de ses orchestres
-      query = query.or(`
-        event_type.eq.concert,
-        and(
-          event_type.eq.repetition,
-          event_orchestras.orchestra_id.in.(
-            select orchestra_id from user_orchestras where user_id = '${userId}'
-          )
-        )
-      `);
     }
 
     const { data: events, error } = await query;
