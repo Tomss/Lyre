@@ -881,6 +881,9 @@ const AdminUsers = () => {
                   <button
                     onClick={() => toggleRoleFilter('Admin')}
                     className={`inline-flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
+                      roleFilter.includes('Admin')
+                        ? 'bg-red-100 text-red-800 border border-red-200'
+                        : 'bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200'
                     }`}
                   >
                     <Shield className="h-3 w-3" />
