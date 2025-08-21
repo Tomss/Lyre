@@ -1,12 +1,10 @@
 import React from 'react';
 import { Calendar, Clock, MapPin, Users, Star, Music, ChevronRight, X } from 'lucide-react';
-import MusicalNotesBackground from '../components/MusicalNotesBackground';
 
 // --- Ajout des types pour la cohérence du projet et corriger les erreurs implicites ---
 interface Orchestra {
   id: string;
   name: string;
-}
 
 interface Event {
   id: string;
@@ -84,8 +82,6 @@ const Events = () => {
   };
 
   return (
-    <div className="font-inter">
-      <MusicalNotesBackground />
       {/* Modal détails événement */}
       {isModalOpen && selectedEvent && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -161,58 +157,6 @@ const Events = () => {
 
           {/* Calendrier Musical Amélioré */}
           <section className="py-20 bg-gradient-to-br from-slate-900 via-gray-800 to-slate-900 relative overflow-hidden">
-            {/* Particules d'arrière-plan */}
-            <div className="absolute inset-0">
-              {[...Array(30)].map((_, i) => (
-                <div
-                  key={i}
-                  className="absolute w-1 h-1 bg-orange-400/20 rounded-full animate-pulse"
-                  style={{
-                    left: `${Math.random() * 100}%`,
-                    top: `${Math.random() * 100}%`,
-                    animationDelay: `${Math.random() * 3}s`,
-                    animationDuration: `${2 + Math.random() * 2}s`
-                  }}
-                />
-              ))}
-            </div>
-            
-            {/* Notes de musique dorées scintillantes pour le calendrier musical */}
-            <div className="absolute inset-0 pointer-events-none overflow-hidden">
-              {[...Array(22)].map((_, i) => {
-                const notes = ['♪', '♫', '♬', '♩', '♭', '♯', '𝄞', '𝄢', '𝄡'];
-                const note = notes[i % notes.length];
-                const delay = i * 0.9;
-                const left = 1 + (i * 4.5) % 98;
-                const top = 3 + (i * 4.2) % 94;
-                const size = 18 + Math.random() * 14;
-                const rotation = Math.random() * 360;
-                
-                return (
-                  <div
-                    key={i}
-                    className="absolute text-amber-200/12 animate-pulse select-none"
-                    style={{
-                      fontSize: `${size}px`,
-                      left: `${left}%`,
-                      top: `${top}%`,
-                      transform: `rotate(${rotation}deg)`,
-                      animationDelay: `${delay}s`,
-                      animationDuration: '4.5s',
-                      textShadow: '0 0 18px rgba(254, 243, 199, 0.6)'
-                    }}
-                  >
-                    {note}
-                  </div>
-                );
-              })}
-            </div>
-            
-            {/* Formes géométriques décoratives */}
-            <div className="absolute top-10 left-10 w-32 h-32 border border-orange-400/10 rounded-full"></div>
-            <div className="absolute bottom-20 right-20 w-24 h-24 border-2 border-slate-600/30 rounded-lg rotate-45"></div>
-            <div className="absolute top-1/2 left-1/4 w-16 h-16 bg-gradient-to-br from-orange-400/5 to-amber-500/5 rounded-full"></div>
-            
             <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
               <div className="max-w-6xl mx-auto">
                 <div className="text-center mb-16">

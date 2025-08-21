@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Users, Award, Music } from 'lucide-react';
-import MusicalNotesBackground from '../components/MusicalNotesBackground';
 
 interface Orchestra {
   id: string;
@@ -79,7 +78,6 @@ const School = () => {
 
   return (
     <div className="font-inter">
-      <MusicalNotesBackground />
       {/* Header Section */}
       <section className="relative min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat bg-gray-900" 
         style={{ 
@@ -106,53 +104,6 @@ const School = () => {
 
       {/* Section Instruments */}
       <section className="py-20 bg-gradient-to-br from-gray-800 via-slate-800 to-gray-900 relative overflow-hidden">
-        {/* Particules d'arrière-plan */}
-        <div className="absolute inset-0">
-          {[...Array(20)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute w-2 h-2 bg-orange-400/15 rounded-full animate-pulse"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 3}s`,
-                animationDuration: `${2 + Math.random() * 2}s`
-              }}
-            />
-          ))}
-        </div>
-        
-        {/* Notes de musique dorées pour la section Instruments */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          {[...Array(20)].map((_, i) => {
-            const notes = ['♪', '♫', '♬', '♩', '♭', '♯', '𝄞', '𝄢'];
-            const note = notes[i % notes.length];
-            const delay = i * 1.1;
-            const left = 2 + (i * 4.8) % 96;
-            const top = 4 + (i * 4.5) % 92;
-            const size = 16 + Math.random() * 12;
-            const rotation = Math.random() * 360;
-            
-            return (
-              <div
-                key={i}
-                className="absolute text-amber-300/15 animate-pulse select-none"
-                style={{
-                  fontSize: `${size}px`,
-                  left: `${left}%`,
-                  top: `${top}%`,
-                  transform: `rotate(${rotation}deg)`,
-                  animationDelay: `${delay}s`,
-                  animationDuration: '4.2s',
-                  textShadow: '0 0 15px rgba(252, 211, 77, 0.5)'
-                }}
-              >
-                {note}
-              </div>
-            );
-          })}
-        </div>
-        
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16 animate-fade-in relative z-10">
             <div className="inline-block mb-6">
@@ -287,37 +238,6 @@ const School = () => {
 
       {/* Section Orchestres */}
       <section className="py-16 bg-gradient-to-br from-blue-25 via-indigo-25 to-purple-25">
-        {/* Notes de musique violettes pour la section Orchestres */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          {[...Array(17)].map((_, i) => {
-            const notes = ['♪', '♫', '♬', '♩', '♭', '♯', '𝄞', '𝄢', '𝄡'];
-            const note = notes[i % notes.length];
-            const delay = i * 1.4;
-            const left = 3 + (i * 5.7) % 94;
-            const top = 7 + (i * 5.2) % 86;
-            const size = 15 + Math.random() * 10;
-            const rotation = Math.random() * 360;
-            
-            return (
-              <div
-                key={i}
-                className="absolute text-indigo-400/16 animate-bounce select-none"
-                style={{
-                  fontSize: `${size}px`,
-                  left: `${left}%`,
-                  top: `${top}%`,
-                  transform: `rotate(${rotation}deg)`,
-                  animationDelay: `${delay}s`,
-                  animationDuration: '3.2s',
-                  textShadow: '0 0 10px rgba(129, 140, 248, 0.4)'
-                }}
-              >
-                {note}
-              </div>
-            );
-          })}
-        </div>
-        
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12 animate-fade-in">

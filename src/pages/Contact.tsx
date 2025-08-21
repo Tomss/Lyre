@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { MapPin, Phone, Mail, Clock, Send, User, MessageSquare, CheckCircle, AlertCircle } from 'lucide-react';
-import MusicalNotesBackground from '../components/MusicalNotesBackground';
 
 interface FormData {
   name: string;
@@ -91,7 +90,6 @@ const Contact = () => {
 
   return (
     <div className="font-inter">
-      <MusicalNotesBackground />
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat bg-gray-900" 
         style={{ 
@@ -111,53 +109,6 @@ const Contact = () => {
 
       {/* Formulaire et Carte */}
       <section className="py-16 bg-gradient-to-br from-slate-900 via-gray-800 to-slate-900 relative overflow-hidden">
-        {/* Particules d'arrière-plan */}
-        <div className="absolute inset-0">
-          {[...Array(25)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute w-1 h-1 bg-orange-400/15 rounded-full animate-pulse"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 3}s`,
-                animationDuration: `${2 + Math.random() * 2}s`
-              }}
-            />
-          ))}
-        </div>
-        
-        {/* Notes de musique dorées pour contactez-nous */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          {[...Array(14)].map((_, i) => {
-            const notes = ['♪', '♫', '♬', '♩', '♭', '♯', '𝄞'];
-            const note = notes[i % notes.length];
-            const delay = i * 1.6;
-            const left = 4 + (i * 6.8) % 92;
-            const top = 8 + (i * 6.2) % 84;
-            const size = 17 + Math.random() * 11;
-            const rotation = Math.random() * 360;
-            
-            return (
-              <div
-                key={i}
-                className="absolute text-amber-300/16 animate-pulse select-none"
-                style={{
-                  fontSize: `${size}px`,
-                  left: `${left}%`,
-                  top: `${top}%`,
-                  transform: `rotate(${rotation}deg)`,
-                  animationDelay: `${delay}s`,
-                  animationDuration: '3.7s',
-                  textShadow: '0 0 14px rgba(252, 211, 77, 0.5)'
-                }}
-              >
-                {note}
-              </div>
-            );
-          })}
-        </div>
-        
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           {/* Infos pratiques */}
           <div className="text-center mb-12 relative z-10">
@@ -385,37 +336,6 @@ const Contact = () => {
 
       {/* Coordonnées */}
       <section className="py-16 bg-gradient-to-br from-blue-25 via-indigo-25 to-purple-25">
-        {/* Notes de musique bleues pour nos coordonnées */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          {[...Array(12)].map((_, i) => {
-            const notes = ['♪', '♫', '♭', '♯', '♬', '𝄞'];
-            const note = notes[i % notes.length];
-            const delay = i * 2.1;
-            const left = 6 + (i * 8) % 88;
-            const top = 12 + (i * 7.5) % 76;
-            const size = 15 + Math.random() * 8;
-            const rotation = Math.random() * 360;
-            
-            return (
-              <div
-                key={i}
-                className="absolute text-indigo-400/18 animate-bounce select-none"
-                style={{
-                  fontSize: `${size}px`,
-                  left: `${left}%`,
-                  top: `${top}%`,
-                  transform: `rotate(${rotation}deg)`,
-                  animationDelay: `${delay}s`,
-                  animationDuration: '2.9s',
-                  textShadow: '0 0 9px rgba(129, 140, 248, 0.4)'
-                }}
-              >
-                {note}
-              </div>
-            );
-          })}
-        </div>
-        
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="font-poppins font-bold text-2xl md:text-3xl text-dark mb-3">

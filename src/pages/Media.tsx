@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { Image, Play, Camera, Music, FileText, File, Filter, Search, X, ChevronRight, Star } from 'lucide-react';
 import MediaGallery from '../components/MediaGallery';
 import MediaPreview from '../components/MediaPreview';
-import MusicalNotesBackground from '../components/MusicalNotesBackground';
 
 const Media = () => {
   const [mediaItems, setMediaItems] = React.useState([]);
@@ -156,7 +155,6 @@ const Media = () => {
   };
   return (
     <div className="font-inter">
-      <MusicalNotesBackground />
       {/* Galerie modale */}
       {selectedMedia && (
         <MediaGallery
@@ -196,22 +194,6 @@ const Media = () => {
       {/* Médias mis en avant */}
       {featuredMedia.length > 0 && (
         <section className="py-20 bg-gradient-to-br from-orange-25 via-amber-25 to-yellow-25 relative overflow-hidden">
-          {/* Particules d'arrière-plan */}
-          <div className="absolute inset-0">
-            {[...Array(20)].map((_, i) => (
-              <div
-                key={i}
-                className="absolute w-2 h-2 bg-orange-400/10 rounded-full animate-pulse"
-                style={{
-                  left: `${Math.random() * 100}%`,
-                  top: `${Math.random() * 100}%`,
-                  animationDelay: `${Math.random() * 3}s`,
-                  animationDuration: `${2 + Math.random() * 2}s`
-                }}
-              />
-            ))}
-          </div>
-          
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16 relative z-10">
               <div className="inline-block mb-6">
@@ -288,53 +270,6 @@ const Media = () => {
 
       {/* Tous les médias */}
       <section className="py-20 bg-gradient-to-br from-slate-900 via-gray-800 to-slate-900 relative overflow-hidden">
-        {/* Particules d'arrière-plan */}
-        <div className="absolute inset-0">
-          {[...Array(25)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute w-1 h-1 bg-orange-400/15 rounded-full animate-pulse"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 3}s`,
-                animationDuration: `${2 + Math.random() * 2}s`
-              }}
-            />
-          ))}
-        </div>
-        
-        {/* Notes de musique dorées scintillantes pour la médiathèque */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          {[...Array(20)].map((_, i) => {
-            const notes = ['♪', '♫', '♬', '♩', '♭', '♯', '𝄞', '𝄢'];
-            const note = notes[i % notes.length];
-            const delay = i * 1.0;
-            const left = 2 + (i * 4.8) % 96;
-            const top = 4 + (i * 4.6) % 92;
-            const size = 17 + Math.random() * 13;
-            const rotation = Math.random() * 360;
-            
-            return (
-              <div
-                key={i}
-                className="absolute text-orange-200/14 animate-pulse select-none"
-                style={{
-                  fontSize: `${size}px`,
-                  left: `${left}%`,
-                  top: `${top}%`,
-                  transform: `rotate(${rotation}deg)`,
-                  animationDelay: `${delay}s`,
-                  animationDuration: '4.3s',
-                  textShadow: '0 0 16px rgba(254, 215, 170, 0.5)'
-                }}
-              >
-                {note}
-              </div>
-            );
-          })}
-        </div>
-        
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           {/* Filtres et recherche intégrés */}
           {mediaItems.length > 0 && (
@@ -577,58 +512,6 @@ const Media = () => {
 
       {/* Section d'appel à contribution */}
       <section className="py-20 bg-gradient-to-br from-orange-25 via-amber-25 to-yellow-25 relative overflow-hidden">
-        {/* Particules d'arrière-plan */}
-        <div className="absolute inset-0">
-          {[...Array(15)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute w-2 h-2 bg-orange-400/15 rounded-full animate-pulse"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 3}s`,
-                animationDuration: `${2 + Math.random() * 2}s`
-              }}
-            />
-          ))}
-        </div>
-        
-        {/* Notes de musique chaleureuses scintillantes pour le partage de souvenirs */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          {[...Array(13)].map((_, i) => {
-            const notes = ['♪', '♫', '♬', '♭', '♯', '𝄞', '𝄢'];
-            const note = notes[i % notes.length];
-            const delay = i * 1.8;
-            const left = 5 + (i * 7.5) % 90;
-            const top = 10 + (i * 6.8) % 80;
-            const size = 16 + Math.random() * 11;
-            const rotation = Math.random() * 360;
-            
-            return (
-              <div
-                key={i}
-                className="absolute text-orange-400/20 animate-bounce select-none"
-                style={{
-                  fontSize: `${size}px`,
-                  left: `${left}%`,
-                  top: `${top}%`,
-                  transform: `rotate(${rotation}deg)`,
-                  animationDelay: `${delay}s`,
-                  animationDuration: '3.1s',
-                  textShadow: '0 0 12px rgba(251, 146, 60, 0.4)'
-                }}
-              >
-                {note}
-              </div>
-            );
-          })}
-        </div>
-        
-        {/* Formes géométriques décoratives */}
-        <div className="absolute top-10 left-10 w-32 h-32 border border-orange-400/10 rounded-full"></div>
-        <div className="absolute bottom-20 right-20 w-24 h-24 border-2 border-amber-600/20 rounded-lg rotate-45"></div>
-        <div className="absolute top-1/2 right-1/4 w-16 h-16 bg-gradient-to-br from-orange-400/5 to-amber-500/5 rounded-full"></div>
-        
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12 animate-fade-in">
