@@ -701,21 +701,21 @@ const Dashboard = () => {
                           })}
                         </div>
                       </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="text-center py-12 bg-white/40 rounded-xl border border-purple-200/50">
-                  <FileText className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                  <h3 className="font-poppins font-semibold text-xl text-gray-700 mb-2">
-                    Aucune partition disponible
-                  </h3>
-                  <p className="font-inter text-gray-600 max-w-md mx-auto">
-                    Vos partitions apparaîtront ici une fois que vous serez assigné à des instruments et orchestres, et que des partitions seront ajoutées pour vos morceaux.
-                  </p>
-                </div>
-              )}
-            </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-12 bg-white/40 rounded-xl border border-purple-200/50">
+                <FileText className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                <h3 className="font-poppins font-semibold text-xl text-gray-700 mb-2">
+                  Aucune partition disponible
+                </h3>
+                <p className="font-inter text-gray-600 max-w-md mx-auto">
+                  Vos partitions apparaîtront ici une fois que vous serez assigné à des instruments et orchestres, et que des partitions seront ajoutées pour vos morceaux.
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>
