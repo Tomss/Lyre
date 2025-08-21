@@ -1,5 +1,5 @@
 import React, { useState, useEffect, FormEvent } from 'react';
-import { Edit, Trash2, Plus, Users, Mail, User, Shield, X, UserPlus, CheckCircle, Music, Search, ArrowLeft } from 'lucide-react';
+import { Edit, Trash2, Plus, Users, Mail, User, Shield, X, UserPlus, CheckCircle, Music, Search, ArrowLeft, ChevronRight } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import { useAuth } from '../context/AuthContext';
 import { Navigate, Link } from 'react-router-dom';
@@ -46,6 +46,7 @@ const AdminUsers = () => {
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingUser, setEditingUser] = useState<UserData | null>(null);
+  const [expandedRoles, setExpandedRoles] = useState<Set<string>>(new Set(['Admin', 'Gestionnaire', 'Membre']));
   const [deleteConfirmation, setDeleteConfirmation] = useState<DeleteConfirmation>({
     isOpen: false,
     user: null,
@@ -533,6 +534,37 @@ const AdminUsers = () => {
     setRoleFilter([]);
   };
 
+  const toggleRoleExpansion = (role: string) => {
+    setExpandedRoles(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(role)) {
+        newSet.delete(role);
+      } else {
+        newSet.add(role);
+      }
+      return newSet;
+    });
+  };
+
+  const expandAllRoles = () => {
+    setExpandedRoles(new Set(['Admin', 'Gestionnaire', 'Membre']));
+  };
+
+  const collapseAllRoles = () => {
+    setExpandedRoles(new Set());
+  };
+
+  // Grouper les utilisateurs par rôle et trier par nom
+  const usersByRole = filteredUsers
+    .sort((a, b) => `${a.first_name} ${a.last_name}`.localeCompare(`${b.first_name} ${b.last_name}`))
+    .reduce((acc, user) => {
+      if (!acc[user.role]) {
+        acc[user.role] = [];
+      }
+      acc[user.role].push(user);
+      return acc;
+    }, {} as Record<string, UserData[]>);
+
   return (
     <div className="font-inter pt-20 pb-20 min-h-screen bg-gray-50">
       {/* Notification Toast */}
@@ -849,6 +881,10 @@ const AdminUsers = () => {
                   <button
                     onClick={() => toggleRoleFilter('Admin')}
                     className={`inline-flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
+                  <span className="text-gray-300">|</span>
+                  <button onClick={expandAllRoles} className="text-xs text-blue-600 hover:text-blue-700 font-medium">Tout déplier</button>
+                  <span className="text-gray-300">|</span>
+                  <button onClick={collapseAllRoles} className="text-xs text-gray-600 hover:text-gray-700 font-medium">Tout replier</button>
                       roleFilter.includes('Admin')
                         ? 'bg-red-100 text-red-800 border border-red-200'
                         : 'bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200'
@@ -921,59 +957,133 @@ const AdminUsers = () => {
               Aucun utilisateur trouvé
             </div>
           ) : (
-            <div className="divide-y divide-gray-200">
-              {filteredUsers.map((user) => {
-                const RoleIcon = getRoleIcon(user.role);
+            <div className="space-y-4">
+              {['Admin', 'Gestionnaire', 'Membre'].map((role) => {
+                const roleUsers = usersByRole[role] || [];
+                const isExpanded = expandedRoles.has(role);
+                const RoleIcon = getRoleIcon(role);
+                
+                if (roleUsers.length === 0) return null;
+                
                 return (
-                  <div key={user.id} className="p-6 hover:bg-gray-50 transition-colors">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
-                        <div className="bg-primary/10 p-3 rounded-full">
-                          <User className="h-6 w-6 text-primary" />
+                  <div key={role} className="border border-gray-200 rounded-xl overflow-hidden">
+                    {/* Header du rôle - cliquable */}
+                    <button
+                      onClick={() => toggleRoleExpansion(role)}
+                      className={`w-full p-6 transition-all duration-200 text-left border-b border-gray-200 ${
+                        role === 'Admin' ? 'bg-gradient-to-r from-red-50 to-pink-50 hover:from-red-100 hover:to-pink-100' :
+                        role === 'Gestionnaire' ? 'bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100' :
+                        'bg-gradient-to-r from-gray-50 to-slate-50 hover:from-gray-100 hover:to-slate-100'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          <div className={`p-3 rounded-lg shadow-md ${
+                            role === 'Admin' ? 'bg-gradient-to-br from-red-500 to-pink-600' :
+                            role === 'Gestionnaire' ? 'bg-gradient-to-br from-blue-500 to-indigo-600' :
+                            'bg-gradient-to-br from-gray-500 to-slate-600'
+                          }`}>
+                            <RoleIcon className="h-6 w-6 text-white" />
+                          </div>
+                          <div>
+                            <h3 className="font-poppins font-bold text-xl text-dark">
+                              {role}s
+                            </h3>
+                            <div className="flex items-center space-x-4 text-sm text-gray-600">
+                              <span>{roleUsers.length} utilisateur{roleUsers.length > 1 ? 's' : ''}</span>
+                            </div>
+                          </div>
                         </div>
-                        <div>
-                          <div className="font-semibold text-dark text-lg">
-                            {user.first_name} {user.last_name}
-                          </div>
-                          <div className="flex items-center space-x-3 text-sm text-gray-600 mb-1">
-                            <span className="flex items-center space-x-1">
-                              <Mail className="h-4 w-4" />
-                              <span>{user.email}</span>
-                            </span>
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleColor(user.role)}`}>
-                              <RoleIcon className="h-3 w-3 mr-1" />
-                              {user.role}
-                            </span>
-                          </div>
-                          {userInstruments[user.id] && userInstruments[user.id].length > 0 && (
-                            <div className="flex items-center space-x-1 text-xs text-gray-500">
-                              <Music className="h-3 w-3" />
-                              <span>{userInstruments[user.id].map(inst => inst.name).join(', ')}</span>
+                        <div className="flex items-center space-x-3">
+                          <div className={`text-right bg-white/80 backdrop-blur-sm rounded-lg px-3 py-2 border ${
+                            role === 'Admin' ? 'border-red-200' :
+                            role === 'Gestionnaire' ? 'border-blue-200' :
+                            'border-gray-200'
+                          }`}>
+                            <div className={`text-lg font-bold ${
+                              role === 'Admin' ? 'text-red-700' :
+                              role === 'Gestionnaire' ? 'text-blue-700' :
+                              'text-gray-700'
+                            }`}>
+                              {roleUsers.length}
                             </div>
-                          )}
-                          {userOrchestras[user.id] && userOrchestras[user.id].length > 0 && (
-                            <div className="flex items-center space-x-1 text-xs text-gray-500 mt-1">
-                              <Users className="h-3 w-3" />
-                              <span>{userOrchestras[user.id].map(orc => orc.name).join(', ')}</span>
+                            <div className={`text-xs ${
+                              role === 'Admin' ? 'text-red-600' :
+                              role === 'Gestionnaire' ? 'text-blue-600' :
+                              'text-gray-600'
+                            }`}>
+                              membre{roleUsers.length > 1 ? 's' : ''}
                             </div>
-                          )}
                           </div>
+                          <div className={`transform transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}>
+                            <ChevronRight className="h-6 w-6 text-gray-400" />
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <button
-                          onClick={() => handleEdit(user)}
-                          className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-all duration-200"
-                          title="Modifier"
-                        >
-                          <Edit className="h-5 w-5" />
-                        </button>
-                        <button
-                          onClick={() => confirmDelete(user)}
-                          className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-all duration-200"
-                          title="Supprimer"
-                        >
-                          <Trash2 className="h-5 w-5" />
-                        </button>
+                    </button>
+                    
+                    {/* Liste des utilisateurs - collapsible */}
+                    <div className={`transition-all duration-300 overflow-hidden ${
+                      isExpanded ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
+                    }`}>
+                      <div className="divide-y divide-gray-100">
+                        {roleUsers.map((user) => {
+                          const UserRoleIcon = getRoleIcon(user.role);
+                          return (
+                            <div key={user.id} className="p-6 hover:bg-gray-50 transition-colors">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center space-x-4">
+                                  <div className="bg-primary/10 p-3 rounded-full">
+                                    <User className="h-6 w-6 text-primary" />
+                                  </div>
+                                  <div>
+                                    <div className="font-semibold text-dark text-lg">
+                                      {user.first_name} {user.last_name}
+                                    </div>
+                                    <div className="flex items-center space-x-3 text-sm text-gray-600 mb-1">
+                                      <span className="flex items-center space-x-1">
+                                        <Mail className="h-4 w-4" />
+                                        <span>{user.email}</span>
+                                      </span>
+                                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleColor(user.role)}`}>
+                                        <UserRoleIcon className="h-3 w-3 mr-1" />
+                                        {user.role}
+                                      </span>
+                                    </div>
+                                    {userInstruments[user.id] && userInstruments[user.id].length > 0 && (
+                                      <div className="flex items-center space-x-1 text-xs text-gray-500">
+                                        <Music className="h-3 w-3" />
+                                        <span>{userInstruments[user.id].map(inst => inst.name).join(', ')}</span>
+                                      </div>
+                                    )}
+                                    {userOrchestras[user.id] && userOrchestras[user.id].length > 0 && (
+                                      <div className="flex items-center space-x-1 text-xs text-gray-500 mt-1">
+                                        <Users className="h-3 w-3" />
+                                        <span>{userOrchestras[user.id].map(orc => orc.name).join(', ')}</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <button
+                                    onClick={() => handleEdit(user)}
+                                    className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-all duration-200"
+                                    title="Modifier"
+                                  >
+                                    <Edit className="h-5 w-5" />
+                                  </button>
+                                  <button
+                                    onClick={() => confirmDelete(user)}
+                                    className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-all duration-200"
+                                    title="Supprimer"
+                                  >
+                                    <Trash2 className="h-5 w-5" />
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   </div>

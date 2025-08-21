@@ -1,5 +1,5 @@
 import React, { useState, useEffect, FormEvent } from 'react';
-import { Edit, Trash2, Plus, Calendar, Search, X, CheckCircle, ArrowLeft, Clock, MapPin, Users } from 'lucide-react';
+import { Edit, Trash2, Plus, Calendar, Search, X, CheckCircle, ArrowLeft, Clock, MapPin, Users, ChevronRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Navigate, Link } from 'react-router-dom';
 
@@ -39,6 +39,8 @@ const AdminEvents = () => {
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
+  const [expandedTypes, setExpandedTypes] = useState<Set<string>>(new Set(['concert', 'repetition']));
+  const [timeFilter, setTimeFilter] = useState<'all' | 'upcoming' | 'past'>('all');
   const [deleteConfirmation, setDeleteConfirmation] = useState<DeleteConfirmation>({
     isOpen: false,
     event: null,
@@ -297,6 +299,29 @@ const AdminEvents = () => {
     );
   };
 
+  const toggleTypeExpansion = (type: string) => {
+    setExpandedTypes(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(type)) {
+        newSet.delete(type);
+      } else {
+        newSet.add(type);
+      }
+      return newSet;
+    });
+  };
+
+  const expandAllTypes = () => {
+    setExpandedTypes(new Set(['concert', 'repetition']));
+  };
+
+  const collapseAllTypes = () => {
+    setExpandedTypes(new Set());
+  };
+
+  const isUpcoming = (dateString: string) => new Date(dateString) > new Date();
+  const isPast = (dateString: string) => new Date(dateString) <= new Date();
+
   // Filtrer les événements
   const filteredEvents = events.filter(event => {
     const searchLower = searchTerm.toLowerCase();
@@ -309,8 +334,23 @@ const AdminEvents = () => {
     
     const matchesType = typeFilter.includes(event.event_type);
     
-    return matchesSearch && matchesType;
+    const matchesTime = timeFilter === 'all' || 
+      (timeFilter === 'upcoming' && isUpcoming(event.event_date)) ||
+      (timeFilter === 'past' && isPast(event.event_date));
+    
+    return matchesSearch && matchesType && matchesTime;
   });
+
+  // Grouper les événements par type et trier par date (plus ancien au plus récent)
+  const eventsByType = filteredEvents
+    .sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime())
+    .reduce((acc, event) => {
+      if (!acc[event.event_type]) {
+        acc[event.event_type] = [];
+      }
+      acc[event.event_type].push(event);
+      return acc;
+    }, {} as Record<string, Event[]>);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('fr-FR', {
@@ -608,30 +648,86 @@ const AdminEvents = () => {
             </div>
             
             {/* Filtres par type */}
-            <div className="flex items-center space-x-3">
-              <span className="text-sm font-medium text-gray-700">Filtrer par type :</span>
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+              {/* Filtres par type */}
+              <div className="flex items-center space-x-3">
+                <span className="text-sm font-medium text-gray-700">Filtrer par type :</span>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => toggleTypeFilter('concert')}
+                    className={`inline-flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
+                      typeFilter.includes('concert')
+                        ? 'bg-green-100 text-green-800 border border-green-200'
+                        : 'bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200'
+                    }`}
+                  >
+                    <Calendar className="h-3 w-3" />
+                    <span>Concerts</span>
+                  </button>
+                  <button
+                    onClick={() => toggleTypeFilter('repetition')}
+                    className={`inline-flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
+                      typeFilter.includes('repetition')
+                        ? 'bg-blue-100 text-blue-800 border border-blue-200'
+                        : 'bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200'
+                    }`}
+                  >
+                    <Clock className="h-3 w-3" />
+                    <span>Répétitions</span>
+                  </button>
+                </div>
+              </div>
+              
+              {/* Filtres temporels */}
+              <div className="flex items-center space-x-3">
+                <span className="text-sm font-medium text-gray-700">Période :</span>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => setTimeFilter('all')}
+                    className={`inline-flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
+                      timeFilter === 'all'
+                        ? 'bg-gray-100 text-gray-800 border border-gray-300'
+                        : 'bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100'
+                    }`}
+                  >
+                    <span>Tous</span>
+                  </button>
+                  <button
+                    onClick={() => setTimeFilter('upcoming')}
+                    className={`inline-flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
+                      timeFilter === 'upcoming'
+                        ? 'bg-orange-100 text-orange-800 border border-orange-200'
+                        : 'bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100'
+                    }`}
+                  >
+                    <span>À venir</span>
+                  </button>
+                  <button
+                    onClick={() => setTimeFilter('past')}
+                    className={`inline-flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
+                      timeFilter === 'past'
+                        ? 'bg-slate-100 text-slate-800 border border-slate-200'
+                        : 'bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100'
+                    }`}
+                  >
+                    <span>Passés</span>
+                  </button>
+                </div>
+              </div>
+              
+              {/* Actions de contrôle */}
               <div className="flex items-center space-x-2">
                 <button
-                  onClick={() => toggleTypeFilter('concert')}
-                  className={`inline-flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
-                    typeFilter.includes('concert')
-                      ? 'bg-green-100 text-green-800 border border-green-200'
-                      : 'bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200'
-                  }`}
+                  onClick={expandAllTypes}
+                  className="text-xs text-blue-600 hover:text-blue-700 font-medium transition-colors bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded border border-blue-200"
                 >
-                  <Calendar className="h-3 w-3" />
-                  <span>Concerts</span>
+                  Tout déplier
                 </button>
                 <button
-                  onClick={() => toggleTypeFilter('repetition')}
-                  className={`inline-flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
-                    typeFilter.includes('repetition')
-                      ? 'bg-blue-100 text-blue-800 border border-blue-200'
-                      : 'bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200'
-                  }`}
+                  onClick={collapseAllTypes}
+                  className="text-xs text-gray-600 hover:text-gray-700 font-medium transition-colors bg-gray-50 hover:bg-gray-100 px-2 py-1 rounded border border-gray-200"
                 >
-                  <Clock className="h-3 w-3" />
-                  <span>Répétitions</span>
+                  Tout replier
                 </button>
               </div>
             </div>
@@ -654,69 +750,162 @@ const AdminEvents = () => {
               <p>Aucun événement trouvé</p>
             </div>
           ) : (
-            <div className="divide-y divide-gray-200">
-              {filteredEvents.map((event) => {
-                const TypeIcon = getTypeIcon(event.event_type);
+            <div className="space-y-4">
+              {['concert', 'repetition'].map((eventType) => {
+                const typeEvents = eventsByType[eventType] || [];
+                const isExpanded = expandedTypes.has(eventType);
+                const TypeIcon = getTypeIcon(eventType);
+                
+                if (typeEvents.length === 0) return null;
+                
                 return (
-                  <div key={event.id} className="p-6 hover:bg-gray-50 transition-colors">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-start space-x-4 flex-1">
-                        <div className="bg-primary/10 p-3 rounded-full">
-                          <TypeIcon className="h-6 w-6 text-primary" />
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-3 mb-2">
-                            <h3 className="font-semibold text-dark text-lg">
-                              {event.title}
+                  <div key={eventType} className="border border-gray-200 rounded-xl overflow-hidden">
+                    {/* Header du type - cliquable */}
+                    <button
+                      onClick={() => toggleTypeExpansion(eventType)}
+                      className={`w-full p-6 transition-all duration-200 text-left border-b border-gray-200 ${
+                        eventType === 'concert' 
+                          ? 'bg-gradient-to-r from-green-50 to-emerald-50 hover:from-green-100 hover:to-emerald-100' 
+                          : 'bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          <div className={`p-3 rounded-lg shadow-md ${
+                            eventType === 'concert' 
+                              ? 'bg-gradient-to-br from-green-500 to-emerald-600' 
+                              : 'bg-gradient-to-br from-blue-500 to-indigo-600'
+                          }`}>
+                            <TypeIcon className="h-6 w-6 text-white" />
+                          </div>
+                          <div>
+                            <h3 className="font-poppins font-bold text-xl text-dark">
+                              {eventType === 'concert' ? 'Concerts' : 'Répétitions'}
                             </h3>
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getTypeColor(event.event_type)}`}>
-                              <TypeIcon className="h-3 w-3 mr-1" />
-                              {event.event_type === 'concert' ? 'Concert' : 'Répétition'}
-                            </span>
-                          </div>
-                          
-                          {event.description && (
-                            <p className="text-sm text-gray-600 mb-2">
-                              {event.description}
-                            </p>
-                          )}
-                          
-                          <div className="flex items-center space-x-4 text-sm text-gray-500 mb-2">
-                            <span className="flex items-center space-x-1">
-                              <Calendar className="h-4 w-4" />
-                              <span>{formatDate(event.event_date)}</span>
-                            </span>
-                            {event.location && (
-                              <span className="flex items-center space-x-1">
-                                <MapPin className="h-4 w-4" />
-                                <span>{event.location}</span>
+                            <div className="flex items-center space-x-4 text-sm text-gray-600">
+                              <span>{typeEvents.length} événement{typeEvents.length > 1 ? 's' : ''}</span>
+                              <span>•</span>
+                              <span>
+                                {typeEvents.filter(e => isUpcoming(e.event_date)).length} à venir, {' '}
+                                {typeEvents.filter(e => isPast(e.event_date)).length} passé{typeEvents.filter(e => isPast(e.event_date)).length > 1 ? 's' : ''}
                               </span>
-                            )}
-                          </div>
-                          
-                          {event.orchestras && event.orchestras.length > 0 && (
-                            <div className="flex items-center space-x-1 text-xs text-gray-500">
-                              <Users className="h-3 w-3" />
-                              <span>{event.orchestras.map(o => o.name).join(', ')}</span>
                             </div>
-                          )}
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-3">
+                          <div className={`text-right bg-white/80 backdrop-blur-sm rounded-lg px-3 py-2 border ${
+                            eventType === 'concert' ? 'border-green-200' : 'border-blue-200'
+                          }`}>
+                            <div className={`text-lg font-bold ${
+                              eventType === 'concert' ? 'text-green-700' : 'text-blue-700'
+                            }`}>
+                              {typeEvents.length}
+                            </div>
+                            <div className={`text-xs ${
+                              eventType === 'concert' ? 'text-green-600' : 'text-blue-600'
+                            }`}>
+                              événement{typeEvents.length > 1 ? 's' : ''}
+                            </div>
+                          </div>
+                          <div className={`transform transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}>
+                            <ChevronRight className="h-6 w-6 text-gray-400" />
+                          </div>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-2 ml-4">
-                        <button
-                          onClick={() => handleEdit(event)}
-                          className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-all duration-200"
-                          title="Modifier"
-                        >
-                          <Edit className="h-5 w-5" />
-                        </button>
-                        <button
-                          onClick={() => confirmDelete(event)}
-                          className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-all duration-200"
-                          title="Supprimer"
-                        >
-                          <Trash2 className="h-5 w-5" />
-                        </button>
+                    </button>
+                    
+                    {/* Liste des événements - collapsible */}
+                    <div className={`transition-all duration-300 overflow-hidden ${
+                      isExpanded ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
+                    }`}>
+                      <div className="divide-y divide-gray-100">
+                        {typeEvents.map((event) => {
+                          const EventTypeIcon = getTypeIcon(event.event_type);
+                          const eventIsUpcoming = isUpcoming(event.event_date);
+                          
+                          return (
+                            <div key={event.id} className={`p-6 hover:bg-gray-50 transition-colors ${
+                              !eventIsUpcoming ? 'opacity-75' : ''
+                            }`}>
+                              <div className="flex items-start justify-between">
+                                <div className="flex items-start space-x-4 flex-1">
+                                  <div className={`p-3 rounded-lg ${
+                                    eventIsUpcoming ? 'bg-primary/10' : 'bg-gray-100'
+                                  }`}>
+                                    <EventTypeIcon className={`h-6 w-6 ${
+                                      eventIsUpcoming ? 'text-primary' : 'text-gray-500'
+                                    }`} />
+                                  </div>
+                                  <div className="flex-1">
+                                    <div className="flex items-center space-x-3 mb-2">
+                                      <h3 className={`font-semibold text-lg ${
+                                        eventIsUpcoming ? 'text-dark' : 'text-gray-600'
+                                      }`}>
+                                        {event.title}
+                                      </h3>
+                                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getTypeColor(event.event_type)}`}>
+                                        <EventTypeIcon className="h-3 w-3 mr-1" />
+                                        {event.event_type === 'concert' ? 'Concert' : 'Répétition'}
+                                      </span>
+                                      {eventIsUpcoming && (
+                                        <span className="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full font-medium">
+                                          À venir
+                                        </span>
+                                      )}
+                                      {!eventIsUpcoming && (
+                                        <span className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full font-medium">
+                                          Passé
+                                        </span>
+                                      )}
+                                    </div>
+                                    
+                                    {event.description && (
+                                      <p className="text-sm text-gray-600 mb-2">
+                                        {event.description}
+                                      </p>
+                                    )}
+                                    
+                                    <div className="flex items-center space-x-4 text-sm text-gray-500 mb-2">
+                                      <span className="flex items-center space-x-1">
+                                        <Calendar className="h-4 w-4" />
+                                        <span>{formatDate(event.event_date)}</span>
+                                      </span>
+                                      {event.location && (
+                                        <span className="flex items-center space-x-1">
+                                          <MapPin className="h-4 w-4" />
+                                          <span>{event.location}</span>
+                                        </span>
+                                      )}
+                                    </div>
+                                    
+                                    {event.orchestras && event.orchestras.length > 0 && (
+                                      <div className="flex items-center space-x-1 text-xs text-gray-500">
+                                        <Users className="h-3 w-3" />
+                                        <span>{event.orchestras.map(o => o.name).join(', ')}</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="flex items-center space-x-2 ml-4">
+                                  <button
+                                    onClick={() => handleEdit(event)}
+                                    className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-all duration-200"
+                                    title="Modifier"
+                                  >
+                                    <Edit className="h-5 w-5" />
+                                  </button>
+                                  <button
+                                    onClick={() => confirmDelete(event)}
+                                    className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-all duration-200"
+                                    title="Supprimer"
+                                  >
+                                    <Trash2 className="h-5 w-5" />
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   </div>
