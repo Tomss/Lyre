@@ -122,24 +122,29 @@ const School = () => {
           ))}
         </div>
         
-        {/* Notes de musique pour la section Instruments */}
+        {/* Notes de musique dorées pour la section Instruments */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          {[...Array(8)].map((_, i) => {
-            const notes = ['♪', '♫', '♬', '♩', '♭', '♯'];
+          {[...Array(20)].map((_, i) => {
+            const notes = ['♪', '♫', '♬', '♩', '♭', '♯', '𝄞', '𝄢'];
             const note = notes[i % notes.length];
-            const delay = i * 2;
-            const left = 10 + (i * 12) % 80;
-            const top = 15 + (i * 20) % 70;
+            const delay = i * 1.1;
+            const left = 2 + (i * 4.8) % 96;
+            const top = 4 + (i * 4.5) % 92;
+            const size = 16 + Math.random() * 12;
+            const rotation = Math.random() * 360;
             
             return (
               <div
                 key={i}
-                className="absolute text-orange-400/30 text-2xl animate-pulse"
+                className="absolute text-amber-300/15 animate-pulse select-none"
                 style={{
+                  fontSize: `${size}px`,
                   left: `${left}%`,
                   top: `${top}%`,
+                  transform: `rotate(${rotation}deg)`,
                   animationDelay: `${delay}s`,
-                  animationDuration: '4s'
+                  animationDuration: '4.2s',
+                  textShadow: '0 0 15px rgba(252, 211, 77, 0.5)'
                 }}
               >
                 {note}
@@ -282,24 +287,29 @@ const School = () => {
 
       {/* Section Orchestres */}
       <section className="py-16 bg-gradient-to-br from-blue-25 via-indigo-25 to-purple-25">
-        {/* Notes de musique pour la section Orchestres */}
+        {/* Notes de musique violettes pour la section Orchestres */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          {[...Array(6)].map((_, i) => {
-            const notes = ['♪', '♫', '♬', '♩'];
+          {[...Array(17)].map((_, i) => {
+            const notes = ['♪', '♫', '♬', '♩', '♭', '♯', '𝄞', '𝄢', '𝄡'];
             const note = notes[i % notes.length];
-            const delay = i * 2.5;
-            const left = 15 + (i * 15) % 70;
-            const top = 20 + (i * 25) % 60;
+            const delay = i * 1.4;
+            const left = 3 + (i * 5.7) % 94;
+            const top = 7 + (i * 5.2) % 86;
+            const size = 15 + Math.random() * 10;
+            const rotation = Math.random() * 360;
             
             return (
               <div
                 key={i}
-                className="absolute text-blue-400/25 text-xl animate-bounce"
+                className="absolute text-indigo-400/16 animate-bounce select-none"
                 style={{
+                  fontSize: `${size}px`,
                   left: `${left}%`,
                   top: `${top}%`,
+                  transform: `rotate(${rotation}deg)`,
                   animationDelay: `${delay}s`,
-                  animationDuration: '3s'
+                  animationDuration: '3.2s',
+                  textShadow: '0 0 10px rgba(129, 140, 248, 0.4)'
                 }}
               >
                 {note}

@@ -304,24 +304,29 @@ const Media = () => {
           ))}
         </div>
         
-        {/* Notes de musique pour la médiathèque */}
+        {/* Notes de musique dorées scintillantes pour la médiathèque */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          {[...Array(6)].map((_, i) => {
-            const notes = ['♪', '♫', '♬', '♩'];
+          {[...Array(20)].map((_, i) => {
+            const notes = ['♪', '♫', '♬', '♩', '♭', '♯', '𝄞', '𝄢'];
             const note = notes[i % notes.length];
-            const delay = i * 2.5;
-            const left = 15 + (i * 16) % 70;
-            const top = 20 + (i * 28) % 60;
+            const delay = i * 1.0;
+            const left = 2 + (i * 4.8) % 96;
+            const top = 4 + (i * 4.6) % 92;
+            const size = 17 + Math.random() * 13;
+            const rotation = Math.random() * 360;
             
             return (
               <div
                 key={i}
-                className="absolute text-orange-300/30 text-xl animate-pulse"
+                className="absolute text-orange-200/14 animate-pulse select-none"
                 style={{
+                  fontSize: `${size}px`,
                   left: `${left}%`,
                   top: `${top}%`,
+                  transform: `rotate(${rotation}deg)`,
                   animationDelay: `${delay}s`,
-                  animationDuration: '4s'
+                  animationDuration: '4.3s',
+                  textShadow: '0 0 16px rgba(254, 215, 170, 0.5)'
                 }}
               >
                 {note}
@@ -588,24 +593,29 @@ const Media = () => {
           ))}
         </div>
         
-        {/* Notes de musique pour le partage de souvenirs */}
+        {/* Notes de musique chaleureuses scintillantes pour le partage de souvenirs */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          {[...Array(5)].map((_, i) => {
-            const notes = ['♪', '♫', '♬', '♭', '♯'];
+          {[...Array(13)].map((_, i) => {
+            const notes = ['♪', '♫', '♬', '♭', '♯', '𝄞', '𝄢'];
             const note = notes[i % notes.length];
-            const delay = i * 3;
-            const left = 20 + (i * 18) % 60;
-            const top = 25 + (i * 20) % 50;
+            const delay = i * 1.8;
+            const left = 5 + (i * 7.5) % 90;
+            const top = 10 + (i * 6.8) % 80;
+            const size = 16 + Math.random() * 11;
+            const rotation = Math.random() * 360;
             
             return (
               <div
                 key={i}
-                className="absolute text-orange-500/25 text-2xl animate-bounce"
+                className="absolute text-orange-400/20 animate-bounce select-none"
                 style={{
+                  fontSize: `${size}px`,
                   left: `${left}%`,
                   top: `${top}%`,
+                  transform: `rotate(${rotation}deg)`,
                   animationDelay: `${delay}s`,
-                  animationDuration: '3s'
+                  animationDuration: '3.1s',
+                  textShadow: '0 0 12px rgba(251, 146, 60, 0.4)'
                 }}
               >
                 {note}
