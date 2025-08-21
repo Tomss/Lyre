@@ -48,6 +48,22 @@ export default {
           '0%': { opacity: '0', transform: 'translateY(20px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
+        floatNote: {
+          '0%': { 
+            transform: 'translateY(100vh) translateX(0) rotate(0deg)',
+            opacity: '0'
+          },
+          '10%': { 
+            opacity: '0.1'
+          },
+          '90%': { 
+            opacity: '0.1'
+          },
+          '100%': { 
+            transform: 'translateY(-100px) translateX(20px) rotate(360deg)',
+            opacity: '0'
+          },
+        },
       },
     },
   },
