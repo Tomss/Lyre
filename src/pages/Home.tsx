@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { Users, Calendar, Heart, Music2, Star, Award } from 'lucide-react';
+import MusicalNotesBackground from '../components/MusicalNotesBackground';
 
 const Home = () => {
   const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
@@ -58,6 +59,7 @@ const Home = () => {
 
   return (
     <div className="font-inter">
+      <MusicalNotesBackground />
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat bg-gray-900" 
       >

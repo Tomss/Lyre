@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Image, Play, Camera, Music, FileText, File, Filter, Search, X, ChevronRight, Star } from 'lucide-react';
 import MediaGallery from '../components/MediaGallery';
 import MediaPreview from '../components/MediaPreview';
+import MusicalNotesBackground from '../components/MusicalNotesBackground';
 
 const Media = () => {
   const [mediaItems, setMediaItems] = React.useState([]);
@@ -155,6 +156,7 @@ const Media = () => {
   };
   return (
     <div className="font-inter">
+      <MusicalNotesBackground />
       {/* Galerie modale */}
       {selectedMedia && (
         <MediaGallery

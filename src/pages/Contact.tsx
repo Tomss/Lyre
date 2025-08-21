@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { MapPin, Phone, Mail, Clock, Send, User, MessageSquare, CheckCircle, AlertCircle } from 'lucide-react';
+import MusicalNotesBackground from '../components/MusicalNotesBackground';
 
 interface FormData {
   name: string;
@@ -90,6 +91,7 @@ const Contact = () => {
 
   return (
     <div className="font-inter">
+      <MusicalNotesBackground />
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat bg-gray-900" 
         style={{ 

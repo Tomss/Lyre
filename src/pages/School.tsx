@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Users, Award, Music } from 'lucide-react';
+import MusicalNotesBackground from '../components/MusicalNotesBackground';
 
 interface Orchestra {
   id: string;
@@ -78,6 +79,7 @@ const School = () => {
 
   return (
     <div className="font-inter">
+      <MusicalNotesBackground />
       {/* Header Section */}
       <section className="relative min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat bg-gray-900" 
         style={{ 
