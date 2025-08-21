@@ -51,16 +51,32 @@ export default {
         floatNote: {
           '0%': { 
             transform: 'translateY(100vh) translateX(0) rotate(0deg)',
-            opacity: '0'
+            opacity: '0.3'
           },
-          '10%': { 
-            opacity: '0.1'
+          '5%': { 
+            opacity: '0.8'
           },
-          '90%': { 
-            opacity: '0.1'
+          '95%': { 
+            opacity: '0.8'
           },
           '100%': { 
-            transform: 'translateY(-100px) translateX(20px) rotate(360deg)',
+            transform: 'translateY(-100px) translateX(var(--drift, 20px)) rotate(360deg)',
+            opacity: '0'
+          },
+        },
+        'float-note': {
+          '0%': { 
+            transform: 'translateY(100vh) translateX(0) rotate(0deg)',
+            opacity: '0'
+          },
+          '5%': { 
+            opacity: '0.3'
+          },
+          '95%': { 
+            opacity: '0.3'
+          },
+          '100%': { 
+            transform: 'translateY(-100px) translateX(var(--drift, 20px)) rotate(360deg)',
             opacity: '0'
           },
         },
