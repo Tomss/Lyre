@@ -127,6 +127,32 @@ const Contact = () => {
           ))}
         </div>
         
+        {/* Notes de musique pour contactez-nous */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          {[...Array(6)].map((_, i) => {
+            const notes = ['♪', '♫', '♬', '♩', '♭'];
+            const note = notes[i % notes.length];
+            const delay = i * 2.5;
+            const left = 15 + (i * 15) % 70;
+            const top = 20 + (i * 25) % 60;
+            
+            return (
+              <div
+                key={i}
+                className="absolute text-orange-300/25 text-xl animate-pulse"
+                style={{
+                  left: `${left}%`,
+                  top: `${top}%`,
+                  animationDelay: `${delay}s`,
+                  animationDuration: '4s'
+                }}
+              >
+                {note}
+              </div>
+            );
+          })}
+        </div>
+        
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           {/* Infos pratiques */}
           <div className="text-center mb-12 relative z-10">
@@ -354,6 +380,32 @@ const Contact = () => {
 
       {/* Coordonnées */}
       <section className="py-16 bg-gradient-to-br from-blue-25 via-indigo-25 to-purple-25">
+        {/* Notes de musique pour nos coordonnées */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          {[...Array(4)].map((_, i) => {
+            const notes = ['♪', '♫', '♭', '♯'];
+            const note = notes[i % notes.length];
+            const delay = i * 3;
+            const left = 25 + (i * 20) % 50;
+            const top = 30 + (i * 15) % 40;
+            
+            return (
+              <div
+                key={i}
+                className="absolute text-blue-400/20 text-lg animate-bounce"
+                style={{
+                  left: `${left}%`,
+                  top: `${top}%`,
+                  animationDelay: `${delay}s`,
+                  animationDuration: '3.5s'
+                }}
+              >
+                {note}
+              </div>
+            );
+          })}
+        </div>
+        
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="font-poppins font-bold text-2xl md:text-3xl text-dark mb-3">

@@ -304,6 +304,32 @@ const Media = () => {
           ))}
         </div>
         
+        {/* Notes de musique pour la médiathèque */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          {[...Array(6)].map((_, i) => {
+            const notes = ['♪', '♫', '♬', '♩'];
+            const note = notes[i % notes.length];
+            const delay = i * 2.5;
+            const left = 15 + (i * 16) % 70;
+            const top = 20 + (i * 28) % 60;
+            
+            return (
+              <div
+                key={i}
+                className="absolute text-orange-300/30 text-xl animate-pulse"
+                style={{
+                  left: `${left}%`,
+                  top: `${top}%`,
+                  animationDelay: `${delay}s`,
+                  animationDuration: '4s'
+                }}
+              >
+                {note}
+              </div>
+            );
+          })}
+        </div>
+        
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           {/* Filtres et recherche intégrés */}
           {mediaItems.length > 0 && (
@@ -560,6 +586,32 @@ const Media = () => {
               }}
             />
           ))}
+        </div>
+        
+        {/* Notes de musique pour le partage de souvenirs */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          {[...Array(5)].map((_, i) => {
+            const notes = ['♪', '♫', '♬', '♭', '♯'];
+            const note = notes[i % notes.length];
+            const delay = i * 3;
+            const left = 20 + (i * 18) % 60;
+            const top = 25 + (i * 20) % 50;
+            
+            return (
+              <div
+                key={i}
+                className="absolute text-orange-500/25 text-2xl animate-bounce"
+                style={{
+                  left: `${left}%`,
+                  top: `${top}%`,
+                  animationDelay: `${delay}s`,
+                  animationDuration: '3s'
+                }}
+              >
+                {note}
+              </div>
+            );
+          })}
         </div>
         
         {/* Formes géométriques décoratives */}
