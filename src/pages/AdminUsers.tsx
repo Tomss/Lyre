@@ -881,13 +881,6 @@ const AdminUsers = () => {
                   <button
                     onClick={() => toggleRoleFilter('Admin')}
                     className={`inline-flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
-                  <span className="text-gray-300">|</span>
-                  <button onClick={expandAllRoles} className="text-xs text-blue-600 hover:text-blue-700 font-medium">Tout déplier</button>
-                  <span className="text-gray-300">|</span>
-                  <button onClick={collapseAllRoles} className="text-xs text-gray-600 hover:text-gray-700 font-medium">Tout replier</button>
-                      roleFilter.includes('Admin')
-                        ? 'bg-red-100 text-red-800 border border-red-200'
-                        : 'bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200'
                     }`}
                   >
                     <Shield className="h-3 w-3" />
@@ -932,6 +925,10 @@ const AdminUsers = () => {
                 >
                   Tout désélectionner
                 </button>
+                <span className="text-gray-300">|</span>
+                <button onClick={expandAllRoles} className="text-xs text-blue-600 hover:text-blue-700 font-medium">Tout déplier</button>
+                <span className="text-gray-300">|</span>
+                <button onClick={collapseAllRoles} className="text-xs text-gray-600 hover:text-gray-700 font-medium">Tout replier</button>
               </div>
             </div>
           </div>
