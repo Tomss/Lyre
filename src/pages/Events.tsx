@@ -177,6 +177,32 @@ const Events = () => {
               ))}
             </div>
             
+            {/* Notes de musique pour le calendrier */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden">
+              {[...Array(7)].map((_, i) => {
+                const notes = ['♪', '♫', '♬', '♩', '♭'];
+                const note = notes[i % notes.length];
+                const delay = i * 3;
+                const left = 12 + (i * 14) % 76;
+                const top = 18 + (i * 22) % 64;
+                
+                return (
+                  <div
+                    key={i}
+                    className="absolute text-orange-300/25 text-2xl animate-pulse"
+                    style={{
+                      left: `${left}%`,
+                      top: `${top}%`,
+                      animationDelay: `${delay}s`,
+                      animationDuration: '5s'
+                    }}
+                  >
+                    {note}
+                  </div>
+                );
+              })}
+            </div>
+            
             {/* Formes géométriques décoratives */}
             <div className="absolute top-10 left-10 w-32 h-32 border border-orange-400/10 rounded-full"></div>
             <div className="absolute bottom-20 right-20 w-24 h-24 border-2 border-slate-600/30 rounded-lg rotate-45"></div>
