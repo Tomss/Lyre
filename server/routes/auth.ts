@@ -69,10 +69,9 @@ router.post('/login', async (req, res) => {
 });
 
 // GET /api/auth/me - Vérifier le token et récupérer l'utilisateur
-// GET /api/auth/me - Vérifier le token et récupérer l'utilisateur
 router.get('/me', authenticateToken, (req, res) => {
-  // @ts-ignore
-  const user = req.user;
+  // On force TypeScript à accepter que 'user' contient bien nos données personnalisées
+  const user: any = (req as any).user;
 
   if (!user) {
     return res.status(401).json({ message: 'User not found in token' });
