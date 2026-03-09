@@ -1,12 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { Users, Award, Music } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useTheme } from '../context/ThemeContext';
+import { Users, Sparkles, Compass, Rocket, School as SchoolIcon, Presentation, Lightbulb, Heart, Mic2, History } from 'lucide-react';
+import PageHero from '../components/PageHero';
+import HistoryTimeline from '../components/HistoryTimeline';
 
-interface Orchestra {
-  id: string;
-  name: string;
-  description: string | null;
-  photo_url: string | null;
-}
+// Interfaces (peuvent être partagées)
+
 
 interface Instrument {
   id: string;
@@ -16,353 +15,255 @@ interface Instrument {
   photo_url: string | null;
 }
 
+
+
+const API_URL = 'http://localhost:3001/api';
+
+const getInstrumentConfig = (name: string) => {
+  const n = name.toLowerCase();
+  if (n.includes('hautbois') || n.includes('flûte') || n.includes('clarinette') || n.includes('saxophone') || n.includes('phonium') || n.includes('trompette') || n.includes('cor') || n.includes('trombone') || n.includes('tuba') || n.includes('saxhorn')) return { color: 'teal' };
+  if (n.includes('guitare') || n.includes('basse') || n.includes('contrebasse')) return { color: 'emerald' };
+  if (n.includes('percussion') || n.includes('batterie')) return { color: 'fuchsia' };
+  if (n.includes('eveil') || n.includes('éveil')) return { color: 'violet' };
+  return { color: 'cyan' };
+};
+
 const School = () => {
-  const [orchestras, setOrchestras] = useState<Orchestra[]>([]);
+  const { pageHeaders } = useTheme();
   const [instruments, setInstruments] = useState<Instrument[]>([]);
-  const [selectedOrchestra, setSelectedOrchestra] = useState<Orchestra | null>(null);
-  const [loading, setLoading] = useState(true);
   const [instrumentsLoading, setInstrumentsLoading] = useState(true);
 
-  // Récupérer tous les orchestres
-  const fetchOrchestras = async () => {
-    try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-orchestras`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setOrchestras(data || []);
-        
-        // Sélectionner l'orchestre d'harmonie par défaut (ou le premier si pas trouvé)
-        const harmonieOrchestra = data.find((o: Orchestra) => 
-          o.name.toLowerCase().includes('harmonie')
-        );
-        setSelectedOrchestra(harmonieOrchestra || data[0] || null);
-      }
-    } catch (err) {
-      console.error('Erreur lors de la récupération des orchestres:', err);
-    }
-    setLoading(false);
-  };
-
-  // Récupérer tous les instruments
-  const fetchInstruments = async () => {
-    try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-instruments`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setInstruments(data || []);
-      }
-    } catch (err) {
-      console.error('Erreur lors de la récupération des instruments:', err);
-    }
-    setInstrumentsLoading(false);
-  };
-
   useEffect(() => {
-    fetchOrchestras();
+    const fetchInstruments = async () => {
+      try {
+        const response = await fetch(`${API_URL}/public-instruments`);
+        if (response.ok) {
+          const data = await response.json();
+          setInstruments(data || []);
+        }
+      } catch (err) {
+        console.error('Erreur lors de la récupération des instruments:', err);
+      } finally {
+        setInstrumentsLoading(false);
+      }
+    };
+
     fetchInstruments();
   }, []);
 
   return (
     <div className="font-inter">
       {/* Header Section */}
-      <section className="relative min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat bg-gray-900" 
-        style={{ 
-          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url("https://images.pexels.com/photos/1407322/pexels-photo-1407322.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop")` 
-        }}>
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto animate-fade-in relative z-10">
-            <h1 className="font-poppins font-bold text-4xl md:text-5xl text-white mb-8 text-center">
-              L'école de musique
-            </h1>
-            
-            {/* Description principale */}
-            <div className="mb-12">
-              <p className="font-inter text-base text-white/90 leading-relaxed mb-8">
-                L'école propose une formation musicale du niveau Éveil au niveau Supérieur, par des professeurs diplômés de Conservatoires à Rayonnement Régional ou possédant un niveau équivalent.
-              </p>
-              <p className="font-inter text-base text-white/90 leading-relaxed mb-8">
-                Les cours suivent le rythme scolaire : un cours de solfège, une demi-heure d'instrument et une activité orchestrale par semaine dans l'un des orchestres suivants
-              </p>
+      <PageHero
+        title={<span>L'école de <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-emerald-400 to-cyan-500">Musique</span></span>}
+        subtitle="Formation musicale, instrumentale et pratique collective pour tous les âges."
+        backgroundImage={pageHeaders['school'] || "https://images.pexels.com/photos/1407322/pexels-photo-1407322.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop"}
+        anchors={[
+          { label: "Notre École", targetId: "presentation", icon: SchoolIcon, color: "teal" },
+          { label: "Nos Classes & Professeurs", targetId: "classes", icon: Users, color: "emerald" },
+          { label: "L'École c'est aussi...", targetId: "activites", icon: Sparkles, color: "cyan" },
+          { label: "Notre Histoire", targetId: "histoire", icon: History, color: "amber" }
+        ]}
+      />
+
+
+
+      {/* Main Content: Text + Features Grid */}
+      <section id="presentation" className="scroll-mt-20 py-20 bg-slate-50 border-b border-slate-100 relative overflow-hidden">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div className="max-w-4xl mx-auto text-center mb-12 animate-on-scroll">
+              <h2 className="text-3xl md:text-5xl font-poppins font-bold text-slate-800 mb-6 relative inline-block">
+                Notre École
+                <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-24 h-1 bg-teal-500 rounded-full"></div>
+              </h2>
             </div>
-          </div>
+            
+            <div className="max-w-3xl mx-auto text-center space-y-8 animate-on-scroll">
+               <p className="text-lg md:text-xl text-slate-600 leading-relaxed">
+                  L'école propose une formation musicale du <strong className="font-semibold text-slate-800">niveau Eveil</strong> au <strong className="font-semibold text-slate-800">niveau fin de 2nd cycle</strong>.
+                  L’enseignement est dispensé par des professeurs titulaires d’un D.E. ou d’un D.N.S.P.M., diplômés de Conservatoires à Rayonnement Régional ou Supérieur, passionnés par la musique et la pédagogie.
+               </p>
+
+               <div className="bg-white rounded-2xl p-8 md:p-12 shadow-md border border-slate-100">
+                 <p className="text-lg md:text-xl text-slate-700 leading-relaxed mb-6">
+                    Les cours suivent le rythme scolaire : un cours de solfège, une demi-heure d’instrument et une activité orchestrale par semaine.
+                 </p>
+                 <div className="w-16 h-px bg-slate-200 mx-auto my-6"></div>
+                 <p className="text-lg md:text-xl text-slate-700 leading-relaxed">
+                    Aux activités d’éveil ludiques, succède l’intégration progressive dans les orchestres d’élèves, jusqu’à l’accession aux rangs du <strong className="text-teal-600 uppercase tracking-wide">Grand Orchestre d’Harmonie</strong>.
+                 </p>
+               </div>
+
+               <p className="italic text-teal-700 text-lg md:text-xl font-medium mt-8 pt-6 border-t border-slate-200 inline-block">
+                  Envie de faire de la musique, de nous rencontrer ? Marie-Christine et les professeurs sont présents pour vous accueillir !
+               </p>
+            </div>
         </div>
       </section>
 
-      {/* Section Instruments */}
-      <section className="py-20 bg-gradient-to-br from-gray-800 via-slate-800 to-gray-900 relative overflow-hidden">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16 animate-fade-in relative z-10">
-            <div className="inline-block mb-6">
-              <div className="flex items-center justify-center space-x-4 mb-4">
-                <div className="w-12 h-0.5 bg-gradient-to-r from-transparent to-orange-400"></div>
-                <Music className="h-8 w-8 text-orange-400 animate-pulse" />
-                <div className="w-12 h-0.5 bg-gradient-to-l from-transparent to-orange-400"></div>
-              </div>
-            </div>
-            <h2 className="font-poppins font-bold text-5xl md:text-6xl text-white mb-6 bg-gradient-to-r from-orange-200 via-amber-200 to-orange-200 bg-clip-text text-transparent">
-              Nos classes d'instruments
+      {/* Section Classes & Professeurs (Fusionnée) */}
+      <section id="classes" className="scroll-mt-32 py-20 bg-slate-900 text-white relative overflow-hidden">
+        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+        <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-teal-500/50 to-transparent"></div>
+
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="text-center mb-16">
+            <h2 className="font-poppins font-bold text-4xl md:text-5xl text-white mb-6">
+              Nos Classes & Professeurs
             </h2>
-            <p className="font-inter text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
-              Découvrez nos enseignements instrumentaux avec nos professeurs qualifiés dans un environnement d'exception
+            <div className="h-1 w-24 bg-gradient-to-r from-teal-500 to-cyan-500 rounded-full mx-auto shadow-[0_0_15px_rgba(20,184,166,0.5)]"></div>
+            <p className="mt-6 text-teal-200 font-inter text-lg max-w-2xl mx-auto">
+              L'excellence pédagogique au service de votre passion. Découvrez nos enseignements et les professeurs qui les dispensent.
             </p>
           </div>
 
           {instrumentsLoading ? (
-            <div className="text-center py-12 relative z-10">
-              <div className="animate-spin rounded-full h-12 w-12 border-4 border-amber-400/30 border-t-amber-400 mx-auto mb-4"></div>
-              <p className="text-gray-300 text-xl">Chargement de nos instruments...</p>
-            </div>
-          ) : instruments.length > 0 ? (
-            <div className="relative z-10">
-              {/* Grille hexagonale innovante */}
-              <div className="flex flex-wrap justify-center gap-16 max-w-6xl mx-auto">
-              {instruments.map((instrument, index) => (
-                <div 
-                  key={instrument.id} 
-                  className="group relative animate-fade-in"
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                >
-                  {/* Hexagone container */}
-                  <div className="relative w-40 h-40 mx-auto">
-                    {/* Hexagone de fond avec effet glow */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-orange-400/15 to-amber-500/15 rounded-3xl transform rotate-45 group-hover:rotate-12 transition-all duration-500 group-hover:scale-110 shadow-lg group-hover:shadow-orange-400/20"></div>
-                    
-                    {/* Hexagone principal */}
-                    <div className="absolute inset-2 bg-gradient-to-br from-white via-orange-50 to-amber-50 rounded-2xl transform rotate-45 group-hover:rotate-12 transition-all duration-500 shadow-xl group-hover:shadow-2xl">
-                      {/* Contenu de l'instrument */}
-                      <div className="absolute inset-0 flex items-center justify-center transform -rotate-45 group-hover:-rotate-12 transition-all duration-500 p-4">
-                    {instrument.photo_url ? (
-                      <img
-                        src={instrument.photo_url}
-                        alt={instrument.name}
-                            className="w-20 h-20 object-cover rounded-xl group-hover:scale-110 transition-all duration-500"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                          e.currentTarget.nextElementSibling.style.display = 'flex';
-                        }}
-                      />
-                    ) : null}
-                        <div 
-                          className="hidden w-20 h-20 items-center justify-center bg-gradient-to-br from-orange-100 to-amber-100 rounded-xl"
-                      style={{ display: instrument.photo_url ? 'none' : 'flex' }}
-                    >
-                          <Music className="h-10 w-10 text-orange-600 group-hover:text-orange-700 transition-colors duration-500" />
-                    </div>
-                      </div>
-                    </div>
-                    
-                    {/* Effet de brillance au survol */}
-                    <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent rounded-3xl transform rotate-45 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                  </div>
-                  
-                  {/* Informations sous l'hexagone */}
-                  <div className="mt-6 text-center">
-                    <h3 className="font-poppins font-bold text-xl text-white mb-2 group-hover:text-orange-200 transition-colors duration-300">
-                      {instrument.name}
-                    </h3>
-                    
-                    {instrument.teacher && (
-                      <div className="mb-2">
-                        <span className="text-sm text-orange-300 font-semibold">
-                          {instrument.teacher}
-                        </span>
-                      </div>
-                    )}
-                    
-                    {instrument.description && (
-                      <p className="text-sm text-gray-400 leading-tight line-clamp-2 max-w-32 mx-auto">
-                        {instrument.description.length > 50 
-                          ? `${instrument.description.substring(0, 50)}...` 
-                          : instrument.description
-                        }
-                      </p>
-                    )}
-                    
-                    {!instrument.teacher && !instrument.description && (
-                      <p className="text-sm text-gray-500 italic">
-                        Informations à venir
-                      </p>
-                    )}
-                  </div>
-                  
-                  {/* Effet de particules au survol */}
-                  <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                    <div className="flex space-x-1">
-                      {[...Array(3)].map((_, i) => (
-                        <div
-                          key={i}
-                          className="w-1 h-1 bg-orange-400 rounded-full animate-bounce"
-                          style={{ animationDelay: `${i * 0.2}s` }}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              ))}
-              </div>
-              
-              {/* Message d'encouragement */}
-              <div className="text-center mt-16 animate-fade-in">
-                <div className="bg-gradient-to-r from-orange-900/20 via-amber-900/20 to-orange-900/20 backdrop-blur-sm rounded-2xl p-8 max-w-2xl mx-auto border border-orange-400/15">
-                  <h3 className="font-poppins font-bold text-xl text-orange-200 mb-4">
-                    🎵 Trouvez votre instrument !
-                  </h3>
-                  <p className="text-sm text-gray-300 leading-relaxed">
-                    Chaque instrument a sa propre personnalité. Laissez-vous guider par votre cœur et découvrez celui qui résonnera avec votre âme musicale.
-                  </p>
-                </div>
-              </div>
+            <div className="flex justify-center items-center py-20">
+              <div className="animate-spin rounded-full h-12 w-12 border-4 border-teal-500 border-t-transparent"></div>
             </div>
           ) : (
-            <div className="text-center py-12 animate-fade-in relative z-10">
-              <Music className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-300 text-xl">Aucun instrument disponible pour le moment.</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-7xl mx-auto">
+              {[
+                ...instruments,
+                // Fallback for Formation Musicale if not present in DB
+                ...(!instruments.some(i => i.name.toLowerCase().includes('formation')) ? [{
+                  id: 'fm-manual',
+                  name: "Formation Musicale",
+                  teacher: "A. Brisard, M-C. Rémongin, N. Cardot",
+                  photo_url: "https://images.pexels.com/photos/4502973/pexels-photo-4502973.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+                  description: null
+                }] : [])
+              ].map((inst, idx) => {
+                const config = getInstrumentConfig(inst.name);
+
+                return (
+                  <div
+                    key={inst.id || idx}
+                    className={`group relative bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-white/10 overflow-hidden hover:border-teal-500/50 hover:bg-slate-800/80 transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-teal-900/40 ${inst.name.includes('Formation') ? 'md:col-span-2 lg:col-span-1 xl:col-span-2' : ''}`}
+                  >
+                    {/* Image Background */}
+                    {inst.photo_url && (
+                      <div className="absolute inset-0 z-0">
+                        <img
+                          src={inst.photo_url}
+                          alt={inst.name}
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-50 group-hover:opacity-40 mix-blend-overlay"
+                          onError={(e) => {
+                            // @ts-ignore
+                            e.currentTarget.style.display = 'none';
+                          }}
+                        />
+                        <div className={`absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/60 to-${config.color}-900/20`}></div>
+                      </div>
+                    )}
+
+                    {/* Background Glow (Visible if no image or subtle overlay) */}
+                    <div className={`absolute -right-10 -top-10 w-32 h-32 bg-${config.color}-500/20 rounded-full blur-3xl group-hover:bg-${config.color}-400/30 transition-all duration-500 z-0`}></div>
+
+                    <div className="p-6 relative z-10 flex flex-col h-full min-h-[220px]">
+
+
+                      <h3 className="font-poppins font-bold text-2xl text-white mb-2 group-hover:text-teal-300 transition-colors drop-shadow-md">
+                        {inst.name}
+                      </h3>
+
+                      <div className="mt-auto pt-6 border-t border-white/10 flex items-center gap-3">
+                        <div className="shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center border border-white/20 shadow-lg">
+                          <Users className="w-5 h-5 text-teal-400" />
+                        </div>
+                        <div className="overflow-hidden">
+                          <p className="text-xs text-teal-400 uppercase tracking-wide font-bold mb-0.5">Professeur</p>
+                          <p className="text-sm font-medium text-white/95 truncate">{inst.teacher || "Professeur à confirmer"}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
       </section>
 
-      {/* Section Orchestres */}
-      <section className="py-16 bg-gradient-to-br from-blue-25 via-indigo-25 to-purple-25">
+      {/* 2. Feature Grid (following immediately) */}
+      <section id="activites" className="scroll-mt-32 py-20 bg-white relative">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-12 animate-fade-in">
-              <h2 className="font-poppins font-bold text-5xl md:text-6xl text-dark mb-6">
-                Nos Orchestres
-              </h2>
-              <p className="font-inter text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-                Découvrez nos différents ensembles musicaux
-              </p>
-            </div>
+          <div className="text-center mb-16">
+            <h2 className="font-poppins font-bold text-4xl md:text-5xl text-slate-800 mb-6">L'École c'est aussi...</h2>
+            <div className="h-1 w-24 bg-teal-500 rounded-full mx-auto"></div>
+          </div>
 
-            <div className="animate-fade-in mb-12">
-              {loading ? (
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-                  <p className="text-gray-600">Chargement des orchestres...</p>
-                </div>
-              ) : orchestras.length > 0 ? (
-                <>
-                  {/* Boutons des orchestres */}
-                  <div className="flex flex-wrap justify-center gap-4 mb-8">
-                    {orchestras.map((orchestra) => (
-                      <button
-                        key={orchestra.id}
-                        onClick={() => setSelectedOrchestra(orchestra)}
-                        className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${
-                          selectedOrchestra?.id === orchestra.id
-                            ? 'bg-gradient-to-r from-amber-700 to-yellow-800 text-white shadow-lg'
-                            : 'bg-white/80 backdrop-blur-sm text-gray-700 hover:bg-white shadow-md border border-white/50'
-                        }`}
-                      >
-                        {orchestra.name}
-                      </button>
-                    ))}
+          <div className="max-w-6xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[
+                {
+                  title: "L’Atelier Eveil Musical",
+                  desc: "Le monde magique de la musique : chants, mime, percussions corporelles... Une découverte ludique !",
+                  icon: Sparkles,
+                  color: "teal"
+                },
+                {
+                  title: "La Classe découverte",
+                  desc: "Un trimestre pour essayer concrètement tous les instruments et choisir celui qui fait vibrer votre cœur.",
+                  icon: Compass,
+                  color: "indigo"
+                },
+                {
+                  title: "Stage Perfectionnement",
+                  desc: "5 jours intenses, deux orchestres, un concert final. Sortez de votre zone de confort !",
+                  icon: Rocket,
+                  color: "rose"
+                },
+                {
+                  title: "Orchestre à l'Ecole",
+                  desc: "Une classe entière découvre la musique et monte un orchestre à l'école élémentaire.",
+                  icon: SchoolIcon,
+                  color: "cyan"
+                },
+                {
+                  title: "Interventions Scolaires",
+                  desc: "Un professeur présente son instrument et monte un spectacle avec une classe.",
+                  icon: Presentation,
+                  color: "orange"
+                },
+                {
+                  title: "Le Projet d’Ecole",
+                  desc: "Tous les élèves mobilisés autour d'un thème commun pour un grand spectacle annuel.",
+                  icon: Lightbulb,
+                  color: "emerald"
+                },
+                {
+                  title: "Musique en famille",
+                  desc: "Un adulte et un enfant débutent ensemble. Un cheminement commun et un partage à la maison.",
+                  icon: Heart,
+                  color: "violet"
+                },
+                {
+                  title: "Les Auditions",
+                  desc: "Noël et Estival : deux temps forts pour présenter ses progrès sur scène.",
+                  icon: Mic2,
+                  color: "amber"
+                }
+              ].map((item, index) => (
+                <div key={index} className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-teal-100/40 transition-all duration-300 hover:-translate-y-1 group">
+                  <div className={`w-12 h-12 rounded-xl bg-${item.color}-50 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
+                    <item.icon className={`h-6 w-6 text-${item.color}-600`} />
                   </div>
-
-                  {/* Description de l'orchestre sélectionné */}
-                  {selectedOrchestra && (
-                    <div className="animate-fade-in">
-                      {/* Titre centré */}
-                      <div className="text-center mb-8">
-                        <h3 className="font-poppins font-bold text-3xl text-dark mb-2">
-                          {selectedOrchestra.name}
-                        </h3>
-                        <div className="h-1 w-16 bg-gradient-to-r from-orange-500 to-amber-500 rounded-full mx-auto mb-6"></div>
-                      </div>
-                      
-                      {/* Photo centrée */}
-                      {selectedOrchestra.photo_url && (
-                        <div className="text-center mb-8">
-                          <img
-                            src={selectedOrchestra.photo_url}
-                            alt={selectedOrchestra.name}
-                            className="max-w-md w-full h-64 object-cover rounded-xl shadow-xl border-4 border-white hover:shadow-2xl transition-all duration-300 mx-auto"
-                            onError={(e) => {
-                              e.currentTarget.style.display = 'none';
-                            }}
-                          />
-                        </div>
-                      )}
-                      
-                      {/* Description directe */}
-                      {selectedOrchestra.description ? (
-                        <div className="font-inter text-gray-800 leading-relaxed text-base whitespace-pre-line max-w-4xl mx-auto text-center">
-                          {selectedOrchestra.description}
-                        </div>
-                      ) : (
-                        <p className="font-inter text-sm text-gray-500 italic text-center max-w-2xl mx-auto">
-                          Description à venir pour cet orchestre.
-                        </p>
-                      )}
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div className="text-center py-8">
-                  <Users className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-600">Aucun orchestre disponible pour le moment.</p>
+                  <h3 className="font-poppins font-bold text-lg text-slate-800 mb-2">{item.title}</h3>
+                  <p className="font-inter text-sm text-slate-500 leading-relaxed">{item.desc}</p>
                 </div>
-              )}
+              ))}
             </div>
           </div>
+
         </div>
       </section>
 
-      {/* Features Grid */}
-      <section className="py-16 bg-gradient-to-br from-rose-25 via-pink-25 to-orange-25">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center animate-fade-in">
-              <div className="bg-gradient-to-br from-rose-400 to-pink-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
-                <Users className="h-8 w-8 text-white" />
-              </div>
-              <h3 className="font-poppins font-semibold text-xl text-dark mb-4">
-                Communauté
-              </h3>
-              <p className="font-inter text-sm text-gray-600">
-                Une communauté musicale bienveillante et passionnée.
-              </p>
-            </div>
-            <div className="text-center animate-fade-in">
-              <div className="bg-gradient-to-br from-amber-400 to-orange-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
-                <Award className="h-8 w-8 text-white" />
-              </div>
-              <h3 className="font-poppins font-semibold text-xl text-dark mb-4">
-                Excellence
-              </h3>
-              <p className="font-inter text-sm text-gray-600">
-                Un enseignement de qualité adapté à chaque niveau.
-              </p>
-            </div>
-            <div className="text-center animate-fade-in">
-              <div className="bg-gradient-to-br from-purple-400 to-indigo-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
-                <Music className="h-8 w-8 text-white" />
-              </div>
-              <h3 className="font-poppins font-semibold text-xl text-dark mb-4">
-                Passion
-              </h3>
-              <p className="font-inter text-sm text-gray-600">
-                La musique au cœur de notre pédagogie quotidienne.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+
+      {/* Notre Histoire */}
+      <section id="histoire" className="scroll-mt-32">
+        <HistoryTimeline />
+      </section>      {/* Fin de la page */}
     </div>
   );
 };

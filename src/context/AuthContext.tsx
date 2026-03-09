@@ -1,91 +1,128 @@
 import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../supabaseClient';
-import { Session, User } from '@supabase/supabase-js';
 
-interface Profile {
-  first_name: string;
-  last_name: string;
+// Interface pour l'objet utilisateur que nous attendons de notre backend
+interface User {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
   role: string;
 }
 
+// Interface pour le contexte d'authentification
 interface AuthContextType {
-  session: Session | null;
-  user: User | null;
-  profile: Profile | null;
-  loading: boolean;
+  currentUser: User | null;
+  token: string | null;
+  login: (email: string, password: string) => Promise<void>;
   logout: () => void;
+  loading: boolean;
+  isAuthenticated: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// URL de notre API backend
+const API_URL = 'http://localhost:3001/api';
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [session, setSession] = useState<Session | null>(null);
-  const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchProfile(session.user.id);
-      } else {
-        setLoading(false);
+    const initAuth = async () => {
+      const storedUser = localStorage.getItem('user');
+      const storedToken = localStorage.getItem('token');
+
+      if (storedUser && storedToken) {
+        setToken(storedToken);
+        // Optimistically set user
+        setCurrentUser(JSON.parse(storedUser));
+
+        try {
+          // Verify with backend
+          const response = await fetch(`${API_URL}/auth/me`, {
+            headers: { 'Authorization': `Bearer ${storedToken}` }
+          });
+
+          if (!response.ok) {
+            throw new Error('Token invalid');
+          }
+          // If ok, we are good. Maybe update user data if we returned full profile.
+        } catch (error) {
+          console.error("Session expired or invalid:", error);
+          logout(); // This clears localStorage and state
+        }
       }
+      setLoading(false);
     };
 
-    fetchSession();
-
-    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchProfile(session.user.id);
-      } else {
-        setProfile(null);
-        setLoading(false);
-      }
-    });
-
-    return () => {
-      authListener?.subscription.unsubscribe();
-    };
+    initAuth();
   }, []);
 
-  const fetchProfile = async (userId: string) => {
+  const login = async (email: string, password: string) => {
+    console.log('[AuthContext.tsx] login function called');
+    setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('first_name, last_name, role')
-        .eq('id', userId)
-        .maybeSingle();
-      
-      if (error) {
-        console.error('Error fetching profile:', error);
-      } else if (data) {
-        setProfile(data);
+      console.log(`[AuthContext.tsx] Fetching ${API_URL}/auth/login`);
+      const response = await fetch(`${API_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+      console.log(`[AuthContext.tsx] Response status: ${response.status}`);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('[AuthContext.tsx] Login API error:', errorData);
+        throw new Error(errorData.message || 'Failed to login');
       }
+
+      const { user, token } = await response.json();
+      console.log('[AuthContext.tsx] Login successful, received user and token:', { user, token });
+
+      setCurrentUser(user);
+      setToken(token);
+      localStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem('token', token);
+
+      console.log('[AuthContext.tsx] Navigating to /dashboard');
+      navigate('/dashboard');
+
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      console.error("[AuthContext.tsx] An error occurred in login function:", error);
+      throw error;
     } finally {
       setLoading(false);
     }
   };
 
   const logout = () => {
-    supabase.auth.signOut();
+    setCurrentUser(null);
+    setToken(null);
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
     navigate('/');
   };
 
-  const value = { session, user, profile, loading, logout };
+  const value = {
+    currentUser,
+    token,
+    login,
+    logout,
+    loading,
+    isAuthenticated: !!token, // L'utilisateur est authentifié si un token est présent
+  };
 
+  // Ne rend les enfants que lorsque le chargement initial est terminé
   return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
 };
 
+// Hook pour utiliser facilement le contexte d'authentification
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {

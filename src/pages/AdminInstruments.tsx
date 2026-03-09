@@ -2,7 +2,8 @@ import React, { useState, useEffect, FormEvent } from 'react';
 import { Edit, Trash2, Plus, Music, Search, X, CheckCircle, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Navigate, Link } from 'react-router-dom';
-import { supabase } from '../supabaseClient';
+
+const API_URL = 'http://localhost:3001/api';
 
 interface Instrument {
   id: string;
@@ -25,7 +26,7 @@ interface Notification {
 }
 
 const AdminInstruments = () => {
-  const { profile } = useAuth();
+  const { currentUser, token, isAuthenticated } = useAuth();
   const [instruments, setInstruments] = useState<Instrument[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
@@ -56,36 +57,38 @@ const AdminInstruments = () => {
     }, 3000);
   };
 
-  // Récupérer tous les instruments
+  // Récupérer tous les instruments (MIGRÉ)
   const fetchInstruments = async () => {
+    if (!token) return;
     setLoading(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-instruments`, {
-        method: 'GET',
+      const response = await fetch(`${API_URL}/instruments`, {
         headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
       });
 
+      if (response.status === 403) {
+        throw new Error('Accès refusé. Vous n\'êtes pas administrateur.');
+      }
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
       setInstruments(data || []);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Erreur lors de la récupération des instruments:', err);
-      showNotification('Erreur lors du chargement des instruments', 'error');
+      showNotification(err.message || 'Erreur lors du chargement des instruments', 'error');
     }
     setLoading(false);
   };
 
   useEffect(() => {
-    if (profile?.role === 'Admin') {
+    if (isAuthenticated && currentUser?.role === 'Admin') {
       fetchInstruments();
     }
-  }, [profile]);
+  }, [isAuthenticated, currentUser, token]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -95,22 +98,19 @@ const AdminInstruments = () => {
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      
-      // Vérifier que c'est une image
+
       if (!file.type.startsWith('image/')) {
         showNotification('Veuillez sélectionner un fichier image', 'error');
         return;
       }
-      
-      // Vérifier la taille (max 5MB)
+
       if (file.size > 5 * 1024 * 1024) {
         showNotification('L\'image ne doit pas dépasser 5MB', 'error');
         return;
       }
-      
+
       setSelectedPhoto(file);
-      
-      // Créer une prévisualisation
+
       const reader = new FileReader();
       reader.onload = (e) => {
         setPhotoPreview(e.target?.result as string);
@@ -124,170 +124,133 @@ const AdminInstruments = () => {
     setPhotoPreview(null);
   };
 
-  // Upload de la photo vers Supabase Storage
-  const uploadPhoto = async (file: File): Promise<string | null> => {
-    try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `instrument_${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
-      const filePath = `instruments/${fileName}`;
-      
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('media-files')
-        .upload(filePath, file);
-        
-      if (uploadError) {
-        console.error('Erreur upload photo:', uploadError);
-        throw uploadError;
-      }
-      
-      // Récupération de l'URL publique
-      const { data: urlData } = supabase.storage
-        .from('media-files')
-        .getPublicUrl(filePath);
-        
-      return urlData.publicUrl;
-    } catch (error) {
-      console.error('Erreur lors de l\'upload de la photo:', error);
-      showNotification('Erreur lors de l\'upload de la photo', 'error');
-      return null;
-    }
-  };
-  // Créer un instrument
+
   const handleCreate = async (e: FormEvent) => {
     e.preventDefault();
+    if (!token) return;
     setLoading(true);
 
     try {
       let photoUrl = null;
-      
-      // Upload de la photo si sélectionnée
       if (selectedPhoto) {
-        photoUrl = await uploadPhoto(selectedPhoto);
-        if (!photoUrl) {
-          setLoading(false);
-          return; // Arrêter si l'upload a échoué
+        const photoFormData = new FormData();
+        photoFormData.append('file', selectedPhoto);
+
+        const uploadResponse = await fetch(`${API_URL}/upload`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: photoFormData,
+        });
+
+        if (!uploadResponse.ok) {
+          throw new Error('Failed to upload photo');
         }
+        const uploadResult = await uploadResponse.json();
+        photoUrl = uploadResult.filePath;
       }
 
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-instruments`, {
+      const response = await fetch(`${API_URL}/instruments`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          action: 'create',
-          name: formData.name,
-          teacher: formData.teacher || null,
-          description: formData.description || null,
-          photo_url: photoUrl,
-        }),
+        body: JSON.stringify({ ...formData, photo_url: photoUrl }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        throw new Error(errorData.message || 'Erreur de création');
       }
 
       const result = await response.json();
       showNotification(result.message);
       cancelEdit();
       fetchInstruments();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Erreur de création:', err);
-      showNotification('Erreur de création: ' + (err instanceof Error ? err.message : 'Erreur inconnue'), 'error');
+      showNotification(err.message, 'error');
     }
     setLoading(false);
   };
 
-  // Mettre à jour un instrument
   const handleUpdate = async (e: FormEvent) => {
     e.preventDefault();
-    if (!editingInstrument) return;
+    if (!editingInstrument || !token) return;
     setLoading(true);
 
     try {
-      let photoUrl = editingInstrument.photo_url; // Garder l'ancienne photo par défaut
-      
-      // Upload de la nouvelle photo si sélectionnée
+      let photoUrl = editingInstrument.photo_url;
       if (selectedPhoto) {
-        const newPhotoUrl = await uploadPhoto(selectedPhoto);
-        if (newPhotoUrl) {
-          photoUrl = newPhotoUrl;
-        } else {
-          setLoading(false);
-          return; // Arrêter si l'upload a échoué
+        const photoFormData = new FormData();
+        photoFormData.append('file', selectedPhoto);
+
+        const uploadResponse = await fetch(`${API_URL}/upload`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: photoFormData,
+        });
+
+        if (!uploadResponse.ok) {
+          throw new Error('Failed to upload photo');
         }
+        const uploadResult = await uploadResponse.json();
+        photoUrl = uploadResult.filePath;
       }
 
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-instruments`, {
-        method: 'POST',
+      const response = await fetch(`${API_URL}/instruments/${editingInstrument.id}`, {
+        method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          action: 'update',
-          id: editingInstrument.id,
-          name: formData.name,
-          teacher: formData.teacher || null,
-          description: formData.description || null,
-          photo_url: photoUrl,
-        }),
+        body: JSON.stringify({ ...formData, photo_url: photoUrl }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        throw new Error(errorData.message || 'Erreur de mise à jour');
       }
 
       const result = await response.json();
       showNotification(result.message);
       cancelEdit();
       fetchInstruments();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Erreur de mise à jour:', err);
-      showNotification('Erreur de mise à jour: ' + (err instanceof Error ? err.message : 'Erreur inconnue'), 'error');
+      showNotification(err.message, 'error');
     }
     setLoading(false);
   };
 
-  // Supprimer un instrument
+  // MIGRÉ
   const confirmDelete = (instrument: Instrument) => {
-    setDeleteConfirmation({
-      isOpen: true,
-      instrument: instrument,
-    });
+    setDeleteConfirmation({ isOpen: true, instrument });
   };
 
   const handleDelete = async () => {
-    if (!deleteConfirmation.instrument) return;
-    
+    if (!deleteConfirmation.instrument || !token) return;
+
     try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-instruments`, {
-        method: 'POST',
+      const response = await fetch(`${API_URL}/instruments/${deleteConfirmation.instrument.id}`, {
+        method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          action: 'delete',
-          id: deleteConfirmation.instrument.id,
-        }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        throw new Error(errorData.message || 'Erreur de suppression');
       }
 
       const result = await response.json();
       showNotification(result.message);
-      fetchInstruments();
+      fetchInstruments(); // Re-fetch the list
       setDeleteConfirmation({ isOpen: false, instrument: null });
-    } catch (err) {
+    } catch (err: any) {
       console.error('Erreur de suppression:', err);
-      showNotification('Erreur de suppression: ' + (err instanceof Error ? err.message : 'Erreur inconnue'), 'error');
+      showNotification(err.message, 'error');
     }
   };
 
@@ -295,7 +258,6 @@ const AdminInstruments = () => {
     setDeleteConfirmation({ isOpen: false, instrument: null });
   };
 
-  // Préparer l'édition
   const handleEdit = (instrument: Instrument) => {
     setEditingInstrument(instrument);
     setFormData({
@@ -320,400 +282,141 @@ const AdminInstruments = () => {
     setPhotoPreview(null);
   };
 
-  // Filtrer les instruments selon le terme de recherche
   const filteredInstruments = instruments.filter(instrument => {
     const searchLower = searchTerm.toLowerCase();
     return instrument.name.toLowerCase().includes(searchLower) ||
-           (instrument.teacher && instrument.teacher.toLowerCase().includes(searchLower)) ||
-           (instrument.description && instrument.description.toLowerCase().includes(searchLower));
+      (instrument.teacher && instrument.teacher.toLowerCase().includes(searchLower)) ||
+      (instrument.description && instrument.description.toLowerCase().includes(searchLower));
   });
 
-  if (profile && profile.role !== 'Admin') {
+  if (!isAuthenticated) {
+    return <Navigate to="/connexion" />;
+  }
+  if (currentUser?.role !== 'Admin') {
     return <Navigate to="/dashboard" />;
   }
 
   return (
-    <div className="font-inter pt-20 pb-20 min-h-screen bg-gray-50">
-      {/* Notification Toast */}
-      {notification.show && (
-        <div className="fixed top-24 right-4 z-50 animate-fade-in">
-          <div className={`flex items-center space-x-3 px-6 py-4 rounded-lg shadow-lg border ${
-            notification.type === 'success' 
-              ? 'bg-green-50 border-green-200 text-green-800' 
-              : 'bg-red-50 border-red-200 text-red-800'
-          }`}>
-            {notification.type === 'success' ? (
-              <CheckCircle className="h-5 w-5 text-green-600" />
-            ) : (
-              <X className="h-5 w-5 text-red-600" />
-            )}
-            <span className="font-medium">{notification.message}</span>
-          </div>
-        </div>
-      )}
+    <div className="font-inter pt-20 lg:pt-40 pb-20 min-h-screen bg-gray-100">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
         {/* Header */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 mb-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <Link
-                to="/dashboard"
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors mr-2"
-                title="Retour au dashboard"
-              >
-                <ArrowLeft className="h-6 w-6 text-gray-600" />
-              </Link>
-              <div className="bg-primary/10 p-3 rounded-lg">
-                <Music className="h-8 w-8 text-primary" />
-              </div>
-              <div>
-                <h1 className="font-poppins font-bold text-3xl text-dark">
-                  Gestion des instruments
-                </h1>
-                <p className="font-inter text-gray-600">
-                  Gérez les instruments disponibles dans l'école
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => setShowAddForm(true)}
-              className="inline-flex items-center space-x-2 bg-primary hover:bg-primary/90 text-white font-semibold px-6 py-3 rounded-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
-            >
-              <Plus className="h-5 w-5" />
-              <span>Ajouter un instrument</span>
+        <div className="mb-8">
+          <Link to="/dashboard" className="text-slate-400 hover:text-indigo-600 transition flex items-center mb-2 group">
+            <ArrowLeft className="h-4 w-4 mr-1 group-hover:-translate-x-1 transition-transform" />
+            Retour au tableau de bord
+          </Link>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+            <h1 className="text-3xl font-bold text-slate-800 font-poppins flex items-center">
+              <Music className="mr-3 h-8 w-8 text-indigo-600" />
+              Gestion des Instruments
+            </h1>
+            <button onClick={() => { setEditingInstrument(null); setShowAddForm(true); }} className="flex items-center px-5 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-200">
+              <Plus className="mr-2 h-5 w-5" />
+              Ajouter un instrument
             </button>
           </div>
-          <div className="flex items-center space-x-4 text-sm text-gray-500 mt-4">
-            <span className="flex items-center space-x-1">
-              <Music className="h-4 w-4" />
-              <span>{filteredInstruments.length} instrument{filteredInstruments.length > 1 ? 's' : ''} {searchTerm && `sur ${instruments.length}`}</span>
-            </span>
+        </div>
+
+        {/* Search */}
+        <div className="mb-6 bg-white p-4 rounded-lg shadow-sm">
+          <div className="relative">
+            <Search size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Rechercher un instrument..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+            />
           </div>
         </div>
 
-        {/* Formulaire d'ajout/modification (Modal) */}
-        {showAddForm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center space-x-3">
-                    <div className="bg-primary/10 p-2 rounded-lg">
-                      {editingInstrument ? <Edit className="h-6 w-6 text-primary" /> : <Plus className="h-6 w-6 text-primary" />}
-                    </div>
-                    <h2 className="font-poppins font-semibold text-xl text-dark">
-                      {editingInstrument ? 'Modifier l\'instrument' : 'Ajouter un instrument'}
-                    </h2>
-                  </div>
-                  <button
-                    onClick={cancelEdit}
-                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                  >
-                    <X className="h-5 w-5 text-gray-500" />
-                  </button>
-                </div>
-
-                <form onSubmit={editingInstrument ? handleUpdate : handleCreate} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-dark mb-2">
-                        Nom de l'instrument
-                      </label>
-                      <input
-                        type="text"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                        placeholder="Ex: Violon, Piano, Guitare..."
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-dark mb-2">
-                        Professeur (optionnel)
-                      </label>
-                      <input
-                        type="text"
-                        name="teacher"
-                        value={formData.teacher}
-                        onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                        placeholder="Ex: Marie Dupont..."
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-dark mb-2">
-                      Description (optionnel)
-                    </label>
-                    <textarea
-                      name="description"
-                      value={formData.description}
-                      onChange={handleInputChange}
-                      rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary resize-none"
-                      placeholder="Description de l'instrument ou du cours..."
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-dark mb-3">
-                      Photo de l'instrument (optionnel)
-                    </label>
-
-                    {/* Zone d'upload */}
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                      {photoPreview ? (
-                        <div className="relative">
-                          <img
-                            src={photoPreview}
-                            alt="Prévisualisation"
-                            className="max-w-full h-32 object-cover rounded-lg mx-auto mb-4"
-                          />
-                          <button
-                            type="button"
-                            onClick={removePhoto}
-                            className="absolute top-0 right-0 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 transform translate-x-2 -translate-y-2"
-                          >
-                            <X className="h-4 w-4" />
-                          </button>
-                          <p className="text-sm text-gray-600">
-                            {selectedPhoto ? selectedPhoto.name : 'Photo actuelle'}
-                          </p>
-                        </div>
-                      ) : (
-                        <>
-                          <div className="bg-gray-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <Music className="h-8 w-8 text-gray-400" />
-                          </div>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handlePhotoChange}
-                            className="hidden"
-                            id="photo-upload"
-                          />
-                          <label
-                            htmlFor="photo-upload"
-                            className="cursor-pointer text-primary hover:text-primary/80 font-medium"
-                          >
-                            Cliquez pour sélectionner une photo
-                          </label>
-                          <p className="text-sm text-gray-500 mt-2">
-                            JPG, PNG, GIF jusqu'à 5MB
-                          </p>
-                        </>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex space-x-3 pt-4">
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="flex-1 bg-primary hover:bg-primary/90 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 disabled:opacity-50"
-                    >
-                      {loading ? 'En cours...' : (editingInstrument ? 'Mettre à jour' : 'Créer')}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={cancelEdit}
-                      className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-dark rounded-lg transition-all duration-200"
-                    >
-                      Annuler
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
+        {/* Instrument List */}
+        {loading ? (
+          <div className="text-center text-gray-500">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4">Chargement des instruments...</p>
           </div>
-        )}
-
-        {/* Modal de confirmation de suppression */}
-        {deleteConfirmation.isOpen && deleteConfirmation.instrument && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
-              <div className="p-6">
-                <div className="flex items-center space-x-3 mb-6">
-                  <div className="bg-red-100 p-3 rounded-full">
-                    <Trash2 className="h-6 w-6 text-red-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-poppins font-semibold text-lg text-dark">
-                      Confirmer la suppression
-                    </h3>
-                    <p className="text-sm text-gray-600">
-                      Cette action est irréversible
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="mb-6">
-                  <p className="text-gray-700">
-                    Êtes-vous sûr de vouloir supprimer l'instrument{' '}
-                    <span className="font-semibold text-dark">
-                      {deleteConfirmation.instrument.name}
-                    </span>{' '}
-                    ?
-                  </p>
-                  <p className="text-sm text-red-600 mt-2">
-                    ⚠️ Cet instrument sera retiré de tous les utilisateurs qui l'avaient assigné.
-                  </p>
-                </div>
-                
-                <div className="flex space-x-3">
-                  <button
-                    onClick={handleDelete}
-                    className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
-                  >
-                    Supprimer définitivement
-                  </button>
-                  <button
-                    onClick={cancelDelete}
-                    className="flex-1 bg-gray-200 hover:bg-gray-300 text-dark font-semibold py-3 px-4 rounded-lg transition-all duration-200"
-                  >
-                    Annuler
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Liste des instruments */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="p-6 border-b border-gray-100">
-            <div className="flex items-center justify-between">
-              <h3 className="font-poppins font-semibold text-lg text-dark">
-                Liste des instruments
-              </h3>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Search className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  type="text"
-                  placeholder="Rechercher un instrument..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary w-64"
-                />
-                {searchTerm && (
-                  <button
-                    onClick={() => setSearchTerm('')}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                  >
-                    <X className="h-4 w-4 text-gray-400 hover:text-gray-600" />
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-          
-          {loading ? (
-            <div className="p-8 text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-              <p className="mt-2 text-gray-600">Chargement...</p>
-            </div>
-          ) : filteredInstruments.length === 0 && searchTerm ? (
-            <div className="p-8 text-center text-gray-500">
-              <Search className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-              <p>Aucun instrument trouvé pour "{searchTerm}"</p>
-              <button onClick={() => setSearchTerm('')} className="text-primary hover:text-primary/80 mt-2">Effacer la recherche</button>
-            </div>
-          ) : instruments.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">
-              <Music className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-              <p>Aucun instrument trouvé</p>
-            </div>
-          ) : (
-            <div className="divide-y divide-gray-200">
-              {filteredInstruments.map((instrument) => (
-                <div key={instrument.id} className="p-6 hover:bg-gray-50 transition-colors">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-start space-x-4">
-                      {/* Photo ou icône par défaut */}
-                      <div className="flex-shrink-0">
-                        {instrument.photo_url ? (
-                          <img
-                            src={instrument.photo_url}
-                            alt={instrument.name}
-                            className="w-16 h-16 object-cover rounded-lg border-2 border-gray-200 shadow-sm"
-                            onError={(e) => {
-                              // En cas d'erreur, afficher l'icône par défaut
-                              e.currentTarget.style.display = 'none';
-                              e.currentTarget.nextElementSibling.style.display = 'flex';
-                            }}
-                          />
-                        ) : null}
-                        <div 
-                          className={`bg-primary/10 p-3 rounded-lg flex items-center justify-center w-16 h-16 ${
-                            instrument.photo_url ? 'hidden' : 'flex'
-                          }`}
-                        >
-                          <Music className="h-6 w-6 text-primary" />
-                        </div>
-                      </div>
-                      
-                      {/* Contenu textuel */}
-                      <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-dark text-lg">
-                          {instrument.name}
-                        </div>
-                        {instrument.teacher && (
-                          <div className="text-sm text-gray-600 mt-1">
-                            Professeur : {instrument.teacher}
-                          </div>
-                        )}
-                        {instrument.description && (
-                          <div className="text-sm text-gray-500 mt-1 line-clamp-2">
-                            {instrument.description.length > 100 
-                              ? `${instrument.description.substring(0, 100)}...` 
-                              : instrument.description
-                            }
-                          </div>
-                        )}
-                        <div className="flex items-center space-x-3 mt-2">
-                          {instrument.photo_url && (
-                            <div className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full flex items-center space-x-1">
-                              <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                              <span>Photo</span>
-                            </div>
-                          )}
-                          <div className="text-xs text-gray-400">
-                            Créé le {new Date(instrument.created_at).toLocaleDateString('fr-FR')}
-                          </div>
-                        </div>
-                      </div>
+        ) : (
+          <div className="bg-white rounded-xl shadow-lg border border-gray-200/80 overflow-hidden">
+            <div className="divide-y divide-gray-200/80">
+              {filteredInstruments.map((instrument, index) => (
+                <div key={instrument.id} className={`p-4 flex flex-col md:flex-row md:items-center md:justify-between hover:bg-gray-50/50 transition-colors duration-200 ${index !== 0 ? 'mt-2' : ''}`}>
+                  <div className="flex items-center flex-grow mb-4 md:mb-0">
+                    <img src={instrument.photo_url || 'https://via.placeholder.com/100x100'} alt={instrument.photo_url ? `Photo de ${instrument.name}` : ''} className="w-16 h-16 object-cover rounded-md mr-4" />
+                    <div className="flex-grow">
+                      <p className="font-bold text-lg text-gray-800">{instrument.name}</p>
+                      {instrument.teacher && <p className="text-gray-600 text-sm">Professeur: {instrument.teacher}</p>}
+                      <p className="text-gray-600 text-sm truncate">{instrument.description}</p>
                     </div>
-                    
-                    {/* Actions */}
-                    <div className="flex items-center space-x-2 flex-shrink-0">
-                      <button
-                        onClick={() => handleEdit(instrument)}
-                        className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-all duration-200"
-                        title="Modifier"
-                      >
-                        <Edit className="h-5 w-5" />
-                      </button>
-                      <button
-                        onClick={() => confirmDelete(instrument)}
-                        className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-all duration-200"
-                        title="Supprimer"
-                      >
-                        <Trash2 className="h-5 w-5" />
-                      </button>
-                    </div>
+                  </div>
+                  <div className="flex items-center space-x-3 flex-shrink-0">
+                    <button onClick={() => handleEdit(instrument)} className="p-2 text-blue-600 bg-blue-100 hover:bg-blue-200 rounded-full transition-colors duration-200"><Edit size={18} /></button>
+                    <button onClick={() => confirmDelete(instrument)} className="p-2 text-red-600 bg-red-100 hover:bg-red-200 rounded-full transition-colors duration-200"><Trash2 size={18} /></button>
                   </div>
                 </div>
               ))}
             </div>
-          )}
-        </div>
+          </div>
+        )}
+
+        {/* Add/Edit Form Modal */}
+        {showAddForm && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-40 flex justify-center items-center p-4">
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col">
+              <div className="flex justify-between items-center p-5 border-b">
+                <h2 className="text-2xl font-bold text-gray-800">{editingInstrument ? 'Modifier' : 'Ajouter'} un instrument</h2>
+                <button onClick={cancelEdit} className="p-2 rounded-full hover:bg-gray-200"><X size={24} /></button>
+              </div>
+              <form onSubmit={editingInstrument ? handleUpdate : handleCreate} className="flex-grow overflow-y-auto p-6 space-y-4">
+                <input type="text" name="name" value={formData.name} onChange={handleInputChange} placeholder="Nom de l'instrument" required className="w-full px-4 py-2 border rounded-lg" />
+                <input type="text" name="teacher" value={formData.teacher} onChange={handleInputChange} placeholder="Professeur (optionnel)" className="w-full px-4 py-2 border rounded-lg" />
+                <textarea name="description" value={formData.description} onChange={handleInputChange} placeholder="Description (optionnel)" className="w-full px-4 py-2 border rounded-lg h-24"></textarea>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Photo</label>
+                  <div className="flex items-center space-x-4">
+                    {photoPreview && <img src={photoPreview} alt="Aperçu" className="w-24 h-24 object-cover rounded-lg" />}
+                    <input type="file" accept="image/*" onChange={handlePhotoChange} className="hidden" id="photo-upload" />
+                    <label htmlFor="photo-upload" className="cursor-pointer bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300">Choisir une image</label>
+                    {photoPreview && <button type="button" onClick={removePhoto} className="p-2 text-red-500 hover:bg-red-100 rounded-full"><Trash2 /></button>}
+                  </div>
+                </div>
+                <div className="flex justify-end pt-4 border-t">
+                  <button type="button" onClick={cancelEdit} className="mr-4 px-6 py-2 rounded-lg border hover:bg-gray-100">Annuler</button>
+                  <button type="submit" disabled={loading} className="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition disabled:bg-blue-300">
+                    {loading ? 'Enregistrement...' : (editingInstrument ? 'Mettre à jour' : 'Créer')}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Confirmation Modal */}
+        {deleteConfirmation.isOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center">
+            <div className="bg-white rounded-lg shadow-xl p-8 m-4 max-w-md w-full">
+              <h3 className="text-2xl font-bold text-gray-800 mb-4">Confirmer la suppression</h3>
+              <p className="text-gray-600 mb-6">Êtes-vous sûr de vouloir supprimer l'instrument <span className="font-bold">{deleteConfirmation.instrument?.name}</span> ?</p>
+              <div className="flex justify-end space-x-4">
+                <button onClick={cancelDelete} className="px-6 py-2 rounded-lg border hover:bg-gray-100">Annuler</button>
+                <button onClick={handleDelete} className="bg-red-600 text-white px-6 py-2 rounded-lg shadow hover:bg-red-700">Supprimer</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Notification */}
+        {notification.show && (
+          <div className={`fixed top-5 right-5 p-4 rounded-lg shadow-lg text-white ${notification.type === 'success' ? 'bg-green-500' : 'bg-red-500'}`}>
+            <div className="flex items-center">
+              <CheckCircle size={20} className="mr-2" />
+              {notification.message}
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );

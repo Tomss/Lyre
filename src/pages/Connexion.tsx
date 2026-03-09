@@ -1,31 +1,31 @@
-// src/pages/Connexion.tsx
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '../supabaseClient';
+import { useAuth } from '../context/AuthContext';
 
 const Connexion = () => {
-  const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  
+  const { login } = useAuth();
 
   const handleLogin = async (event: React.FormEvent) => {
     event.preventDefault();
-
+    console.log('[Connexion.tsx] handleLogin triggered');
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({
-      email: email,
-      password: password,
-    });
+    setError(null);
 
-    if (error) {
-      console.error('Login error:', error);
-      alert('Erreur de connexion: ' + (error.message || 'Vérifiez vos identifiants'));
-    } else {
-      // Si la connexion réussit, redirige vers un tableau de bord
-      navigate('/dashboard'); 
+    try {
+      console.log(`[Connexion.tsx] Calling login with email: ${email}`);
+      await login(email, password);
+      console.log('[Connexion.tsx] Login call successful');
+      // La redirection est gérée dans le contexte d'authentification
+    } catch (err: any) {
+      console.error('[Connexion.tsx] Login failed with error:', err);
+      setError(err.message || 'Une erreur est survenue.');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
@@ -43,6 +43,11 @@ const Connexion = () => {
         <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-white/50 overflow-hidden">
           <div className="p-8">
             <form onSubmit={handleLogin} className="space-y-6">
+              {error && (
+                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative" role="alert">
+                  <span className="block sm:inline">{error}</span>
+                </div>
+              )}
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-dark mb-2">
                   Adresse e-mail
@@ -55,6 +60,7 @@ const Connexion = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  autoComplete="email"
                 />
               </div>
               <div>
@@ -69,6 +75,7 @@ const Connexion = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  autoComplete="current-password"
                 />
               </div>
               <button

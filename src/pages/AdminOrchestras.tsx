@@ -1,14 +1,33 @@
 import React, { useState, useEffect, FormEvent } from 'react';
-import { Edit, Trash2, Plus, Users, Search, X, CheckCircle, ArrowLeft } from 'lucide-react';
+import { Edit, Trash2, Plus, Search, X, CheckCircle, ArrowLeft, Users } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Navigate, Link } from 'react-router-dom';
-import { supabase } from '../supabaseClient';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
+const API_URL = 'http://localhost:3001/api';
 
 interface Orchestra {
   id: string;
   name: string;
   description: string | null;
   photo_url: string | null;
+  photos?: { id: string; photo_url: string; display_order: number }[];
   created_at: string;
 }
 
@@ -23,670 +42,426 @@ interface Notification {
   type: 'success' | 'error';
 }
 
+function SortableItem(props: any) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+  } = useSortable({ id: props.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+      {props.children}
+    </div>
+  );
+}
+
 const AdminOrchestras = () => {
-  const { profile } = useAuth();
+  const { currentUser, token, isAuthenticated } = useAuth();
   const [orchestras, setOrchestras] = useState<Orchestra[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingOrchestra, setEditingOrchestra] = useState<Orchestra | null>(null);
-  const [deleteConfirmation, setDeleteConfirmation] = useState<DeleteConfirmation>({
-    isOpen: false,
-    orchestra: null,
-  });
-  const [notification, setNotification] = useState<Notification>({
-    show: false,
-    message: '',
-    type: 'success',
-  });
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-  });
-  const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [deleteConfirmation, setDeleteConfirmation] = useState<DeleteConfirmation>({ isOpen: false, orchestra: null });
+  const [notification, setNotification] = useState<Notification>({ show: false, message: '', type: 'success' });
+  const [formData, setFormData] = useState({ name: '', description: '' });
+  // Unified photo management
+  const [photos, setPhotos] = useState<{ id?: string, url: string, file?: File }[]>([]);
 
-  // Fonction pour afficher une notification
-  const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
-    setNotification({ show: true, message, type });
-    setTimeout(() => {
-      setNotification({ show: false, message: '', type: 'success' });
-    }, 3000);
+  const [expandedDescriptions, setExpandedDescriptions] = useState<Set<string>>(new Set());
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      setOrchestras((items) => {
+        const oldIndex = items.findIndex((item) => item.id === active.id);
+        const newIndex = items.findIndex((item) => item.id === over.id);
+        const newItems = arrayMove(items, oldIndex, newIndex);
+
+        // Save new order to backend
+        const saveOrder = async () => {
+          try {
+            await fetch(`${API_URL}/orchestras/reorder`, {
+              method: 'PUT',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ orderedIds: newItems.map(i => i.id) })
+            });
+          } catch (err) {
+            console.error("Failed to save order", err);
+            showNotification("Erreur lors de la sauvegarde de l'ordre", 'error');
+          }
+        };
+        saveOrder();
+
+        return newItems;
+      });
+    }
   };
 
-  // Récupérer tous les orchestres
+  const toggleDescription = (id: string) => {
+    setExpandedDescriptions(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  };
+
+  const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
+    setNotification({ show: true, message, type });
+    setTimeout(() => setNotification({ show: false, message: '', type: 'success' }), 3000);
+  };
+
   const fetchOrchestras = async () => {
+    if (!token) return;
     setLoading(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-orchestras`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
+      const response = await fetch(`${API_URL}/orchestras`, { headers: { 'Authorization': `Bearer ${token}` } });
+      if (!response.ok) throw new Error('Erreur de chargement des orchestres');
       const data = await response.json();
       setOrchestras(data || []);
-    } catch (err) {
-      console.error('Erreur lors de la récupération des orchestres:', err);
-      showNotification('Erreur lors du chargement des orchestres', 'error');
+    } catch (err: any) {
+      showNotification(err.message, 'error');
     }
     setLoading(false);
   };
 
   useEffect(() => {
-    if (profile?.role === 'Admin') {
+    if (isAuthenticated && currentUser?.role === 'Admin') {
       fetchOrchestras();
     }
-  }, [profile]);
+  }, [isAuthenticated, currentUser, token]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      
-      // Vérifier que c'est une image
-      if (!file.type.startsWith('image/')) {
-        showNotification('Veuillez sélectionner un fichier image', 'error');
-        return;
-      }
-      
-      // Vérifier la taille (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        showNotification('L\'image ne doit pas dépasser 5MB', 'error');
-        return;
-      }
-      
-      setSelectedPhoto(file);
-      
-      // Créer une prévisualisation
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setPhotoPreview(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
+    if (e.target.files) {
+      const newPhotos = Array.from(e.target.files).map(file => ({
+        url: URL.createObjectURL(file),
+        file
+      }));
+      setPhotos(prev => [...prev, ...newPhotos]);
     }
+    e.target.value = '';
   };
 
-  const removePhoto = () => {
-    setSelectedPhoto(null);
-    setPhotoPreview(null);
+  const removePhoto = (index: number) => {
+    setPhotos(prev => prev.filter((_, i) => i !== index));
   };
 
-  // Upload de la photo vers Supabase Storage
-  const uploadPhoto = async (file: File): Promise<string | null> => {
-    try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `orchestra_${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
-      const filePath = `orchestras/${fileName}`;
-      
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('media-files')
-        .upload(filePath, file);
-        
-      if (uploadError) {
-        console.error('Erreur upload photo:', uploadError);
-        throw uploadError;
+
+
+  const processFormSubmission = async () => {
+    // 1. Upload new files
+    const processedPhotos = await Promise.all(photos.map(async (photo) => {
+      if (photo.file) {
+        const photoFormData = new FormData();
+        photoFormData.append('file', photo.file);
+        const uploadResponse = await fetch(`${API_URL}/upload`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: photoFormData,
+        });
+        if (!uploadResponse.ok) throw new Error(`Echec upload: ${photo.file.name}`);
+        const uploadResult = await uploadResponse.json();
+        return { url: uploadResult.filePath }; // New photo, no ID yet
       }
-      
-      // Récupération de l'URL publique
-      const { data: urlData } = supabase.storage
-        .from('media-files')
-        .getPublicUrl(filePath);
-        
-      return urlData.publicUrl;
-    } catch (error) {
-      console.error('Erreur lors de l\'upload de la photo:', error);
-      showNotification('Erreur lors de l\'upload de la photo', 'error');
-      return null;
-    }
-  };
+      return photo; // Existing photo with ID and URL
+    }));
 
-  // Créer un orchestre
-  const handleCreate = async (e: FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+    // For backward compatibility, set photo_url to the first photo's URL
+    const mainPhotoUrl = processedPhotos.length > 0 ? processedPhotos[0].url : null;
 
-    try {
-      let photoUrl = null;
-      
-      // Upload de la photo si sélectionnée
-      if (selectedPhoto) {
-        photoUrl = await uploadPhoto(selectedPhoto);
-        if (!photoUrl) {
-          setLoading(false);
-          return; // Arrêter si l'upload a échoué
-        }
-      }
+    const url = editingOrchestra ? `${API_URL}/orchestras/${editingOrchestra.id}` : `${API_URL}/orchestras`;
+    const method = editingOrchestra ? 'PUT' : 'POST';
 
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-orchestras`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          action: 'create',
-          name: formData.name,
-          description: formData.description || null,
-          photo_url: photoUrl,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      showNotification(result.message);
-      cancelEdit();
-      fetchOrchestras();
-    } catch (err) {
-      console.error('Erreur de création:', err);
-      showNotification('Erreur de création: ' + (err instanceof Error ? err.message : 'Erreur inconnue'), 'error');
-    }
-    setLoading(false);
-  };
-
-  // Mettre à jour un orchestre
-  const handleUpdate = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!editingOrchestra) return;
-    setLoading(true);
-
-    try {
-      let photoUrl = editingOrchestra.photo_url; // Garder l'ancienne photo par défaut
-      
-      // Upload de la nouvelle photo si sélectionnée
-      if (selectedPhoto) {
-        const newPhotoUrl = await uploadPhoto(selectedPhoto);
-        if (newPhotoUrl) {
-          photoUrl = newPhotoUrl;
-        } else {
-          setLoading(false);
-          return; // Arrêter si l'upload a échoué
-        }
-      }
-
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-orchestras`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          action: 'update',
-          id: editingOrchestra.id,
-          name: formData.name,
-          description: formData.description || null,
-          photo_url: photoUrl,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      showNotification(result.message);
-      cancelEdit();
-      fetchOrchestras();
-    } catch (err) {
-      console.error('Erreur de mise à jour:', err);
-      showNotification('Erreur de mise à jour: ' + (err instanceof Error ? err.message : 'Erreur inconnue'), 'error');
-    }
-    setLoading(false);
-  };
-
-  // Supprimer un orchestre
-  const confirmDelete = (orchestra: Orchestra) => {
-    setDeleteConfirmation({
-      isOpen: true,
-      orchestra: orchestra,
+    const response = await fetch(url, {
+      method,
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        ...formData,
+        photo_url: mainPhotoUrl,
+        photos: processedPhotos
+      }),
     });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Une erreur est survenue');
+    }
+
+    return response.json();
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const result = await processFormSubmission();
+      showNotification(result.message);
+      cancelEdit();
+      fetchOrchestras();
+    } catch (err: any) {
+      showNotification(err.message, 'error');
+    }
+    setLoading(false);
   };
 
   const handleDelete = async () => {
-    if (!deleteConfirmation.orchestra) return;
-    
+    if (!deleteConfirmation.orchestra || !token) return;
     try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-orchestras`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          action: 'delete',
-          id: deleteConfirmation.orchestra.id,
-        }),
+      const response = await fetch(`${API_URL}/orchestras/${deleteConfirmation.orchestra.id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` },
       });
-
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        throw new Error(errorData.message || 'Erreur de suppression');
       }
-
       const result = await response.json();
       showNotification(result.message);
       fetchOrchestras();
       setDeleteConfirmation({ isOpen: false, orchestra: null });
-    } catch (err) {
-      console.error('Erreur de suppression:', err);
-      showNotification('Erreur de suppression: ' + (err instanceof Error ? err.message : 'Erreur inconnue'), 'error');
+    } catch (err: any) {
+      showNotification(err.message, 'error');
     }
   };
 
-  const cancelDelete = () => {
-    setDeleteConfirmation({ isOpen: false, orchestra: null });
-  };
-
-  // Préparer l'édition
   const handleEdit = (orchestra: Orchestra) => {
     setEditingOrchestra(orchestra);
-    setFormData({
-      name: orchestra.name,
-      description: orchestra.description || '',
-    });
-    setSelectedPhoto(null);
-    setPhotoPreview(orchestra.photo_url);
+    setFormData({ name: orchestra.name, description: orchestra.description || '' });
+
+    // Initialize photos state with existing photos
+    // If orchestra has new 'photos' array, use it. Fallback to single 'photo_url'
+    let initialPhotos: { id?: string, url: string, file?: File }[] = [];
+
+    if (orchestra.photos && orchestra.photos.length > 0) {
+      initialPhotos = orchestra.photos.map(p => ({ id: p.id, url: p.photo_url }));
+    } else if (orchestra.photo_url) {
+      // Fallback for migration
+      initialPhotos = [{ url: orchestra.photo_url }];
+    }
+
+    setPhotos(initialPhotos);
     setShowAddForm(true);
   };
 
   const cancelEdit = () => {
     setEditingOrchestra(null);
     setShowAddForm(false);
-    setFormData({
-      name: '',
-      description: '',
-    });
-    setSelectedPhoto(null);
-    setPhotoPreview(null);
+    setFormData({ name: '', description: '' });
+    setPhotos([]);
   };
 
-  // Filtrer les orchestres selon le terme de recherche
-  const filteredOrchestras = orchestras.filter(orchestra => {
-    const searchLower = searchTerm.toLowerCase();
-    return orchestra.name.toLowerCase().includes(searchLower) ||
-           (orchestra.description && orchestra.description.toLowerCase().includes(searchLower));
-  });
+  const filteredOrchestras = orchestras.filter(orchestra =>
+    orchestra.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (orchestra.description && orchestra.description.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
 
-  if (profile && profile.role !== 'Admin') {
+  if (isAuthenticated && currentUser?.role !== 'Admin') {
     return <Navigate to="/dashboard" />;
   }
 
   return (
-    <div className="font-inter pt-20 pb-20 min-h-screen bg-gray-50">
-      {/* Notification Toast */}
-      {notification.show && (
-        <div className="fixed top-24 right-4 z-50 animate-fade-in">
-          <div className={`flex items-center space-x-3 px-6 py-4 rounded-lg shadow-lg border ${
-            notification.type === 'success' 
-              ? 'bg-green-50 border-green-200 text-green-800' 
-              : 'bg-red-50 border-red-200 text-red-800'
-          }`}>
-            {notification.type === 'success' ? (
-              <CheckCircle className="h-5 w-5 text-green-600" />
-            ) : (
-              <X className="h-5 w-5 text-red-600" />
-            )}
-            <span className="font-medium">{notification.message}</span>
-          </div>
-        </div>
-      )}
+    <div className="font-inter pt-20 lg:pt-40 pb-20 min-h-screen bg-gray-100">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
         {/* Header */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 mb-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <Link
-                to="/dashboard"
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors mr-2"
-                title="Retour au dashboard"
-              >
-                <ArrowLeft className="h-6 w-6 text-gray-600" />
-              </Link>
-              <div className="bg-primary/10 p-3 rounded-lg">
-                <Users className="h-8 w-8 text-primary" />
-              </div>
-              <div>
-                <h1 className="font-poppins font-bold text-3xl text-dark">
-                  Gestion des orchestres
-                </h1>
-                <p className="font-inter text-gray-600">
-                  Gérez les orchestres disponibles dans l'école
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => setShowAddForm(true)}
-              className="inline-flex items-center space-x-2 bg-primary hover:bg-primary/90 text-white font-semibold px-6 py-3 rounded-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
-            >
-              <Plus className="h-5 w-5" />
-              <span>Ajouter un orchestre</span>
+        <div className="mb-8">
+          <Link to="/dashboard" className="text-slate-400 hover:text-indigo-600 transition flex items-center mb-2 group">
+            <ArrowLeft className="h-4 w-4 mr-1 group-hover:-translate-x-1 transition-transform" />
+            Retour au tableau de bord
+          </Link>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+            <h1 className="text-3xl font-bold text-slate-800 font-poppins flex items-center">
+              <Users className="mr-3 h-8 w-8 text-indigo-600" />
+              Gestion des Orchestres
+            </h1>
+            <button onClick={() => { setEditingOrchestra(null); setShowAddForm(true); }} className="flex items-center px-5 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-200">
+              <Plus className="mr-2 h-5 w-5" />
+              Ajouter un orchestre
             </button>
           </div>
-          <div className="flex items-center space-x-4 text-sm text-gray-500 mt-4">
-            <span className="flex items-center space-x-1">
-              <Users className="h-4 w-4" />
-              <span>{filteredOrchestras.length} orchestre{filteredOrchestras.length > 1 ? 's' : ''} {searchTerm && `sur ${orchestras.length}`}</span>
-            </span>
+        </div>
+
+        {/* Search */}
+        <div className="mb-6 bg-white p-4 rounded-lg shadow-sm">
+          <div className="relative">
+            <Search size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Rechercher un orchestre..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+            />
           </div>
         </div>
 
-        {/* Formulaire d'ajout/modification (Modal) */}
-        {showAddForm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center space-x-3">
-                    <div className="bg-primary/10 p-2 rounded-lg">
-                      {editingOrchestra ? <Edit className="h-6 w-6 text-primary" /> : <Plus className="h-6 w-6 text-primary" />}
-                    </div>
-                    <h2 className="font-poppins font-semibold text-xl text-dark">
-                      {editingOrchestra ? 'Modifier l\'orchestre' : 'Ajouter un orchestre'}
-                    </h2>
-                  </div>
-                  <button
-                    onClick={cancelEdit}
-                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                  >
-                    <X className="h-5 w-5 text-gray-500" />
-                  </button>
+        {/* Orchestra List */}
+        {loading ? (
+          <div className="text-center text-gray-500">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4">Chargement des orchestres...</p>
+          </div>
+        ) : (
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <div className="bg-white rounded-xl shadow-lg border border-gray-200/80 overflow-hidden">
+              <SortableContext
+                items={filteredOrchestras.map(o => o.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                <div className="divide-y divide-gray-200/80">
+                  {filteredOrchestras.map((orchestra) => (
+                    <SortableItem key={orchestra.id} id={orchestra.id}>
+                      <div className={`p-4 flex items-start hover:bg-gray-50/50 transition-colors duration-200 bg-white`}>
+                        {/* Drag Handle Icon (Optional visual cue, using cursor-move usually suffices but icon is nice) */}
+                        <div className="mr-4 mt-2 cursor-grab text-gray-400 hover:text-gray-600">
+                          <svg viewBox="0 0 20 20" width="20" height="20" fill="currentColor"><path d="M7 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 2zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 14zm6-8a2 2 0 1 0-.001-4.001A2 2 0 0 0 13 6zm0 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 14z"></path></svg>
+                        </div>
+
+                        <img src={orchestra.photo_url || 'https://via.placeholder.com/100x100'} alt={orchestra.photo_url ? `Photo de ${orchestra.name}` : ''} className="w-16 h-16 object-cover rounded-md mr-4 flex-shrink-0" />
+                        <div className="flex-grow">
+                          <p className="font-bold text-lg text-gray-800">{orchestra.name}</p>
+                          <p className="text-gray-600 text-sm">
+                            {orchestra.description && orchestra.description.length > 100 && !expandedDescriptions.has(orchestra.id)
+                              ? `${orchestra.description.substring(0, 100)}...`
+                              : orchestra.description}
+                          </p>
+                          {orchestra.description && orchestra.description.length > 100 && (
+                            <button onClick={() => toggleDescription(orchestra.id)} className="text-blue-600 text-sm hover:underline mt-1 bg-transparent border-none cursor-pointer">
+                              {expandedDescriptions.has(orchestra.id) ? 'Réduire' : 'Lire la suite'}
+                            </button>
+                          )}
+                        </div>
+                        <div className="flex items-center space-x-3 flex-shrink-0 ml-4">
+                          <button onClick={() => handleEdit(orchestra)} className="p-2 text-blue-600 bg-blue-100 hover:bg-blue-200 rounded-full transition-colors duration-200"><Edit size={18} /></button>
+                          <button onClick={() => setDeleteConfirmation({ isOpen: true, orchestra })} className="p-2 text-red-600 bg-red-100 hover:bg-red-200 rounded-full transition-colors duration-200"><Trash2 size={18} /></button>
+                        </div>
+                      </div>
+                    </SortableItem>
+                  ))}
                 </div>
+              </SortableContext>
+            </div>
+          </DndContext>
+        )}
 
-                <form onSubmit={editingOrchestra ? handleUpdate : handleCreate} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-dark mb-2">
-                      Nom de l'orchestre
-                    </label>
-                    <input
-                      type="text"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                      placeholder="Ex: Orchestre d'harmonie..."
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-dark mb-2">
-                      Description (optionnel)
-                    </label>
-                    <textarea
-                      name="description"
-                      value={formData.description}
-                      onChange={handleInputChange}
-                      rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary resize-none"
-                      placeholder="Description de l'orchestre..."
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-dark mb-3">
-                      Photo de l'orchestre (optionnel)
-                    </label>
-                    
-                    {/* Zone d'upload */}
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                      {photoPreview ? (
-                        <div className="relative">
-                          <img
-                            src={photoPreview}
-                            alt="Prévisualisation"
-                            className="max-w-full h-32 object-cover rounded-lg mx-auto mb-4"
-                          />
+        {/* Add/Edit Form Modal */}
+        {showAddForm && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-40 flex justify-center items-center p-4">
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col">
+              <div className="flex justify-between items-center p-5 border-b">
+                <h2 className="text-2xl font-bold text-gray-800">{editingOrchestra ? 'Modifier' : 'Ajouter'} un orchestre</h2>
+                <button onClick={cancelEdit} className="p-2 rounded-full hover:bg-gray-200"><X size={24} /></button>
+              </div>
+              <form onSubmit={handleSubmit} className="flex-grow overflow-y-auto p-6 space-y-4">
+                <input type="text" name="name" value={formData.name} onChange={handleInputChange} placeholder="Nom de l'orchestre" required className="w-full px-4 py-2 border rounded-lg" />
+                <textarea name="description" value={formData.description} onChange={handleInputChange} placeholder="Description" className="w-full px-4 py-2 border rounded-lg h-24"></textarea>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Photos</label>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-3 gap-4">
+                      {photos.map((photo, index) => (
+                        <div key={index} className="relative group">
+                          <img src={photo.url} alt={`Photo ${index + 1}`} className="w-full h-24 object-cover rounded-lg" />
                           <button
                             type="button"
-                            onClick={removePhoto}
-                            className="absolute top-0 right-0 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 transform translate-x-2 -translate-y-2"
+                            onClick={() => removePhoto(index)}
+                            className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                           >
-                            <X className="h-4 w-4" />
+                            <X size={14} />
                           </button>
-                          <p className="text-sm text-gray-600">
-                            {selectedPhoto ? selectedPhoto.name : 'Photo actuelle'}
-                          </p>
-                        </div>
-                      ) : (
-                        <>
-                          <div className="bg-gray-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <Users className="h-8 w-8 text-gray-400" />
-                          </div>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handlePhotoChange}
-                            className="hidden"
-                            id="photo-upload"
-                          />
-                          <label
-                            htmlFor="photo-upload"
-                            className="cursor-pointer text-primary hover:text-primary/80 font-medium"
-                          >
-                            Cliquez pour sélectionner une photo
-                          </label>
-                          <p className="text-sm text-gray-500 mt-2">
-                            JPG, PNG, GIF jusqu'à 5MB
-                          </p>
-                        </>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex space-x-3 pt-4">
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="flex-1 bg-primary hover:bg-primary/90 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 disabled:opacity-50"
-                    >
-                      {loading ? 'En cours...' : (editingOrchestra ? 'Mettre à jour' : 'Créer')}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={cancelEdit}
-                      className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-dark rounded-lg transition-all duration-200"
-                    >
-                      Annuler
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Modal de confirmation de suppression */}
-        {deleteConfirmation.isOpen && deleteConfirmation.orchestra && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
-              <div className="p-6">
-                <div className="flex items-center space-x-3 mb-6">
-                  <div className="bg-red-100 p-3 rounded-full">
-                    <Trash2 className="h-6 w-6 text-red-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-poppins font-semibold text-lg text-dark">
-                      Confirmer la suppression
-                    </h3>
-                    <p className="text-sm text-gray-600">
-                      Cette action est irréversible
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="mb-6">
-                  <p className="text-gray-700">
-                    Êtes-vous sûr de vouloir supprimer l'orchestre{' '}
-                    <span className="font-semibold text-dark">
-                      {deleteConfirmation.orchestra.name}
-                    </span>{' '}
-                    ?
-                  </p>
-                  <p className="text-sm text-red-600 mt-2">
-                    ⚠️ Cet orchestre sera retiré de tous les utilisateurs qui y étaient assignés.
-                  </p>
-                </div>
-                
-                <div className="flex space-x-3">
-                  <button
-                    onClick={handleDelete}
-                    className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
-                  >
-                    Supprimer définitivement
-                  </button>
-                  <button
-                    onClick={cancelDelete}
-                    className="flex-1 bg-gray-200 hover:bg-gray-300 text-dark font-semibold py-3 px-4 rounded-lg transition-all duration-200"
-                  >
-                    Annuler
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Liste des orchestres */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="p-6 border-b border-gray-100">
-            <div className="flex items-center justify-between">
-              <h3 className="font-poppins font-semibold text-lg text-dark">
-                Liste des orchestres
-              </h3>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Search className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  type="text"
-                  placeholder="Rechercher un orchestre..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary w-64"
-                />
-                {searchTerm && (
-                  <button
-                    onClick={() => setSearchTerm('')}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                  >
-                    <X className="h-4 w-4 text-gray-400 hover:text-gray-600" />
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-          
-          {loading ? (
-            <div className="p-8 text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-              <p className="mt-2 text-gray-600">Chargement...</p>
-            </div>
-          ) : filteredOrchestras.length === 0 && searchTerm ? (
-            <div className="p-8 text-center text-gray-500">
-              <Search className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-              <p>Aucun orchestre trouvé pour "{searchTerm}"</p>
-              <button onClick={() => setSearchTerm('')} className="text-primary hover:text-primary/80 mt-2">Effacer la recherche</button>
-            </div>
-          ) : orchestras.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">
-              <Users className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-              <p>Aucun orchestre trouvé</p>
-            </div>
-          ) : (
-            <div className="divide-y divide-gray-200">
-              {filteredOrchestras.map((orchestra) => (
-                <div key={orchestra.id} className="p-6 hover:bg-gray-50 transition-colors">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-start space-x-4">
-                      {/* Photo ou icône par défaut */}
-                      <div className="flex-shrink-0">
-                        {orchestra.photo_url ? (
-                          <img
-                            src={orchestra.photo_url}
-                            alt={orchestra.name}
-                            className="w-16 h-16 object-cover rounded-lg border-2 border-gray-200 shadow-sm"
-                            onError={(e) => {
-                              // En cas d'erreur, afficher l'icône par défaut
-                              e.currentTarget.style.display = 'none';
-                              e.currentTarget.nextElementSibling.style.display = 'flex';
-                            }}
-                          />
-                        ) : null}
-                        <div 
-                          className={`bg-primary/10 p-3 rounded-lg flex items-center justify-center w-16 h-16 ${
-                            orchestra.photo_url ? 'hidden' : 'flex'
-                          }`}
-                        >
-                          <Users className="h-6 w-6 text-primary" />
-                        </div>
-                      </div>
-                      
-                      {/* Contenu textuel */}
-                      <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-dark text-lg">
-                          {orchestra.name}
-                        </div>
-                        {orchestra.description && (
-                          <div className="text-sm text-gray-600 mt-1 line-clamp-2">
-                            {orchestra.description.length > 100 
-                              ? `${orchestra.description.substring(0, 100)}...` 
-                              : orchestra.description
-                            }
-                          </div>
-                        )}
-                        <div className="flex items-center space-x-3 mt-2">
-                          {orchestra.photo_url && (
-                            <div className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full flex items-center space-x-1">
-                              <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                              <span>Photo</span>
-                            </div>
+                          {index === 0 && (
+                            <span className="absolute bottom-1 left-1 bg-blue-500 text-white text-xs px-2 py-0.5 rounded-full">Principale</span>
                           )}
-                          <div className="text-xs text-gray-400">
-                            Créé le {new Date(orchestra.created_at).toLocaleDateString('fr-FR')}
-                          </div>
                         </div>
-                      </div>
+                      ))}
                     </div>
-                    
-                    {/* Actions */}
-                    <div className="flex items-center space-x-2 flex-shrink-0">
-                      <button
-                        onClick={() => handleEdit(orchestra)}
-                        className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-all duration-200"
-                        title="Modifier"
-                      >
-                        <Edit className="h-5 w-5" />
-                      </button>
-                      <button
-                        onClick={() => confirmDelete(orchestra)}
-                        className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-all duration-200"
-                        title="Supprimer"
-                      >
-                        <Trash2 className="h-5 w-5" />
-                      </button>
+
+                    <div className="flex items-center justify-center w-full">
+                      <label htmlFor="photo-upload" className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                          <Plus className="w-8 h-8 mb-4 text-gray-500" />
+                          <p className="mb-2 text-sm text-gray-500"><span className="font-semibold">Cliquez pour ajouter</span></p>
+                          <p className="text-xs text-gray-500">PNG, JPG (MAX. 50MB)</p>
+                        </div>
+                        <input id="photo-upload" type="file" accept="image/*" multiple onChange={handlePhotoChange} className="hidden" />
+                      </label>
                     </div>
                   </div>
                 </div>
-              ))}
+                <div className="flex justify-end pt-4 border-t">
+                  <button type="button" onClick={cancelEdit} className="mr-4 px-6 py-2 rounded-lg border hover:bg-gray-100">Annuler</button>
+                  <button type="submit" disabled={loading} className="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition disabled:bg-blue-300">
+                    {loading ? 'Enregistrement...' : (editingOrchestra ? 'Mettre à jour' : 'Créer')}
+                  </button>
+                </div>
+              </form>
             </div>
-          )}
-        </div>
+          </div>
+        )}
+
+        {/* Delete Confirmation Modal */}
+        {deleteConfirmation.isOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center">
+            <div className="bg-white rounded-lg shadow-xl p-8 m-4 max-w-md w-full">
+              <h3 className="text-2xl font-bold text-gray-800 mb-4">Confirmer la suppression</h3>
+              <p className="text-gray-600 mb-6">Êtes-vous sûr de vouloir supprimer l'orchestre <span className="font-bold">{deleteConfirmation.orchestra?.name}</span> ? Cette action est irréversible.</p>
+              <div className="flex justify-end space-x-4">
+                <button onClick={() => setDeleteConfirmation({ isOpen: false, orchestra: null })} className="px-6 py-2 rounded-lg border hover:bg-gray-100">Annuler</button>
+                <button onClick={handleDelete} className="bg-red-600 text-white px-6 py-2 rounded-lg shadow hover:bg-red-700">Supprimer</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Notification */}
+        {notification.show && (
+          <div className={`fixed top-5 right-5 p-4 rounded-lg shadow-lg text-white ${notification.type === 'success' ? 'bg-green-500' : 'bg-red-500'}`}>
+            <div className="flex items-center">
+              <CheckCircle size={20} className="mr-2" />
+              {notification.message}
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );
