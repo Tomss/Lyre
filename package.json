@@ -8,7 +8,9 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "start:server": "ts-node-dev --respawn --project server/tsconfig.json server/index.ts"
+    "start:server": "ts-node-dev --respawn --project server/tsconfig.json server/index.ts",
+    "build:server": "tsc -p server/tsconfig.json",
+    "start:prod": "node server/dist/index.js"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
