@@ -1,14 +1,15 @@
 import React, { useState, useEffect, FormEvent } from 'react';
-import { Edit, Trash2, Plus, Music, Search, X, CheckCircle, ArrowLeft, Users, Calendar } from 'lucide-react';
+import { Edit, Trash2, Plus, Music, Search, X, CheckCircle, ArrowLeft, Users, ChevronRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Navigate, Link } from 'react-router-dom';
+
+const API_URL = 'http://localhost:3001/api';
 
 interface Morceau {
   id: string;
   nom: string;
   compositeur: string | null;
   arrangement: string | null;
-  annees: string[];
   created_at: string;
   orchestras: Orchestra[];
 }
@@ -30,10 +31,12 @@ interface Notification {
 }
 
 const AdminMorceaux = () => {
-  const { profile } = useAuth();
+  const { currentUser, token, isAuthenticated } = useAuth();
   const [morceaux, setMorceaux] = useState<Morceau[]>([]);
   const [orchestras, setOrchestras] = useState<Orchestra[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [orchestraFilter, setOrchestraFilter] = useState<string[]>([]);
+  const [expandedOrchestras, setExpandedOrchestras] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingMorceau, setEditingMorceau] = useState<Morceau | null>(null);
@@ -53,7 +56,6 @@ const AdminMorceaux = () => {
     orchestra_ids: [] as string[],
   });
 
-  // Fonction pour afficher une notification
   const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
     setNotification({ show: true, message, type });
     setTimeout(() => {
@@ -61,59 +63,42 @@ const AdminMorceaux = () => {
     }, 3000);
   };
 
-  // Récupérer tous les morceaux
   const fetchMorceaux = async () => {
+    if (!token) return;
     setLoading(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-morceaux`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
-        },
+      const response = await fetch(`${API_URL}/morceaux`, {
+        headers: { 'Authorization': `Bearer ${token}` },
       });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
+      if (!response.ok) throw new Error('Erreur de chargement des morceaux');
       const data = await response.json();
       setMorceaux(data || []);
-    } catch (err) {
-      console.error('Erreur lors de la récupération des morceaux:', err);
-      showNotification('Erreur lors du chargement des morceaux', 'error');
+    } catch (err: any) {
+      showNotification(err.message, 'error');
     }
     setLoading(false);
   };
 
-  // Récupérer tous les orchestres
   const fetchOrchestras = async () => {
+    if (!token) return;
     try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-orchestras`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
-        },
+      const response = await fetch(`${API_URL}/orchestras`, {
+        headers: { 'Authorization': `Bearer ${token}` },
       });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
+      if (!response.ok) throw new Error('Erreur de chargement des orchestres');
       const data = await response.json();
       setOrchestras(data || []);
-    } catch (err) {
-      console.error('Erreur lors de la récupération des orchestres:', err);
+    } catch (err: any) {
+      showNotification(err.message, 'error');
     }
   };
 
   useEffect(() => {
-    if (profile?.role === 'Admin' || profile?.role === 'Gestionnaire') {
+    if (isAuthenticated && (currentUser?.role === 'Admin' || currentUser?.role === 'Gestionnaire')) {
       fetchMorceaux();
       fetchOrchestras();
     }
-  }, [profile]);
+  }, [isAuthenticated, currentUser, token]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -123,127 +108,73 @@ const AdminMorceaux = () => {
   const handleOrchestraChange = (orchestraId: string, checked: boolean) => {
     setFormData(prev => ({
       ...prev,
-      orchestra_ids: checked 
+      orchestra_ids: checked
         ? [...prev.orchestra_ids, orchestraId]
         : prev.orchestra_ids.filter(id => id !== orchestraId)
     }));
   };
 
-
-  // Créer un morceau
-  const handleCreate = async (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (!token) return;
     setLoading(true);
 
+    const url = editingMorceau ? `${API_URL}/morceaux/${editingMorceau.id}` : `${API_URL}/morceaux`;
+    const method = editingMorceau ? 'PUT' : 'POST';
+
     try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-morceaux`, {
-        method: 'POST',
+      const response = await fetch(url, {
+        method,
         headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          action: 'create',
-          ...formData,
-        }),
+        body: JSON.stringify(formData),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        throw new Error(errorData.message || 'Une erreur est survenue');
       }
 
       const result = await response.json();
       showNotification(result.message);
       cancelEdit();
       fetchMorceaux();
-    } catch (err) {
-      console.error('Erreur de création:', err);
-      showNotification('Erreur de création: ' + (err instanceof Error ? err.message : 'Erreur inconnue'), 'error');
+    } catch (err: any) {
+      showNotification(err.message, 'error');
     }
     setLoading(false);
-  };
-
-  // Mettre à jour un morceau
-  const handleUpdate = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!editingMorceau) return;
-    setLoading(true);
-
-    try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-morceaux`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          action: 'update',
-          id: editingMorceau.id,
-          ...formData,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      showNotification(result.message);
-      cancelEdit();
-      fetchMorceaux();
-    } catch (err) {
-      console.error('Erreur de mise à jour:', err);
-      showNotification('Erreur de mise à jour: ' + (err instanceof Error ? err.message : 'Erreur inconnue'), 'error');
-    }
-    setLoading(false);
-  };
-
-  // Supprimer un morceau
-  const confirmDelete = (morceau: Morceau) => {
-    setDeleteConfirmation({
-      isOpen: true,
-      morceau: morceau,
-    });
   };
 
   const handleDelete = async () => {
-    if (!deleteConfirmation.morceau) return;
-    
+    if (!deleteConfirmation.morceau || !token) return;
     try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-morceaux`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          action: 'delete',
-          id: deleteConfirmation.morceau.id,
-        }),
+      const response = await fetch(`${API_URL}/morceaux/${deleteConfirmation.morceau.id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` },
       });
-
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        throw new Error(errorData.message || 'Erreur de suppression');
       }
-
       const result = await response.json();
       showNotification(result.message);
       fetchMorceaux();
       setDeleteConfirmation({ isOpen: false, morceau: null });
-    } catch (err) {
-      console.error('Erreur de suppression:', err);
-      showNotification('Erreur de suppression: ' + (err instanceof Error ? err.message : 'Erreur inconnue'), 'error');
+    } catch (err: any) {
+      showNotification(err.message, 'error');
     }
+  };
+
+  const confirmDelete = (morceau: Morceau) => {
+    setDeleteConfirmation({ isOpen: true, morceau });
   };
 
   const cancelDelete = () => {
     setDeleteConfirmation({ isOpen: false, morceau: null });
   };
 
-  // Préparer l'édition
   const handleEdit = (morceau: Morceau) => {
     setEditingMorceau(morceau);
     setFormData({
@@ -258,15 +189,9 @@ const AdminMorceaux = () => {
   const cancelEdit = () => {
     setEditingMorceau(null);
     setShowAddForm(false);
-    setFormData({
-      nom: '',
-      compositeur: '',
-      arrangement: '',
-      orchestra_ids: [],
-    });
+    setFormData({ nom: '', compositeur: '', arrangement: '', orchestra_ids: [] });
   };
 
-  // Filtrer les morceaux
   const filteredMorceaux = morceaux.filter(morceau => {
     const searchLower = searchTerm.toLowerCase();
     const matchesSearch = (
@@ -274,349 +199,211 @@ const AdminMorceaux = () => {
       (morceau.compositeur && morceau.compositeur.toLowerCase().includes(searchLower)) ||
       morceau.orchestras.some(o => o.name.toLowerCase().includes(searchLower))
     );
-    
-    return matchesSearch;
+
+    const matchesOrchestra = orchestraFilter.length === 0 || morceau.orchestras.some(o => orchestraFilter.includes(o.id));
+
+    return matchesSearch && matchesOrchestra;
   });
 
+  const morceauxByOrchestra = filteredMorceaux.reduce((acc, morceau) => {
+    morceau.orchestras.forEach(orchestra => {
+      if (!acc[orchestra.id]) {
+        acc[orchestra.id] = {
+          orchestra,
+          morceaux: [],
+        };
+      }
+      acc[orchestra.id].morceaux.push(morceau);
+    });
+    return acc;
+  }, {} as Record<string, { orchestra: Orchestra; morceaux: Morceau[] }>);
 
-  if (profile && !['Admin', 'Gestionnaire'].includes(profile.role)) {
+  const sortedOrchestras = Object.values(morceauxByOrchestra).sort((a, b) => a.orchestra.name.localeCompare(b.orchestra.name));
+
+  sortedOrchestras.forEach(({ morceaux }) => {
+    morceaux.sort((a, b) => a.nom.localeCompare(b.nom));
+  });
+
+  const toggleOrchestraFilter = (orchestraId: string) => {
+    setOrchestraFilter(prev =>
+      prev.includes(orchestraId)
+        ? prev.filter(id => id !== orchestraId)
+        : [...prev, orchestraId]
+    );
+  };
+
+  const toggleOrchestraExpansion = (orchestraId: string) => {
+    setExpandedOrchestras(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(orchestraId)) {
+        newSet.delete(orchestraId);
+      } else {
+        newSet.add(orchestraId);
+      }
+      return newSet;
+    });
+  };
+
+  const expandAllOrchestras = () => {
+    setExpandedOrchestras(new Set(orchestras.map(o => o.id)));
+  };
+
+  const collapseAllOrchestras = () => {
+    setExpandedOrchestras(new Set());
+  };
+
+  if (isAuthenticated && !['Admin', 'Gestionnaire'].includes(currentUser?.role || '')) {
     return <Navigate to="/dashboard" />;
   }
 
-  return (
-    <div className="font-inter pt-20 pb-20 min-h-screen bg-gray-50">
-      {/* Notification Toast */}
-      {notification.show && (
-        <div className="fixed top-24 right-4 z-50 animate-fade-in">
-          <div className={`flex items-center space-x-3 px-6 py-4 rounded-lg shadow-lg border ${
-            notification.type === 'success' 
-              ? 'bg-green-50 border-green-200 text-green-800' 
-              : 'bg-red-50 border-red-200 text-red-800'
-          }`}>
-            {notification.type === 'success' ? (
-              <CheckCircle className="h-5 w-5 text-green-600" />
-            ) : (
-              <X className="h-5 w-5 text-red-600" />
-            )}
-            <span className="font-medium">{notification.message}</span>
-          </div>
-        </div>
-      )}
+  const getOrchestraColor = (index: number) => {
+    const colors = [
+      'bg-blue-100 text-blue-800',
+      'bg-green-100 text-green-800',
+      'bg-yellow-100 text-yellow-800',
+      'bg-purple-100 text-purple-800',
+      'bg-pink-100 text-pink-800',
+      'bg-indigo-100 text-indigo-800',
+    ];
+    return colors[index % colors.length];
+  };
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">
+  return (
+    <div className="font-inter pt-20 lg:pt-40 pb-20 min-h-screen bg-gray-100">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+
         {/* Header */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 mb-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <Link
-                to="/dashboard"
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors mr-2"
-                title="Retour au dashboard"
-              >
-                <ArrowLeft className="h-6 w-6 text-gray-600" />
-              </Link>
-              <div className="bg-primary/10 p-3 rounded-lg">
-                <Music className="h-8 w-8 text-primary" />
-              </div>
-              <div>
-                <h1 className="font-poppins font-bold text-3xl text-dark">
-                  Gestion des morceaux
-                </h1>
-                <p className="font-inter text-gray-600">
-                  Gérez le répertoire musical de l'école
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => setShowAddForm(true)}
-              className="inline-flex items-center space-x-2 bg-primary hover:bg-primary/90 text-white font-semibold px-6 py-3 rounded-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
-            >
-              <Plus className="h-5 w-5" />
-              <span>Ajouter un morceau</span>
+        <div className="mb-8">
+          <Link to="/dashboard" className="text-slate-400 hover:text-indigo-600 transition flex items-center mb-2 group">
+            <ArrowLeft className="h-4 w-4 mr-1 group-hover:-translate-x-1 transition-transform" />
+            Retour au tableau de bord
+          </Link>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+            <h1 className="text-3xl font-bold text-slate-800 font-poppins flex items-center">
+              <Music className="mr-3 h-8 w-8 text-indigo-600" />
+              Gestion des Morceaux
+            </h1>
+            <button onClick={() => { setEditingMorceau(null); setShowAddForm(true); }} className="flex items-center px-5 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-200">
+              <Plus className="mr-2 h-5 w-5" />
+              Ajouter un morceau
             </button>
           </div>
-          <div className="flex items-center space-x-4 text-sm text-gray-500 mt-4">
-            <span className="flex items-center space-x-1">
-              <Music className="h-4 w-4" />
-              <span>{filteredMorceaux.length} morceau{filteredMorceaux.length > 1 ? 'x' : ''} {searchTerm && `sur ${morceaux.length}`}</span>
-            </span>
+        </div>
+
+        {/* Search and Filters */}
+        <div className="mb-6 flex justify-between items-center">
+          <div className="flex items-center space-x-2">
+            <span className="text-sm font-medium text-gray-700">Filtrer par orchestre:</span>
+            <button onClick={() => setOrchestraFilter([])} className={`px-3 py-1 rounded-full text-sm ${orchestraFilter.length === 0 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}>Tous</button>
+            {orchestras.map(orchestra => (
+              <button key={orchestra.id} onClick={() => toggleOrchestraFilter(orchestra.id)} className={`px-3 py-1 rounded-full text-sm ${orchestraFilter.includes(orchestra.id) ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}>
+                {orchestra.name}
+              </button>
+            ))}
+          </div>
+          <div className="flex items-center space-x-2">
+            <button onClick={expandAllOrchestras} className="text-sm bg-gray-200 px-3 py-1 rounded-md">Tout déplier</button>
+            <button onClick={collapseAllOrchestras} className="text-sm bg-gray-200 px-3 py-1 rounded-md">Tout replier</button>
           </div>
         </div>
 
-        {/* Formulaire d'ajout/modification (Modal) */}
-        {showAddForm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center space-x-3">
-                    <div className="bg-primary/10 p-2 rounded-lg">
-                      {editingMorceau ? <Edit className="h-6 w-6 text-primary" /> : <Plus className="h-6 w-6 text-primary" />}
+        {/* Morceaux List */}
+        {loading ? (
+          <div className="text-center text-gray-500">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4">Chargement des morceaux...</p>
+          </div>
+        ) : (
+          <div className="space-y-8">
+            {sortedOrchestras
+              .filter(({ orchestra }) => orchestraFilter.length === 0 || orchestraFilter.includes(orchestra.id))
+              .map(({ orchestra, morceaux: orchestraMorceaux }, index) => (
+                <div key={orchestra.id} className="bg-white rounded-xl shadow-lg border border-gray-200/80 overflow-hidden">
+                  <div onClick={() => toggleOrchestraExpansion(orchestra.id)} className={`p-5 flex justify-between items-center cursor-pointer border-b border-gray-200/80 transition-colors ${getOrchestraColor(index).replace('text-', 'bg-').replace('-800', '-200')} hover:bg-gray-100/50`}>
+                    <div className="flex items-center">
+                      <Users size={28} className={`mr-4 ${getOrchestraColor(index).replace('bg-', 'text-').replace('-100', '-600')}`} />
+                      <div>
+                        <h2 className={`text-2xl font-bold ${getOrchestraColor(index).replace('bg-', 'text-').replace('-100', '-800')}`}>{orchestra.name} <span className="text-lg font-normal">({orchestraMorceaux.length})</span></h2>
+                      </div>
                     </div>
-                    <h2 className="font-poppins font-semibold text-xl text-dark">
-                      {editingMorceau ? 'Modifier le morceau' : 'Ajouter un morceau'}
-                    </h2>
+                    <ChevronRight className={`transform transition-transform duration-300 ${expandedOrchestras.has(orchestra.id) ? 'rotate-90' : ''}`} />
                   </div>
-                  <button
-                    onClick={cancelEdit}
-                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                  >
-                    <X className="h-5 w-5 text-gray-500" />
-                  </button>
-                </div>
-
-                <form onSubmit={editingMorceau ? handleUpdate : handleCreate} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-dark mb-2">
-                      Nom du morceau
-                    </label>
-                    <input
-                      type="text"
-                      name="nom"
-                      value={formData.nom}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                      placeholder="Ex: La Marseillaise, Hymne à la joie..."
-                      required
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-dark mb-2">
-                        Compositeur (optionnel)
-                      </label>
-                      <input
-                        type="text"
-                        name="compositeur"
-                        value={formData.compositeur}
-                        onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                        placeholder="Ex: Beethoven, Mozart..."
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-dark mb-2">
-                        Arrangement (optionnel)
-                      </label>
-                      <input
-                        type="text"
-                        name="arrangement"
-                        value={formData.arrangement}
-                        onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                        placeholder="Ex: Version orchestre d'harmonie..."
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-dark mb-3">
-                      Orchestres concernés (au moins un requis)
-                    </label>
-                    <div className="grid grid-cols-1 gap-2 max-h-40 overflow-y-auto border border-gray-200 rounded-lg p-3">
-                      {orchestras.map((orchestra) => (
-                        <label key={orchestra.id} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
-                          <input
-                            type="checkbox"
-                            checked={formData.orchestra_ids.includes(orchestra.id)}
-                            onChange={(e) => handleOrchestraChange(orchestra.id, e.target.checked)}
-                            className="rounded border-gray-300 text-primary focus:ring-primary"
-                          />
-                          <span className="text-sm text-gray-700">{orchestra.name}</span>
-                        </label>
+                  {expandedOrchestras.has(orchestra.id) && (
+                    <div className="divide-y divide-gray-200/80">
+                      {orchestraMorceaux.map(morceau => (
+                        <div key={morceau.id} className="p-4 flex flex-col md:flex-row md:items-center md:justify-between hover:bg-gray-50/50 transition-colors duration-200">
+                          <div className="flex-1 mb-4 md:mb-0">
+                            <p className="font-bold text-lg text-gray-800">{morceau.nom}</p>
+                            <p className="text-sm text-gray-500">{morceau.compositeur}{morceau.arrangement && ` - Arr. ${morceau.arrangement}`}</p>
+                          </div>
+                          <div className="flex items-center space-x-3 flex-shrink-0">
+                            <button onClick={() => handleEdit(morceau)} className="p-2 text-blue-600 bg-blue-100 hover:bg-blue-200 rounded-full transition-colors duration-200"><Edit size={18} /></button>
+                            <button onClick={() => confirmDelete(morceau)} className="p-2 text-red-600 bg-red-100 hover:bg-red-200 rounded-full transition-colors duration-200"><Trash2 size={18} /></button>
+                          </div>
+                        </div>
                       ))}
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Sélectionnez au moins un orchestre
-                    </p>
-                  </div>
-
-
-                  <div className="flex space-x-3 pt-4">
-                    <button
-                      type="submit"
-                      disabled={loading || formData.orchestra_ids.length === 0}
-                      className="flex-1 bg-primary hover:bg-primary/90 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 disabled:opacity-50"
-                    >
-                      {loading ? 'En cours...' : (editingMorceau ? 'Mettre à jour' : 'Créer')}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={cancelEdit}
-                      className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-dark rounded-lg transition-all duration-200"
-                    >
-                      Annuler
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Modal de confirmation de suppression */}
-        {deleteConfirmation.isOpen && deleteConfirmation.morceau && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
-              <div className="p-6">
-                <div className="flex items-center space-x-3 mb-6">
-                  <div className="bg-red-100 p-3 rounded-full">
-                    <Trash2 className="h-6 w-6 text-red-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-poppins font-semibold text-lg text-dark">
-                      Confirmer la suppression
-                    </h3>
-                    <p className="text-sm text-gray-600">
-                      Cette action est irréversible
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="mb-6">
-                  <p className="text-gray-700">
-                    Êtes-vous sûr de vouloir supprimer le morceau{' '}
-                    <span className="font-semibold text-dark">
-                      {deleteConfirmation.morceau.nom}
-                    </span>{' '}
-                    ?
-                  </p>
-                </div>
-                
-                <div className="flex space-x-3">
-                  <button
-                    onClick={handleDelete}
-                    className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
-                  >
-                    Supprimer définitivement
-                  </button>
-                  <button
-                    onClick={cancelDelete}
-                    className="flex-1 bg-gray-200 hover:bg-gray-300 text-dark font-semibold py-3 px-4 rounded-lg transition-all duration-200"
-                  >
-                    Annuler
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Liste des morceaux */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="p-6 border-b border-gray-100">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-poppins font-semibold text-lg text-dark">
-                Liste des morceaux
-              </h3>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Search className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  type="text"
-                  placeholder="Rechercher un morceau..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary w-64"
-                />
-                {searchTerm && (
-                  <button
-                    onClick={() => setSearchTerm('')}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                  >
-                    <X className="h-4 w-4 text-gray-400 hover:text-gray-600" />
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-          
-          {loading ? (
-            <div className="p-8 text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-              <p className="mt-2 text-gray-600">Chargement...</p>
-            </div>
-          ) : filteredMorceaux.length === 0 && searchTerm ? (
-            <div className="p-8 text-center text-gray-500">
-              <Search className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-              <p>Aucun morceau trouvé pour "{searchTerm}"</p>
-              <button onClick={() => setSearchTerm('')} className="text-primary hover:text-primary/80 mt-2">Effacer la recherche</button>
-            </div>
-          ) : morceaux.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">
-              <Music className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-              <p>Aucun morceau trouvé</p>
-            </div>
-          ) : (
-            <div className="divide-y divide-gray-200">
-              {filteredMorceaux.map((morceau) => (
-                <div key={morceau.id} className="p-6 hover:bg-gray-50 transition-colors">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start space-x-4 flex-1">
-                      <div className="bg-primary/10 p-3 rounded-lg">
-                        <Music className="h-6 w-6 text-primary" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-3 mb-2">
-                          <h3 className="font-semibold text-dark text-lg">
-                            {morceau.nom}
-                          </h3>
-                        </div>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600 mb-3">
-                          {morceau.compositeur && (
-                            <div>
-                              <span className="font-medium">Compositeur :</span> {morceau.compositeur}
-                            </div>
-                          )}
-                          {morceau.arrangement && (
-                            <div>
-                              <span className="font-medium">Arrangement :</span> {morceau.arrangement}
-                            </div>
-                          )}
-                        </div>
-                        
-                        <div className="flex items-center space-x-4 text-sm text-gray-500 mb-2">
-                          <span>
-                            Ajouté le {new Date(morceau.created_at).toLocaleDateString('fr-FR')}
-                          </span>
-                        </div>
-                        
-                        <div className="flex items-center space-x-4 text-xs">
-                          {morceau.orchestras && morceau.orchestras.length > 0 && (
-                            <div className="flex items-center space-x-1 text-gray-500">
-                              <Users className="h-3 w-3" />
-                              <span>{morceau.orchestras.map(o => o.name).join(', ')}</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-2 ml-4">
-                      <button
-                        onClick={() => handleEdit(morceau)}
-                        className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-all duration-200"
-                        title="Modifier"
-                      >
-                        <Edit className="h-5 w-5" />
-                      </button>
-                      <button
-                        onClick={() => confirmDelete(morceau)}
-                        className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-all duration-200"
-                        title="Supprimer"
-                      >
-                        <Trash2 className="h-5 w-5" />
-                      </button>
-                    </div>
-                  </div>
+                  )}
                 </div>
               ))}
+          </div>
+        )}
+
+        {/* Add/Edit Form Modal */}
+        {showAddForm && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-40 flex justify-center items-center p-4">
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+              <div className="flex justify-between items-center p-5 border-b">
+                <h2 className="text-2xl font-bold text-gray-800">{editingMorceau ? 'Modifier' : 'Ajouter'} un morceau</h2>
+                <button onClick={cancelEdit} className="p-2 rounded-full hover:bg-gray-200"><X size={24} /></button>
+              </div>
+              <form onSubmit={handleSubmit} className="flex-grow overflow-y-auto p-6 space-y-4">
+                <input type="text" name="nom" value={formData.nom} onChange={handleInputChange} placeholder="Nom du morceau" required className="w-full px-4 py-2 border rounded-lg" />
+                <input type="text" name="compositeur" value={formData.compositeur} onChange={handleInputChange} placeholder="Compositeur" className="w-full px-4 py-2 border rounded-lg" />
+                <input type="text" name="arrangement" value={formData.arrangement} onChange={handleInputChange} placeholder="Arrangement" className="w-full px-4 py-2 border rounded-lg" />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Orchestres</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {orchestras.map(orchestra => (
+                      <label key={orchestra.id} className="flex items-center space-x-2">
+                        <input type="checkbox" checked={formData.orchestra_ids.includes(orchestra.id)} onChange={e => handleOrchestraChange(orchestra.id, e.target.checked)} className="rounded" />
+                        <span>{orchestra.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex justify-end pt-4 border-t">
+                  <button type="button" onClick={cancelEdit} className="mr-4 px-6 py-2 rounded-lg border hover:bg-gray-100">Annuler</button>
+                  <button type="submit" disabled={loading} className="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition disabled:bg-blue-300">
+                    {loading ? 'Enregistrement...' : (editingMorceau ? 'Mettre à jour' : 'Créer')}
+                  </button>
+                </div>
+              </form>
             </div>
-          )}
-        </div>
+          </div>
+        )}
+
+        {/* Delete Confirmation Modal */}
+        {deleteConfirmation.isOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center">
+            <div className="bg-white rounded-lg shadow-xl p-8 m-4 max-w-md w-full">
+              <h3 className="text-2xl font-bold text-gray-800 mb-4">Confirmer la suppression</h3>
+              <p className="text-gray-600 mb-6">Êtes-vous sûr de vouloir supprimer le morceau <span className="font-bold">{deleteConfirmation.morceau?.nom}</span> ?</p>
+              <div className="flex justify-end space-x-4">
+                <button onClick={cancelDelete} className="px-6 py-2 rounded-lg border hover:bg-gray-100">Annuler</button>
+                <button onClick={handleDelete} className="bg-red-600 text-white px-6 py-2 rounded-lg shadow hover:bg-red-700">Supprimer</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Notification */}
+        {notification.show && (
+          <div className={`fixed top-5 right-5 p-4 rounded-lg shadow-lg text-white ${notification.type === 'success' ? 'bg-green-500' : 'bg-red-500'}`}>
+            {notification.message}
+          </div>
+        )}
+
       </div>
     </div>
   );

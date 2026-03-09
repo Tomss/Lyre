@@ -1,8 +1,9 @@
 import React, { useState, useEffect, FormEvent } from 'react';
 import { Edit, Trash2, Plus, Users, Mail, User, Shield, X, UserPlus, CheckCircle, Music, Search, ArrowLeft, ChevronRight } from 'lucide-react';
-import { supabase } from '../supabaseClient';
 import { useAuth } from '../context/AuthContext';
 import { Navigate, Link } from 'react-router-dom';
+
+const API_URL = 'http://localhost:3001/api';
 
 interface UserData {
   id: string;
@@ -35,12 +36,12 @@ interface Notification {
 }
 
 const AdminUsers = () => {
-  const { profile } = useAuth();
+  const { currentUser, token, isAuthenticated } = useAuth();
   const [users, setUsers] = useState<UserData[]>([]);
   const [instruments, setInstruments] = useState<Instrument[]>([]);
   const [orchestras, setOrchestras] = useState<Orchestra[]>([]);
-  const [userInstruments, setUserInstruments] = useState<{[key: string]: Instrument[]}>({});
-  const [userOrchestras, setUserOrchestras] = useState<{[key: string]: Orchestra[]}>({});
+  const [userInstruments, setUserInstruments] = useState<{ [key: string]: Instrument[] }>({});
+  const [userOrchestras, setUserOrchestras] = useState<{ [key: string]: Orchestra[] }>({});
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<string[]>(['Admin', 'Gestionnaire', 'Membre']);
   const [loading, setLoading] = useState(true);
@@ -66,7 +67,6 @@ const AdminUsers = () => {
     orchestras: [] as string[],
   });
 
-  // Fonction pour afficher une notification
   const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
     setNotification({ show: true, message, type });
     setTimeout(() => {
@@ -74,150 +74,116 @@ const AdminUsers = () => {
     }, 3000);
   };
 
-  // Récupérer tous les instruments
+  // MIGRÉ
   const fetchInstruments = async () => {
+    if (!token) return;
     try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-instruments`, {
-        method: 'GET',
+      const response = await fetch(`${API_URL}/instruments`, {
         headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
       });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
+      if (response.status === 403) throw new Error('Accès refusé.');
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       setInstruments(data || []);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Erreur lors de la récupération des instruments:', err);
     }
   };
 
-  // Récupérer les instruments d'un utilisateur
-  const fetchUserInstruments = async (userId: string) => {
-    try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-user-instruments?userId=${userId}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      return data || [];
-    } catch (err) {
-      console.error('Erreur lors de la récupération des instruments utilisateur:', err);
-      return [];
-    }
-  };
-
-  // Récupérer tous les orchestres
+  // MIGRÉ
   const fetchOrchestras = async () => {
+    if (!token) return;
     try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-orchestras`, {
-        method: 'GET',
+      const response = await fetch(`${API_URL}/orchestras`, {
         headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
       });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
+      if (response.status === 403) throw new Error('Accès refusé.');
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       setOrchestras(data || []);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Erreur lors de la récupération des orchestres:', err);
     }
   };
 
-  // Récupérer les orchestres d'un utilisateur
-  const fetchUserOrchestras = async (userId: string) => {
+  // MIGRÉ ET OPTIMISÉ
+  const fetchAllUserAssociations = async () => {
+    if (!token) return;
     try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-user-orchestras?userId=${userId}`, {
-        method: 'GET',
+      const response = await fetch(`${API_URL}/user-associations`, {
         headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
       });
+      if (!response.ok) throw new Error('Failed to fetch user associations');
+      const { userInstruments: flatInstruments, userOrchestras: flatOrchestras } = await response.json();
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      // Transformer les listes plates en maps
+      const instrumentsMap = flatInstruments.reduce((acc: any, item: any) => {
+        if (!acc[item.user_id]) {
+          acc[item.user_id] = [];
+        }
+        acc[item.user_id].push({ id: item.id, name: item.name });
+        return acc;
+      }, {});
 
-      const data = await response.json();
-      return data || [];
-    } catch (err) {
-      console.error('Erreur lors de la récupération des orchestres utilisateur:', err);
-      return [];
+      const orchestrasMap = flatOrchestras.reduce((acc: any, item: any) => {
+        if (!acc[item.user_id]) {
+          acc[item.user_id] = [];
+        }
+        acc[item.user_id].push({ id: item.id, name: item.name });
+        return acc;
+      }, {});
+
+      setUserInstruments(instrumentsMap);
+      setUserOrchestras(orchestrasMap);
+
+    } catch (err: any) {
+      console.error('Erreur lors de la récupération des associations utilisateur:', err);
+      showNotification(err.message, 'error');
     }
   };
 
-  // Récupérer les instruments de tous les utilisateurs
-  const fetchAllUserAssociations = async () => {
-    const instrumentsMap: {[key: string]: Instrument[]} = {};
-    const orchestrasMap: {[key: string]: Orchestra[]} = {};
-    
-    for (const user of users) {
-      const userInsts = await fetchUserInstruments(user.id);
-      const userOrcs = await fetchUserOrchestras(user.id);
-      instrumentsMap[user.id] = userInsts;
-      orchestrasMap[user.id] = userOrcs;
-    }
-    
-    setUserInstruments(instrumentsMap);
-    setUserOrchestras(orchestrasMap);
-  };
-
-  // Récupérer tous les utilisateurs
+  // MIGRÉ
   const fetchUsers = async () => {
+    if (!token) return;
     setLoading(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-all-users`, {
-        method: 'GET',
+      const response = await fetch(`${API_URL}/users`, {
         headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
       });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
+      if (response.status === 403) throw new Error('Accès refusé.');
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       setUsers(data || []);
-    } catch (err) {
-      console.error('Erreur réseau:', err);
-      alert('Erreur de connexion');
+    } catch (err: any) {
+      console.error('Erreur lors de la récupération des utilisateurs:', err);
+      showNotification(err.message, 'error');
     }
     setLoading(false);
   };
 
   useEffect(() => {
-    if (profile?.role === 'Admin') {
+    if (isAuthenticated && currentUser?.role === 'Admin') {
       fetchUsers();
       fetchInstruments();
       fetchOrchestras();
     }
-  }, [profile]);
+  }, [isAuthenticated, currentUser, token]);
 
   useEffect(() => {
     if (users.length > 0) {
       fetchAllUserAssociations();
     }
   }, [users]);
+
+  // ... Le reste du composant reste inchangé pour l'instant
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -227,7 +193,7 @@ const AdminUsers = () => {
   const handleInstrumentChange = (instrumentId: string, checked: boolean) => {
     setFormData(prev => ({
       ...prev,
-      instruments: checked 
+      instruments: checked
         ? [...prev.instruments, instrumentId]
         : prev.instruments.filter(id => id !== instrumentId)
     }));
@@ -236,161 +202,74 @@ const AdminUsers = () => {
   const handleOrchestraChange = (orchestraId: string, checked: boolean) => {
     setFormData(prev => ({
       ...prev,
-      orchestras: checked 
+      orchestras: checked
         ? [...prev.orchestras, orchestraId]
         : prev.orchestras.filter(id => id !== orchestraId)
     }));
   };
 
-  // Créer un utilisateur (sans se connecter dessus)
+  // MIGRÉ
   const handleCreate = async (e: FormEvent) => {
     e.preventDefault();
+    if (!token) return;
     setLoading(true);
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-user`, {
+      const response = await fetch(`${API_URL}/users`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          role: formData.role,
-        }),
+        body: JSON.stringify(formData),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        throw new Error(errorData.message || 'Erreur de création');
       }
 
       const result = await response.json();
-      
-      if (result.success) {
-        showNotification('Utilisateur créé avec succès !');
-        
-        // Gérer les instruments si sélectionnés
-        if (formData.instruments.length > 0) {
-          await manageUserInstruments(result.user.id, formData.instruments);
-        }
-        
-        // Gérer les orchestres si sélectionnés
-        if (formData.orchestras.length > 0) {
-          await manageUserOrchestras(result.user.id, formData.orchestras);
-        }
-        
-        cancelEdit();
-        fetchUsers();
-      } else {
-        showNotification(`Erreur de création: ${result.error}`, 'error');
-      }
-    } catch (err) {
+      showNotification(result.message);
+      cancelEdit();
+      fetchUsers();
+      fetchAllUserAssociations(); // Re-fetch associations
+    } catch (err: any) {
       console.error('Erreur de création:', err);
-      showNotification('Erreur de création: ' + (err instanceof Error ? err.message : 'Erreur inconnue'), 'error');
+      showNotification(err.message, 'error');
     }
     setLoading(false);
   };
 
-  // Gérer les instruments d'un utilisateur
-  const manageUserInstruments = async (userId: string, instrumentIds: string[]) => {
-    try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-user-instruments`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId,
-          instrumentIds,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-      }
-    } catch (err) {
-      console.error('Erreur lors de la gestion des instruments:', err);
-      throw err;
-    }
-  };
-
-  // Gérer les orchestres d'un utilisateur
-  const manageUserOrchestras = async (userId: string, orchestraIds: string[]) => {
-    try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-user-orchestras`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId,
-          orchestraIds,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-      }
-    } catch (err) {
-      console.error('Erreur lors de la gestion des orchestres:', err);
-      throw err;
-    }
-  };
-
-  // Mettre à jour un utilisateur
+  // MIGRÉ
   const handleUpdate = async (e: FormEvent) => {
     e.preventDefault();
-    if (!editingUser) return;
+    if (!editingUser || !token) return;
     setLoading(true);
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/update-user`, {
-        method: 'POST',
+      const response = await fetch(`${API_URL}/users/${editingUser.id}`, {
+        method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          id: editingUser.id,
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          role: formData.role,
-          password: formData.password || undefined,
-        }),
+        body: JSON.stringify(formData),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        throw new Error(errorData.message || 'Erreur de mise à jour');
       }
 
       const result = await response.json();
-      
-      if (response.ok && result.message) {
-        showNotification('Utilisateur mis à jour avec succès !');
-        
-        // Gérer les instruments
-        await manageUserInstruments(editingUser.id, formData.instruments);
-        
-        // Gérer les orchestres
-        await manageUserOrchestras(editingUser.id, formData.orchestras);
-        
-        cancelEdit();
-        fetchUsers();
-      } else {
-        showNotification(`Erreur de mise à jour: ${result.error || 'Erreur inconnue'}`, 'error');
-      }
-    } catch (err) {
+      showNotification(result.message);
+      cancelEdit();
+      fetchUsers();
+      fetchAllUserAssociations(); // Re-fetch associations
+    } catch (err: any) {
       console.error('Erreur de mise à jour:', err);
-      showNotification('Erreur de mise à jour: ' + (err instanceof Error ? err.message : 'Erreur inconnue'), 'error');
+      showNotification(err.message, 'error');
     }
     setLoading(false);
   };
@@ -404,41 +283,28 @@ const AdminUsers = () => {
   };
 
   const handleDelete = async () => {
-    if (!deleteConfirmation.user) return;
-    
-    const userId = deleteConfirmation.user.id;
-    console.log('Attempting to delete user:', userId);
+    if (!deleteConfirmation.user || !token) return;
+
     try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-user`, {
-        method: 'POST',
+      const response = await fetch(`${API_URL}/users/${deleteConfirmation.user.id}`, {
+        method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          userId: userId,
-        }),
       });
 
-      console.log('Delete response status:', response.status);
-      const result = await response.json();
-      console.log('Delete response body:', result);
-
       if (!response.ok) {
-        throw new Error(result.error || `HTTP error! status: ${response.status}`);
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Erreur de suppression');
       }
 
-      if (result.message) {
-        showNotification('Utilisateur supprimé avec succès !');
-        fetchUsers();
-        setDeleteConfirmation({ isOpen: false, user: null });
-      } else {
-        console.error('Unexpected response format:', result);
-        showNotification(`Erreur de suppression: ${result.error || 'Format de réponse inattendu'}`, 'error');
-      }
-    } catch (err) {
+      const result = await response.json();
+      showNotification(result.message);
+      fetchUsers(); // Re-fetch the list
+      setDeleteConfirmation({ isOpen: false, user: null });
+    } catch (err: any) {
       console.error('Erreur de suppression:', err);
-      showNotification('Erreur de suppression: ' + (err instanceof Error ? err.message : 'Erreur inconnue'), 'error');
+      showNotification(err.message, 'error');
     }
   };
 
@@ -501,26 +367,26 @@ const AdminUsers = () => {
       user.last_name.toLowerCase().includes(searchLower) ||
       user.email.toLowerCase().includes(searchLower) ||
       user.role.toLowerCase().includes(searchLower) ||
-      (userInstruments[user.id] && userInstruments[user.id].some(inst => 
+      (userInstruments[user.id] && userInstruments[user.id].some(inst =>
         inst.name.toLowerCase().includes(searchLower)
       )) ||
-      (userOrchestras[user.id] && userOrchestras[user.id].some(orc => 
+      (userOrchestras[user.id] && userOrchestras[user.id].some(orc =>
         orc.name.toLowerCase().includes(searchLower)
       ))
     );
-    
+
     const matchesRole = roleFilter.includes(user.role);
-    
+
     return matchesSearch && matchesRole;
   });
 
-  if (profile && profile.role !== 'Admin') {
+  if (currentUser && currentUser.role !== 'Admin') {
     return <Navigate to="/dashboard" />;
   }
 
   const toggleRoleFilter = (role: string) => {
-    setRoleFilter(prev => 
-      prev.includes(role) 
+    setRoleFilter(prev =>
+      prev.includes(role)
         ? prev.filter(r => r !== role)
         : [...prev, role]
     );
@@ -554,9 +420,12 @@ const AdminUsers = () => {
     setExpandedRoles(new Set());
   };
 
-  // Grouper les utilisateurs par rôle et trier par nom
   const usersByRole = filteredUsers
-    .sort((a, b) => `${a.first_name} ${a.last_name}`.localeCompare(`${b.first_name} ${b.last_name}`))
+    .sort((a, b) => {
+      const lastNameCompare = a.last_name.localeCompare(b.last_name);
+      if (lastNameCompare !== 0) return lastNameCompare;
+      return a.first_name.localeCompare(b.first_name);
+    })
     .reduce((acc, user) => {
       if (!acc[user.role]) {
         acc[user.role] = [];
@@ -566,532 +435,206 @@ const AdminUsers = () => {
     }, {} as Record<string, UserData[]>);
 
   return (
-    <div className="font-inter pt-20 pb-20 min-h-screen bg-gray-50">
-      {/* Notification Toast */}
-      {notification.show && (
-        <div className="fixed top-24 right-4 z-50 animate-fade-in">
-          <div className={`flex items-center space-x-3 px-6 py-4 rounded-lg shadow-lg border ${
-            notification.type === 'success' 
-              ? 'bg-green-50 border-green-200 text-green-800' 
-              : 'bg-red-50 border-red-200 text-red-800'
-          }`}>
-            {notification.type === 'success' ? (
-              <CheckCircle className="h-5 w-5 text-green-600" />
-            ) : (
-              <X className="h-5 w-5 text-red-600" />
-            )}
-            <span className="font-medium">{notification.message}</span>
-          </div>
-        </div>
-      )}
+    <div className="font-inter pt-20 lg:pt-40 pb-20 min-h-screen bg-gray-100">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
         {/* Header */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 mb-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <Link
-                to="/dashboard"
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors mr-2"
-                title="Retour au dashboard"
-              >
-                <ArrowLeft className="h-6 w-6 text-gray-600" />
-              </Link>
-              <div className="bg-primary/10 p-3 rounded-lg">
-                <Users className="h-8 w-8 text-primary" />
-              </div>
-              <div>
-                <h1 className="font-poppins font-bold text-3xl text-dark">
-                  Gestion des utilisateurs
-                </h1>
-                <p className="font-inter text-gray-600">
-                  Gérez les comptes utilisateurs de l'école
-                </p>
-              </div>
+        <div className="mb-8">
+          <Link to="/dashboard" className="text-slate-400 hover:text-indigo-600 transition flex items-center mb-2 group">
+            <ArrowLeft className="h-4 w-4 mr-1 group-hover:-translate-x-1 transition-transform" />
+            Retour au tableau de bord
+          </Link>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+            <h1 className="text-3xl font-bold text-slate-800 font-poppins flex items-center">
+              <Users className="mr-3 h-8 w-8 text-indigo-600" />
+              Gestion des Utilisateurs
+            </h1>
+            <div className="flex items-center space-x-2 mt-4 md:mt-0">
+              <button onClick={() => { setEditingUser(null); setShowAddForm(true); }} className="flex items-center px-5 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-200">
+                <UserPlus className="mr-2 h-5 w-5" />
+                Ajouter un utilisateur
+              </button>
+              <button onClick={expandAllRoles} className="bg-gray-200 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-300 transition">Tout déplier</button>
+              <button onClick={collapseAllRoles} className="bg-gray-200 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-300 transition">Tout replier</button>
             </div>
-            <button
-              onClick={() => setShowAddForm(true)}
-              className="inline-flex items-center space-x-2 bg-primary hover:bg-primary/90 text-white font-semibold px-6 py-3 rounded-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
-            >
-              <UserPlus className="h-5 w-5" />
-              <span>Ajouter un utilisateur</span>
-            </button>
-          </div>
-          <div className="flex items-center space-x-4 text-sm text-gray-500 mt-4">
-            <span className="flex items-center space-x-1">
-              <Users className="h-4 w-4" />
-              <span>{filteredUsers.length} utilisateur{filteredUsers.length > 1 ? 's' : ''} {searchTerm && `sur ${users.length}`}</span>
-            </span>
-            {roleFilter.length < 3 && (
-              <span className="flex items-center space-x-1">
-                <Shield className="h-4 w-4" />
-                <span>Filtré par: {roleFilter.join(', ')}</span>
-              </span>
-            )}
           </div>
         </div>
 
-        {/* Formulaire d'ajout/modification (Modal) */}
-        {showAddForm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center space-x-3">
-                    <div className="bg-primary/10 p-2 rounded-lg">
-                      {editingUser ? <Edit className="h-6 w-6 text-primary" /> : <Plus className="h-6 w-6 text-primary" />}
-                    </div>
-                    <h2 className="font-poppins font-semibold text-xl text-dark">
-                      {editingUser ? 'Modifier l\'utilisateur' : 'Ajouter un utilisateur'}
-                    </h2>
-                  </div>
-                  <button
-                    onClick={cancelEdit}
-                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                  >
-                    <X className="h-5 w-5 text-gray-500" />
-                  </button>
-                </div>
-
-                <form onSubmit={editingUser ? handleUpdate : handleCreate} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-dark mb-2">
-                      Prénom
-                    </label>
-                    <input
-                      type="text"
-                      name="firstName"
-                      value={formData.firstName}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-dark mb-2">
-                      Nom
-                    </label>
-                    <input
-                      type="text"
-                      name="lastName"
-                      value={formData.lastName}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-dark mb-2">
-                      Email
-                    </label>
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      disabled={!!editingUser}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary disabled:bg-gray-100"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-dark mb-2">
-                      Mot de passe {editingUser && '(laisser vide pour ne pas changer)'}
-                    </label>
-                    <input
-                      type="password"
-                      name="password"
-                      value={formData.password}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                      required={!editingUser}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-dark mb-3">
-                      Instruments
-                    </label>
-                    <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto border border-gray-200 rounded-lg p-3">
-                      {instruments.map((instrument) => (
-                        <label key={instrument.id} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
-                          <input
-                            type="checkbox"
-                            checked={formData.instruments.includes(instrument.id)}
-                            onChange={(e) => handleInstrumentChange(instrument.id, e.target.checked)}
-                            className="rounded border-gray-300 text-primary focus:ring-primary"
-                          />
-                          <span className="text-sm text-gray-700">{instrument.name}</span>
-                        </label>
-                      ))}
-                    </div>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Sélectionnez un ou plusieurs instruments (optionnel)
-                    </p>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-dark mb-3">
-                      Orchestres
-                    </label>
-                    <div className="grid grid-cols-1 gap-2 max-h-40 overflow-y-auto border border-gray-200 rounded-lg p-3">
-                      {orchestras.map((orchestra) => (
-                        <label key={orchestra.id} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
-                          <input
-                            type="checkbox"
-                            checked={formData.orchestras.includes(orchestra.id)}
-                            onChange={(e) => handleOrchestraChange(orchestra.id, e.target.checked)}
-                            className="rounded border-gray-300 text-primary focus:ring-primary"
-                          />
-                          <span className="text-sm text-gray-700">{orchestra.name}</span>
-                        </label>
-                      ))}
-                    </div>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Sélectionnez un ou plusieurs orchestres (optionnel)
-                    </p>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-dark mb-2">
-                      Rôle
-                    </label>
-                    <select
-                      name="role"
-                      value={formData.role}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                    >
-                      <option value="Membre">Membre</option>
-                      <option value="Gestionnaire">Gestionnaire</option>
-                      <option value="Admin">Admin</option>
-                    </select>
-                  </div>
-
-                  <div className="flex space-x-3 pt-4">
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="flex-1 bg-primary hover:bg-primary/90 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 disabled:opacity-50"
-                    >
-                      {loading ? 'En cours...' : (editingUser ? 'Mettre à jour' : 'Créer')}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={cancelEdit}
-                      className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-dark rounded-lg transition-all duration-200"
-                    >
-                      Annuler
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Modal de confirmation de suppression */}
-        {deleteConfirmation.isOpen && deleteConfirmation.user && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
-              <div className="p-6">
-                <div className="flex items-center space-x-3 mb-6">
-                  <div className="bg-red-100 p-3 rounded-full">
-                    <Trash2 className="h-6 w-6 text-red-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-poppins font-semibold text-lg text-dark">
-                      Confirmer la suppression
-                    </h3>
-                    <p className="text-sm text-gray-600">
-                      Cette action est irréversible
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="mb-6">
-                  <p className="text-gray-700">
-                    Êtes-vous sûr de vouloir supprimer l'utilisateur{' '}
-                    <span className="font-semibold text-dark">
-                      {deleteConfirmation.user.first_name} {deleteConfirmation.user.last_name}
-                    </span>{' '}
-                    ?
-                  </p>
-                  <p className="text-sm text-gray-500 mt-2">
-                    Email: {deleteConfirmation.user.email}
-                  </p>
-                </div>
-                
-                <div className="flex space-x-3">
-                  <button
-                    onClick={handleDelete}
-                    className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
-                  >
-                    Supprimer définitivement
-                  </button>
-                  <button
-                    onClick={cancelDelete}
-                    className="flex-1 bg-gray-200 hover:bg-gray-300 text-dark font-semibold py-3 px-4 rounded-lg transition-all duration-200"
-                  >
-                    Annuler
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Liste des utilisateurs */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="p-6 border-b border-gray-100">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-poppins font-semibold text-lg text-dark">
-                Liste des utilisateurs
-              </h3>
+        {/* Search and Filter */}
+        <div className="mb-6 bg-white p-4 rounded-lg shadow-sm">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="md:col-span-2">
+              <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">Rechercher</label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Search className="h-5 w-5 text-gray-400" />
-                </div>
+                <Search size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Rechercher un utilisateur..."
+                  id="search"
+                  placeholder="Rechercher par nom, email, rôle, instrument..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary w-64"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                 />
-                {searchTerm && (
-                  <button
-                    onClick={() => setSearchTerm('')}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                  >
-                    <X className="h-4 w-4 text-gray-400 hover:text-gray-600" />
-                  </button>
-                )}
               </div>
             </div>
-            
-            {/* Filtres par rôle */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <span className="text-sm font-medium text-gray-700">Filtrer par rôle :</span>
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={() => toggleRoleFilter('Admin')}
-                    className={`inline-flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
-                      roleFilter.includes('Admin')
-                        ? 'bg-red-100 text-red-800 border border-red-200'
-                        : 'bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200'
-                    }`}
-                  >
-                    <Shield className="h-3 w-3" />
-                    <span>Admin</span>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Filtrer par rôle</label>
+              <div className="flex space-x-2">
+                <button onClick={selectAllRoles} className={`px-3 py-1 rounded-full text-sm ${roleFilter.length === 3 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}>Tous</button>
+                {['Admin', 'Gestionnaire', 'Membre'].map(role => (
+                  <button key={role} onClick={() => toggleRoleFilter(role)} className={`px-3 py-1 rounded-full text-sm ${roleFilter.includes(role) ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}>
+                    {role}
                   </button>
-                  <button
-                    onClick={() => toggleRoleFilter('Gestionnaire')}
-                    className={`inline-flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
-                      roleFilter.includes('Gestionnaire')
-                        ? 'bg-blue-100 text-blue-800 border border-blue-200'
-                        : 'bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200'
-                    }`}
-                  >
-                    <User className="h-3 w-3" />
-                    <span>Gestionnaire</span>
-                  </button>
-                  <button
-                    onClick={() => toggleRoleFilter('Membre')}
-                    className={`inline-flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
-                      roleFilter.includes('Membre')
-                        ? 'bg-gray-100 text-gray-800 border border-gray-300'
-                        : 'bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200'
-                    }`}
-                  >
-                    <Users className="h-3 w-3" />
-                    <span>Membre</span>
-                  </button>
-                </div>
-              </div>
-              
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={selectAllRoles}
-                  className="text-xs text-primary hover:text-primary/80 font-medium transition-colors"
-                >
-                  Tout sélectionner
-                </button>
-                <span className="text-gray-300">|</span>
-                <button
-                  onClick={clearAllRoles}
-                  className="text-xs text-gray-500 hover:text-gray-700 font-medium transition-colors"
-                >
-                  Tout désélectionner
-                </button>
-                <span className="text-gray-300">|</span>
-                <button onClick={expandAllRoles} className="text-xs text-blue-600 hover:text-blue-700 font-medium">Tout déplier</button>
-                <span className="text-gray-300">|</span>
-                <button onClick={collapseAllRoles} className="text-xs text-gray-600 hover:text-gray-700 font-medium">Tout replier</button>
+                ))}
+                <button onClick={clearAllRoles} className="px-3 py-1 rounded-full text-sm bg-gray-200 text-gray-700">Aucun</button>
               </div>
             </div>
           </div>
-          
-          {loading ? (
-            <div className="p-8 text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-              <p className="mt-2 text-gray-600">Chargement...</p>
-            </div>
-          ) : filteredUsers.length === 0 && searchTerm ? (
-            <div className="p-8 text-center text-gray-500">
-              <Search className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-              <p>Aucun utilisateur trouvé pour "{searchTerm}"</p>
-              <button onClick={() => setSearchTerm('')} className="text-primary hover:text-primary/80 mt-2">Effacer la recherche</button>
-            </div>
-          ) : filteredUsers.length === 0 && roleFilter.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">
-              <Shield className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-              <p>Aucun rôle sélectionné</p>
-            </div>
-          ) : users.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">
-              Aucun utilisateur trouvé
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {['Admin', 'Gestionnaire', 'Membre'].map((role) => {
-                const roleUsers = usersByRole[role] || [];
-                const isExpanded = expandedRoles.has(role);
-                const RoleIcon = getRoleIcon(role);
-                
-                if (roleUsers.length === 0) return null;
-                
-                return (
-                  <div key={role} className="border border-gray-200 rounded-xl overflow-hidden">
-                    {/* Header du rôle - cliquable */}
-                    <button
-                      onClick={() => toggleRoleExpansion(role)}
-                      className={`w-full p-6 transition-all duration-200 text-left border-b border-gray-200 ${
-                        role === 'Admin' ? 'bg-gradient-to-r from-red-50 to-pink-50 hover:from-red-100 hover:to-pink-100' :
-                        role === 'Gestionnaire' ? 'bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100' :
-                        'bg-gradient-to-r from-gray-50 to-slate-50 hover:from-gray-100 hover:to-slate-100'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-4">
-                          <div className={`p-3 rounded-lg shadow-md ${
-                            role === 'Admin' ? 'bg-gradient-to-br from-red-500 to-pink-600' :
-                            role === 'Gestionnaire' ? 'bg-gradient-to-br from-blue-500 to-indigo-600' :
-                            'bg-gradient-to-br from-gray-500 to-slate-600'
-                          }`}>
-                            <RoleIcon className="h-6 w-6 text-white" />
+        </div>
+
+        {/* User List */}
+        {loading ? (
+          <div className="text-center text-gray-500">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4">Chargement des utilisateurs...</p>
+          </div>
+        ) : (
+          <div className="space-y-8">
+            {Object.entries(usersByRole).map(([role, userList]) => (
+              <div key={role} className="bg-white rounded-xl shadow-lg border border-gray-200/80 overflow-hidden">
+                <div onClick={() => toggleRoleExpansion(role)} className={`p-5 flex justify-between items-center cursor-pointer border-b border-gray-200/80 transition-colors ${getRoleColor(role).replace('text-', 'bg-').replace('-800', '-200')} hover:bg-gray-100/50`}>
+                  <div className="flex items-center">
+                    {React.createElement(getRoleIcon(role), { className: `h-8 w-8 mr-4 ${getRoleColor(role).replace('bg-', 'text-').replace('-100', '-600')}` })}
+                    <h2 className={`text-2xl font-bold ${getRoleColor(role).replace('bg-', 'text-').replace('-100', '-800')}`}>{role}s <span className="text-lg font-normal">({userList.length})</span></h2>
+                  </div>
+                  <ChevronRight className={`transform transition-transform duration-300 ${expandedRoles.has(role) ? 'rotate-90' : ''}`} />
+                </div>
+                {expandedRoles.has(role) && (
+                  <div className="divide-y divide-gray-200/80">
+                    {userList.map(user => (
+                      <div key={user.id} className={`p-4 flex flex-col md:flex-row md:items-center md:justify-between hover:bg-gray-50/50 transition-colors duration-200 border-l-4 ${getRoleColor(user.role).replace('bg', 'border').replace('-100', '-500')}`}>
+                        <div className="flex-1 mb-4 md:mb-0">
+                          <div className="flex items-center mb-2">
+                            <p className="font-bold text-lg text-gray-800">{user.last_name.toUpperCase()} {user.first_name}</p>
+                            <span className={`ml-3 px-2.5 py-1 text-xs font-semibold rounded-full ${getRoleColor(user.role)}`}>{user.role}</span>
+                          </div>
+                          <div className="flex items-center text-gray-500 text-sm">
+                            <Mail size={14} className="mr-2" /> {user.email}
+                          </div>
+                        </div>
+                        <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm mb-4 md:mb-0">
+                          <div>
+                            <h4 className="font-semibold text-gray-600">Orchestres</h4>
+                            {userOrchestras[user.id] && userOrchestras[user.id].length > 0 ? (
+                              <ul className="list-disc list-inside text-gray-700">
+                                {userOrchestras[user.id].map(orc => <li key={orc.id}>{orc.name}</li>)}
+                              </ul>
+                            ) : <p className="text-gray-400 italic">Aucun</p>}
                           </div>
                           <div>
-                            <h3 className="font-poppins font-bold text-xl text-dark">
-                              {role}s
-                            </h3>
-                            <div className="flex items-center space-x-4 text-sm text-gray-600">
-                              <span>{roleUsers.length} utilisateur{roleUsers.length > 1 ? 's' : ''}</span>
-                            </div>
+                            <h4 className="font-semibold text-gray-600">Instruments</h4>
+                            {userInstruments[user.id] && userInstruments[user.id].length > 0 ? (
+                              <ul className="list-disc list-inside text-gray-700">
+                                {userInstruments[user.id].map(inst => <li key={inst.id}>{inst.name}</li>)}
+                              </ul>
+                            ) : <p className="text-gray-400 italic">Aucun</p>}
                           </div>
                         </div>
-                        <div className="flex items-center space-x-3">
-                          <div className={`text-right bg-white/80 backdrop-blur-sm rounded-lg px-3 py-2 border ${
-                            role === 'Admin' ? 'border-red-200' :
-                            role === 'Gestionnaire' ? 'border-blue-200' :
-                            'border-gray-200'
-                          }`}>
-                            <div className={`text-lg font-bold ${
-                              role === 'Admin' ? 'text-red-700' :
-                              role === 'Gestionnaire' ? 'text-blue-700' :
-                              'text-gray-700'
-                            }`}>
-                              {roleUsers.length}
-                            </div>
-                            <div className={`text-xs ${
-                              role === 'Admin' ? 'text-red-600' :
-                              role === 'Gestionnaire' ? 'text-blue-600' :
-                              'text-gray-600'
-                            }`}>
-                              membre{roleUsers.length > 1 ? 's' : ''}
-                            </div>
-                          </div>
-                          <div className={`transform transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}>
-                            <ChevronRight className="h-6 w-6 text-gray-400" />
-                          </div>
+                        <div className="flex items-center space-x-3 flex-shrink-0">
+                          <button onClick={() => handleEdit(user)} className="p-2 text-blue-600 bg-blue-100 hover:bg-blue-200 rounded-full transition-colors duration-200"><Edit size={18} /></button>
+                          <button onClick={() => confirmDelete(user)} className="p-2 text-red-600 bg-red-100 hover:bg-red-200 rounded-full transition-colors duration-200"><Trash2 size={18} /></button>
                         </div>
                       </div>
-                    </button>
-                    
-                    {/* Liste des utilisateurs - collapsible */}
-                    <div className={`transition-all duration-300 overflow-hidden ${
-                      isExpanded ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
-                    }`}>
-                      <div className="divide-y divide-gray-100">
-                        {roleUsers.map((user) => {
-                          const UserRoleIcon = getRoleIcon(user.role);
-                          return (
-                            <div key={user.id} className="p-6 hover:bg-gray-50 transition-colors">
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center space-x-4">
-                                  <div className="bg-primary/10 p-3 rounded-full">
-                                    <User className="h-6 w-6 text-primary" />
-                                  </div>
-                                  <div>
-                                    <div className="font-semibold text-dark text-lg">
-                                      {user.first_name} {user.last_name}
-                                    </div>
-                                    <div className="flex items-center space-x-3 text-sm text-gray-600 mb-1">
-                                      <span className="flex items-center space-x-1">
-                                        <Mail className="h-4 w-4" />
-                                        <span>{user.email}</span>
-                                      </span>
-                                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleColor(user.role)}`}>
-                                        <UserRoleIcon className="h-3 w-3 mr-1" />
-                                        {user.role}
-                                      </span>
-                                    </div>
-                                    {userInstruments[user.id] && userInstruments[user.id].length > 0 && (
-                                      <div className="flex items-center space-x-1 text-xs text-gray-500">
-                                        <Music className="h-3 w-3" />
-                                        <span>{userInstruments[user.id].map(inst => inst.name).join(', ')}</span>
-                                      </div>
-                                    )}
-                                    {userOrchestras[user.id] && userOrchestras[user.id].length > 0 && (
-                                      <div className="flex items-center space-x-1 text-xs text-gray-500 mt-1">
-                                        <Users className="h-3 w-3" />
-                                        <span>{userOrchestras[user.id].map(orc => orc.name).join(', ')}</span>
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                  <button
-                                    onClick={() => handleEdit(user)}
-                                    className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-all duration-200"
-                                    title="Modifier"
-                                  >
-                                    <Edit className="h-5 w-5" />
-                                  </button>
-                                  <button
-                                    onClick={() => confirmDelete(user)}
-                                    className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-all duration-200"
-                                    title="Supprimer"
-                                  >
-                                    <Trash2 className="h-5 w-5" />
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Add/Edit Form Modal */}
+        {showAddForm && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-40 flex justify-center items-center p-4">
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+              <div className="flex justify-between items-center p-5 border-b">
+                <h2 className="text-2xl font-bold text-gray-800">{editingUser ? 'Modifier' : 'Ajouter'} un utilisateur</h2>
+                <button onClick={cancelEdit} className="p-2 rounded-full hover:bg-gray-200"><X size={24} /></button>
+              </div>
+              <form onSubmit={editingUser ? handleUpdate : handleCreate} className="flex-grow overflow-y-auto p-6 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <input type="text" name="firstName" value={formData.firstName} onChange={handleInputChange} placeholder="Prénom" required className="w-full px-4 py-2 border rounded-lg" />
+                  <input type="text" name="lastName" value={formData.lastName} onChange={handleInputChange} placeholder="Nom" required className="w-full px-4 py-2 border rounded-lg" />
+                </div>
+                <input type="email" name="email" value={formData.email} onChange={handleInputChange} placeholder="Email" required className="w-full px-4 py-2 border rounded-lg" />
+                <input type="password" name="password" value={formData.password} onChange={handleInputChange} placeholder={editingUser ? 'Nouveau mot de passe (laisser vide pour ne pas changer)' : 'Mot de passe'} className="w-full px-4 py-2 border rounded-lg" />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Rôle</label>
+                  <select name="role" value={formData.role} onChange={handleInputChange} className="w-full px-4 py-2 border rounded-lg bg-white">
+                    <option value="Membre">Membre</option>
+                    <option value="Gestionnaire">Gestionnaire</option>
+                    <option value="Admin">Admin</option>
+                  </select>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <h4 className="font-semibold mb-2 text-gray-700">Orchestres</h4>
+                    <div className="space-y-2 max-h-48 overflow-y-auto border p-3 rounded-lg">
+                      {orchestras.map(orc => (
+                        <label key={orc.id} className="flex items-center space-x-3">
+                          <input type="checkbox" checked={formData.orchestras.includes(orc.id)} onChange={(e) => handleOrchestraChange(orc.id, e.target.checked)} className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                          <span className="text-gray-700">{orc.name}</span>
+                        </label>
+                      ))}
                     </div>
                   </div>
-                );
-              })}
+                  <div>
+                    <h4 className="font-semibold mb-2 text-gray-700">Instruments</h4>
+                    <div className="space-y-2 max-h-48 overflow-y-auto border p-3 rounded-lg">
+                      {instruments.map(inst => (
+                        <label key={inst.id} className="flex items-center space-x-3">
+                          <input type="checkbox" checked={formData.instruments.includes(inst.id)} onChange={(e) => handleInstrumentChange(inst.id, e.target.checked)} className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                          <span className="text-gray-700">{inst.name}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex justify-end pt-4 border-t">
+                  <button type="button" onClick={cancelEdit} className="mr-4 px-6 py-2 rounded-lg border hover:bg-gray-100">Annuler</button>
+                  <button type="submit" disabled={loading} className="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition disabled:bg-blue-300">
+                    {loading ? 'Enregistrement...' : (editingUser ? 'Mettre à jour' : 'Créer')}
+                  </button>
+                </div>
+              </form>
             </div>
-          )}
-        </div>
+          </div>
+        )}
+
+        {/* Delete Confirmation Modal */}
+        {deleteConfirmation.isOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center">
+            <div className="bg-white rounded-lg shadow-xl p-8 m-4 max-w-md w-full">
+              <h3 className="text-2xl font-bold text-gray-800 mb-4">Confirmer la suppression</h3>
+              <p className="text-gray-600 mb-6">Êtes-vous sûr de vouloir supprimer l'utilisateur <span className="font-bold">{deleteConfirmation.user?.first_name} {deleteConfirmation.user?.last_name}</span> ? Cette action est irréversible.</p>
+              <div className="flex justify-end space-x-4">
+                <button onClick={cancelDelete} className="px-6 py-2 rounded-lg border hover:bg-gray-100">Annuler</button>
+                <button onClick={handleDelete} className="bg-red-600 text-white px-6 py-2 rounded-lg shadow hover:bg-red-700">Supprimer</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Notification */}
+        {notification.show && (
+          <div className={`fixed top-5 right-5 p-4 rounded-lg shadow-lg text-white ${notification.type === 'success' ? 'bg-green-500' : 'bg-red-500'}`}>
+            <div className="flex items-center">
+              <CheckCircle size={20} className="mr-2" />
+              {notification.message}
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );

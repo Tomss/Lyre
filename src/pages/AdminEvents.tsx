@@ -3,10 +3,13 @@ import { Edit, Trash2, Plus, Calendar, Search, X, CheckCircle, ArrowLeft, Clock,
 import { useAuth } from '../context/AuthContext';
 import { Navigate, Link } from 'react-router-dom';
 
+const API_URL = 'http://localhost:3001/api';
+
 interface Event {
   id: string;
   title: string;
   description: string | null;
+  practical_info: string | null;
   event_type: 'concert' | 'repetition';
   event_date: string;
   location: string | null;
@@ -31,7 +34,7 @@ interface Notification {
 }
 
 const AdminEvents = () => {
-  const { profile } = useAuth();
+  const { currentUser, token, isAuthenticated } = useAuth();
   const [events, setEvents] = useState<Event[]>([]);
   const [orchestras, setOrchestras] = useState<Orchestra[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -39,7 +42,7 @@ const AdminEvents = () => {
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
-  const [expandedTypes, setExpandedTypes] = useState<Set<string>>(new Set(['concert', 'repetition']));
+  const [expandedTypes, setExpandedTypes] = useState<Set<string>>(new Set(['concert', 'repetition', 'autre', 'reunion']));
   const [timeFilter, setTimeFilter] = useState<'all' | 'upcoming' | 'past'>('all');
   const [deleteConfirmation, setDeleteConfirmation] = useState<DeleteConfirmation>({
     isOpen: false,
@@ -53,13 +56,13 @@ const AdminEvents = () => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
+    practical_info: '',
     event_type: 'concert' as 'concert' | 'repetition',
     event_date: '',
     location: '',
     orchestra_ids: [] as string[],
   });
 
-  // Fonction pour afficher une notification
   const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
     setNotification({ show: true, message, type });
     setTimeout(() => {
@@ -67,59 +70,42 @@ const AdminEvents = () => {
     }, 3000);
   };
 
-  // Récupérer tous les événements
   const fetchEvents = async () => {
+    if (!token) return;
     setLoading(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-events?type=admin`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
-        },
+      const response = await fetch(`${API_URL}/events`, {
+        headers: { 'Authorization': `Bearer ${token}` },
       });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
+      if (!response.ok) throw new Error('Erreur de chargement des événements');
       const data = await response.json();
       setEvents(data || []);
-    } catch (err) {
-      console.error('Erreur lors de la récupération des événements:', err);
-      showNotification('Erreur lors du chargement des événements', 'error');
+    } catch (err: any) {
+      showNotification(err.message, 'error');
     }
     setLoading(false);
   };
 
-  // Récupérer tous les orchestres
   const fetchOrchestras = async () => {
+    if (!token) return;
     try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-orchestras`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
-        },
+      const response = await fetch(`${API_URL}/orchestras`, {
+        headers: { 'Authorization': `Bearer ${token}` },
       });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
+      if (!response.ok) throw new Error('Erreur de chargement des orchestres');
       const data = await response.json();
       setOrchestras(data || []);
-    } catch (err) {
-      console.error('Erreur lors de la récupération des orchestres:', err);
+    } catch (err: any) {
+      showNotification(err.message, 'error');
     }
   };
 
   useEffect(() => {
-    if (profile?.role === 'Admin') {
+    if (isAuthenticated && currentUser?.role === 'Admin') {
       fetchEvents();
       fetchOrchestras();
     }
-  }, [profile]);
+  }, [isAuthenticated, currentUser, token]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -129,131 +115,79 @@ const AdminEvents = () => {
   const handleOrchestraChange = (orchestraId: string, checked: boolean) => {
     setFormData(prev => ({
       ...prev,
-      orchestra_ids: checked 
+      orchestra_ids: checked
         ? [...prev.orchestra_ids, orchestraId]
         : prev.orchestra_ids.filter(id => id !== orchestraId)
     }));
   };
 
-  // Créer un événement
-  const handleCreate = async (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (!token) return;
     setLoading(true);
 
+    const url = editingEvent ? `${API_URL}/events/${editingEvent.id}` : `${API_URL}/events`;
+    const method = editingEvent ? 'PUT' : 'POST';
+
     try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-events`, {
-        method: 'POST',
+      const response = await fetch(url, {
+        method,
         headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          action: 'create',
-          ...formData,
-        }),
+        body: JSON.stringify(formData),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        throw new Error(errorData.message || 'Une erreur est survenue');
       }
 
       const result = await response.json();
       showNotification(result.message);
       cancelEdit();
       fetchEvents();
-    } catch (err) {
-      console.error('Erreur de création:', err);
-      showNotification('Erreur de création: ' + (err instanceof Error ? err.message : 'Erreur inconnue'), 'error');
+    } catch (err: any) {
+      showNotification(err.message, 'error');
     }
     setLoading(false);
-  };
-
-  // Mettre à jour un événement
-  const handleUpdate = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!editingEvent) return;
-    setLoading(true);
-
-    try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-events`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          action: 'update',
-          id: editingEvent.id,
-          ...formData,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      showNotification(result.message);
-      cancelEdit();
-      fetchEvents();
-    } catch (err) {
-      console.error('Erreur de mise à jour:', err);
-      showNotification('Erreur de mise à jour: ' + (err instanceof Error ? err.message : 'Erreur inconnue'), 'error');
-    }
-    setLoading(false);
-  };
-
-  // Supprimer un événement
-  const confirmDelete = (event: Event) => {
-    setDeleteConfirmation({
-      isOpen: true,
-      event: event,
-    });
   };
 
   const handleDelete = async () => {
-    if (!deleteConfirmation.event) return;
-    
+    if (!deleteConfirmation.event || !token) return;
     try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-events`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          action: 'delete',
-          id: deleteConfirmation.event.id,
-        }),
+      const response = await fetch(`${API_URL}/events/${deleteConfirmation.event.id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` },
       });
-
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        throw new Error(errorData.message || 'Erreur de suppression');
       }
-
       const result = await response.json();
       showNotification(result.message);
       fetchEvents();
       setDeleteConfirmation({ isOpen: false, event: null });
-    } catch (err) {
-      console.error('Erreur de suppression:', err);
-      showNotification('Erreur de suppression: ' + (err instanceof Error ? err.message : 'Erreur inconnue'), 'error');
+    } catch (err: any) {
+      showNotification(err.message, 'error');
     }
+  };
+
+  const confirmDelete = (event: Event) => {
+    setDeleteConfirmation({ isOpen: true, event });
   };
 
   const cancelDelete = () => {
     setDeleteConfirmation({ isOpen: false, event: null });
   };
 
-  // Préparer l'édition
   const handleEdit = (event: Event) => {
     setEditingEvent(event);
     setFormData({
       title: event.title,
       description: event.description || '',
+      practical_info: event.practical_info || '',
       event_type: event.event_type,
       event_date: new Date(event.event_date).toISOString().slice(0, 16),
       location: event.location || '',
@@ -268,6 +202,7 @@ const AdminEvents = () => {
     setFormData({
       title: '',
       description: '',
+      practical_info: '',
       event_type: 'concert',
       event_date: '',
       location: '',
@@ -292,8 +227,8 @@ const AdminEvents = () => {
   };
 
   const toggleTypeFilter = (type: string) => {
-    setTypeFilter(prev => 
-      prev.includes(type) 
+    setTypeFilter(prev =>
+      prev.includes(type)
         ? prev.filter(t => t !== type)
         : [...prev, type]
     );
@@ -312,7 +247,7 @@ const AdminEvents = () => {
   };
 
   const expandAllTypes = () => {
-    setExpandedTypes(new Set(['concert', 'repetition']));
+    setExpandedTypes(new Set(['concert', 'repetition', 'autre', 'reunion']));
   };
 
   const collapseAllTypes = () => {
@@ -331,13 +266,13 @@ const AdminEvents = () => {
       (event.location && event.location.toLowerCase().includes(searchLower)) ||
       event.orchestras.some(o => o.name.toLowerCase().includes(searchLower))
     );
-    
+
     const matchesType = typeFilter.includes(event.event_type);
-    
-    const matchesTime = timeFilter === 'all' || 
+
+    const matchesTime = timeFilter === 'all' ||
       (timeFilter === 'upcoming' && isUpcoming(event.event_date)) ||
       (timeFilter === 'past' && isPast(event.event_date));
-    
+
     return matchesSearch && matchesType && matchesTime;
   });
 
@@ -363,557 +298,182 @@ const AdminEvents = () => {
     });
   };
 
-  if (profile && profile.role !== 'Admin') {
+  if (currentUser?.role !== 'Admin') {
     return <Navigate to="/dashboard" />;
   }
 
   return (
-    <div className="font-inter pt-20 pb-20 min-h-screen bg-gray-50">
-      {/* Notification Toast */}
-      {notification.show && (
-        <div className="fixed top-24 right-4 z-50 animate-fade-in">
-          <div className={`flex items-center space-x-3 px-6 py-4 rounded-lg shadow-lg border ${
-            notification.type === 'success' 
-              ? 'bg-green-50 border-green-200 text-green-800' 
-              : 'bg-red-50 border-red-200 text-red-800'
-          }`}>
-            {notification.type === 'success' ? (
-              <CheckCircle className="h-5 w-5 text-green-600" />
-            ) : (
-              <X className="h-5 w-5 text-red-600" />
-            )}
-            <span className="font-medium">{notification.message}</span>
-          </div>
-        </div>
-      )}
+    <div className="font-inter pt-20 lg:pt-40 pb-20 min-h-screen bg-gray-100">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">
         {/* Header */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 mb-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <Link
-                to="/dashboard"
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors mr-2"
-                title="Retour au dashboard"
-              >
-                <ArrowLeft className="h-6 w-6 text-gray-600" />
-              </Link>
-              <div className="bg-primary/10 p-3 rounded-lg">
-                <Calendar className="h-8 w-8 text-primary" />
-              </div>
-              <div>
-                <h1 className="font-poppins font-bold text-3xl text-dark">
-                  Gestion des événements
-                </h1>
-                <p className="font-inter text-gray-600">
-                  Gérez les concerts et répétitions de l'école
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => setShowAddForm(true)}
-              className="inline-flex items-center space-x-2 bg-primary hover:bg-primary/90 text-white font-semibold px-6 py-3 rounded-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
-            >
-              <Plus className="h-5 w-5" />
-              <span>Ajouter un événement</span>
+        <div className="mb-8">
+          <Link to="/dashboard" className="text-slate-400 hover:text-indigo-600 transition flex items-center mb-2 group">
+            <ArrowLeft className="h-4 w-4 mr-1 group-hover:-translate-x-1 transition-transform" />
+            Retour au tableau de bord
+          </Link>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+            <h1 className="text-3xl font-bold text-slate-800 font-poppins flex items-center">
+              <Calendar className="mr-3 h-8 w-8 text-indigo-600" />
+              Gestion des Événements
+            </h1>
+            <button onClick={() => { setEditingEvent(null); setShowAddForm(true); }} className="flex items-center px-5 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-200">
+              <Plus className="mr-2 h-5 w-5" />
+              Ajouter un événement
             </button>
           </div>
-          <div className="flex items-center space-x-4 text-sm text-gray-500 mt-4">
-            <span className="flex items-center space-x-1">
-              <Calendar className="h-4 w-4" />
-              <span>{filteredEvents.length} événement{filteredEvents.length > 1 ? 's' : ''} {searchTerm && `sur ${events.length}`}</span>
-            </span>
+        </div>
+
+        {/* Search and Filters */}
+        <div className="mb-6 bg-white p-4 rounded-lg shadow-sm">
+          <div className="relative mb-4">
+            <Search size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Rechercher un événement..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+          <div className="flex justify-between items-center">
+            <div className="flex items-center space-x-2">
+              <span className="text-sm font-medium text-gray-700">Type:</span>
+              <button onClick={() => setTypeFilter(['concert', 'repetition', 'autre', 'reunion'])} className={`px-3 py-1 rounded-full text-sm ${typeFilter.length >= 2 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}>Tous</button>
+              <button onClick={() => setTypeFilter(['concert'])} className={`px-3 py-1 rounded-full text-sm ${typeFilter.length === 1 && typeFilter[0] === 'concert' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}>Concerts</button>
+              <button onClick={() => setTypeFilter(['repetition'])} className={`px-3 py-1 rounded-full text-sm ${typeFilter.length === 1 && typeFilter[0] === 'repetition' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}>Répétitions</button>
+              <button onClick={() => setTypeFilter(['autre', 'reunion'])} className={`px-3 py-1 rounded-full text-sm ${typeFilter.some(t => ['autre', 'reunion'].includes(t)) && typeFilter.length <= 2 ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}>Autres</button>
+            </div>
+            <div className="flex items-center space-x-2">
+              <span className="text-sm font-medium text-gray-700">Date:</span>
+              <button onClick={() => setTimeFilter('all')} className={`px-3 py-1 rounded-full text-sm ${timeFilter === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}>Tous</button>
+              <button onClick={() => setTimeFilter('upcoming')} className={`px-3 py-1 rounded-full text-sm ${timeFilter === 'upcoming' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}>À venir</button>
+              <button onClick={() => setTimeFilter('past')} className={`px-3 py-1 rounded-full text-sm ${timeFilter === 'past' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}>Passés</button>
+            </div>
+            <div className="flex items-center space-x-2">
+              <button onClick={expandAllTypes} className="text-sm bg-gray-200 px-3 py-1 rounded-md">Tout déplier</button>
+              <button onClick={collapseAllTypes} className="text-sm bg-gray-200 px-3 py-1 rounded-md">Tout replier</button>
+            </div>
           </div>
         </div>
 
-        {/* Formulaire d'ajout/modification (Modal) */}
-        {showAddForm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center space-x-3">
-                    <div className="bg-primary/10 p-2 rounded-lg">
-                      {editingEvent ? <Edit className="h-6 w-6 text-primary" /> : <Plus className="h-6 w-6 text-primary" />}
-                    </div>
-                    <h2 className="font-poppins font-semibold text-xl text-dark">
-                      {editingEvent ? 'Modifier l\'événement' : 'Ajouter un événement'}
-                    </h2>
-                  </div>
-                  <button
-                    onClick={cancelEdit}
-                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                  >
-                    <X className="h-5 w-5 text-gray-500" />
-                  </button>
-                </div>
 
-                <form onSubmit={editingEvent ? handleUpdate : handleCreate} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-dark mb-2">
-                        Titre de l'événement
-                      </label>
-                      <input
-                        type="text"
-                        name="title"
-                        value={formData.title}
-                        onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                        placeholder="Ex: Concert de printemps..."
-                        required
-                      />
-                    </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-dark mb-2">
-                        Type d'événement
-                      </label>
-                      <select
-                        name="event_type"
-                        value={formData.event_type}
-                        onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                      >
-                        <option value="concert">Concert</option>
-                        <option value="repetition">Répétition</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-dark mb-2">
-                      Description (optionnel)
-                    </label>
-                    <textarea
-                      name="description"
-                      value={formData.description}
-                      onChange={handleInputChange}
-                      rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary resize-none"
-                      placeholder="Description de l'événement..."
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-dark mb-2">
-                        Date et heure
-                      </label>
-                      <input
-                        type="datetime-local"
-                        name="event_date"
-                        value={formData.event_date}
-                        onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-dark mb-2">
-                        Lieu (optionnel)
-                      </label>
-                      <input
-                        type="text"
-                        name="location"
-                        value={formData.location}
-                        onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                        placeholder="Ex: Salle de concert..."
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-dark mb-3">
-                      Orchestres concernés (au moins un requis)
-                    </label>
-                    <div className="grid grid-cols-1 gap-2 max-h-40 overflow-y-auto border border-gray-200 rounded-lg p-3">
-                      {orchestras.map((orchestra) => (
-                        <label key={orchestra.id} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
-                          <input
-                            type="checkbox"
-                            checked={formData.orchestra_ids.includes(orchestra.id)}
-                            onChange={(e) => handleOrchestraChange(orchestra.id, e.target.checked)}
-                            className="rounded border-gray-300 text-primary focus:ring-primary"
-                          />
-                          <span className="text-sm text-gray-700">{orchestra.name}</span>
-                        </label>
-                      ))}
-                    </div>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Sélectionnez au moins un orchestre
-                    </p>
-                  </div>
-
-                  <div className="flex space-x-3 pt-4">
-                    <button
-                      type="submit"
-                      disabled={loading || formData.orchestra_ids.length === 0}
-                      className="flex-1 bg-primary hover:bg-primary/90 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 disabled:opacity-50"
-                    >
-                      {loading ? 'En cours...' : (editingEvent ? 'Mettre à jour' : 'Créer')}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={cancelEdit}
-                      className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-dark rounded-lg transition-all duration-200"
-                    >
-                      Annuler
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
+        {/* Events List */}
+        {loading ? (
+          <div className="text-center text-gray-500">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4">Chargement des événements...</p>
           </div>
-        )}
-
-        {/* Modal de confirmation de suppression */}
-        {deleteConfirmation.isOpen && deleteConfirmation.event && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
-              <div className="p-6">
-                <div className="flex items-center space-x-3 mb-6">
-                  <div className="bg-red-100 p-3 rounded-full">
-                    <Trash2 className="h-6 w-6 text-red-600" />
+        ) : (
+          <div className="space-y-8">
+            {Object.entries(eventsByType).map(([type, eventList]) => (
+              <div key={type} className="bg-white rounded-xl shadow-lg border border-gray-200/80 overflow-hidden">
+                <div onClick={() => toggleTypeExpansion(type)} className="p-5 flex justify-between items-center cursor-pointer bg-gray-50/80 border-b border-gray-200/80 hover:bg-gray-100/50 transition-colors">
+                  <div className="flex items-center">
+                    {React.createElement(getTypeIcon(type), { className: `h-8 w-8 mr-4 ${getTypeColor(type).replace('bg-', 'text-').replace('-100', '-600')}` })}
+                    <h2 className={`text-2xl font-bold ${getTypeColor(type).replace('bg-', 'text-').replace('-100', '-800')}`}>{type === 'concert' ? 'Concerts' : 'Répétitions'} <span className="text-lg font-normal">({eventList.length})</span></h2>
                   </div>
-                  <div>
-                    <h3 className="font-poppins font-semibold text-lg text-dark">
-                      Confirmer la suppression
-                    </h3>
-                    <p className="text-sm text-gray-600">
-                      Cette action est irréversible
-                    </p>
+                  <ChevronRight className={`transform transition-transform duration-300 ${expandedTypes.has(type) ? 'rotate-90' : ''}`} />
+                </div>
+                {expandedTypes.has(type) && (
+                  <div className="divide-y divide-gray-200/80">
+                    {eventList.map(event => (
+                      <div key={event.id} className={`p-4 flex flex-col md:flex-row md:items-center md:justify-between hover:bg-gray-50/50 transition-colors duration-200`}>
+                        <div className="flex items-center flex-1 mb-4 md:mb-0">
+                          <div className={`p-3 rounded-lg mr-4 ${getTypeColor(event.event_type)}`}>
+                            {React.createElement(getTypeIcon(event.event_type), { className: "h-6 w-6" })}
+                          </div>
+                          <div className="flex-grow">
+                            <p className="font-bold text-lg text-gray-800">{event.title}</p>
+                            <div className="flex items-center text-gray-600 text-sm mb-2">
+                              <Calendar size={16} className="mr-2" /> {formatDate(event.event_date)}
+                            </div>
+                            {event.location && <div className="flex items-center text-gray-600 text-sm">
+                              <MapPin size={16} className="mr-2" /> {event.location}
+                            </div>}
+                          </div>
+                        </div>
+                        <div className="flex-1 text-sm">
+                          <h4 className="font-semibold text-gray-700 mb-1">Orchestres:</h4>
+                          <ul className="list-disc list-inside text-gray-600">
+                            {event.orchestras.map(o => <li key={o.id}>{o.name}</li>)}
+                          </ul>
+                        </div>
+                        <div className="flex items-center space-x-3 flex-shrink-0 ml-4">
+                          <button onClick={() => handleEdit(event)} className="p-2 text-blue-600 bg-blue-100 hover:bg-blue-200 rounded-full transition-colors duration-200"><Edit size={18} /></button>
+                          <button onClick={() => confirmDelete(event)} className="p-2 text-red-600 bg-red-100 hover:bg-red-200 rounded-full transition-colors duration-200"><Trash2 size={18} /></button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                </div>
-                
-                <div className="mb-6">
-                  <p className="text-gray-700">
-                    Êtes-vous sûr de vouloir supprimer l'événement{' '}
-                    <span className="font-semibold text-dark">
-                      {deleteConfirmation.event.title}
-                    </span>{' '}
-                    ?
-                  </p>
-                </div>
-                
-                <div className="flex space-x-3">
-                  <button
-                    onClick={handleDelete}
-                    className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
-                  >
-                    Supprimer définitivement
-                  </button>
-                  <button
-                    onClick={cancelDelete}
-                    className="flex-1 bg-gray-200 hover:bg-gray-300 text-dark font-semibold py-3 px-4 rounded-lg transition-all duration-200"
-                  >
-                    Annuler
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Liste des événements */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="p-6 border-b border-gray-100">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-poppins font-semibold text-lg text-dark">
-                Liste des événements
-              </h3>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Search className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  type="text"
-                  placeholder="Rechercher un événement..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary w-64"
-                />
-                {searchTerm && (
-                  <button
-                    onClick={() => setSearchTerm('')}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                  >
-                    <X className="h-4 w-4 text-gray-400 hover:text-gray-600" />
-                  </button>
                 )}
               </div>
+            ))}
+          </div>
+        )}
+
+        {/* Add/Edit Form Modal */}
+        {showAddForm && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-40 flex justify-center items-center p-4">
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+              <div className="flex justify-between items-center p-5 border-b">
+                <h2 className="text-2xl font-bold text-gray-800">{editingEvent ? 'Modifier' : 'Ajouter'} un événement</h2>
+                <button onClick={cancelEdit} className="p-2 rounded-full hover:bg-gray-200"><X size={24} /></button>
+              </div>
+              <form onSubmit={handleSubmit} className="flex-grow overflow-y-auto p-6 space-y-4">
+                <input type="text" name="title" value={formData.title} onChange={handleInputChange} placeholder="Titre de l'événement" required className="w-full px-4 py-2 border rounded-lg" />
+                <select name="event_type" value={formData.event_type} onChange={handleInputChange} className="w-full px-4 py-2 border rounded-lg bg-white">
+                  <option value="concert">Concert</option>
+                  <option value="repetition">Répétition</option>
+                </select>
+                <textarea name="description" value={formData.description} onChange={handleInputChange} placeholder="Description" className="w-full px-4 py-2 border rounded-lg h-24"></textarea>
+                <textarea name="practical_info" value={formData.practical_info} onChange={handleInputChange} placeholder="Informations pratiques (visible uniquement par les membres)" className="w-full px-4 py-2 border rounded-lg h-24"></textarea>
+                <input type="datetime-local" name="event_date" value={formData.event_date} onChange={handleInputChange} required className="w-full px-4 py-2 border rounded-lg" />
+                <input type="text" name="location" value={formData.location} onChange={handleInputChange} placeholder="Lieu" className="w-full px-4 py-2 border rounded-lg" />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Orchestres</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {orchestras.map(orchestra => (
+                      <label key={orchestra.id} className="flex items-center space-x-2">
+                        <input type="checkbox" checked={formData.orchestra_ids.includes(orchestra.id)} onChange={e => handleOrchestraChange(orchestra.id, e.target.checked)} className="rounded" />
+                        <span>{orchestra.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex justify-end pt-4 border-t">
+                  <button type="button" onClick={cancelEdit} className="mr-4 px-6 py-2 rounded-lg border hover:bg-gray-100">Annuler</button>
+                  <button type="submit" disabled={loading} className="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition disabled:bg-blue-300">
+                    {loading ? 'Enregistrement...' : (editingEvent ? 'Mettre à jour' : 'Créer')}
+                  </button>
+                </div>
+              </form>
             </div>
-            
-            {/* Filtres par type */}
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
-              {/* Filtres par type */}
-              <div className="flex items-center space-x-3">
-                <span className="text-sm font-medium text-gray-700">Filtrer par type :</span>
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={() => toggleTypeFilter('concert')}
-                    className={`inline-flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
-                      typeFilter.includes('concert')
-                        ? 'bg-green-100 text-green-800 border border-green-200'
-                        : 'bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200'
-                    }`}
-                  >
-                    <Calendar className="h-3 w-3" />
-                    <span>Concerts</span>
-                  </button>
-                  <button
-                    onClick={() => toggleTypeFilter('repetition')}
-                    className={`inline-flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
-                      typeFilter.includes('repetition')
-                        ? 'bg-blue-100 text-blue-800 border border-blue-200'
-                        : 'bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200'
-                    }`}
-                  >
-                    <Clock className="h-3 w-3" />
-                    <span>Répétitions</span>
-                  </button>
-                </div>
-              </div>
-              
-              {/* Filtres temporels */}
-              <div className="flex items-center space-x-3">
-                <span className="text-sm font-medium text-gray-700">Période :</span>
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={() => setTimeFilter('all')}
-                    className={`inline-flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
-                      timeFilter === 'all'
-                        ? 'bg-gray-100 text-gray-800 border border-gray-300'
-                        : 'bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100'
-                    }`}
-                  >
-                    <span>Tous</span>
-                  </button>
-                  <button
-                    onClick={() => setTimeFilter('upcoming')}
-                    className={`inline-flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
-                      timeFilter === 'upcoming'
-                        ? 'bg-orange-100 text-orange-800 border border-orange-200'
-                        : 'bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100'
-                    }`}
-                  >
-                    <span>À venir</span>
-                  </button>
-                  <button
-                    onClick={() => setTimeFilter('past')}
-                    className={`inline-flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
-                      timeFilter === 'past'
-                        ? 'bg-slate-100 text-slate-800 border border-slate-200'
-                        : 'bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100'
-                    }`}
-                  >
-                    <span>Passés</span>
-                  </button>
-                </div>
-              </div>
-              
-              {/* Actions de contrôle */}
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={expandAllTypes}
-                  className="text-xs text-blue-600 hover:text-blue-700 font-medium transition-colors bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded border border-blue-200"
-                >
-                  Tout déplier
-                </button>
-                <button
-                  onClick={collapseAllTypes}
-                  className="text-xs text-gray-600 hover:text-gray-700 font-medium transition-colors bg-gray-50 hover:bg-gray-100 px-2 py-1 rounded border border-gray-200"
-                >
-                  Tout replier
-                </button>
+          </div>
+        )}
+
+        {/* Delete Confirmation Modal */}
+        {deleteConfirmation.isOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center">
+            <div className="bg-white rounded-lg shadow-xl p-8 m-4 max-w-md w-full">
+              <h3 className="text-2xl font-bold text-gray-800 mb-4">Confirmer la suppression</h3>
+              <p className="text-gray-600 mb-6">Êtes-vous sûr de vouloir supprimer l'événement <span className="font-bold">{deleteConfirmation.event?.title}</span> ?</p>
+              <div className="flex justify-end space-x-4">
+                <button onClick={cancelDelete} className="px-6 py-2 rounded-lg border hover:bg-gray-100">Annuler</button>
+                <button onClick={handleDelete} className="bg-red-600 text-white px-6 py-2 rounded-lg shadow hover:bg-red-700">Supprimer</button>
               </div>
             </div>
           </div>
-          
-          {loading ? (
-            <div className="p-8 text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-              <p className="mt-2 text-gray-600">Chargement...</p>
-            </div>
-          ) : filteredEvents.length === 0 && searchTerm ? (
-            <div className="p-8 text-center text-gray-500">
-              <Search className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-              <p>Aucun événement trouvé pour "{searchTerm}"</p>
-              <button onClick={() => setSearchTerm('')} className="text-primary hover:text-primary/80 mt-2">Effacer la recherche</button>
-            </div>
-          ) : events.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">
-              <Calendar className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-              <p>Aucun événement trouvé</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {['concert', 'repetition'].map((eventType) => {
-                const typeEvents = eventsByType[eventType] || [];
-                const isExpanded = expandedTypes.has(eventType);
-                const TypeIcon = getTypeIcon(eventType);
-                
-                if (typeEvents.length === 0) return null;
-                
-                return (
-                  <div key={eventType} className="border border-gray-200 rounded-xl overflow-hidden">
-                    {/* Header du type - cliquable */}
-                    <button
-                      onClick={() => toggleTypeExpansion(eventType)}
-                      className={`w-full p-6 transition-all duration-200 text-left border-b border-gray-200 ${
-                        eventType === 'concert' 
-                          ? 'bg-gradient-to-r from-green-50 to-emerald-50 hover:from-green-100 hover:to-emerald-100' 
-                          : 'bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-4">
-                          <div className={`p-3 rounded-lg shadow-md ${
-                            eventType === 'concert' 
-                              ? 'bg-gradient-to-br from-green-500 to-emerald-600' 
-                              : 'bg-gradient-to-br from-blue-500 to-indigo-600'
-                          }`}>
-                            <TypeIcon className="h-6 w-6 text-white" />
-                          </div>
-                          <div>
-                            <h3 className="font-poppins font-bold text-xl text-dark">
-                              {eventType === 'concert' ? 'Concerts' : 'Répétitions'}
-                            </h3>
-                            <div className="flex items-center space-x-4 text-sm text-gray-600">
-                              <span>{typeEvents.length} événement{typeEvents.length > 1 ? 's' : ''}</span>
-                              <span>•</span>
-                              <span>
-                                {typeEvents.filter(e => isUpcoming(e.event_date)).length} à venir, {' '}
-                                {typeEvents.filter(e => isPast(e.event_date)).length} passé{typeEvents.filter(e => isPast(e.event_date)).length > 1 ? 's' : ''}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-3">
-                          <div className={`text-right bg-white/80 backdrop-blur-sm rounded-lg px-3 py-2 border ${
-                            eventType === 'concert' ? 'border-green-200' : 'border-blue-200'
-                          }`}>
-                            <div className={`text-lg font-bold ${
-                              eventType === 'concert' ? 'text-green-700' : 'text-blue-700'
-                            }`}>
-                              {typeEvents.length}
-                            </div>
-                            <div className={`text-xs ${
-                              eventType === 'concert' ? 'text-green-600' : 'text-blue-600'
-                            }`}>
-                              événement{typeEvents.length > 1 ? 's' : ''}
-                            </div>
-                          </div>
-                          <div className={`transform transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}>
-                            <ChevronRight className="h-6 w-6 text-gray-400" />
-                          </div>
-                        </div>
-                      </div>
-                    </button>
-                    
-                    {/* Liste des événements - collapsible */}
-                    <div className={`transition-all duration-300 overflow-hidden ${
-                      isExpanded ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
-                    }`}>
-                      <div className="divide-y divide-gray-100">
-                        {typeEvents.map((event) => {
-                          const EventTypeIcon = getTypeIcon(event.event_type);
-                          const eventIsUpcoming = isUpcoming(event.event_date);
-                          
-                          return (
-                            <div key={event.id} className={`p-6 hover:bg-gray-50 transition-colors ${
-                              !eventIsUpcoming ? 'opacity-75' : ''
-                            }`}>
-                              <div className="flex items-start justify-between">
-                                <div className="flex items-start space-x-4 flex-1">
-                                  <div className={`p-3 rounded-lg ${
-                                    eventIsUpcoming ? 'bg-primary/10' : 'bg-gray-100'
-                                  }`}>
-                                    <EventTypeIcon className={`h-6 w-6 ${
-                                      eventIsUpcoming ? 'text-primary' : 'text-gray-500'
-                                    }`} />
-                                  </div>
-                                  <div className="flex-1">
-                                    <div className="flex items-center space-x-3 mb-2">
-                                      <h3 className={`font-semibold text-lg ${
-                                        eventIsUpcoming ? 'text-dark' : 'text-gray-600'
-                                      }`}>
-                                        {event.title}
-                                      </h3>
-                                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getTypeColor(event.event_type)}`}>
-                                        <EventTypeIcon className="h-3 w-3 mr-1" />
-                                        {event.event_type === 'concert' ? 'Concert' : 'Répétition'}
-                                      </span>
-                                      {eventIsUpcoming && (
-                                        <span className="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full font-medium">
-                                          À venir
-                                        </span>
-                                      )}
-                                      {!eventIsUpcoming && (
-                                        <span className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full font-medium">
-                                          Passé
-                                        </span>
-                                      )}
-                                    </div>
-                                    
-                                    {event.description && (
-                                      <p className="text-sm text-gray-600 mb-2">
-                                        {event.description}
-                                      </p>
-                                    )}
-                                    
-                                    <div className="flex items-center space-x-4 text-sm text-gray-500 mb-2">
-                                      <span className="flex items-center space-x-1">
-                                        <Calendar className="h-4 w-4" />
-                                        <span>{formatDate(event.event_date)}</span>
-                                      </span>
-                                      {event.location && (
-                                        <span className="flex items-center space-x-1">
-                                          <MapPin className="h-4 w-4" />
-                                          <span>{event.location}</span>
-                                        </span>
-                                      )}
-                                    </div>
-                                    
-                                    {event.orchestras && event.orchestras.length > 0 && (
-                                      <div className="flex items-center space-x-1 text-xs text-gray-500">
-                                        <Users className="h-3 w-3" />
-                                        <span>{event.orchestras.map(o => o.name).join(', ')}</span>
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                                <div className="flex items-center space-x-2 ml-4">
-                                  <button
-                                    onClick={() => handleEdit(event)}
-                                    className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-all duration-200"
-                                    title="Modifier"
-                                  >
-                                    <Edit className="h-5 w-5" />
-                                  </button>
-                                  <button
-                                    onClick={() => confirmDelete(event)}
-                                    className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-all duration-200"
-                                    title="Supprimer"
-                                  >
-                                    <Trash2 className="h-5 w-5" />
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+        )}
+
+        {/* Notification */}
+        {notification.show && (
+          <div className={`fixed top-5 right-5 p-4 rounded-lg shadow-lg text-white z-50 ${notification.type === 'success' ? 'bg-green-500' : 'bg-red-500'}`}>
+            {notification.message}
+          </div>
+        )}
+
       </div>
     </div>
   );

@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
+import { useTheme } from '../context/ThemeContext';
 import { MapPin, Phone, Mail, Clock, Send, User, MessageSquare, CheckCircle, AlertCircle } from 'lucide-react';
+import PageHero from '../components/PageHero';
 
 interface FormData {
   name: string;
@@ -15,6 +17,7 @@ interface FormStatus {
 }
 
 const Contact = () => {
+  const { pageHeaders } = useTheme();
   const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',
@@ -22,7 +25,7 @@ const Contact = () => {
     subject: '',
     message: ''
   });
-  
+
   const [formStatus, setFormStatus] = useState<FormStatus>({
     type: 'idle',
     message: ''
@@ -36,15 +39,15 @@ const Contact = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormStatus({ type: 'loading', message: 'Envoi en cours...' });
-    
+
     // Simulation d'envoi (remplacer par vraie logique d'envoi)
     setTimeout(() => {
-      setFormStatus({ 
-        type: 'success', 
-        message: 'Votre message a été envoyé avec succès ! Nous vous répondrons dans les plus brefs délais.' 
+      setFormStatus({
+        type: 'success',
+        message: 'Votre message a été envoyé avec succès ! Nous vous répondrons dans les plus brefs délais.'
       });
       setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
-      
+
       // Réinitialiser le statut après 5 secondes
       setTimeout(() => {
         setFormStatus({ type: 'idle', message: '' });
@@ -69,7 +72,7 @@ const Contact = () => {
       icon: Mail,
       title: 'Email',
       content: ['contact@lyre-chalindrey.fr'],
-      color: 'from-orange-500 to-red-500'
+      color: 'from-orange-500 to-indigo-500'
     },
     {
       icon: Clock,
@@ -91,24 +94,20 @@ const Contact = () => {
   return (
     <div className="font-inter">
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat bg-gray-900" 
-        style={{ 
-          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url("https://images.pexels.com/photos/1407322/pexels-photo-1407322.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop")` 
-        }}>
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center animate-fade-in relative z-10">
-            <h1 className="font-poppins font-bold text-4xl md:text-5xl text-white mb-6">
-              Contactez-nous
-            </h1>
-            <p className="font-inter text-lg text-white/90 max-w-2xl mx-auto leading-relaxed">
-              Une question ? Envie de nous rejoindre ? Nous sommes là pour vous accompagner.
-            </p>
-          </div>
-        </div>
-      </section>
+      {/* Hero Section */}
+      <PageHero
+        title={<span><span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-emerald-400 to-cyan-500">Contactez</span>-nous</span>}
+        subtitle="Une question ? Envie de nous rejoindre ? N'hésitez pas à nous écrire."
+        backgroundImage={pageHeaders['contact'] || "https://images.pexels.com/photos/1407322/pexels-photo-1407322.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop"}
+        anchors={[
+          { label: "Nous écrire", targetId: "formulaire", icon: MessageSquare, color: "amber" },
+          { label: "Nous trouver", targetId: "plan", icon: MapPin, color: "indigo" }
+        ]}
+      />
 
       {/* Formulaire et Carte */}
-      <section className="py-16 bg-gradient-to-br from-slate-900 via-gray-800 to-slate-900 relative overflow-hidden">
+      {/* Formulaire et Carte */}
+      <section id="formulaire" className="scroll-mt-32 py-16 bg-gradient-to-br from-slate-900 via-gray-800 to-slate-900 relative overflow-hidden">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           {/* Infos pratiques */}
           <div className="text-center mb-12 relative z-10">
@@ -143,7 +142,7 @@ const Contact = () => {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-6xl mx-auto relative z-10">
-            
+
             {/* Formulaire de Contact */}
             <div className="animate-fade-in">
               <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 overflow-hidden">
@@ -162,13 +161,12 @@ const Contact = () => {
                 <div className="p-6">
                   {/* Notification de statut */}
                   {formStatus.type !== 'idle' && (
-                    <div className={`mb-4 p-3 rounded-lg border ${
-                      formStatus.type === 'success' 
-                        ? 'bg-green-50 border-green-200 text-green-800' 
-                        : formStatus.type === 'error'
+                    <div className={`mb-4 p-3 rounded-lg border ${formStatus.type === 'success'
+                      ? 'bg-green-50 border-green-200 text-green-800'
+                      : formStatus.type === 'error'
                         ? 'bg-red-50 border-red-200 text-red-800'
                         : 'bg-orange-50 border-orange-200 text-orange-800'
-                    }`}>
+                      }`}>
                       <div className="flex items-center space-x-2">
                         {formStatus.type === 'success' && <CheckCircle className="h-5 w-5 text-green-600" />}
                         {formStatus.type === 'error' && <AlertCircle className="h-5 w-5 text-red-600" />}
@@ -299,7 +297,7 @@ const Contact = () => {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="h-96 relative">
                   <iframe
                     src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2679.123!2d5.3456!3d47.8901!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47f1e1234567890a%3A0x1234567890abcdef!2s1%20bis%20Rue%20Jean%20Jaur%C3%A8s%2C%2052600%20Chalindrey%2C%20France!5e0!3m2!1sfr!2sfr!4v1234567890!5m2!1sfr!2sfr"
@@ -312,7 +310,7 @@ const Contact = () => {
                     title="Localisation de la Lyre Cheminote et Municipale de Chalindrey"
                     className="w-full h-full"
                   ></iframe>
-                  
+
                   {/* Overlay discret */}
                   <div className="absolute bottom-3 left-3 right-3">
                     <div className="bg-white/95 backdrop-blur-sm rounded-lg p-3 shadow-lg">
@@ -348,8 +346,8 @@ const Contact = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-4xl mx-auto">
             {contactInfo.map((info, index) => (
-              <div 
-                key={index} 
+              <div
+                key={index}
                 className="text-center bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-white/50 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300"
               >
                 <div className={`bg-gradient-to-br ${info.color} w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-4 shadow-sm`}>

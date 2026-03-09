@@ -4,8 +4,10 @@ import { Routes, Route } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
+import { ThemeProvider } from './context/ThemeContext';
 import Home from './pages/Home';
 import School from './pages/School';
+import Orchestras from './pages/Orchestras';
 import Events from './pages/Events';
 import Media from './pages/Media';
 import Contact from './pages/Contact';
@@ -16,9 +18,15 @@ import AdminInstruments from './pages/AdminInstruments'; // Importer la page d'a
 import AdminOrchestras from './pages/AdminOrchestras'; // Importer la page d'administration des orchestres
 import AdminEvents from './pages/AdminEvents'; // Importer la page d'administration des événements
 import UserEvents from './pages/UserEvents'; // Importer la page des événements utilisateur
-import AdminMedia from './pages/AdminMedia'; // Importer la page d'administration des médias
+import AdminMedia from './pages/AdminMedia'; // Importer la import AdminCarousel from './pages/AdminCarousel';
+import AdminTheme from './pages/AdminTheme';
+import AdminPartners from './pages/AdminPartners'; // Importer la page d'administration du thème
 import AdminMorceaux from './pages/AdminMorceaux'; // Importer la page d'administration des morceaux
-import AdminPartitions from './pages/AdminPartitions'; // Importer la page d'administration des partitions
+
+import AdminPartitions from './pages/AdminPartitions';
+import AdminNews from './pages/AdminNews';
+
+import NewsArchive from './pages/NewsArchive';
 
 function App() {
   return (
@@ -28,8 +36,10 @@ function App() {
       <main className="flex-grow">
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/toutes-les-actualites" element={<NewsArchive />} />
           <Route path="/school" element={<School />} />
-          <Route path="/events" element={<Events />} />
+
+          <Route path="/orchestres" element={<Orchestras />} />
           <Route path="/media" element={<Media />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/connexion" element={<Connexion />} /> {/* Route pour la connexion */}
@@ -40,8 +50,12 @@ function App() {
           <Route path="/admin/events" element={<AdminEvents />} /> {/* Route pour l'administration des événements */}
           <Route path="/user/events" element={<UserEvents />} /> {/* Route pour les événements utilisateur */}
           <Route path="/admin/media" element={<AdminMedia />} /> {/* Route pour l'administration des médias */}
+          <Route path="/admin/theme" element={<AdminTheme />} /> {/* Route pour l'administration du thème */}
+          <Route path="/admin/partners" element={<AdminPartners />} /> {/* Route pour l'administration des partenaires */}
           <Route path="/admin/morceaux" element={<AdminMorceaux />} /> {/* Route pour l'administration des morceaux */}
-          <Route path="/admin/partitions" element={<AdminPartitions />} /> {/* Route pour l'administration des partitions */}
+
+          <Route path="/admin/partitions" element={<AdminPartitions />} />
+          <Route path="/admin/news" element={<AdminNews />} />
         </Routes>
       </main>
       <Footer />
