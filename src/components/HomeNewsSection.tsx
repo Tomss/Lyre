@@ -199,34 +199,33 @@ const HomeNewsSection = () => {
                         </div>
                         
                         {/* Liste au scroll */}
-                        <div className="p-6 overflow-y-auto flex-1 bg-slate-50">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div className="p-4 sm:p-6 overflow-y-auto flex-1 bg-slate-50">
+                            <div className="flex flex-col space-y-3">
                                 {allNews.map((item) => (
                                     <div 
                                         key={item.id}
                                         onClick={() => setSelectedNews(item)}
-                                        className="bg-white rounded-2xl shadow-sm border border-slate-200 hover:shadow-lg hover:border-teal-300 transition-all cursor-pointer flex flex-col group overflow-hidden"
+                                        className="bg-white rounded-xl shadow-sm border border-slate-200 hover:shadow-md hover:border-teal-300 transition-all cursor-pointer flex items-center p-3 group overflow-hidden"
                                     >
-                                        <div className="w-full h-40 flex-shrink-0 bg-slate-100 relative overflow-hidden">
+                                        <div className="w-24 h-24 sm:w-32 sm:h-24 flex-shrink-0 bg-slate-100 relative rounded-lg overflow-hidden mr-4">
                                             {item.image_url ? (
                                                 <img src={item.image_url} alt={item.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                                             ) : (
                                                 <div className="w-full h-full flex flex-col items-center justify-center text-teal-300 bg-teal-50">
-                                                    <Newspaper className="w-8 h-8 opacity-50 mb-2" />
-                                                    <span className="text-[10px] font-bold uppercase tracking-widest opacity-50">Actualité</span>
+                                                    <Newspaper className="w-6 h-6 opacity-50 mb-1" />
+                                                    <span className="text-[8px] font-bold uppercase tracking-widest opacity-50">Actu</span>
                                                 </div>
                                             )}
-                                            <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 to-transparent"></div>
-                                            <div className="absolute bottom-3 left-3 flex items-center text-xs font-bold text-white z-10">
-                                                <CalendarDays className="w-3.5 h-3.5 mr-1.5 text-teal-300" />
+                                        </div>
+                                        <div className="flex flex-col flex-1 min-w-0">
+                                            <div className="flex items-center text-[10px] sm:text-xs font-bold text-teal-600 mb-1">
+                                                <CalendarDays className="w-3 h-3 mr-1" />
                                                 {new Date(item.published_at).toLocaleDateString('fr-FR')}
                                             </div>
-                                        </div>
-                                        <div className="flex flex-col flex-1 p-5">
-                                            <h3 className="font-poppins font-bold text-base text-slate-800 mb-2 group-hover:text-teal-700 transition-colors line-clamp-2">
+                                            <h3 className="font-poppins font-bold text-sm sm:text-base text-slate-800 mb-1 group-hover:text-teal-700 transition-colors truncate">
                                                 {item.title}
                                             </h3>
-                                            <p className="text-slate-500 text-xs line-clamp-3 leading-relaxed">
+                                            <p className="text-slate-500 text-xs line-clamp-2 leading-relaxed hidden sm:block">
                                                 {item.content}
                                             </p>
                                         </div>
