@@ -187,8 +187,12 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="font-inter pt-28 lg:pt-40 pb-20 min-h-screen bg-gradient-to-br from-blue-25 via-indigo-25 to-purple-25">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">
+    <div className="font-inter pt-28 lg:pt-40 pb-20 min-h-screen bg-slate-50 relative overflow-hidden">
+      {/* Decorative background elements */}
+      <div className="absolute top-0 right-0 -m-32 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="absolute bottom-0 left-0 -m-32 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
+      
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl relative z-10">
 
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/50 p-8 mb-8 relative overflow-hidden">
           <div className="relative z-10">
@@ -269,49 +273,73 @@ const Dashboard = () => {
 
         {/* Section Admin/Gestionnaire */}
         {(currentUser?.role === 'Admin' || currentUser?.role === 'Gestionnaire') && (
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 p-6 mb-8">
-            <h2 className="font-poppins font-bold text-2xl text-dark mb-6 text-center">Panneau d'administration</h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-4 text-center">
-              <Link to="/admin/users" className="admin-card">
-                <Users className="h-8 w-8 mx-auto mb-2 text-blue-500" />
-                <span className="font-semibold">Utilisateurs</span>
+          <div className="mb-12">
+            <div className="text-center mb-10 mt-16">
+              <h2 className="text-4xl md:text-5xl font-bold font-poppins text-slate-800 mb-4 tracking-tight">Panneau d'<span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-500 to-cyan-500">Administration</span></h2>
+              <p className="text-slate-500 text-lg max-w-2xl mx-auto">Gérez l'ensemble des contenus, musiciens et événements de l'association depuis cet espace sécurisé.</p>
+            </div>
+            
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+              <Link to="/admin/users" className="admin-card group">
+                <div className="w-16 h-16 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300 shadow-sm">
+                  <Users className="h-8 w-8" />
+                </div>
+                <span className="font-bold text-slate-700 group-hover:text-slate-900 transition-colors">Musiciens</span>
               </Link>
-              <Link to="/admin/orchestras" className="admin-card">
-                <Music2 className="h-8 w-8 mx-auto mb-2 text-purple-500" />
-                <span className="font-semibold">Orchestres</span>
+              <Link to="/admin/orchestras" className="admin-card group">
+                <div className="w-16 h-16 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-purple-600 group-hover:text-white transition-all duration-300 shadow-sm">
+                  <Music2 className="h-8 w-8" />
+                </div>
+                <span className="font-bold text-slate-700 group-hover:text-slate-900 transition-colors">Orchestres</span>
               </Link>
-              <Link to="/admin/morceaux" className="admin-card">
-                <Music className="h-8 w-8 mx-auto mb-2 text-green-500" />
-                <span className="font-semibold">Morceaux</span>
+              <Link to="/admin/morceaux" className="admin-card group">
+                <div className="w-16 h-16 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-300 shadow-sm">
+                  <Music className="h-8 w-8" />
+                </div>
+                <span className="font-bold text-slate-700 group-hover:text-slate-900 transition-colors">Morceaux</span>
               </Link>
-              <Link to="/admin/instruments" className="admin-card">
-                <Music className="h-8 w-8 mx-auto mb-2 text-yellow-500" />
-                <span className="font-semibold">Instruments</span>
+              <Link to="/admin/instruments" className="admin-card group">
+                <div className="w-16 h-16 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-amber-500 group-hover:text-white transition-all duration-300 shadow-sm">
+                  <Music className="h-8 w-8" />
+                </div>
+                <span className="font-bold text-slate-700 group-hover:text-slate-900 transition-colors">Instruments</span>
               </Link>
 
-              <Link to="/admin/news" className="admin-card">
-                <Newspaper className="h-8 w-8 mx-auto mb-2 text-rose-500" />
-                <span className="font-semibold">Actualités</span>
+              <Link to="/admin/news" className="admin-card group">
+                <div className="w-16 h-16 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-rose-500 group-hover:text-white transition-all duration-300 shadow-sm">
+                  <Newspaper className="h-8 w-8" />
+                </div>
+                <span className="font-bold text-slate-700 group-hover:text-slate-900 transition-colors">Actualités</span>
               </Link>
-              <Link to="/admin/events" className="admin-card">
-                <Calendar className="h-8 w-8 mx-auto mb-2 text-red-500" />
-                <span className="font-semibold">Événements</span>
+              <Link to="/admin/events" className="admin-card group">
+                <div className="w-16 h-16 rounded-2xl bg-red-100 text-red-600 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-red-500 group-hover:text-white transition-all duration-300 shadow-sm">
+                  <Calendar className="h-8 w-8" />
+                </div>
+                <span className="font-bold text-slate-700 group-hover:text-slate-900 transition-colors">Agenda</span>
               </Link>
-              <Link to="/admin/partitions" className="admin-card">
-                <FileText className="h-8 w-8 mx-auto mb-2 text-indigo-500" />
-                <span className="font-semibold">Partitions</span>
+              <Link to="/admin/partitions" className="admin-card group">
+                <div className="w-16 h-16 rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300 shadow-sm">
+                  <FileText className="h-8 w-8" />
+                </div>
+                <span className="font-bold text-slate-700 group-hover:text-slate-900 transition-colors">Partitions</span>
               </Link>
-              <Link to="/admin/media" className="admin-card">
-                <Image className="h-8 w-8 mx-auto mb-2 text-pink-500" />
-                <span className="font-semibold">Média</span>
+              <Link to="/admin/media" className="admin-card group">
+                <div className="w-16 h-16 rounded-2xl bg-pink-100 text-pink-600 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-pink-500 group-hover:text-white transition-all duration-300 shadow-sm">
+                  <Image className="h-8 w-8" />
+                </div>
+                <span className="font-bold text-slate-700 group-hover:text-slate-900 transition-colors">Médias</span>
               </Link>
-              <Link to="/admin/theme" className="admin-card">
-                <Palette className="h-8 w-8 mx-auto mb-2 text-orange-500" />
-                <span className="font-semibold">Thème</span>
+              <Link to="/admin/theme" className="admin-card group">
+                <div className="w-16 h-16 rounded-2xl bg-teal-100 text-teal-600 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 shadow-sm">
+                  <Palette className="h-8 w-8" />
+                </div>
+                <span className="font-bold text-slate-700 group-hover:text-slate-900 transition-colors">Thème</span>
               </Link>
-              <Link to="/admin/partners" className="admin-card">
-                <Building2 className="h-8 w-8 mx-auto mb-2 text-indigo-500" />
-                <span className="font-semibold">Partenaires</span>
+              <Link to="/admin/partners" className="admin-card group">
+                <div className="w-16 h-16 rounded-2xl bg-cyan-100 text-cyan-600 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-cyan-600 group-hover:text-white transition-all duration-300 shadow-sm">
+                  <Building2 className="h-8 w-8" />
+                </div>
+                <span className="font-bold text-slate-700 group-hover:text-slate-900 transition-colors">Partenaires</span>
               </Link>
             </div>
           </div>
@@ -330,7 +358,8 @@ const Dashboard = () => {
               <p>Chargement...</p>
             ) : userEvents.length > 0 ? (
               <div className="space-y-5">
-                {Object.entries(eventsByType).map(([type, events]) => {
+                {Object.entries(eventsByType).map(([type, eventsList]) => {
+                  const events = eventsList as any[];
                   const styles = getEventTypeStyles(type);
                   const TypeIcon = styles.icon;
                   const isExpanded = expandedEventTypes.has(type);
@@ -432,7 +461,8 @@ const Dashboard = () => {
               <p>Chargement des partitions...</p>
             ) : Object.keys(partitionsByOrchestra).length > 0 ? (
               <div className="space-y-4">
-                {Object.entries(partitionsByOrchestra).map(([orchestraName, partitions]) => {
+                {Object.entries(partitionsByOrchestra).map(([orchestraName, partitionsList]) => {
+                  const partitions = partitionsList as any[];
                   const partitionsByMorceau = groupPartitionsByMorceau(partitions);
                   return (
                     <div key={orchestraName} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
@@ -442,7 +472,9 @@ const Dashboard = () => {
                       </button>
                       {expandedOrchestras.has(orchestraName) && (
                         <div className="p-4 border-t border-gray-200">
-                          {Object.entries(partitionsByMorceau).map(([morceauName, ps]) => (
+                          {Object.entries(partitionsByMorceau).map(([morceauName, psList]) => {
+                            const ps = psList as any[];
+                            return (
                             <div key={morceauName} className="mb-3 last:mb-0">
                               <button onClick={() => toggleMorceau(morceauName)} className="w-full text-left flex items-center justify-between py-2">
                                 <h4 className="font-semibold text-md text-dark flex items-center"><Music className="h-5 w-5 mr-2 text-green-500" />{morceauName}</h4>
@@ -450,7 +482,7 @@ const Dashboard = () => {
                               </button>
                               {expandedMorceaux.has(morceauName) && (
                                 <ul className="mt-2 pl-7 space-y-2">
-                                  {ps.map(p => (
+                                  {ps.map((p: any) => (
                                     <li key={p.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                                       <div className="flex items-center space-x-3">
                                         <FileText size={18} className="text-indigo-500" />
@@ -464,7 +496,8 @@ const Dashboard = () => {
                                 </ul>
                               )}
                             </div>
-                          ))}
+                            )
+                          })}
                         </div>
                       )}
                     </div>

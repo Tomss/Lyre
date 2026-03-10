@@ -21,6 +21,12 @@ const Header = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const isUtilityPage = location.pathname.startsWith('/admin') ||
+    location.pathname.startsWith('/connexion') ||
+    location.pathname.startsWith('/dashboard');
+
+  const headerIsSolid = isScrolled || isUtilityPage;
+
   /* Orchestras Dropdown Logic */
   const [orchestraLinks, setOrchestraLinks] = useState<{ label: string; path: string }[]>([]);
 
@@ -87,14 +93,14 @@ const Header = () => {
   }, [location]);
 
   return (
-    <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${!isScrolled
+    <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${!headerIsSolid
       ? 'bg-transparent'
       : 'bg-white shadow-lg border-b border-slate-100'
       }`}>
       <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20 lg:h-32">
           {/* Logo */}
-          <Link to="/" className={`flex items-center space-x-2 font-poppins font-bold text-xl transition-colors ${isScrolled
+          <Link to="/" className={`flex items-center space-x-2 font-poppins font-bold text-xl transition-colors ${headerIsSolid
             ? 'text-teal-800 hover:text-teal-600'
             : 'text-white hover:text-teal-200'
             }`}>
@@ -102,7 +108,7 @@ const Header = () => {
               <img src={settings.site_logo_url} alt="La Lyre" className="h-16 lg:h-32 w-auto object-contain transition-all duration-300" />
             ) : (
               <div className="flex items-center space-x-2">
-                <Music className={`h-12 w-12 lg:h-16 lg:w-16 ${isScrolled
+                <Music className={`h-12 w-12 lg:h-16 lg:w-16 ${headerIsSolid
                   ? 'text-teal-600'
                   : 'text-teal-300'
                   }`} />
@@ -123,10 +129,10 @@ const Header = () => {
                     }
                   }}
                   className={`flex items-center gap-1 font-inter font-medium transition-all duration-200 hover:scale-105 ${location.pathname === link.path && !location.hash
-                    ? (isScrolled
+                    ? (headerIsSolid
                       ? 'text-teal-600 font-semibold'
                       : 'text-teal-300 font-semibold')
-                    : (isScrolled
+                    : (headerIsSolid
                       ? 'text-gray-700 hover:text-teal-600'
                       : 'text-white/90 hover:text-white')
                     }`}
@@ -179,7 +185,7 @@ const Header = () => {
               <>
                 <Link
                   to="/dashboard"
-                  className={`flex items-center space-x-2 font-inter font-medium px-4 py-2 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-lg ${isScrolled
+                  className={`flex items-center space-x-2 font-inter font-medium px-4 py-2 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-lg ${headerIsSolid
                     ? 'bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200'
                     : 'bg-white/20 hover:bg-white/30 text-white border border-white/30 backdrop-blur-sm'
                     }`}
@@ -191,7 +197,7 @@ const Header = () => {
                 </Link>
                 <button
                   onClick={logout}
-                  className={`font-inter font-medium px-4 py-2 rounded-full transition-all duration-300 hover:scale-105 text-sm ${isScrolled
+                  className={`font-inter font-medium px-4 py-2 rounded-full transition-all duration-300 hover:scale-105 text-sm ${headerIsSolid
                     ? 'bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200'
                     : 'bg-white/20 hover:bg-white/30 text-white border border-white/30 backdrop-blur-sm'
                     }`}
@@ -202,7 +208,7 @@ const Header = () => {
             ) : (
               <Link
                 to="/connexion"
-                className={`font-inter font-semibold px-6 py-3 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-lg ${isScrolled
+                className={`font-inter font-semibold px-6 py-3 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-lg ${headerIsSolid
                   ? 'bg-teal-600 hover:bg-teal-700 text-white shadow-md'
                   : 'bg-teal-500 hover:bg-teal-600 text-white shadow-lg'
                   }`}
@@ -214,7 +220,7 @@ const Header = () => {
 
           {/* Mobile Menu Button */}
           <button
-            className={`lg:hidden p-2 rounded-lg transition-all duration-200 ${isScrolled
+            className={`lg:hidden p-2 rounded-lg transition-all duration-200 ${headerIsSolid
               ? 'text-gray-700 hover:text-teal-600 hover:bg-teal-50'
               : 'text-white hover:text-teal-200 hover:bg-white/10'
               }`}
