@@ -7,6 +7,8 @@ import { API_URL } from '../config';
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
   const { currentUser, logout } = useAuth();
@@ -14,12 +16,26 @@ const Header = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+      const currentScrollY = window.scrollY;
+      
+      // Determine if we've scrolled past the top
+      setIsScrolled(currentScrollY > 20);
+
+      // Smart scrolling logic: hide on scroll down, show on scroll up
+      if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        // Scrolling down & past header height
+        setIsVisible(false);
+      } else {
+        // Scrolling up
+        setIsVisible(true);
+      }
+
+      setLastScrollY(currentScrollY);
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [lastScrollY]);
 
   const isUtilityPage = location.pathname.startsWith('/admin') ||
     location.pathname.startsWith('/connexion') ||
@@ -93,7 +109,8 @@ const Header = () => {
   }, [location]);
 
   return (
-    <header className={`absolute top-0 left-0 right-0 z-50 transition-all duration-300 ${!headerIsSolid
+    <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'
+      } ${!headerIsSolid
       ? 'bg-transparent'
       : 'bg-white shadow-lg border-b border-slate-100'
       }`}>
