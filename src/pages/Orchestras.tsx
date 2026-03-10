@@ -11,7 +11,7 @@ interface Orchestra {
     photos?: { id: string; photo_url: string; display_order: number }[];
 }
 
-const API_URL = 'http://localhost:3001/api';
+import { API_URL } from '../config';
 
 const PhotoStack = ({ photos, altPrefix, height = "h-[400px] md:h-[500px]" }: { photos: { id: string; photo_url: string; display_order: number }[], altPrefix: string, height?: string }) => {
     // Local state to manage the stack order. We clone the props to mutable state.
