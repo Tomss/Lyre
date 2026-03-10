@@ -129,7 +129,7 @@ const HomeNewsSection = () => {
     if (news.length === 0) return null;
 
     return (
-        <section id="news" className="py-24 bg-white relative overflow-hidden scroll-mt-28 group/section">
+        <section id="news" className="py-24 bg-white relative overflow-hidden scroll-mt-20 group/section">
             {/* Modal Actualité */}
             {selectedNews && (
                 <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">

@@ -107,7 +107,7 @@ const Contact = () => {
 
       {/* Formulaire et Carte */}
       {/* Formulaire et Carte */}
-      <section id="formulaire" className="scroll-mt-28 py-16 bg-gradient-to-br from-slate-900 via-gray-800 to-slate-900 relative overflow-hidden">
+      <section id="formulaire" className="scroll-mt-20 py-16 bg-gradient-to-br from-slate-900 via-gray-800 to-slate-900 relative overflow-hidden">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           {/* Infos pratiques */}
           <div className="text-center mb-12 relative z-10">

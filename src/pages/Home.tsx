@@ -120,7 +120,7 @@ const Home = () => {
       </section>
 
       {/* Nouvelle Section La Lyre */}
-      <section id="la-lyre" className="scroll-mt-28 py-20 bg-slate-50 border-b border-slate-100 relative overflow-hidden">
+      <section id="la-lyre" className="scroll-mt-20 py-20 bg-slate-50 border-b border-slate-100 relative overflow-hidden">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div className="max-w-4xl mx-auto text-center mb-12 animate-on-scroll">
               <h2 className="text-3xl md:text-5xl font-poppins font-bold text-slate-800 mb-6 relative inline-block">
@@ -165,7 +165,7 @@ const Home = () => {
       <PartnersSection />
 
       {/* Section Rejoignez-nous */}
-      <section id="rejoignez-nous" className="scroll-mt-28 py-20 bg-white relative overflow-hidden">
+      <section id="rejoignez-nous" className="scroll-mt-20 py-20 bg-white relative overflow-hidden">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="max-w-4xl mx-auto text-center relative z-10">
             <div className="bg-gradient-to-br from-teal-500 to-cyan-600 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-8 shadow-xl shadow-teal-500/20">
