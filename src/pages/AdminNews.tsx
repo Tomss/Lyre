@@ -136,7 +136,12 @@ const AdminNews = () => {
         if (!editingNews) return;
         setLoading(true);
         try {
-            let imageUrl = editingNews.image_url;
+            let imageUrl: string | null | undefined = editingNews.image_url;
+            
+            // If the user removed the image (previewUrl is null) and didn't select a new one
+            if (!previewUrl && !selectedFile) {
+                imageUrl = null;
+            }
 
             if (selectedFile) {
                 const uploadData = new FormData();
@@ -330,8 +335,16 @@ const AdminNews = () => {
                                 </div>
 
                                 {previewUrl && (
-                                    <div className="w-full h-48 rounded-lg overflow-hidden bg-slate-100 border border-slate-200">
+                                    <div className="relative w-full h-48 rounded-lg overflow-hidden bg-slate-100 border border-slate-200 group">
                                         <img src={previewUrl} alt="Aperçu" className="w-full h-full object-cover" />
+                                        <button 
+                                            type="button" 
+                                            onClick={() => { setPreviewUrl(null); setSelectedFile(null); }} 
+                                            className="absolute top-2 right-2 bg-red-500/90 hover:bg-red-600 text-white p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm"
+                                            title="Supprimer l'image"
+                                        >
+                                            <Trash2 size={18} />
+                                        </button>
                                     </div>
                                 )}
 
