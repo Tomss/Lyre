@@ -13,6 +13,7 @@ interface NewsItem {
 
 const HomeNewsSection = () => {
     const [news, setNews] = useState<NewsItem[]>([]);
+    const [allNews, setAllNews] = useState<NewsItem[]>([]);
     const [loading, setLoading] = useState(true);
     const scrollRef = useRef<HTMLDivElement>(null);
     const [isPaused, setIsPaused] = useState(false);
@@ -20,6 +21,7 @@ const HomeNewsSection = () => {
     const [startX, setStartX] = useState(0);
     const [scrollLeft, setScrollLeft] = useState(0);
     const [selectedNews, setSelectedNews] = useState<NewsItem | null>(null);
+    const [isAllNewsModalOpen, setIsAllNewsModalOpen] = useState(false);
     const [dragDistance, setDragDistance] = useState(0);
 
     // Mouse Drag events
@@ -58,11 +60,14 @@ const HomeNewsSection = () => {
                     const data = await response.json();
                     const sortedNews = data.sort((a: any, b: any) => new Date(b.published_at).getTime() - new Date(a.published_at).getTime());
                     const top10News = sortedNews.slice(0, 10);
+                    const top50News = sortedNews.slice(0, 50);
 
                     if (top10News.length > 0) {
                         setNews(top10News);
+                        setAllNews(top50News);
                     } else {
                         setNews([]);
+                        setAllNews([]);
                     }
                 }
             } catch (error) {
@@ -160,6 +165,62 @@ const HomeNewsSection = () => {
                     </div>
                     {/* Overlay Click to Close */}
                     <div className="absolute inset-0 -z-10" onClick={() => setSelectedNews(null)}></div>
+                </div>
+            )}
+
+            {/* Modal "Toutes les Actualités" (50 dernières) */}
+            {isAllNewsModalOpen && !selectedNews && (
+                <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-[90] p-4 animate-in fade-in duration-300">
+                    <div className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col border border-slate-200" onClick={(e) => e.stopPropagation()}>
+                        {/* Header Modal */}
+                        <div className="p-6 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white/80 backdrop-blur-md rounded-t-3xl z-10">
+                            <div>
+                                <h2 className="font-poppins font-bold text-2xl text-slate-800">Dernières Actualités</h2>
+                                <p className="text-slate-500 text-sm">Les 50 dernières publications</p>
+                            </div>
+                            <button 
+                                onClick={() => setIsAllNewsModalOpen(false)}
+                                className="w-10 h-10 bg-slate-100 hover:bg-slate-200 rounded-full text-slate-600 flex items-center justify-center transition-colors"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                        
+                        {/* Liste au scroll */}
+                        <div className="p-6 overflow-y-auto flex-1 space-y-4 bg-slate-50/50">
+                            {allNews.map((item) => (
+                                <div 
+                                    key={item.id}
+                                    onClick={() => setSelectedNews(item)}
+                                    className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-100 hover:shadow-md hover:border-teal-200 transition-all cursor-pointer flex flex-col sm:flex-row gap-6 group"
+                                >
+                                    <div className="w-full sm:w-48 h-32 flex-shrink-0 rounded-xl overflow-hidden bg-slate-100 relative">
+                                        {item.image_url ? (
+                                            <img src={item.image_url} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center text-teal-300 bg-teal-50">
+                                                <Newspaper className="w-8 h-8 opacity-50" />
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="flex flex-col flex-1">
+                                        <div className="flex items-center text-xs font-bold text-teal-600 mb-2">
+                                            <CalendarDays className="w-3.5 h-3.5 mr-1.5" />
+                                            {new Date(item.published_at).toLocaleDateString('fr-FR')}
+                                        </div>
+                                        <h3 className="font-poppins font-bold text-lg text-slate-800 mb-2 group-hover:text-teal-700 transition-colors line-clamp-2">
+                                            {item.title}
+                                        </h3>
+                                        <p className="text-slate-500 text-sm line-clamp-2 leading-relaxed">
+                                            {item.content}
+                                        </p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    {/* Overlay Click to Close */}
+                    <div className="absolute inset-0 -z-10" onClick={() => setIsAllNewsModalOpen(false)}></div>
                 </div>
             )}
 
@@ -284,10 +345,13 @@ const HomeNewsSection = () => {
             </div>
 
             <div className="text-center mt-4">
-                <a href="/toutes-les-actualites" className="inline-flex items-center justify-center px-8 py-3 text-base font-bold text-teal-700 bg-teal-50 rounded-full border border-teal-200 hover:bg-teal-100 hover:scale-105 transition-all duration-300 shadow-sm hover:shadow-teal-100">
+                <button 
+                    onClick={() => setIsAllNewsModalOpen(true)}
+                    className="inline-flex items-center justify-center px-8 py-3 text-base font-bold text-teal-700 bg-teal-50 rounded-full border border-teal-200 hover:bg-teal-100 hover:scale-105 transition-all duration-300 shadow-sm hover:shadow-teal-100 cursor-pointer"
+                >
                     Voir plus d'actualités
                     <ArrowRight className="ml-2 h-4 w-4" />
-                </a>
+                </button>
             </div>
         </section>
     );
