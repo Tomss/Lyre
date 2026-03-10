@@ -98,17 +98,17 @@ const Header = () => {
       : 'bg-white shadow-lg border-b border-slate-100'
       }`}>
       <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20 lg:h-32">
+        <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo */}
           <Link to="/" className={`flex items-center space-x-2 font-poppins font-bold text-xl transition-colors ${headerIsSolid
             ? 'text-teal-800 hover:text-teal-600'
             : 'text-white hover:text-teal-200'
             }`}>
             {settings?.site_logo_url ? (
-              <img src={settings.site_logo_url} alt="La Lyre" className="h-16 lg:h-32 w-auto object-contain transition-all duration-300" />
+              <img src={settings.site_logo_url} alt="La Lyre" className="h-10 lg:h-16 w-auto object-contain transition-all duration-300" />
             ) : (
               <div className="flex items-center space-x-2">
-                <Music className={`h-12 w-12 lg:h-16 lg:w-16 ${headerIsSolid
+                <Music className={`h-8 w-8 lg:h-10 lg:w-10 ${headerIsSolid
                   ? 'text-teal-600'
                   : 'text-teal-300'
                   }`} />
