@@ -6,7 +6,7 @@ import FileUploadPreview from '../components/FileUploadPreview';
 import MediaPreview from '../components/MediaPreview';
 import ExistingFilesPreview from '../components/ExistingFilesPreview';
 
-const API_URL = 'http://localhost:3001/api';
+import { API_URL } from '../config';
 
 // Interfaces
 interface MediaFile {

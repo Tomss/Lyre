@@ -3,7 +3,7 @@ import { Edit, Trash2, Plus, Users, Mail, User, Shield, X, UserPlus, CheckCircle
 import { useAuth } from '../context/AuthContext';
 import { Navigate, Link } from 'react-router-dom';
 
-const API_URL = 'http://localhost:3001/api';
+import { API_URL } from '../config';
 
 interface UserData {
   id: string;

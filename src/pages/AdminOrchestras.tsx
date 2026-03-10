@@ -20,7 +20,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
-const API_URL = 'http://localhost:3001/api';
+import { API_URL } from '../config';
 
 interface Orchestra {
   id: string;
