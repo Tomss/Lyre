@@ -96,15 +96,28 @@ const Header = () => {
     { path: '/contact', label: 'Contact' },
   ];
 
-  // Handle hash scrolling
+  // Enhanced precise smooth scroll handler
+  const handleScrollToSection = (targetId: string) => {
+    const element = document.getElementById(targetId);
+    if (element) {
+      // 80px is the height of the lg header (h-20)
+      const headerOffset = 80;
+      const elementPosition = element.getBoundingClientRect().top + window.scrollY;
+      const offsetPosition = elementPosition - headerOffset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  // Handle hash scrolling on initial load or path change
   useEffect(() => {
     if (location.hash) {
-      const element = document.getElementById(location.hash.substring(1));
-      if (element) {
-        setTimeout(() => {
-          element.scrollIntoView({ behavior: 'smooth' });
-        }, 100);
-      }
+      setTimeout(() => {
+        handleScrollToSection(location.hash.substring(1));
+      }, 100);
     }
   }, [location]);
 
@@ -171,10 +184,18 @@ const Header = () => {
                         <Link
                           key={subItem.path}
                           to={subItem.path}
-                          onClick={() => {
+                          onClick={(e) => {
                             if (location.pathname === '/' && subItem.path.startsWith('/#')) {
-                              const el = document.getElementById(subItem.path.substring(2));
-                              el?.scrollIntoView({ behavior: 'smooth' });
+                              e.preventDefault();
+                              const targetId = subItem.path.substring(2);
+                              // Mettre d'abord à jour l'URL (sans sauter brutalement)
+                              window.history.pushState({}, '', subItem.path);
+                              handleScrollToSection(targetId);
+                            } else if (location.pathname === '/school' && subItem.path.startsWith('/school#')) {
+                              e.preventDefault();
+                              const targetId = subItem.path.split('#')[1];
+                              window.history.pushState({}, '', subItem.path);
+                              handleScrollToSection(targetId);
                             }
                           }}
                           className="relative flex items-center px-4 py-3 mx-1 my-1 text-sm font-medium text-slate-300 rounded-xl transition-all duration-300 hover:text-white group/item overflow-hidden"
@@ -274,11 +295,18 @@ const Header = () => {
                         <Link
                           key={subItem.path}
                           to={subItem.path}
-                          onClick={() => {
+                          onClick={(e) => {
                             setIsMobileMenuOpen(false);
                             if (location.pathname === '/' && subItem.path.startsWith('/#')) {
-                              const el = document.getElementById(subItem.path.substring(2));
-                              el?.scrollIntoView({ behavior: 'smooth' });
+                              e.preventDefault();
+                              const targetId = subItem.path.substring(2);
+                              window.history.pushState({}, '', subItem.path);
+                              handleScrollToSection(targetId);
+                            } else if (location.pathname === '/school' && subItem.path.startsWith('/school#')) {
+                              e.preventDefault();
+                              const targetId = subItem.path.split('#')[1];
+                              window.history.pushState({}, '', subItem.path);
+                              handleScrollToSection(targetId);
                             }
                           }}
                           className="block text-sm font-medium text-slate-400 hover:text-white py-2.5 px-3 rounded-lg hover:bg-gradient-to-r hover:from-teal-500/10 hover:to-transparent transition-all duration-300 hover:translate-x-1"
