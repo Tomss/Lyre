@@ -80,6 +80,23 @@ const Orchestras = () => {
     const { pageHeaders } = useTheme();
     const [orchestras, setOrchestras] = useState<Orchestra[]>([]);
     const [loading, setLoading] = useState(true);
+    const [isVisible, setIsVisible] = useState(true);
+    const [lastScrollY, setLastScrollY] = useState(0);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            const currentScrollY = window.scrollY;
+            if (currentScrollY > lastScrollY && currentScrollY > 100) {
+                setIsVisible(false);
+            } else {
+                setIsVisible(true);
+            }
+            setLastScrollY(currentScrollY);
+        };
+
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, [lastScrollY]);
 
     useEffect(() => {
         const fetchOrchestras = async () => {
@@ -166,7 +183,7 @@ const Orchestras = () => {
 
                     {/* 2. Visual Sticky Nav for Other Orchestras */}
                     {orchestras.length > 1 && (
-                        <div className="sticky top-[64px] lg:top-[80px] z-40 bg-white/95 backdrop-blur-xl border-y border-slate-200 shadow-md transform transition-all duration-300">
+                        <div className={`sticky z-40 bg-white/95 backdrop-blur-xl border-y border-slate-200 shadow-md transform transition-all duration-300 ${isVisible ? 'top-[64px] lg:top-[80px]' : 'top-0'}`}>
                             <div className="container mx-auto px-4 py-3">
                                 <div className="flex items-center justify-center gap-6 md:gap-8 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
                                     <span className="text-xs font-bold text-slate-400 uppercase tracking-widest hidden md:block shrink-0">
