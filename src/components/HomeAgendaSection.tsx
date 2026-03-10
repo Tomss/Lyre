@@ -18,6 +18,36 @@ const HomeAgendaSection = () => {
     const [loading, setLoading] = useState(true);
     const scrollRef = useRef<HTMLDivElement>(null);
     const [isPaused, setIsPaused] = useState(false);
+    const [isDragging, setIsDragging] = useState(false);
+    const [startX, setStartX] = useState(0);
+    const [scrollLeft, setScrollLeft] = useState(0);
+
+    // Mouse Drag events
+    const handleMouseDown = (e: React.MouseEvent) => {
+        if (!scrollRef.current) return;
+        setIsDragging(true);
+        setIsPaused(true);
+        setStartX(e.pageX - scrollRef.current.offsetLeft);
+        setScrollLeft(scrollRef.current.scrollLeft);
+    };
+
+    const handleMouseLeave = () => {
+        setIsDragging(false);
+        setIsPaused(false);
+    };
+
+    const handleMouseUp = () => {
+        setIsDragging(false);
+        // Do not unpause immediately if still hovering the section, but mouseLeave on container handles that.
+    };
+
+    const handleMouseMove = (e: React.MouseEvent) => {
+        if (!isDragging || !scrollRef.current) return;
+        e.preventDefault();
+        const x = e.pageX - scrollRef.current.offsetLeft;
+        const walk = (x - startX) * 2; // Scroll sensitivity
+        scrollRef.current.scrollLeft = scrollLeft - walk;
+    };
 
     useEffect(() => {
         const fetchEvents = async () => {
@@ -109,7 +139,7 @@ const HomeAgendaSection = () => {
             <div
                 className="relative w-full"
                 onMouseEnter={() => setIsPaused(true)}
-                onMouseLeave={() => setIsPaused(false)}
+                onMouseLeave={handleMouseLeave}
             >
                 {/* Gradient Masks (Darker for dark theme) */}
                 <div className="absolute inset-y-0 left-0 w-32 md:w-64 bg-gradient-to-r from-slate-900 via-slate-900/90 to-transparent z-20 pointer-events-none"></div>
@@ -135,7 +165,11 @@ const HomeAgendaSection = () => {
                 {events.length > 0 ? (
                     <div
                         ref={scrollRef}
-                        className="flex gap-8 px-8 py-12 overflow-x-auto no-scrollbar"
+                        className={`flex gap-8 px-8 py-12 overflow-x-auto no-scrollbar select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+                        onMouseDown={handleMouseDown}
+                        onMouseUp={handleMouseUp}
+                        onMouseMove={handleMouseMove}
+                        onMouseLeave={handleMouseLeave}
                     >
                         {events.map((event, index) => (
                             <div key={`${event.id}-${index}`} className="w-[350px] md:w-[400px] shrink-0 group relative h-[500px]">
@@ -149,7 +183,7 @@ const HomeAgendaSection = () => {
                                             <img
                                                 src={event.image_url}
                                                 alt={event.title}
-                                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-90 group-hover:opacity-100"
+                                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-90 group-hover:opacity-100 pointer-events-none"
                                             />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center opacity-30">
