@@ -103,7 +103,12 @@ const Header = () => {
       // 80px is the height of the lg header (h-20)
       const headerOffset = 80;
       const elementPosition = element.getBoundingClientRect().top + window.scrollY;
-      const offsetPosition = elementPosition - headerOffset;
+      
+      // Calculate offset based on scroll direction:
+      // If scrolling DOWN, the header hides itself automatically, so we need 0 offset (element goes to very top of screen).
+      // If scrolling UP, the header shows itself automatically, so we need headerOffset to act as padding.
+      const isScrollingDown = elementPosition > window.scrollY;
+      const offsetPosition = isScrollingDown ? elementPosition : elementPosition - headerOffset;
 
       window.scrollTo({
         top: offsetPosition,
