@@ -122,7 +122,7 @@ const Orchestras = () => {
                 <>
                     {/* 1. Highlight Section (First Orchestra) */}
                     {orchestras.length > 0 && (
-                        <section id={orchestras[0].id} className="py-24 bg-white relative overflow-hidden scroll-mt-48 lg:scroll-mt-64">
+                        <section id={orchestras[0].id} className="py-24 bg-white relative overflow-hidden scroll-mt-24 lg:scroll-mt-32">
                             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                                 <div className="max-w-7xl mx-auto">
 
@@ -166,7 +166,7 @@ const Orchestras = () => {
 
                     {/* 2. Visual Sticky Nav for Other Orchestras */}
                     {orchestras.length > 1 && (
-                        <div className="sticky top-[80px] lg:top-[128px] z-40 bg-white/95 backdrop-blur-xl border-y border-slate-200 shadow-md transform transition-all duration-300">
+                        <div className="sticky top-[64px] lg:top-[80px] z-40 bg-white/95 backdrop-blur-xl border-y border-slate-200 shadow-md transform transition-all duration-300">
                             <div className="container mx-auto px-4 py-3">
                                 <div className="flex items-center justify-center gap-6 md:gap-8 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
                                     <span className="text-xs font-bold text-slate-400 uppercase tracking-widest hidden md:block shrink-0">
@@ -202,7 +202,7 @@ const Orchestras = () => {
                                 {orchestras.slice(1).map((orch, index) => {
                                     const isEven = index % 2 === 0;
                                     return (
-                                        <div key={orch.id} id={orch.id} className="scroll-mt-48 lg:scroll-mt-64">
+                                        <div key={orch.id} id={orch.id} className="scroll-mt-32 lg:scroll-mt-40">
                                             <div className={`flex flex-col md:flex-row gap-12 lg:gap-24 items-center ${!isEven ? 'md:flex-row-reverse' : ''}`}>
 
                                                 {/* Image (Multi-Photos Interactive Stack) */}
