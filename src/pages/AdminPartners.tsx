@@ -351,12 +351,16 @@ const AdminPartners = () => {
                                     <SortableItem key={partner.id} id={partner.id}>
                                         <div className="bg-white rounded-xl p-4 border border-slate-100 shadow-sm flex items-center pl-14 group hover:border-indigo-100 hover:shadow-md transition-all">
                                             {/* Logo Preview */}
-                                            <div className="h-16 w-24 bg-slate-50 rounded-lg overflow-hidden flex-shrink-0 border border-slate-100 p-2">
-                                                <img
-                                                    src={partner.logo_url}
-                                                    alt={partner.name}
-                                                    className="w-full h-full object-contain"
-                                                />
+                                            <div className="h-16 w-24 bg-slate-50 rounded-lg overflow-hidden flex-shrink-0 border border-slate-100 p-2 flex items-center justify-center text-slate-300">
+                                                {partner.logo_url ? (
+                                                    <img
+                                                        src={partner.logo_url}
+                                                        alt={partner.name}
+                                                        className="w-full h-full object-contain"
+                                                    />
+                                                ) : (
+                                                    <Building2 className="h-8 w-8" />
+                                                )}
                                             </div>
 
                                             {/* Info */}
