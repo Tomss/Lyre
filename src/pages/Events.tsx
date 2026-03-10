@@ -1,4 +1,6 @@
 import React from 'react';
+import PageHero from '../components/PageHero';
+import { API_URL } from '../config';
 import { useTheme } from '../context/ThemeContext';
 import { Calendar, Clock, MapPin, Users, Star, ChevronRight, X } from 'lucide-react';
 
@@ -30,7 +32,7 @@ const Events = () => {
   const fetchPublicEvents = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:3001/api/public-events');
+      const response = await fetch(`${API_URL}/public-events`);
       if (response.ok) {
         const data = await response.json();
         setEvents(data || []);

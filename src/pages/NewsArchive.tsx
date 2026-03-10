@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import PageHero from '../components/PageHero';
 import { useTheme } from '../context/ThemeContext';
 
-const API_URL = 'http://localhost:3001/api';
+import { API_URL } from '../config';
 
 interface NewsItem {
     id: string;

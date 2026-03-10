@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Newspaper, ArrowRight, CalendarDays } from 'lucide-react';
 
-const API_URL = 'http://localhost:3001/api';
+import { API_URL } from '../config';
 
 interface NewsItem {
     id: string;
