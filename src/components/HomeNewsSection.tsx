@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Newspaper, ArrowRight, CalendarDays } from 'lucide-react';
+import { Newspaper, ArrowRight, CalendarDays, X } from 'lucide-react';
 
 import { API_URL } from '../config';
 
@@ -19,6 +19,8 @@ const HomeNewsSection = () => {
     const [isDragging, setIsDragging] = useState(false);
     const [startX, setStartX] = useState(0);
     const [scrollLeft, setScrollLeft] = useState(0);
+    const [selectedNews, setSelectedNews] = useState<NewsItem | null>(null);
+    const [dragDistance, setDragDistance] = useState(0);
 
     // Mouse Drag events
     const handleMouseDown = (e: React.MouseEvent) => {
@@ -27,6 +29,7 @@ const HomeNewsSection = () => {
         setIsPaused(true);
         setStartX(e.pageX - scrollRef.current.offsetLeft);
         setScrollLeft(scrollRef.current.scrollLeft);
+        setDragDistance(0);
     };
 
     const handleMouseLeave = () => {
@@ -43,6 +46,7 @@ const HomeNewsSection = () => {
         e.preventDefault();
         const x = e.pageX - scrollRef.current.offsetLeft;
         const walk = (x - startX) * 2; // Scroll sensitivity
+        setDragDistance(Math.abs(walk));
         scrollRef.current.scrollLeft = scrollLeft - walk;
     };
 
@@ -109,6 +113,56 @@ const HomeNewsSection = () => {
 
     return (
         <section id="news" className="py-24 bg-white relative overflow-hidden scroll-mt-20 group/section">
+            {/* Modal Actualité */}
+            {selectedNews && (
+                <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
+                    <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto border border-slate-200" onClick={(e) => e.stopPropagation()}>
+                        {/* Header/Image */}
+                        <div className="relative h-64 sm:h-80 bg-slate-100 flex-shrink-0">
+                            {selectedNews.image_url ? (
+                                <img src={selectedNews.image_url} alt={selectedNews.title} className="w-full h-full object-cover" />
+                            ) : (
+                                <div className="w-full h-full flex flex-col items-center justify-center bg-teal-50 text-teal-300">
+                                    <Newspaper className="h-16 w-16 mb-4 opacity-50" />
+                                </div>
+                            )}
+                            <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent"></div>
+                            
+                            {/* Bouton Fermeture */}
+                            <button 
+                                onClick={() => setSelectedNews(null)}
+                                className="absolute top-4 right-4 w-10 h-10 bg-black/30 hover:bg-black/50 backdrop-blur-md rounded-full text-white flex items-center justify-center transition-colors border border-white/20"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                            
+                            {/* Date Superposée */}
+                            <div className="absolute bottom-6 left-6 flex items-center text-white/90 text-sm font-medium">
+                                <CalendarDays className="w-4 h-4 mr-2 text-teal-400" />
+                                {new Date(selectedNews.published_at).toLocaleDateString('fr-FR', {
+                                    weekday: 'long',
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric'
+                                })}
+                            </div>
+                        </div>
+
+                        {/* Contenu */}
+                        <div className="p-8 sm:p-10">
+                            <h2 className="font-poppins font-bold text-2xl sm:text-3xl text-slate-800 mb-6 leading-tight">
+                                {selectedNews.title}
+                            </h2>
+                            <div className="prose prose-slate prose-teal max-w-none text-slate-600 leading-relaxed whitespace-pre-wrap">
+                                {selectedNews.content}
+                            </div>
+                        </div>
+                    </div>
+                    {/* Overlay Click to Close */}
+                    <div className="absolute inset-0 -z-10" onClick={() => setSelectedNews(null)}></div>
+                </div>
+            )}
+
             {/* Background Accents - Teal/Blue Theme */}
             <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-teal-400 to-transparent opacity-50"></div>
 
@@ -164,6 +218,14 @@ const HomeNewsSection = () => {
                             <div className="h-full bg-gradient-to-br from-teal-50/80 to-cyan-50/50 rounded-[2rem] shadow-lg shadow-teal-900/5 border border-teal-100/50 hover:border-teal-300/50 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:shadow-teal-100/60 overflow-hidden flex flex-col relative group">
                                 {/* Border Gradient Trick */}
                                 <div className="absolute inset-0 rounded-[2rem] p-[2px] bg-gradient-to-br from-teal-100 to-cyan-100/30 -z-10 opacity-60 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+                                {/* Click Overlay (avoids text selection/dragging issues) */}
+                                <div 
+                                    className="absolute inset-0 z-30 cursor-pointer" 
+                                    onClick={() => {
+                                        if (dragDistance < 10) setSelectedNews(item);
+                                    }}
+                                ></div>
 
                                 {/* Image Section */}
                                 <div className="h-[240px] relative overflow-hidden bg-teal-100/30">
