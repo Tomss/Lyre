@@ -139,7 +139,7 @@ const Orchestras = () => {
                 <>
                     {/* 1. Highlight Section (First Orchestra) */}
                     {orchestras.length > 0 && (
-                        <section id={orchestras[0].id} className="py-24 bg-white relative overflow-hidden scroll-mt-28">
+                        <section id={orchestras[0].id} className="py-24 bg-white relative overflow-hidden scroll-mt-20">
                             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                                 <div className="max-w-7xl mx-auto">
 
@@ -219,7 +219,7 @@ const Orchestras = () => {
                                 {orchestras.slice(1).map((orch, index) => {
                                     const isEven = index % 2 === 0;
                                     return (
-                                        <div key={orch.id} id={orch.id} className="scroll-mt-28">
+                                        <div key={orch.id} id={orch.id} className="scroll-mt-20">
                                             <div className={`flex flex-col md:flex-row gap-12 lg:gap-24 items-center ${!isEven ? 'md:flex-row-reverse' : ''}`}>
 
                                                 {/* Image (Multi-Photos Interactive Stack) */}

@@ -135,7 +135,7 @@ const HomeAgendaSection = () => {
     if (loading) return null;
 
     return (
-        <section id="agenda" className="py-24 bg-slate-900 relative scroll-mt-28 overflow-hidden group/section text-white">
+        <section id="agenda" className="py-24 bg-slate-900 relative scroll-mt-20 overflow-hidden group/section text-white">
             {/* Modal Événement */}
             {selectedEvent && (
                 <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
