@@ -16,6 +16,35 @@ const HomeNewsSection = () => {
     const [loading, setLoading] = useState(true);
     const scrollRef = useRef<HTMLDivElement>(null);
     const [isPaused, setIsPaused] = useState(false);
+    const [isDragging, setIsDragging] = useState(false);
+    const [startX, setStartX] = useState(0);
+    const [scrollLeft, setScrollLeft] = useState(0);
+
+    // Mouse Drag events
+    const handleMouseDown = (e: React.MouseEvent) => {
+        if (!scrollRef.current) return;
+        setIsDragging(true);
+        setIsPaused(true);
+        setStartX(e.pageX - scrollRef.current.offsetLeft);
+        setScrollLeft(scrollRef.current.scrollLeft);
+    };
+
+    const handleMouseLeave = () => {
+        setIsDragging(false);
+        setIsPaused(false);
+    };
+
+    const handleMouseUp = () => {
+        setIsDragging(false);
+    };
+
+    const handleMouseMove = (e: React.MouseEvent) => {
+        if (!isDragging || !scrollRef.current) return;
+        e.preventDefault();
+        const x = e.pageX - scrollRef.current.offsetLeft;
+        const walk = (x - startX) * 2; // Scroll sensitivity
+        scrollRef.current.scrollLeft = scrollLeft - walk;
+    };
 
     useEffect(() => {
         const fetchNews = async () => {
@@ -96,7 +125,7 @@ const HomeNewsSection = () => {
             <div
                 className="relative w-full"
                 onMouseEnter={() => setIsPaused(true)}
-                onMouseLeave={() => setIsPaused(false)}
+                onMouseLeave={handleMouseLeave}
             >
                 {/* Gradient Masks */}
                 <div className="absolute inset-y-0 left-0 w-32 md:w-64 bg-gradient-to-r from-white via-white/90 to-transparent z-20 pointer-events-none"></div>
@@ -121,7 +150,11 @@ const HomeNewsSection = () => {
                 {/* Scrollable Track - Added py-12 for shadows, increased gap */}
                 <div
                     ref={scrollRef}
-                    className="flex gap-8 px-8 py-12 overflow-x-auto no-scrollbar"
+                    className={`flex gap-8 px-8 py-12 overflow-x-auto no-scrollbar select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+                    onMouseDown={handleMouseDown}
+                    onMouseUp={handleMouseUp}
+                    onMouseMove={handleMouseMove}
+                    onMouseLeave={handleMouseLeave}
                 >
                     {news.map((item, index) => (
                         <div
@@ -139,7 +172,7 @@ const HomeNewsSection = () => {
                                         <img
                                             src={item.image_url}
                                             alt={item.title}
-                                            className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-1000"
+                                            className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-1000 pointer-events-none"
                                         />
                                     ) : (
                                         <div className="w-full h-full flex flex-col items-center justify-center bg-teal-50/50 text-teal-300">
