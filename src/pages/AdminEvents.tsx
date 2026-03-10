@@ -1,5 +1,5 @@
 import React, { useState, useEffect, FormEvent } from 'react';
-import { Edit, Trash2, Plus, Calendar, Search, X, CheckCircle, ArrowLeft, Clock, MapPin, Users, ChevronRight } from 'lucide-react';
+import { Edit, Trash2, Plus, Calendar, Search, X, ArrowLeft, Clock, MapPin, ChevronRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Navigate, Link } from 'react-router-dom';
 
@@ -10,9 +10,10 @@ interface Event {
   title: string;
   description: string | null;
   practical_info: string | null;
-  event_type: 'concert' | 'repetition';
+  event_type: 'concert' | 'repetition' | 'divers';
   event_date: string;
   location: string | null;
+  is_public: boolean;
   orchestras: Orchestra[];
 }
 
@@ -38,11 +39,11 @@ const AdminEvents = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [orchestras, setOrchestras] = useState<Orchestra[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [typeFilter, setTypeFilter] = useState<string[]>(['concert', 'repetition']);
+  const [typeFilter, setTypeFilter] = useState<string[]>(['concert', 'repetition', 'divers']);
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
-  const [expandedTypes, setExpandedTypes] = useState<Set<string>>(new Set(['concert', 'repetition', 'autre', 'reunion']));
+  const [expandedTypes, setExpandedTypes] = useState<Set<string>>(new Set(['concert', 'repetition', 'divers']));
   const [timeFilter, setTimeFilter] = useState<'all' | 'upcoming' | 'past'>('all');
   const [deleteConfirmation, setDeleteConfirmation] = useState<DeleteConfirmation>({
     isOpen: false,
@@ -57,9 +58,10 @@ const AdminEvents = () => {
     title: '',
     description: '',
     practical_info: '',
-    event_type: 'concert' as 'concert' | 'repetition',
+    event_type: 'concert' as 'concert' | 'repetition' | 'divers',
     event_date: '',
     location: '',
+    is_public: true,
     orchestra_ids: [] as string[],
   });
 
@@ -108,8 +110,17 @@ const AdminEvents = () => {
   }, [isAuthenticated, currentUser, token]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const { name, value, type } = e.target;
+    const val = type === 'checkbox' ? (e.target as HTMLInputElement).checked : value;
+    
+    setFormData((prev) => {
+      const newData = { ...prev, [name]: val };
+      // Auto-toggle is_public based on selected event type if the user just changed event_type
+      if (name === 'event_type') {
+        newData.is_public = (val === 'concert' || val === 'divers');
+      }
+      return newData;
+    });
   };
 
   const handleOrchestraChange = (orchestraId: string, checked: boolean) => {
@@ -191,6 +202,7 @@ const AdminEvents = () => {
       event_type: event.event_type,
       event_date: new Date(event.event_date).toISOString().slice(0, 16),
       location: event.location || '',
+      is_public: event.is_public !== undefined ? event.is_public : (event.event_type === 'concert' || event.event_type === 'divers'),
       orchestra_ids: event.orchestras?.map(o => o.id) || [],
     });
     setShowAddForm(true);
@@ -206,15 +218,17 @@ const AdminEvents = () => {
       event_type: 'concert',
       event_date: '',
       location: '',
+      is_public: true,
       orchestra_ids: [],
     });
   };
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case 'concert': return 'bg-green-100 text-green-800';
-      case 'repetition': return 'bg-blue-100 text-blue-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'concert': return 'bg-green-100 text-green-800 border-green-200';
+      case 'repetition': return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'divers': return 'bg-purple-100 text-purple-800 border-purple-200';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
@@ -222,17 +236,12 @@ const AdminEvents = () => {
     switch (type) {
       case 'concert': return Calendar;
       case 'repetition': return Clock;
+      case 'divers': return MapPin;
       default: return Calendar;
     }
   };
 
-  const toggleTypeFilter = (type: string) => {
-    setTypeFilter(prev =>
-      prev.includes(type)
-        ? prev.filter(t => t !== type)
-        : [...prev, type]
-    );
-  };
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
 
   const toggleTypeExpansion = (type: string) => {
     setExpandedTypes(prev => {
@@ -247,7 +256,7 @@ const AdminEvents = () => {
   };
 
   const expandAllTypes = () => {
-    setExpandedTypes(new Set(['concert', 'repetition', 'autre', 'reunion']));
+    setExpandedTypes(new Set(['concert', 'repetition', 'divers']));
   };
 
   const collapseAllTypes = () => {
@@ -339,10 +348,10 @@ const AdminEvents = () => {
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-2">
               <span className="text-sm font-medium text-gray-700">Type:</span>
-              <button onClick={() => setTypeFilter(['concert', 'repetition', 'autre', 'reunion'])} className={`px-3 py-1 rounded-full text-sm ${typeFilter.length >= 2 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}>Tous</button>
-              <button onClick={() => setTypeFilter(['concert'])} className={`px-3 py-1 rounded-full text-sm ${typeFilter.length === 1 && typeFilter[0] === 'concert' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}>Concerts</button>
-              <button onClick={() => setTypeFilter(['repetition'])} className={`px-3 py-1 rounded-full text-sm ${typeFilter.length === 1 && typeFilter[0] === 'repetition' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}>Répétitions</button>
-              <button onClick={() => setTypeFilter(['autre', 'reunion'])} className={`px-3 py-1 rounded-full text-sm ${typeFilter.some(t => ['autre', 'reunion'].includes(t)) && typeFilter.length <= 2 ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}>Autres</button>
+      <button onClick={() => setTypeFilter(['concert', 'repetition', 'divers'])} className={`px-3 py-1 rounded-full text-sm ${typeFilter.length >= 3 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-700'}`}>Tous</button>
+              <button onClick={() => setTypeFilter(['concert'])} className={`px-3 py-1 rounded-full text-sm ${typeFilter.length === 1 && typeFilter[0] === 'concert' ? 'bg-indigo-500 text-white' : 'bg-gray-200 text-gray-700'}`}>Concerts</button>
+              <button onClick={() => setTypeFilter(['repetition'])} className={`px-3 py-1 rounded-full text-sm ${typeFilter.length === 1 && typeFilter[0] === 'repetition' ? 'bg-indigo-500 text-white' : 'bg-gray-200 text-gray-700'}`}>Répétitions</button>
+              <button onClick={() => setTypeFilter(['divers'])} className={`px-3 py-1 rounded-full text-sm ${typeFilter.length === 1 && typeFilter[0] === 'divers' ? 'bg-indigo-500 text-white' : 'bg-gray-200 text-gray-700'}`}>Divers</button>
             </div>
             <div className="flex items-center space-x-2">
               <span className="text-sm font-medium text-gray-700">Date:</span>
@@ -371,8 +380,10 @@ const AdminEvents = () => {
               <div key={type} className="bg-white rounded-xl shadow-lg border border-gray-200/80 overflow-hidden">
                 <div onClick={() => toggleTypeExpansion(type)} className="p-5 flex justify-between items-center cursor-pointer bg-gray-50/80 border-b border-gray-200/80 hover:bg-gray-100/50 transition-colors">
                   <div className="flex items-center">
-                    {React.createElement(getTypeIcon(type), { className: `h-8 w-8 mr-4 ${getTypeColor(type).replace('bg-', 'text-').replace('-100', '-600')}` })}
-                    <h2 className={`text-2xl font-bold ${getTypeColor(type).replace('bg-', 'text-').replace('-100', '-800')}`}>{type === 'concert' ? 'Concerts' : 'Répétitions'} <span className="text-lg font-normal">({eventList.length})</span></h2>
+                    {React.createElement(getTypeIcon(type), { className: `h-8 w-8 mr-4 ${getTypeColor(type).split(' ')[1]}` })}
+                    <h2 className={`text-2xl font-bold ${getTypeColor(type).split(' ')[1].replace('-800', '-900')}`}>
+                      {type === 'concert' ? 'Concerts' : type === 'divers' ? 'Divers' : 'Répétitions'} <span className="text-lg font-normal">({eventList.length})</span>
+                    </h2>
                   </div>
                   <ChevronRight className={`transform transition-transform duration-300 ${expandedTypes.has(type) ? 'rotate-90' : ''}`} />
                 </div>
@@ -381,11 +392,18 @@ const AdminEvents = () => {
                     {eventList.map(event => (
                       <div key={event.id} className={`p-4 flex flex-col md:flex-row md:items-center md:justify-between hover:bg-gray-50/50 transition-colors duration-200`}>
                         <div className="flex items-center flex-1 mb-4 md:mb-0">
-                          <div className={`p-3 rounded-lg mr-4 ${getTypeColor(event.event_type)}`}>
+                          <div className={`p-3 rounded-xl mr-4 border ${getTypeColor(event.event_type)}`}>
                             {React.createElement(getTypeIcon(event.event_type), { className: "h-6 w-6" })}
                           </div>
                           <div className="flex-grow">
-                            <p className="font-bold text-lg text-gray-800">{event.title}</p>
+                            <div className="flex items-center gap-3 mb-1">
+                              <p className="font-bold text-lg text-gray-800 leading-none">{event.title}</p>
+                              {event.is_public ? (
+                                <span className="px-2 py-0.5 rounded-md bg-teal-50 text-teal-600 text-xs font-semibold uppercase tracking-wider border border-teal-100">Public</span>
+                              ) : (
+                                <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-500 text-xs font-semibold uppercase tracking-wider border border-slate-200">Interne</span>
+                              )}
+                            </div>
                             <div className="flex items-center text-gray-600 text-sm mb-2">
                               <Calendar size={16} className="mr-2" /> {formatDate(event.event_date)}
                             </div>
@@ -423,10 +441,23 @@ const AdminEvents = () => {
               </div>
               <form onSubmit={handleSubmit} className="flex-grow overflow-y-auto p-6 space-y-4">
                 <input type="text" name="title" value={formData.title} onChange={handleInputChange} placeholder="Titre de l'événement" required className="w-full px-4 py-2 border rounded-lg" />
-                <select name="event_type" value={formData.event_type} onChange={handleInputChange} className="w-full px-4 py-2 border rounded-lg bg-white">
-                  <option value="concert">Concert</option>
-                  <option value="repetition">Répétition</option>
-                </select>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <select name="event_type" value={formData.event_type} onChange={handleInputChange} className="w-full px-4 py-2 border rounded-lg bg-white focus:ring-2 focus:ring-indigo-500 outline-none">
+                    <option value="concert">Concert</option>
+                    <option value="repetition">Répétition</option>
+                    <option value="divers">Divers</option>
+                  </select>
+                  <label className="flex items-center space-x-3 p-2 bg-slate-50 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors">
+                    <input 
+                      type="checkbox" 
+                      name="is_public" 
+                      checked={formData.is_public} 
+                      onChange={handleInputChange} 
+                      className="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500 accent-indigo-600" 
+                    />
+                    <span className="font-medium text-slate-700">Visible par le grand public</span>
+                  </label>
+                </div>
                 <textarea name="description" value={formData.description} onChange={handleInputChange} placeholder="Description" className="w-full px-4 py-2 border rounded-lg h-24"></textarea>
                 <textarea name="practical_info" value={formData.practical_info} onChange={handleInputChange} placeholder="Informations pratiques (visible uniquement par les membres)" className="w-full px-4 py-2 border rounded-lg h-24"></textarea>
                 <input type="datetime-local" name="event_date" value={formData.event_date} onChange={handleInputChange} required className="w-full px-4 py-2 border rounded-lg" />

@@ -34,7 +34,7 @@ router.post('/', async (req, res) => {
   if (req.user.role !== 'Admin') {
     return res.status(403).json({ message: 'Accès refusé.' });
   }
-  const { title, description, event_type, event_date, location, orchestra_ids, practical_info } = req.body;
+  const { title, description, event_type, event_date, location, orchestra_ids, practical_info, is_public } = req.body;
   if (!title || !event_type || !event_date) {
     return res.status(400).json({ message: 'Champs requis manquants.' });
   }
@@ -44,8 +44,8 @@ router.post('/', async (req, res) => {
     await connection.beginTransaction();
     const newEventId = crypto.randomUUID();
     await connection.query(
-      'INSERT INTO events (id, title, description, event_type, event_date, location, practical_info) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [newEventId, title, description, event_type, event_date, location, practical_info]
+      'INSERT INTO events (id, title, description, event_type, event_date, location, practical_info, is_public) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      [newEventId, title, description, event_type, event_date, location, practical_info, is_public !== undefined ? is_public : true]
     );
     for (const orchestra_id of orchestra_ids) {
       await connection.query(
@@ -71,7 +71,7 @@ router.put('/:id', async (req, res) => {
     return res.status(403).json({ message: 'Accès refusé.' });
   }
   const { id } = req.params;
-  const { title, description, event_type, event_date, location, orchestra_ids, practical_info } = req.body;
+  const { title, description, event_type, event_date, location, orchestra_ids, practical_info, is_public } = req.body;
   if (!title || !event_type || !event_date) {
     return res.status(400).json({ message: 'Champs requis manquants.' });
   }
@@ -80,8 +80,8 @@ router.put('/:id', async (req, res) => {
   try {
     await connection.beginTransaction();
     await connection.query(
-      'UPDATE events SET title = ?, description = ?, event_type = ?, event_date = ?, location = ?, practical_info = ? WHERE id = ?',
-      [title, description, event_type, event_date, location, practical_info, id]
+      'UPDATE events SET title = ?, description = ?, event_type = ?, event_date = ?, location = ?, practical_info = ?, is_public = ? WHERE id = ?',
+      [title, description, event_type, event_date, location, practical_info, is_public !== undefined ? is_public : true, id]
     );
     await connection.query('DELETE FROM event_orchestras WHERE event_id = ?', [id]);
 
