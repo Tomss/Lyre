@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Music, UserCircle, ChevronDown } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { API_URL } from '../config';
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -26,7 +27,7 @@ const Header = () => {
   useEffect(() => {
     const fetchOrchestras = async () => {
       try {
-        const response = await fetch('http://localhost:3001/api/public-orchestras');
+        const response = await fetch(`${API_URL}/public-orchestras`);
         if (response.ok) {
           const data = await response.json();
           const links = data.map((orch: any) => ({

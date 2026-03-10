@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTheme } from '../context/ThemeContext';
+import { API_URL } from '../config';
 import { Link } from 'react-router-dom';
 import { Image, Camera, Music, FileText, File, Filter, Search, X, ChevronRight, Star } from 'lucide-react';
 import MediaGallery from '../components/MediaGallery';
@@ -40,7 +41,7 @@ const Media = () => {
   const fetchMedia = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:3001/api/public-media', {
+      const response = await fetch(`${API_URL}/public-media`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

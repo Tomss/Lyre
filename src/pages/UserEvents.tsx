@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { ArrowLeft, Calendar, Clock, MapPin, Users, Search, X, Filter, Info, ChevronDown, ChevronUp } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { API_URL } from '../config';
 
 // Interfaces
 interface Orchestra {
@@ -59,7 +60,7 @@ const UserEvents = () => {
       const fetchUserEvents = async () => {
         setLoading(true);
         try {
-          const response = await fetch('http://localhost:3001/api/user/events', {
+          const response = await fetch(`${API_URL}/user/events`, {
             headers: {
               'Authorization': `Bearer ${token}`,
             },
