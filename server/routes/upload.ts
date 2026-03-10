@@ -1,52 +1,42 @@
 import { Router } from 'express';
 import multer from 'multer';
-import path from 'path';
+import { v2 as cloudinary } from 'cloudinary';
+import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import { authenticateToken } from '../middleware/auth';
 
 const router = Router();
 
-import fs from 'fs';
+// 1. Configuration de Cloudinary avec tes futures variables Render
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
-// Configuration de Multer pour le stockage des fichiers
-// Assurons-nous que le dossier existe
-const uploadDir = 'uploads/';
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, uploadDir); // Le dossier où les fichiers seront sauvegardés
-  },
-  filename: function (req, file, cb) {
-    // Générer un nom de fichier unique pour éviter les conflits
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-  }
+// 2. Configuration de Multer pour envoyer directement sur Cloudinary
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'lyre-uploads', // Le dossier qui sera créé sur ton espace Cloudinary
+    allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
+  } as any
 });
 
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 50 * 1024 * 1024 } // 50MB
+  limits: { fileSize: 5 * 1024 * 1024 } // Limité à 5 Mo pour éviter de surcharger ton quota gratuit
 });
 
-// Route POST pour uploader un fichier
-// Elle est protégée, seul un utilisateur authentifié peut uploader.
+// 3. Route POST pour uploader un fichier (protégée)
 router.post('/', authenticateToken, upload.single('file'), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ message: 'Aucun fichier n\'a été uploadé.' });
   }
 
-  // Construire l'URL publique du fichier
-  // Utiliser req.get('host') est plus fiable car il inclut le port si nécessaire
-  // et correspond à l'hôte utilisé par le client.
-  const host = req.get('host');
-  const protocol = req.protocol;
-  const fileUrl = `${protocol}://${host}/uploads/${req.file.filename}`;
-
+  // Magie de multer-storage-cloudinary : req.file.path contient maintenant l'URL web sécurisée de Cloudinary !
   res.status(200).json({
     message: 'Fichier uploadé avec succès',
-    filePath: fileUrl
+    filePath: req.file.path 
   });
 });
 
