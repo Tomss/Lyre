@@ -176,7 +176,7 @@ const HomeAgendaSection = () => {
                                                     event.event_type === 'concert' ? 'bg-emerald-400 text-emerald-400' : 
                                                     event.event_type === 'divers' ? 'bg-purple-400 text-purple-400' : 'bg-blue-400 text-blue-400'
                                                 }`}></div>
-                                                {event.event_type === 'divers' ? 'Divers' : event.event_type}
+                                                {event.event_type === 'divers' ? 'Divers' : event.event_type === 'concert' ? 'Concert' : event.event_type === 'repetition' ? 'Répétition' : 'Autre'}
                                             </span>
                                         </div>
                                     </div>
