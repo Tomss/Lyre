@@ -55,28 +55,29 @@ const upload = multer({
 
 // Route POST pour uploader un fichier (protégée)
 router.post('/', authenticateToken, upload.single('file'), (req, res) => {
-    if (!req.file) {
-        return res.status(400).json({ message: 'Aucun fichier n\'a été uploadé.' });
+    try {
+        if (!req.file) {
+            return res.status(400).json({ message: 'Aucun fichier n\'a été uploadé.' });
+        }
+
+        let filePath = '';
+
+        if (useCloudinary) {
+            // Cloudinary met l'URL dans req.file.path
+            filePath = req.file.path;
+        } else {
+            // Stockage local
+            filePath = `/uploads/${req.file.filename}`;
+        }
+
+        res.status(200).json({
+            message: 'Fichier uploadé avec succès',
+            filePath: filePath
+        });
+    } catch (error) {
+        console.error('Erreur lors de l\'upload:', error);
+        res.status(500).json({ message: 'Erreur lors de l\'upload du fichier.' });
     }
-
-    let filePath = '';
-
-    if (useCloudinary) {
-        // Cloudinary path
-        filePath = req.file.path;
-    } else {
-        // Local path
-        const protocol = req.protocol;
-        const host = req.get('host');
-        // We ensure we only save the relative path from the server root if serving statically,
-        // or the full URL. If serving statically via `app.use('/uploads', ...)`:
-        filePath = `${protocol}://${host}/uploads/${req.file.filename}`;
-    }
-
-    res.status(200).json({
-        message: 'Fichier uploadé avec succès',
-        filePath: filePath
-    });
 });
 
 export default router;
