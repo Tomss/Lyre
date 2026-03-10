@@ -126,12 +126,11 @@ router.put('/:id', async (req, res) => {
       // Insert new photos or update order
       for (let i = 0; i < photos.length; i++) {
         const photo = photos[i];
-        if (photo.id) {
+        if (photo.id && existingIds.includes(photo.id)) {
           // Update order of existing
           await connection.query('UPDATE orchestra_photos SET display_order = ? WHERE id = ?', [i, photo.id]);
         } else {
           // Insert new
-          // If it's a new photo, it might have a temp ID or no ID, but we need to assign a new UUID
           await connection.query(
             'INSERT INTO orchestra_photos (id, orchestra_id, photo_url, display_order) VALUES (UUID(), ?, ?, ?)',
             [id, photo.url || photo.photo_url, i]
