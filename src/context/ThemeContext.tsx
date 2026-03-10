@@ -1,3 +1,4 @@
+import { API_URL } from '../config';
 import { useAuth } from './AuthContext';
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
@@ -141,7 +142,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     const fetchSettings = async () => {
         try {
-            const response = await fetch('/api/settings');
+            const response = await fetch(`${API_URL}/settings`);
             if (!response.ok) throw new Error('Failed to fetch settings');
             const data = await response.json();
 
@@ -164,7 +165,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     const fetchPageHeaders = async () => {
         try {
-            const response = await fetch('/api/settings/headers');
+            const response = await fetch(`${API_URL}/settings/headers`);
             if (response.ok) {
                 const data = await response.json();
                 setPageHeaders(data);
@@ -197,7 +198,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             }
 
             const token = localStorage.getItem('token');
-            const response = await fetch('/api/settings', {
+            const response = await fetch(`${API_URL}/settings`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -228,7 +229,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             }));
 
             const token = localStorage.getItem('token');
-            const response = await fetch('/api/settings/headers', {
+            const response = await fetch(`${API_URL}/settings/headers`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
