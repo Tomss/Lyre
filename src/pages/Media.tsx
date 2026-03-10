@@ -193,7 +193,7 @@ const Media = () => {
 
       {/* Médias mis en avant */}
       {featuredMedia.length > 0 && (
-        <section id="featured" className="scroll-mt-32 py-20 bg-gradient-to-br from-slate-50 via-gray-50 to-teal-50 relative overflow-hidden">
+        <section id="featured" className="scroll-mt-28 py-20 bg-gradient-to-br from-slate-50 via-gray-50 to-teal-50 relative overflow-hidden">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16 relative z-10">
               <div className="inline-block mb-6">
@@ -269,7 +269,7 @@ const Media = () => {
       )}
 
       {/* Tous les médias */}
-      <section id="library" className="scroll-mt-32 py-20 bg-slate-50 relative overflow-hidden">
+      <section id="library" className="scroll-mt-28 py-20 bg-slate-50 relative overflow-hidden">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           {/* Filtres et recherche intégrés */}
           {mediaItems.length > 0 && (
@@ -497,7 +497,7 @@ const Media = () => {
 
       {/* Section d'appel à contribution */}
       {/* Section d'appel à contribution */}
-      <section id="contribute" className="scroll-mt-32 py-20 bg-white relative overflow-hidden">
+      <section id="contribute" className="scroll-mt-28 py-20 bg-white relative overflow-hidden">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12 animate-fade-in">
