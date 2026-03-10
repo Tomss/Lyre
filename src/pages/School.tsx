@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTheme } from '../context/ThemeContext';
-import { Users, Sparkles, Compass, Rocket, School as SchoolIcon, Presentation, Lightbulb, Heart, Mic2, History } from 'lucide-react';
+import { Users, Sparkles, Compass, Rocket, School as SchoolIcon, Presentation, Lightbulb, Heart, Mic2, History, X } from 'lucide-react';
 import PageHero from '../components/PageHero';
 import HistoryTimeline from '../components/HistoryTimeline';
 
@@ -32,6 +32,18 @@ const School = () => {
   const { pageHeaders } = useTheme();
   const [instruments, setInstruments] = useState<Instrument[]>([]);
   const [instrumentsLoading, setInstrumentsLoading] = useState(true);
+  const [selectedInstrument, setSelectedInstrument] = useState<Instrument | null>(null);
+
+  useEffect(() => {
+    if (selectedInstrument) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [selectedInstrument]);
 
   useEffect(() => {
     const fetchInstruments = async () => {
@@ -131,7 +143,15 @@ const School = () => {
                   name: "Formation Musicale",
                   teacher: "A. Brisard, M-C. Rémongin, N. Cardot",
                   photo_url: "https://images.pexels.com/photos/4502973/pexels-photo-4502973.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-                  description: null
+                  description: "La pierre angulaire de l'apprentissage musical. Apprenez à lire, écrire et comprendre la musique dans une ambiance bienveillante."
+                }] : []),
+                // Fallback for Eveil Musical if not present in DB
+                ...(!instruments.some(i => i.name.toLowerCase().includes('eveil') || i.name.toLowerCase().includes('éveil')) ? [{
+                  id: 'eveil-manual',
+                  name: "Éveil Musical",
+                  teacher: "Équipe pédagogique",
+                  photo_url: "https://images.pexels.com/photos/17691880/pexels-photo-17691880.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+                  description: "Le monde magique de la musique : chants, mime, percussions corporelles... Une découverte ludique pour les tout-petits !"
                 }] : [])
               ].map((inst, idx) => {
                 const config = getInstrumentConfig(inst.name);
@@ -139,7 +159,8 @@ const School = () => {
                 return (
                   <div
                     key={inst.id || idx}
-                    className={`group relative bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-white/10 overflow-hidden hover:border-teal-500/50 hover:bg-slate-800/80 transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-teal-900/40 ${inst.name.includes('Formation') ? 'md:col-span-2 lg:col-span-1 xl:col-span-2' : ''}`}
+                    className={`group relative bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-white/10 overflow-hidden hover:border-teal-500/50 hover:bg-slate-800/80 transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-teal-900/40 cursor-pointer ${inst.name.toLowerCase().includes('formation') || inst.name.toLowerCase().includes('eveil') || inst.name.toLowerCase().includes('éveil') ? 'md:col-span-2 lg:col-span-1 xl:col-span-2' : ''}`}
+                    onClick={() => setSelectedInstrument(inst)}
                   >
                     {/* Image Background */}
                     {inst.photo_url && (
@@ -180,6 +201,57 @@ const School = () => {
                   </div>
                 );
               })}
+            </div>
+          )}
+
+          {/* Modal Instrument */}
+          {selectedInstrument && (
+            <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
+                <div className="bg-slate-900 rounded-3xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto border border-white/10" onClick={(e) => e.stopPropagation()}>
+                    {/* Header/Image */}
+                    <div className="relative h-64 sm:h-80 bg-slate-800 flex-shrink-0">
+                        {selectedInstrument.photo_url ? (
+                            <img src={selectedInstrument.photo_url} alt={selectedInstrument.name} className="w-full h-full object-cover" />
+                        ) : (
+                            <div className="w-full h-full flex flex-col items-center justify-center bg-slate-900 text-teal-400">
+                                <Sparkles className="h-16 w-16 mb-4 opacity-50" />
+                            </div>
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent"></div>
+                        
+                        {/* Bouton Fermeture */}
+                        <button 
+                            onClick={() => setSelectedInstrument(null)}
+                            className="absolute top-4 right-4 w-10 h-10 bg-black/30 hover:bg-black/50 backdrop-blur-md rounded-full text-white flex items-center justify-center transition-colors border border-white/20"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+                    </div>
+
+                    {/* Contenu */}
+                    <div className="p-8 sm:p-10 text-white">
+                        <h2 className="font-poppins font-bold text-2xl sm:text-3xl text-white mb-6 leading-tight">
+                            {selectedInstrument.name}
+                        </h2>
+
+                        <div className="flex flex-col sm:flex-row gap-6 mb-8 p-4 bg-slate-800/80 rounded-2xl border border-white/10">
+                            <div className="flex items-center text-teal-200 font-medium">
+                                <Users className="w-5 h-5 mr-3 text-teal-400" />
+                                Professeur(s) : <span className="text-white ml-2">{selectedInstrument.teacher || "À confirmer"}</span>
+                            </div>
+                        </div>
+
+                        {selectedInstrument.description ? (
+                            <div className="prose prose-invert prose-teal max-w-none text-slate-300 leading-relaxed whitespace-pre-wrap">
+                                {selectedInstrument.description}
+                            </div>
+                        ) : (
+                            <p className="text-slate-400 italic">Aucune description détaillée n'est disponible pour cette classe actuellement.</p>
+                        )}
+                    </div>
+                </div>
+                {/* Overlay Click to Close */}
+                <div className="absolute inset-0 -z-10" onClick={() => setSelectedInstrument(null)}></div>
             </div>
           )}
         </div>
