@@ -1,5 +1,5 @@
 import React from 'react';
-import PageHero from '../components/PageHero';
+
 import { API_URL } from '../config';
 import { useTheme } from '../context/ThemeContext';
 import { Calendar, Clock, MapPin, Users, Star, ChevronRight, X } from 'lucide-react';
@@ -14,6 +14,7 @@ interface Event {
   id: string;
   title: string;
   description: string | null;
+  event_type: 'concert' | 'repetition' | 'divers';
   event_date: string;
   location: string | null;
   orchestras: Orchestra[];
@@ -122,7 +123,7 @@ const Events = () => {
               </div>
             ) : (
               <p className="font-inter text-base text-slate-200 max-w-2xl mx-auto leading-relaxed">
-                {events.length > 0 ? 'Découvrez notre calendrier de concerts et rejoignez-nous pour ces moments musicaux exceptionnels' : 'Notre calendrier musical se prépare... Revenez bientôt pour découvrir nos prochains concerts !'}
+                {events.length > 0 ? 'Découvrez notre calendrier d\'événements et rejoignez-nous pour ces moments musicaux exceptionnels' : 'Notre calendrier musical se prépare... Revenez bientôt pour découvrir nos prochaines dates !'}
               </p>
             )}
           </div>
@@ -154,7 +155,7 @@ const Events = () => {
                 </div>
                 <h2 className="font-poppins font-bold text-3xl text-slate-800 mb-4">Le rideau se lève bientôt...</h2>
                 <p className="font-inter text-lg text-slate-600 leading-relaxed">
-                  Notre équipe artistique prépare actuellement la programmation de nos prochains concerts. Revenez bientôt pour découvrir les dates de nos représentations !
+                  Notre équipe artistique prépare actuellement la programmation de nos prochains événements. Revenez bientôt pour découvrir les dates !
                 </p>
               </div>
             </div>
@@ -231,7 +232,7 @@ const Events = () => {
                             {filter === 'upcoming' ? upcomingEvents.length : pastEvents.length}
                           </div>
                           <div className="text-sm text-slate-300">
-                            Concert{(filter === 'upcoming' ? upcomingEvents.length : pastEvents.length) > 1 ? 's' : ''}
+                            Événement{(filter === 'upcoming' ? upcomingEvents.length : pastEvents.length) > 1 ? 's' : ''}
                           </div>
                         </div>
                       </div>
@@ -269,8 +270,9 @@ const Events = () => {
                                   <div className="text-2xl sm:text-3xl font-bold leading-none mb-1">
                                     {dateInfo.day}
                                   </div>
-                                  <div className="text-xs opacity-75 font-medium">
-                                    {dateInfo.year}
+                                  <div className="text-xs opacity-75 font-medium flex items-center justify-center space-x-1 mt-1">
+                                    <div className={`w-1.5 h-1.5 rounded-full ${event.event_type === 'concert' ? 'bg-teal-500' : event.event_type === 'divers' ? 'bg-purple-500' : 'bg-blue-500'}`}></div>
+                                    <span>{dateInfo.year}</span>
                                   </div>
                                 </div>
 
@@ -341,7 +343,7 @@ const Events = () => {
                         {(filter === 'upcoming' ? upcomingEvents : pastEvents).length > 5 && (
                           <div className="text-center pt-6">
                             <div className="inline-block px-6 py-3 bg-white border border-slate-200 rounded-full text-sm text-slate-500 shadow-sm">
-                              +{(filter === 'upcoming' ? upcomingEvents : pastEvents).length - 5} autre{(filter === 'upcoming' ? upcomingEvents : pastEvents).length - 5 > 1 ? 's' : ''} concert{(filter === 'upcoming' ? upcomingEvents : pastEvents).length - 5 > 1 ? 's' : ''}
+                              +{(filter === 'upcoming' ? upcomingEvents : pastEvents).length - 5} autre{(filter === 'upcoming' ? upcomingEvents : pastEvents).length - 5 > 1 ? 's' : ''} événement{(filter === 'upcoming' ? upcomingEvents : pastEvents).length - 5 > 1 ? 's' : ''}
                             </div>
                           </div>
                         )}

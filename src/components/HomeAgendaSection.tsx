@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Calendar, Clock, MapPin, Music, ArrowRight } from 'lucide-react';
 
 import { API_URL } from '../config';
@@ -10,7 +10,7 @@ interface EventItem {
     event_date: string;
     location?: string;
     image_url?: string;
-    event_type: 'concert' | 'repetition' | 'autre';
+    event_type: 'concert' | 'repetition' | 'divers';
 }
 
 const HomeAgendaSection = () => {
@@ -172,8 +172,11 @@ const HomeAgendaSection = () => {
                                         {/* Type Badge */}
                                         <div className="absolute bottom-4 left-4 z-20">
                                             <span className="px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-white text-xs font-bold uppercase tracking-wide shadow-sm flex items-center gap-2">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_5px_#34d399]"></div>
-                                                {event.event_type}
+                                                <div className={`w-1.5 h-1.5 rounded-full shadow-[0_0_5px_currentColor] ${
+                                                    event.event_type === 'concert' ? 'bg-emerald-400 text-emerald-400' : 
+                                                    event.event_type === 'divers' ? 'bg-purple-400 text-purple-400' : 'bg-blue-400 text-blue-400'
+                                                }`}></div>
+                                                {event.event_type === 'divers' ? 'Divers' : event.event_type}
                                             </span>
                                         </div>
                                     </div>

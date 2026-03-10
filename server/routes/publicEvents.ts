@@ -21,7 +21,7 @@ router.get('/', async (req, res) => {
       FROM events e
       LEFT JOIN event_orchestras eo ON e.id = eo.event_id
       LEFT JOIN orchestras o ON eo.orchestra_id = o.id
-      WHERE e.event_type = 'concert'
+      WHERE e.is_public = 1
       GROUP BY e.id
       ORDER BY e.event_date DESC;
     `;
