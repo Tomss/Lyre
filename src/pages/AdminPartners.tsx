@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { Navigate, Link } from 'react-router-dom';
 // import { API_URL } from '../config'; // Cause of potential issues, using fallback
 
-const API_URL = 'http://localhost:3001/api'; // Falling back to hardcoded URL to ensure stability during debug
+import { API_URL } from '../config';
 import {
     Building2,
     Plus,
