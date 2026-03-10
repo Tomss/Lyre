@@ -4,7 +4,16 @@
 
 @layer components {
   .admin-card {
-    @apply p-4 bg-gray-50 rounded-xl shadow-sm hover:shadow-lg transition-all duration-200 flex flex-col items-center justify-center border border-gray-200 hover:bg-white hover:-translate-y-1;
+    @apply relative p-6 bg-white/60 backdrop-blur-xl rounded-2xl shadow-sm hover:shadow-2xl transition-all duration-300 flex flex-col items-center justify-center border border-white/80 overflow-hidden transform hover:-translate-y-1.5 z-10;
+  }
+  
+  .admin-card::before {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-br from-white/40 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-[-1];
+  }
+  
+  .admin-card:hover {
+    @apply border-teal-200/50 bg-white/80;
   }
 }
 
