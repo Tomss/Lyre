@@ -79,6 +79,18 @@ const HomeNewsSection = () => {
         fetchNews();
     }, []);
 
+    // Prevent body scroll when either modal is open
+    useEffect(() => {
+        if (isAllNewsModalOpen || selectedNews) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [isAllNewsModalOpen, selectedNews]);
+
     // Auto Scroll Logic
     useEffect(() => {
         const scrollContainer = scrollRef.current;
@@ -171,9 +183,9 @@ const HomeNewsSection = () => {
             {/* Modal "Toutes les Actualités" (50 dernières) */}
             {isAllNewsModalOpen && !selectedNews && (
                 <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-[90] p-4 animate-in fade-in duration-300">
-                    <div className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col border border-slate-200" onClick={(e) => e.stopPropagation()}>
+                    <div className="bg-white rounded-3xl shadow-2xl max-w-5xl w-full max-h-[90vh] flex flex-col border border-slate-200 overflow-hidden" onClick={(e) => e.stopPropagation()}>
                         {/* Header Modal */}
-                        <div className="p-6 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white/80 backdrop-blur-md rounded-t-3xl z-10">
+                        <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-white z-10">
                             <div>
                                 <h2 className="font-poppins font-bold text-2xl text-slate-800">Dernières Actualités</h2>
                                 <p className="text-slate-500 text-sm">Les 50 dernières publications</p>
@@ -187,36 +199,40 @@ const HomeNewsSection = () => {
                         </div>
                         
                         {/* Liste au scroll */}
-                        <div className="p-6 overflow-y-auto flex-1 space-y-4 bg-slate-50/50">
-                            {allNews.map((item) => (
-                                <div 
-                                    key={item.id}
-                                    onClick={() => setSelectedNews(item)}
-                                    className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-100 hover:shadow-md hover:border-teal-200 transition-all cursor-pointer flex flex-col sm:flex-row gap-6 group"
-                                >
-                                    <div className="w-full sm:w-48 h-32 flex-shrink-0 rounded-xl overflow-hidden bg-slate-100 relative">
-                                        {item.image_url ? (
-                                            <img src={item.image_url} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center text-teal-300 bg-teal-50">
-                                                <Newspaper className="w-8 h-8 opacity-50" />
+                        <div className="p-6 overflow-y-auto flex-1 bg-slate-50">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {allNews.map((item) => (
+                                    <div 
+                                        key={item.id}
+                                        onClick={() => setSelectedNews(item)}
+                                        className="bg-white rounded-2xl shadow-sm border border-slate-200 hover:shadow-lg hover:border-teal-300 transition-all cursor-pointer flex flex-col group overflow-hidden"
+                                    >
+                                        <div className="w-full h-40 flex-shrink-0 bg-slate-100 relative overflow-hidden">
+                                            {item.image_url ? (
+                                                <img src={item.image_url} alt={item.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                                            ) : (
+                                                <div className="w-full h-full flex flex-col items-center justify-center text-teal-300 bg-teal-50">
+                                                    <Newspaper className="w-8 h-8 opacity-50 mb-2" />
+                                                    <span className="text-[10px] font-bold uppercase tracking-widest opacity-50">Actualité</span>
+                                                </div>
+                                            )}
+                                            <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 to-transparent"></div>
+                                            <div className="absolute bottom-3 left-3 flex items-center text-xs font-bold text-white z-10">
+                                                <CalendarDays className="w-3.5 h-3.5 mr-1.5 text-teal-300" />
+                                                {new Date(item.published_at).toLocaleDateString('fr-FR')}
                                             </div>
-                                        )}
-                                    </div>
-                                    <div className="flex flex-col flex-1">
-                                        <div className="flex items-center text-xs font-bold text-teal-600 mb-2">
-                                            <CalendarDays className="w-3.5 h-3.5 mr-1.5" />
-                                            {new Date(item.published_at).toLocaleDateString('fr-FR')}
                                         </div>
-                                        <h3 className="font-poppins font-bold text-lg text-slate-800 mb-2 group-hover:text-teal-700 transition-colors line-clamp-2">
-                                            {item.title}
-                                        </h3>
-                                        <p className="text-slate-500 text-sm line-clamp-2 leading-relaxed">
-                                            {item.content}
-                                        </p>
+                                        <div className="flex flex-col flex-1 p-5">
+                                            <h3 className="font-poppins font-bold text-base text-slate-800 mb-2 group-hover:text-teal-700 transition-colors line-clamp-2">
+                                                {item.title}
+                                            </h3>
+                                            <p className="text-slate-500 text-xs line-clamp-3 leading-relaxed">
+                                                {item.content}
+                                            </p>
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
                         </div>
                     </div>
                     {/* Overlay Click to Close */}
