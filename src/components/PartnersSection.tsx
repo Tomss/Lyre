@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { API_URL } from '../config';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface Partner {
     id: string;
@@ -101,10 +102,24 @@ const PartnersSection = () => {
                 </div>
 
                 {/* Call to action for potential partners */}
-                <div className="mt-16 text-center">
-                    <p className="text-slate-500 text-sm">
-                        Vous souhaitez devenir partenaire ? <a href="/#contact" className="text-indigo-600 font-medium hover:underline">Contactez-nous</a>
-                    </p>
+                <div className="mt-20 flex justify-center">
+                    <div className="bg-slate-900 text-white rounded-3xl px-8 py-8 sm:px-12 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-2xl shadow-indigo-500/10 border border-slate-800 w-full max-w-4xl relative overflow-hidden group">
+                        {/* Subtile background touches */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-teal-500/10 via-transparent to-indigo-500/10 pointer-events-none opacity-50 group-hover:opacity-100 transition-opacity duration-700"></div>
+                        <div className="absolute -left-16 -top-16 w-32 h-32 bg-teal-500/20 rounded-full blur-2xl pointer-events-none"></div>
+                        
+                        <div className="relative z-10 text-center sm:text-left">
+                            <h3 className="text-2xl font-bold font-poppins mb-2 text-white group-hover:text-teal-400 transition-colors">Vous souhaitez devenir partenaire ?</h3>
+                            <p className="text-slate-400 text-base">Soutenez l'Harmonie La Lyre et associez votre image à notre ensemble musical.</p>
+                        </div>
+                        <Link 
+                            to="/contact" 
+                            className="relative z-10 shrink-0 inline-flex items-center justify-center px-8 py-3 text-sm sm:text-base font-bold text-slate-900 bg-teal-400 hover:bg-teal-300 rounded-full transition-all duration-300 shadow-[0_0_20px_rgba(45,212,191,0.3)] hover:shadow-[0_0_25px_rgba(45,212,191,0.5)] hover:-translate-y-1"
+                        >
+                            Contactez-nous
+                            <ArrowRight className="ml-2 h-5 w-5" />
+                        </Link>
+                    </div>
                 </div>
             </div>
         </section>
