@@ -24,8 +24,8 @@ router.post('/', authenticateToken, async (req, res) => {
     }
     const { name, logo_url, description, website_url } = req.body;
 
-    if (!name || !logo_url) {
-        return res.status(400).json({ message: 'Nom et logo sont requis.' });
+    if (!name) {
+        return res.status(400).json({ message: 'Le nom du partenaire est requis.' });
     }
 
     const id = crypto.randomUUID();
@@ -38,7 +38,7 @@ router.post('/', authenticateToken, async (req, res) => {
 
         await db.query(
             'INSERT INTO partners (id, name, logo_url, description, website_url, display_order) VALUES (?, ?, ?, ?, ?, ?)',
-            [id, name, logo_url, description || null, website_url || null, newOrder]
+            [id, name, logo_url || null, description || null, website_url || null, newOrder]
         );
 
         const [newPartner] = await db.query('SELECT * FROM partners WHERE id = ?', [id]);
@@ -89,14 +89,14 @@ router.put('/:id', authenticateToken, async (req, res) => {
     const { id } = req.params;
     const { name, logo_url, description, website_url } = req.body;
 
-    if (!name || !logo_url) {
-        return res.status(400).json({ message: 'Nom et logo sont requis.' });
+    if (!name) {
+        return res.status(400).json({ message: 'Le nom du partenaire est requis.' });
     }
 
     try {
         const [result]: any = await db.query(
             'UPDATE partners SET name = ?, logo_url = ?, description = ?, website_url = ? WHERE id = ?',
-            [name, logo_url, description || null, website_url || null, id]
+            [name, logo_url || null, description || null, website_url || null, id]
         );
 
         if (result.affectedRows === 0) {

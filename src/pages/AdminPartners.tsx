@@ -174,7 +174,7 @@ const AdminPartners = () => {
         setSubmitting(true);
 
         try {
-            let logoUrl = editingPartner?.logo_url;
+            let logoUrl: string | null | undefined = editingPartner?.logo_url;
 
             // Upload image if new file selected
             if (selectedFile) {
@@ -190,12 +190,8 @@ const AdminPartners = () => {
                 if (!uploadRes.ok) throw new Error('Upload failed');
                 const uploadJson = await uploadRes.json();
                 logoUrl = uploadJson.filePath;
-            }
-
-            if (!logoUrl) {
-                showNotification('Le logo est requis pour un nouveau partenaire', 'error');
-                setSubmitting(false);
-                return;
+            } else if (!previewUrl) {
+                logoUrl = null;
             }
 
             const payload = { ...formData, logo_url: logoUrl };
@@ -419,7 +415,7 @@ const AdminPartners = () => {
                         <form onSubmit={handleSubmit} className="p-6 space-y-5">
 
                             {/* Logo Upload */}
-                            <div className="flex justify-center">
+                            <div className="flex flex-col items-center">
                                 <div className="relative group cursor-pointer w-full">
                                     <div className={`h-32 w-full rounded-xl border-2 border-dashed flex items-center justify-center transition-all ${previewUrl ? 'border-indigo-500 bg-indigo-50' : 'border-slate-300 hover:bg-slate-50'}`}>
                                         {previewUrl ? (
@@ -443,6 +439,16 @@ const AdminPartners = () => {
                                         </div>
                                     )}
                                 </div>
+                                {previewUrl && (
+                                    <button
+                                        type="button"
+                                        onClick={() => { setPreviewUrl(null); setSelectedFile(null); }}
+                                        className="mt-3 text-sm text-red-500 hover:text-red-700 flex items-center font-medium transition-colors"
+                                    >
+                                        <Trash2 className="h-4 w-4 mr-1.5" />
+                                        Supprimer l'image
+                                    </button>
+                                )}
                             </div>
 
                             <div>
