@@ -36,7 +36,7 @@ const PartnersSection = () => {
     if (loading || partners.length === 0) return null;
 
     return (
-        <section id="partenaires" className="scroll-mt-32 py-24 bg-slate-50 relative overflow-hidden">
+        <section id="partenaires" className="scroll-mt-28 py-24 bg-slate-50 relative overflow-hidden">
             {/* Background Decoration */}
             <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-100/50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-teal-100/50 rounded-full blur-2xl translate-y-1/3 -translate-x-1/4"></div>

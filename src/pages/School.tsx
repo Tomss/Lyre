@@ -81,7 +81,7 @@ const School = () => {
 
 
       {/* Main Content: Text + Features Grid */}
-      <section id="presentation" className="scroll-mt-20 py-20 bg-slate-50 border-b border-slate-100 relative overflow-hidden">
+      <section id="presentation" className="scroll-mt-28 py-20 bg-slate-50 border-b border-slate-100 relative overflow-hidden">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div className="max-w-4xl mx-auto text-center mb-12 animate-on-scroll">
               <h2 className="text-3xl md:text-5xl font-poppins font-bold text-slate-800 mb-6 relative inline-block">
@@ -114,7 +114,7 @@ const School = () => {
       </section>
 
       {/* Section Classes & Professeurs (Fusionnée) */}
-      <section id="classes" className="scroll-mt-32 py-20 bg-slate-900 text-white relative overflow-hidden">
+      <section id="classes" className="scroll-mt-28 py-20 bg-slate-900 text-white relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
         <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-teal-500/50 to-transparent"></div>
 
@@ -258,7 +258,7 @@ const School = () => {
       </section>
 
       {/* 2. Feature Grid (following immediately) */}
-      <section id="activites" className="scroll-mt-32 py-20 bg-white relative">
+      <section id="activites" className="scroll-mt-28 py-20 bg-white relative">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="font-poppins font-bold text-4xl md:text-5xl text-slate-800 mb-6">L'École c'est aussi...</h2>
@@ -333,7 +333,7 @@ const School = () => {
 
 
       {/* Notre Histoire */}
-      <section id="histoire" className="scroll-mt-32">
+      <section id="histoire" className="scroll-mt-28">
         <HistoryTimeline />
       </section>      {/* Fin de la page */}
     </div>
