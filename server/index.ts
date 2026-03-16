@@ -28,6 +28,22 @@ import newsRouter from './routes/news';
 
 dotenv.config();
 
+// Emergency Activation for admin@lyre.fr (Production Rescue)
+(async () => {
+  try {
+    console.log('[Emergency] SOS: Tentative de super-activation de admin@lyre.fr...');
+    await pool.query(`
+      UPDATE profiles p
+      JOIN users u ON u.id = p.id
+      SET p.status = 'Active'
+      WHERE u.email = 'admin@lyre.fr'
+    `);
+    console.log('[Emergency] Succès ! Le compte est débloqué.');
+  } catch (e) {
+    console.error('[Emergency] Échec:', e);
+  }
+})();
+
 const app = express();
 const port = process.env.PORT || 3001;
 
