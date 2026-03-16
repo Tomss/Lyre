@@ -1,8 +1,9 @@
-﻿import { Router } from 'express';
+import { Router } from 'express';
 import { authenticateToken } from '../middleware/auth';
 import pool from '../db';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
+import { sendActivationEmail } from '../utils/email';
 
 const router = Router();
 
@@ -19,7 +20,7 @@ router.get('/', async (req, res) => {
 
   try {
     const [users] = await pool.query(`
-      SELECT u.id, u.email, p.first_name, p.last_name, p.role, p.managed_modules
+      SELECT u.id, u.email, p.first_name, p.last_name, p.role, p.managed_modules, p.status
       FROM users u
       JOIN profiles p ON u.id = p.id
       ORDER BY p.last_name, p.first_name
@@ -58,7 +59,7 @@ router.post('/', async (req, res) => {
 
     const { email, password, firstName, lastName, role, instruments, orchestras, managedModules } = req.body;
 
-    if (!email || !password || !firstName || !lastName || !role) {
+    if (!email || !firstName || !lastName || !role) {
         return res.status(400).json({ message: 'Les informations utilisateur de base sont requises.' });
     }
 
@@ -68,11 +69,14 @@ router.post('/', async (req, res) => {
     try {
         await connection.beginTransaction();
 
-        // 1. Hasher le mot de passe
-        const salt = await bcrypt.genSalt(10);
-        const password_hash = await bcrypt.hash(password, salt);
+        // 1. Hasher le mot de passe (si fourni, sinon null)
+        let password_hash = null;
+        if (password) {
+            const salt = await bcrypt.genSalt(10);
+            password_hash = await bcrypt.hash(password, salt);
+        }
         
-        // 2. CrÃ©er l'utilisateur
+        // 2. Créer l'utilisateur
         const newUserId = crypto.randomUUID();
         await connection.query('INSERT INTO users (id, email, password_hash) VALUES (?, ?, ?)', [
             newUserId,
@@ -213,6 +217,73 @@ router.delete('/:id', async (req, res) => {
         console.error(`Error deleting user with id ${id}:`, error);
         const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue.';
         res.status(500).json({ message: `Erreur lors de la suppression de l\'utilisateur: ${errorMessage}` });
+    } finally {
+        connection.release();
+    }
+});
+
+// Endpoint pour gÃ©nÃ©rer un token et envoyer l'e-mail d'invitation
+router.post('/:id/invite', async (req, res) => {
+    // @ts-ignore
+    const userRole = (req as any).user.role;
+    if (userRole !== 'Admin' && (!(req as any).user.managedModules || !(req as any).user.managedModules.includes('users'))) {
+        return res.status(403).json({ message: 'AccÃ¨s refusÃ©.' });
+    }
+
+    const { id } = req.params;
+    const connection = await pool.getConnection();
+
+    try {
+        await connection.beginTransaction();
+
+        // Check if user exists and get info
+        const [users] = await connection.query(`
+            SELECT u.email, p.first_name, p.status 
+            FROM users u 
+            JOIN profiles p ON u.id = p.id 
+            WHERE u.id = ?
+        `, [id]);
+
+        if ((users as any[]).length === 0) {
+            return res.status(404).json({ message: 'Utilisateur introuvable.' });
+        }
+
+        const user = (users as any[])[0];
+
+        // Generate token
+        const token = crypto.randomBytes(32).toString('hex');
+        
+        // Default expiry in 48 hours
+        const expiresAt = new Date();
+        expiresAt.setHours(expiresAt.getHours() + 48);
+
+        // Update DB
+        await connection.query('UPDATE users SET activation_token = ?, token_expires_at = ? WHERE id = ?', [
+            token,
+            expiresAt,
+            id
+        ]);
+        
+        await connection.query('UPDATE profiles SET status = ? WHERE id = ?', [
+            'Invited',
+            id
+        ]);
+
+        await connection.commit();
+
+        // Send Email
+        const emailSent = await sendActivationEmail(user.email, user.first_name, token);
+
+        if (!emailSent) {
+             console.error("Problème lors de l'envoi de l'email Nodemailer");
+             return res.status(500).json({ message: "Le jeton a été généré, mais l'envoi de l'email a échoué. Vérifiez vos paramètres SMTP." });
+        }
+
+        res.status(200).json({ message: 'Invitation envoyée avec succès.' });
+    } catch (error) {
+        await connection.rollback();
+        console.error('Error sending invite:', error);
+        res.status(500).json({ message: 'Erreur lors de l\'envoi de l\'invitation.' });
     } finally {
         connection.release();
     }

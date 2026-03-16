@@ -21,13 +21,13 @@ CREATE TABLE `event_orchestras` (
   CONSTRAINT `event_orchestras_orchestra_id_fkey` FOREIGN KEY (`orchestra_id`) REFERENCES `orchestras` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-CREATE TABLE `users` (
-  `id` varchar(36) NOT NULL,
-  `email` varchar(255) NOT NULL,
-  `password_hash` varchar(255) NOT NULL,
-  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `email` (`email`)
+CREATE TABLE IF NOT EXISTS users (
+    id CHAR(36) PRIMARY KEY,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NULL,
+    activation_token VARCHAR(255) NULL,
+    token_expires_at DATETIME NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 CREATE TABLE `user_orchestras` (
@@ -61,15 +61,14 @@ CREATE TABLE `site_settings` (
   PRIMARY KEY (`setting_key`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-CREATE TABLE `profiles` (
-  `id` varchar(36) NOT NULL,
-  `first_name` text,
-  `last_name` text,
-  `role` enum('Membre','Admin','Professeur','Gestionnaire') DEFAULT 'Membre',
-  `managed_modules` JSON,
-  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  CONSTRAINT `profiles_id_fkey` FOREIGN KEY (`id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+CREATE TABLE IF NOT EXISTS profiles (
+    id CHAR(36) PRIMARY KEY,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    role ENUM('Membre', 'Gestionnaire', 'Admin') DEFAULT 'Membre',
+    managed_modules JSON,
+    status ENUM('Inactive', 'Invited', 'Active') DEFAULT 'Inactive',
+    FOREIGN KEY (id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 CREATE TABLE `partitions` (
