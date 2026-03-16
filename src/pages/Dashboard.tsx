@@ -3,7 +3,7 @@ import { Link, Navigate } from 'react-router-dom';
 import { Settings, LogOut, Users, Music, Music2, Calendar, Image, FileText, Download, ChevronRight, ChevronDown, User, MapPin, Info, Clock, Palette, Building2, Newspaper } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-// TODO: Migrer les appels de données vers le nouveau backend
+import { API_URL } from '../config';
 
 const Dashboard = () => {
   const { currentUser, logout, token } = useAuth();
@@ -30,7 +30,7 @@ const Dashboard = () => {
       setPartitionsLoading(true);
 
       try {
-        const response = await fetch('/api/dashboard', {
+        const response = await fetch(`${API_URL}/dashboard`, {
           headers: {
             'Authorization': `Bearer ${token}`,
           },
