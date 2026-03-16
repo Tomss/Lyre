@@ -22,23 +22,34 @@ router.post('/login', async (req, res) => {
     }
     const user = userRows[0];
 
-    // 2. Vérifier le mot de passe
+    // 2. Vérifier si un mot de passe existe (pour les invités non activés)
+    if (!user.password_hash) {
+      return res.status(401).json({ message: 'Compte non activé. Veuillez utiliser le lien reçu par email.' });
+    }
+
+    // 3. Vérifier le mot de passe
     const isMatch = await bcrypt.compare(password, user.password_hash);
     if (!isMatch) {
       return res.status(401).json({ message: 'Email ou mot de passe incorrect.' });
     }
 
-    // 3. Récupérer le profil de l'utilisateur
-    const [profileRows] = await pool.query<any[]>(`      SELECT u.id, u.email, p.first_name, p.last_name, p.role, p.managed_modules
+    // 4. Récupérer le profil et vérifier le statut
+    const [profileRows] = await pool.query<any[]>(`
+      SELECT u.id, u.email, p.first_name, p.last_name, p.role, p.managed_modules, p.status
       FROM users u
       JOIN profiles p ON u.id = p.id
-      WHERE u.id = ?`, [user.id]);
+      WHERE u.id = ?
+    `, [user.id]);
+
     if (profileRows.length === 0) {
-      // Should not happen if data is consistent
       return res.status(500).json({ message: 'Profil utilisateur introuvable.' });
     }
 
-    const { first_name, last_name, role, managed_modules } = profileRows[0];
+    const { first_name, last_name, role, managed_modules, status } = profileRows[0];
+
+    if (status !== 'Active') {
+      return res.status(403).json({ message: 'Compte inactif ou en attente d\'activation.' });
+    }
 
     // Parse managed_modules JSON if it exists (it comes as a string from MySQL sometimes depending on the driver version)
     let parsedModules = [];
