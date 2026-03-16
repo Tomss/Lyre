@@ -16,7 +16,7 @@ interface AuthContextType {
   currentUser: User | null;
   token: string | null;
   login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
+  logout: (shouldNavigate?: boolean) => void;
   loading: boolean;
   isAuthenticated: boolean;
 }
@@ -106,12 +106,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const logout = () => {
+  const logout = (shouldNavigate: boolean = true) => {
     setCurrentUser(null);
     setToken(null);
     localStorage.removeItem('user');
     localStorage.removeItem('token');
-    navigate('/');
+    if (shouldNavigate) {
+      navigate('/');
+    }
   };
 
   const value = {

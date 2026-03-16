@@ -25,7 +25,7 @@ const Activation = () => {
     // Sécurité : Si une session est déjà ouverte, on la ferme pour éviter les conflits
     if (isAuthenticated) {
       console.log('[Activation.tsx] Active session detected, logging out for a clean activation environment.');
-      logout();
+      logout(false);
     }
   }, [token, isAuthenticated, logout]);
 
