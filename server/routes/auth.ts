@@ -124,8 +124,10 @@ router.post('/activate', async (req, res) => {
     `, [token]);
 
     const userRows = users as any[];
+    console.log(`[Auth] Recherche du token: ${token ? token.substring(0, 8) + '...' : 'VIDE'}`);
 
     if (userRows.length === 0) {
+      console.warn(`[Auth] Token non trouvé dans la base pour: ${token ? token.substring(0, 8) + '...' : '???'}`);
       return res.status(400).json({ message: 'Lien invalide ou expiré.' });
     }
 
