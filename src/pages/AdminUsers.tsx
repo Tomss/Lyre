@@ -232,7 +232,12 @@ const AdminUsers = () => {
   };
 
   const handleInvite = async (userId: string) => {
-    if (!token) return;
+    console.log(`[Invitation] Triggered for user ${userId}`);
+    if (!token) {
+      console.error("[Invitation] Error: Token is missing!");
+      showNotification("Erreur d'authentification : jeton manquant.", "error");
+      return;
+    }
     setLoading(true);
     try {
       const response = await fetch(`${API_URL}/users/${userId}/invite`, {

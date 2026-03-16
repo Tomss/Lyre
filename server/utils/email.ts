@@ -57,7 +57,7 @@ export const sendActivationEmail = async (email: string, firstName: string, toke
                 'Authorization': `Bearer ${resendApiKey}`
             },
             body: JSON.stringify({
-                from: 'Association La Lyre <onboarding@resend.dev>', // Sera mis à jour après validation du domaine
+                from: 'Association La Lyre <communication@lalyre.fr>',
                 to: [email],
                 subject: 'La Lyre - Activation de votre Espace Membre',
                 html: htmlContent
