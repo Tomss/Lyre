@@ -47,6 +47,7 @@ const AdminUsers = () => {
   const [userOrchestras, setUserOrchestras] = useState<{ [key: string]: Orchestra[] }>({});
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<string[]>(['Admin', 'Gestionnaire', 'Membre']);
+  const [statusFilter, setStatusFilter] = useState<string[]>(['Active', 'Invited', 'Inactive']);
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingUser, setEditingUser] = useState<UserData | null>(null);
@@ -566,8 +567,10 @@ const AdminUsers = () => {
     );
 
     const matchesRole = roleFilter.includes(user.role);
+    const userStatus = user.status || 'Inactive';
+    const matchesStatus = statusFilter.includes(userStatus);
 
-    return matchesSearch && matchesRole;
+    return matchesSearch && matchesRole && matchesStatus;
   });
 
   if (currentUser && currentUser.role !== 'Admin' && (!currentUser.managedModules || !currentUser.managedModules.includes('users'))) {
@@ -588,6 +591,22 @@ const AdminUsers = () => {
 
   const clearAllRoles = () => {
     setRoleFilter([]);
+  };
+
+  const toggleStatusFilter = (status: string) => {
+    setStatusFilter(prev =>
+      prev.includes(status)
+        ? prev.filter(s => s !== status)
+        : [...prev, status]
+    );
+  };
+
+  const selectAllStatuses = () => {
+    setStatusFilter(['Active', 'Invited', 'Inactive']);
+  };
+
+  const clearAllStatuses = () => {
+    setStatusFilter([]);
   };
 
   const toggleRoleExpansion = (role: string) => {
@@ -669,14 +688,30 @@ const AdminUsers = () => {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Filtrer par rôle</label>
-              <div className="flex space-x-2">
-                <button onClick={selectAllRoles} className={`px-3 py-1 rounded-full text-sm ${roleFilter.length === 3 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}>Tous</button>
+              <div className="flex flex-wrap gap-2">
+                <button onClick={selectAllRoles} className={`px-3 py-1 rounded-full text-sm ${roleFilter.length === 3 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-700'}`}>Tous</button>
                 {['Admin', 'Gestionnaire', 'Membre'].map(role => (
-                  <button key={role} onClick={() => toggleRoleFilter(role)} className={`px-3 py-1 rounded-full text-sm ${roleFilter.includes(role) ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}>
+                  <button key={role} onClick={() => toggleRoleFilter(role)} className={`px-3 py-1 rounded-full text-sm ${roleFilter.includes(role) ? 'bg-indigo-500 text-white' : 'bg-gray-200 text-gray-700'}`}>
                     {role}
                   </button>
                 ))}
                 <button onClick={clearAllRoles} className="px-3 py-1 rounded-full text-sm bg-gray-200 text-gray-700">Aucun</button>
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Filtrer par statut</label>
+              <div className="flex flex-wrap gap-2">
+                <button onClick={selectAllStatuses} className={`px-3 py-1 rounded-full text-sm ${statusFilter.length === 3 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-700'}`}>Tous</button>
+                {[
+                  { id: 'Active', label: 'Actif' },
+                  { id: 'Invited', label: 'Invité' },
+                  { id: 'Inactive', label: 'Inactif' }
+                ].map(status => (
+                  <button key={status.id} onClick={() => toggleStatusFilter(status.id)} className={`px-3 py-1 rounded-full text-sm ${statusFilter.includes(status.id) ? 'bg-amber-500 text-white' : 'bg-gray-200 text-gray-700'}`}>
+                    {status.label}
+                  </button>
+                ))}
+                <button onClick={clearAllStatuses} className="px-3 py-1 rounded-full text-sm bg-gray-200 text-gray-700">Aucun</button>
               </div>
             </div>
           </div>
