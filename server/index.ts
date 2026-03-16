@@ -3,7 +3,6 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 import pool from './db';
-import net from 'node:net';
 
 // Routers
 import authRouter from './routes/auth';
@@ -86,22 +85,4 @@ app.get('/api/test-db', async (req, res) => {
 
 app.listen(port, () => {
   console.log(`Backend server is running on http://localhost:${port}`);
-  
-  // Diagnostic réseau pour SMTP en production
-  const host = 'ssl0.ovh.net';
-  const ports = [465, 587];
-  ports.forEach(p => {
-    const socket = net.createConnection(p, host, () => {
-      console.log(`[DIAG] ✅ Connexion RÉUSSIE vers ${host}:${p}`);
-      socket.end();
-    });
-    socket.setTimeout(5000);
-    socket.on('timeout', () => {
-      console.log(`[DIAG] ❌ Connexion TIMEOUT vers ${host}:${p}`);
-      socket.destroy();
-    });
-    socket.on('error', (err) => {
-      console.log(`[DIAG] ❌ Connexion ÉCHEC vers ${host}:${p} - ${err.message}`);
-    });
-  });
 });
