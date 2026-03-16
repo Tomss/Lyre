@@ -1,28 +1,15 @@
-import nodemailer from 'nodemailer';
-
-// Configuration du transporteur d'emails
-export const transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST || 'ssl0.ovh.net',
-    port: parseInt(process.env.EMAIL_PORT || '587'),
-    secure: process.env.EMAIL_SECURE === 'true', // false pour le port 587
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-    },
-    // Ajout de timeouts pour éviter que le serveur ne freeze si OVH ne répond pas
-    connectionTimeout: 10000, // 10 secondes
-    greetingTimeout: 10000,
-    socketTimeout: 15000,
-    tls: {
-        rejectUnauthorized: false
-    }
-});
+import pool from '../db';
 
 export const sendActivationEmail = async (email: string, firstName: string, token: string) => {
     // Le lien frontend où l'utilisateur créera son mot de passe
     const frontendUrl = process.env.VITE_API_URL || 'http://localhost:5173';
     const activationLink = `${frontendUrl}/activer-compte?token=${token}`;
     const brevoApiKey = process.env.BREVO_API_KEY;
+
+    if (!brevoApiKey) {
+        console.error('[Email] Erreur : BREVO_API_KEY est manquante dans les variables d\'environnement.');
+        return false;
+    }
 
     const htmlContent = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
@@ -56,55 +43,34 @@ export const sendActivationEmail = async (email: string, firstName: string, toke
         </div>
     `;
 
-    // Si on a une clé Brevo, on utilise l'API REST (HTTPS port 443) - Idéal pour Railway
-    if (brevoApiKey) {
-        try {
-            console.log(`[Brevo API] Début de l'envoi à ${email}...`);
-            const response = await fetch('https://api.brevo.com/v3/smtp/email', {
-                method: 'POST',
-                headers: {
-                    'accept': 'application/json',
-                    'content-type': 'application/json',
-                    'api-key': brevoApiKey
-                },
-                body: JSON.stringify({
-                    sender: { name: 'Association La Lyre', email: process.env.EMAIL_USER || 'communication@lalyre.fr' },
-                    to: [{ email: email, name: firstName }],
-                    subject: 'La Lyre - Activation de votre Espace Membre',
-                    htmlContent: htmlContent
-                })
-            });
+    try {
+        console.log(`[Email] Envoi via Brevo API à ${email}...`);
+        const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+            method: 'POST',
+            headers: {
+                'accept': 'application/json',
+                'content-type': 'application/json',
+                'api-key': brevoApiKey
+            },
+            body: JSON.stringify({
+                sender: { name: 'Association La Lyre', email: process.env.EMAIL_USER || 'communication@lalyre.fr' },
+                to: [{ email: email, name: firstName }],
+                subject: 'La Lyre - Activation de votre Espace Membre',
+                htmlContent: htmlContent
+            })
+        });
 
-            if (response.ok) {
-                const data = await response.json();
-                console.log(`[Brevo API] Email envoyé ! MessageId: ${data.messageId}`);
-                return true;
-            } else {
-                const errorData = await response.json();
-                console.error('[Brevo API] Erreur lors de l\'envoi:', errorData);
-                return false;
-            }
-        } catch (error) {
-            console.error('[Brevo API] Erreur critique d\'envoi:', error);
+        if (response.ok) {
+            const data = await response.json();
+            console.log(`[Email] Succès ! MessageId: ${data.messageId}`);
+            return true;
+        } else {
+            const errorData = await response.json();
+            console.error('[Email] Échec de l\'envoi via API:', errorData);
             return false;
         }
-    }
-
-    // Sinon, on garde le fallback SMTP classique (Nodemailer) - Pour le local
-    const mailOptions = {
-        from: `"Association La Lyre" <${process.env.EMAIL_USER}>`,
-        to: email,
-        subject: 'La Lyre - Activation de votre Espace Membre',
-        html: htmlContent
-    };
-
-    try {
-        console.log(`[SMTP Callback] Début de l'envoi à ${email}...`);
-        const info = await transporter.sendMail(mailOptions);
-        console.log(`[SMTP Callback] Email envoyé ! MessageId: ${info.messageId}`);
-        return true;
     } catch (error) {
-        console.error('[SMTP Callback] Erreur CRITIQUE d\'envoi:', error);
+        console.error('[Email] Erreur critique lors de l\'envois:', error);
         return false;
     }
 };
