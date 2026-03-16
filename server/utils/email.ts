@@ -2,7 +2,7 @@ import pool from '../db';
 
 export const sendActivationEmail = async (email: string, firstName: string, token: string) => {
     // Le lien frontend où l'utilisateur créera son mot de passe
-    const frontendUrl = process.env.VITE_API_URL || 'http://localhost:5173';
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
     const activationLink = `${frontendUrl}/activer-compte?token=${token}`;
     const resendApiKey = process.env.RESEND_API_KEY;
 
