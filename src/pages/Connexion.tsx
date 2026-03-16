@@ -27,6 +27,8 @@ const Connexion = () => {
       // Extraire le message d'erreur si disponible
       const msg = err.message || 'Une erreur est survenue lors de la connexion. Veuillez vérifier vos identifiants.';
       setError(msg);
+      // Alerte de secours pour débloquer le test
+      alert(`Erreur de connexion : ${msg}`);
     } finally {
       setLoading(false);
     }
