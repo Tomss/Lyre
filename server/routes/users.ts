@@ -264,30 +264,31 @@ router.post('/:id/invite', async (req, res) => {
             id
         ]);
         
-        await connection.commit();
-
         // Send Email
-        console.log(`Tentative d'envoi d'email d'activation à: ${user.email}`);
+        console.log(`[API] Tentative d'envoi d'email à: ${user.email} avec Resend...`);
         const emailSent = await sendActivationEmail(user.email, user.first_name, token);
 
         if (!emailSent) {
-             console.error("Échec de l'envoi de l'email Nodemailer");
-             return res.status(500).json({ message: "La base de données a été mise à jour mais l'envoi de l'email a échoué. Vérifiez vos paramètres SMTP." });
+             await connection.rollback();
+             console.error("[API] Échec de l'envoi de l'email via Resend");
+             return res.status(500).json({ message: "Échec de l'envoi de l'email. Vérifiez votre configuration Resend." });
         }
 
         // Update profile status only if email was sent
-        await pool.query('UPDATE profiles SET status = ? WHERE id = ?', [
+        await connection.query('UPDATE profiles SET status = ? WHERE id = ?', [
             'Invited',
             id
         ]);
 
-        res.status(200).json({ message: 'Invitation envoyée avec succès.' });
+        await connection.commit();
+        console.log(`[API] Invitation envoyée avec succès pour ${user.email}`);
+        res.status(200).json({ message: 'Invitation envoyée avec succès sur ' + user.email });
     } catch (error) {
-        await connection.rollback();
+        if (connection) await connection.rollback();
         console.error('Error sending invite:', error);
         res.status(500).json({ message: 'Erreur lors de l\'envoi de l\'invitation.' });
     } finally {
-        connection.release();
+        if (connection) connection.release();
     }
 });
 
