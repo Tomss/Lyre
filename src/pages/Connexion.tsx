@@ -43,20 +43,21 @@ const Connexion = () => {
           </p>
         </div>
         
-        <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-white/50 overflow-hidden">
+        <div className="bg-white shadow-xl rounded-2xl border border-gray-100 overflow-hidden">
           <div className="p-8">
-            <form onSubmit={handleLogin} className="space-y-6">
-              {error && (
-                <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-lg shadow-inner flex items-start space-x-3" role="alert">
-                  <div className="flex-shrink-0 mt-0.5">
-                    <X className="h-5 w-5 bg-red-500 text-white rounded-full p-1" />
-                  </div>
-                  <div>
-                    <p className="font-bold text-sm">Erreur</p>
-                    <p className="text-xs">{error}</p>
-                  </div>
+            {error && (
+              <div className="mb-6 bg-red-50 border-2 border-red-500 text-red-700 p-4 rounded-xl flex items-start space-x-3 animate-in fade-in slide-in-from-top-2 duration-300" role="alert">
+                <div className="flex-shrink-0">
+                  <X className="h-6 w-6 text-red-600 font-bold" />
                 </div>
-              )}
+                <div>
+                  <p className="font-extrabold text-sm uppercase tracking-wide">Accès refusé</p>
+                  <p className="text-sm font-medium leading-relaxed">{error}</p>
+                </div>
+              </div>
+            )}
+
+            <form onSubmit={handleLogin} className="space-y-6">
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-dark mb-2">
                   Adresse e-mail
