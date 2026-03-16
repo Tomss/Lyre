@@ -2,12 +2,19 @@ import nodemailer from 'nodemailer';
 
 // Configuration du transporteur d'emails
 export const transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST,
-    port: parseInt(process.env.EMAIL_PORT || '465'),
-    secure: process.env.EMAIL_SECURE === 'true', // true pour le port 465, false pour les autres (ex: 587)
+    host: process.env.EMAIL_HOST || 'ssl0.ovh.net',
+    port: parseInt(process.env.EMAIL_PORT || '587'),
+    secure: process.env.EMAIL_SECURE === 'true', // false pour le port 587
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
+    },
+    // Ajout de timeouts pour éviter que le serveur ne freeze si OVH ne répond pas
+    connectionTimeout: 10000, // 10 secondes
+    greetingTimeout: 10000,
+    socketTimeout: 15000,
+    tls: {
+        rejectUnauthorized: false
     }
 });
 
