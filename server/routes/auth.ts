@@ -18,12 +18,14 @@ router.post('/login', async (req, res) => {
     const [userRows] = await pool.query<any[]>('SELECT * FROM users WHERE email = ?', [email]);
 
     if (userRows.length === 0) {
+      console.log(`[Login] Échec: Utilisateur non trouvé pour ${email}`);
       return res.status(401).json({ message: 'Email ou mot de passe incorrect.' });
     }
     const user = userRows[0];
 
     // 2. Vérifier si un mot de passe existe (pour les invités non activés)
     if (!user.password_hash) {
+      console.log(`[Login] Échec: Tentative de connexion sur compte non activé ${email}`);
       return res.status(401).json({ message: 'Compte non activé. Veuillez utiliser le lien reçu par email.' });
     }
 
@@ -48,8 +50,11 @@ router.post('/login', async (req, res) => {
     const { first_name, last_name, role, managed_modules, status } = profileRows[0];
 
     if (status !== 'Active') {
+      console.log(`[Login] Échec: Compte inactif (${status}) pour ${email}`);
       return res.status(403).json({ message: 'Compte inactif ou en attente d\'activation.' });
     }
+
+    console.log(`[Login] Succès pour ${email} (${role})`);
 
     // Parse managed_modules JSON if it exists (it comes as a string from MySQL sometimes depending on the driver version)
     let parsedModules = [];

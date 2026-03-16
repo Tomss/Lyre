@@ -21,8 +21,10 @@ const Connexion = () => {
       console.log('[Connexion.tsx] Login call successful');
       // La redirection est gérée dans le contexte d'authentification
     } catch (err: any) {
-      console.error('[Connexion.tsx] Login failed with error:', err);
-      setError(err.message || 'Une erreur est survenue.');
+      console.error('[Connexion.tsx] Login failed:', err);
+      // Extraire le message d'erreur si disponible
+      const msg = err.message || 'Une erreur est survenue lors de la connexion. Veuillez vérifier vos identifiants.';
+      setError(msg);
     } finally {
       setLoading(false);
     }

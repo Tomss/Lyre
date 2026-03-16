@@ -142,7 +142,17 @@ router.put('/:id', async (req, res) => {
     try {
         await connection.beginTransaction();
 
-        // 1. Mettre Ã  jour l'email dans 'users'
+        // Vérifier si l'utilisateur a déjà un mot de passe s'il n'est pas fourni dans la requête
+        if (status === 'Active' && !password) {
+            const [userRows]: any = await connection.query('SELECT password_hash FROM users WHERE id = ?', [id]);
+            if (userRows.length > 0 && !userRows[0].password_hash) {
+                await connection.rollback();
+                connection.release();
+                return res.status(400).json({ message: "Impossible de passer en 'Actif' un utilisateur qui n'a pas encore de mot de passe. L'utilisateur doit d'abord l'activer via son mail ou vous devez lui en définir un." });
+            }
+        }
+
+        // 1. Mettre à jour l'email dans 'users'
         await connection.query('UPDATE users SET email = ? WHERE id = ?', [email, id]);
 
         // 2. Mettre Ã  jour le profil
