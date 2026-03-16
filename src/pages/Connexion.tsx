@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, AlertCircle } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const Connexion = () => {
@@ -36,42 +36,6 @@ const Connexion = () => {
   return (
     <div className="font-inter pt-32 pb-20 bg-gradient-to-br from-orange-50 via-amber-25 to-yellow-25 min-h-screen">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-md relative">
-        {error && (
-          <div style={{
-            position: 'fixed',
-            top: '100px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            zIndex: 9999,
-            width: 'calc(100% - 2rem)',
-            maxWidth: '400px',
-            backgroundColor: '#dc2626',
-            color: 'white',
-            padding: '1rem',
-            borderRadius: '1rem',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.75rem',
-            border: '2px solid rgba(255,255,255,0.2)',
-          }}>
-            <AlertCircle size={24} style={{ flexShrink: 0 }} />
-            <div style={{ flex: 1 }}>
-              <p style={{ margin: 0, fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', opacity: 0.8 }}>Erreur de connexion</p>
-              <p style={{ margin: 0, fontSize: '14px', fontWeight: '600', lineHeight: '1.2' }}>{error}</p>
-            </div>
-            <button 
-              onClick={() => {
-                console.log('[Connexion.tsx] Manual error clear');
-                setError(null);
-              }}
-              style={{ backgroundColor: 'transparent', border: 'none', color: 'white', cursor: 'pointer', padding: '0.5rem', display: 'flex' }}
-            >
-              <X size={20} />
-            </button>
-          </div>
-        )}
-
         <div className="text-center mb-8">
           <h1 className="font-poppins font-bold text-3xl text-dark mb-2">
             Espace Membre
@@ -113,6 +77,12 @@ const Connexion = () => {
                   required
                   autoComplete="current-password"
                 />
+                {error && (
+                  <div className="mt-4 bg-red-50 border border-red-100 rounded-xl p-4 flex items-start space-x-3">
+                    <AlertCircle className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
+                    <p className="text-sm text-red-800 font-medium leading-relaxed">{error}</p>
+                  </div>
+                )}
               </div>
               <button
                 type="submit"
