@@ -7,14 +7,6 @@ const Connexion = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
-
-  const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
-    console.log(`[Connexion.tsx] showNotification called: ${message} (${type})`);
-    setNotification({ show: true, message, type });
-    // Masquer après 8 secondes (plus long pour être sûr qu'on le voit)
-    setTimeout(() => setNotification(prev => ({ ...prev, show: false })), 8000);
-  };
   
   const { login } = useAuth();
 
@@ -34,7 +26,6 @@ const Connexion = () => {
       console.error('[Connexion.tsx] Login failed:', err);
       const msg = err.message || 'Une erreur est survenue lors de la connexion.';
       setError(msg);
-      showNotification(msg, 'error');
     } finally {
       setLoading(false);
     }
@@ -42,27 +33,6 @@ const Connexion = () => {
 
   return (
     <div className="font-inter pt-32 pb-20 bg-gradient-to-br from-orange-50 via-amber-25 to-yellow-25 min-h-screen">
-      {/* Notification Globale (Même style que l'admin) */}
-      {notification.show && (
-        <div style={{
-          position: 'fixed',
-          top: '20px',
-          right: '20px',
-          padding: '1.25rem',
-          borderRadius: '0.75rem',
-          backgroundColor: notification.type === 'success' ? '#16a34a' : '#dc2626',
-          color: 'white',
-          zIndex: 9999,
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
-          minWidth: '300px',
-          maxWidth: '90vw'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <AlertCircle size={24} />
-            <div style={{ fontWeight: '600' }}>{notification.message}</div>
-          </div>
-        </div>
-      )}
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-md relative">
         <div className="text-center mb-8">
