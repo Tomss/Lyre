@@ -4,10 +4,15 @@ export const sendActivationEmail = async (email: string, firstName: string, toke
     // Le lien frontend où l'utilisateur créera son mot de passe
     const frontendUrl = process.env.VITE_API_URL || 'http://localhost:5173';
     const activationLink = `${frontendUrl}/activer-compte?token=${token}`;
-    const brevoApiKey = process.env.BREVO_API_KEY;
+    const resendApiKey = process.env.RESEND_API_KEY;
 
-    if (!brevoApiKey) {
-        console.error('[Email] Erreur : BREVO_API_KEY est manquante dans les variables d\'environnement.');
+    console.log(`[Email Debug] API Key présente: ${!!resendApiKey}`);
+    if (resendApiKey) {
+        console.log(`[Email Debug] Début de la clé: ${resendApiKey.substring(0, 10)}...`);
+    }
+
+    if (!resendApiKey || resendApiKey === 'votre_cle_resend_ici') {
+        console.error('[Email] Erreur : RESEND_API_KEY est manquante ou invalide.');
         return false;
     }
 
@@ -44,33 +49,32 @@ export const sendActivationEmail = async (email: string, firstName: string, toke
     `;
 
     try {
-        console.log(`[Email] Envoi via Brevo API à ${email}...`);
-        const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+        console.log(`[Email] Envoi via Resend API à ${email}...`);
+        const response = await fetch('https://api.resend.com/emails', {
             method: 'POST',
             headers: {
-                'accept': 'application/json',
-                'content-type': 'application/json',
-                'api-key': brevoApiKey
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${resendApiKey}`
             },
             body: JSON.stringify({
-                sender: { name: 'Association La Lyre', email: process.env.EMAIL_USER || 'communication@lalyre.fr' },
-                to: [{ email: email, name: firstName }],
+                from: 'Association La Lyre <onboarding@resend.dev>', // Sera mis à jour après validation du domaine
+                to: [email],
                 subject: 'La Lyre - Activation de votre Espace Membre',
-                htmlContent: htmlContent
+                html: htmlContent
             })
         });
 
         if (response.ok) {
             const data = await response.json();
-            console.log(`[Email] Succès ! MessageId: ${data.messageId}`);
+            console.log(`[Email] Succès ! ID: ${data.id}`);
             return true;
         } else {
             const errorData = await response.json();
-            console.error('[Email] Échec de l\'envoi via API:', errorData);
+            console.error('[Email] Échec de l\'envoi via API Resend:', errorData);
             return false;
         }
     } catch (error) {
-        console.error('[Email] Erreur critique lors de l\'envois:', error);
+        console.error('[Email] Erreur critique lors de l\'envoi:', error);
         return false;
     }
 };
