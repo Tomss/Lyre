@@ -65,7 +65,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (email: string, password: string) => {
     console.log('[AuthContext.tsx] login function called');
-    setLoading(true);
     try {
       console.log(`[AuthContext.tsx] Fetching ${API_URL}/auth/login`);
       const response = await fetch(`${API_URL}/auth/login`, {
@@ -104,8 +103,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch (error) {
       console.error("[AuthContext.tsx] An error occurred in login function:", error);
       throw error;
-    } finally {
-      setLoading(false);
     }
   };
 
