@@ -61,11 +61,12 @@ export const sendActivationEmail = async (email: string, firstName: string, toke
     };
 
     try {
-        await transporter.sendMail(mailOptions);
-        console.log(`Email d'activation envoyé à ${email}`);
+        console.log(`[SMTP] Début de l'envoi à ${email}...`);
+        const info = await transporter.sendMail(mailOptions);
+        console.log(`[SMTP] Email envoyé ! MessageId: ${info.messageId}`);
         return true;
     } catch (error) {
-        console.error('Erreur lors de l\'envoi de l\'email:', error);
+        console.error('[SMTP] Erreur CRITIQUE d\'envoi:', error);
         return false;
     }
 };

@@ -257,27 +257,29 @@ router.post('/:id/invite', async (req, res) => {
         const expiresAt = new Date();
         expiresAt.setHours(expiresAt.getHours() + 48);
 
-        // Update DB
+        // Update DB with token and expiration
         await connection.query('UPDATE users SET activation_token = ?, token_expires_at = ? WHERE id = ?', [
             token,
             expiresAt,
             id
         ]);
         
-        await connection.query('UPDATE profiles SET status = ? WHERE id = ?', [
-            'Invited',
-            id
-        ]);
-
         await connection.commit();
 
         // Send Email
+        console.log(`Tentative d'envoi d'email d'activation à: ${user.email}`);
         const emailSent = await sendActivationEmail(user.email, user.first_name, token);
 
         if (!emailSent) {
-             console.error("Problème lors de l'envoi de l'email Nodemailer");
-             return res.status(500).json({ message: "Le jeton a été généré, mais l'envoi de l'email a échoué. Vérifiez vos paramètres SMTP." });
+             console.error("Échec de l'envoi de l'email Nodemailer");
+             return res.status(500).json({ message: "La base de données a été mise à jour mais l'envoi de l'email a échoué. Vérifiez vos paramètres SMTP." });
         }
+
+        // Update profile status only if email was sent
+        await pool.query('UPDATE profiles SET status = ? WHERE id = ?', [
+            'Invited',
+            id
+        ]);
 
         res.status(200).json({ message: 'Invitation envoyée avec succès.' });
     } catch (error) {
