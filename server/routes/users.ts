@@ -131,28 +131,32 @@ router.put('/:id', async (req, res) => {
     }
 
     const { id } = req.params;
-    const { password, firstName, lastName, role, instruments, orchestras, managedModules } = req.body;
+    const { firstName, lastName, email, role, managedModules, instruments, orchestras, password, status } = req.body;
 
-    if (!firstName || !lastName || !role) {
-        return res.status(400).json({ message: 'Les informations de base (prÃ©nom, nom, rÃ´le) sont requises.' });
+    if (!firstName || !lastName || !role || !email) {
+        return res.status(400).json({ message: 'Les informations de base (prÃ©nom, nom, rÃ´le, email) sont requises.' });
     }
 
-    const modulesJson = (role === 'Gestionnaire' && managedModules) ? JSON.stringify(managedModules) : null;
-
     const connection = await pool.getConnection();
+
     try {
         await connection.beginTransaction();
 
-        // 1. Mettre Ã  jour le profil
-        await connection.query('UPDATE profiles SET first_name = ?, last_name = ?, role = ?, managed_modules = ? WHERE id = ?', [
+        // 1. Mettre Ã  jour l'email dans 'users'
+        await connection.query('UPDATE users SET email = ? WHERE id = ?', [email, id]);
+
+        // 2. Mettre Ã  jour le profil
+        const modulesJson = JSON.stringify(managedModules || []);
+        await connection.query('UPDATE profiles SET first_name = ?, last_name = ?, role = ?, managed_modules = ?, status = ? WHERE id = ?', [
             firstName,
             lastName,
             role,
             modulesJson,
+            status || 'Inactive',
             id
         ]);
 
-        // 2. Mettre Ã  jour le mot de passe si fourni
+        // 3. Mettre Ã  jour le mot de passe si fourni
         if (password) {
             const salt = await bcrypt.genSalt(10);
             const password_hash = await bcrypt.hash(password, salt);
