@@ -35,7 +35,27 @@ const Connexion = () => {
 
   return (
     <div className="font-inter pt-32 pb-20 bg-gradient-to-br from-orange-50 via-amber-25 to-yellow-25 min-h-screen">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-md">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-md relative">
+        {error && (
+          <div className="fixed top-0 left-0 right-0 z-50 p-4 bg-red-600 shadow-lg border-b border-red-700">
+            <div className="max-w-md mx-auto flex items-center justify-between">
+              <div className="flex items-center space-x-3 text-white">
+                <AlertCircle className="h-6 w-6 flex-shrink-0" />
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest opacity-70">Accès Refusé</p>
+                  <p className="text-sm font-semibold">{error}</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setError(null)}
+                className="text-white/80 hover:text-white p-2 hover:bg-white/10 rounded-full transition-all"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className="text-center mb-8">
           <h1 className="font-poppins font-bold text-3xl text-dark mb-2">
             Espace Membre
@@ -46,24 +66,6 @@ const Connexion = () => {
         </div>
         
         <div className="bg-white shadow-2xl rounded-3xl border border-gray-100 overflow-hidden transform transition-all duration-300">
-          {error && (
-            <div className="bg-red-600 p-4 text-white flex items-center space-x-3 animate-in slide-in-from-top duration-500">
-              <div className="flex-shrink-0 bg-white/20 p-2 rounded-full">
-                <AlertCircle className="h-5 w-5 text-white" />
-              </div>
-              <div className="flex-1">
-                <p className="text-xs font-bold uppercase tracking-widest opacity-80 mb-0.5">Erreur de connexion</p>
-                <p className="text-sm font-medium">{error}</p>
-              </div>
-              <button 
-                onClick={() => setError(null)}
-                className="hover:scale-110 transition-transform p-1"
-              >
-                <X className="h-4 w-4 text-white/70" />
-              </button>
-            </div>
-          )}
-          
           <div className="p-8 sm:p-10">
             <form onSubmit={handleLogin} className="space-y-6">
               <div>
