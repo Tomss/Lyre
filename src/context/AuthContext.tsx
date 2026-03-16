@@ -79,13 +79,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (!response.ok) {
         let errorMessage = 'Échec de la connexion';
+        const bodyText = await response.text().catch(() => '');
         try {
-          const errorData = await response.json();
+          const errorData = JSON.parse(bodyText);
           errorMessage = errorData.message || errorMessage;
         } catch (e) {
-          // Si ce n'est pas du JSON, on tente de récupérer le texte brut
-          const textError = await response.text().catch(() => '');
-          errorMessage = textError || `Erreur serveur (${response.status})`;
+          errorMessage = bodyText || `Erreur serveur (${response.status})`;
         }
         console.error('[AuthContext.tsx] Login API error:', errorMessage);
         throw new Error(errorMessage);
