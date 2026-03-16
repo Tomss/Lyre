@@ -37,22 +37,38 @@ const Connexion = () => {
     <div className="font-inter pt-32 pb-20 bg-gradient-to-br from-orange-50 via-amber-25 to-yellow-25 min-h-screen">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-md relative">
         {error && (
-          <div className="fixed top-0 left-0 right-0 z-50 p-4 bg-red-600 shadow-lg border-b border-red-700">
-            <div className="max-w-md mx-auto flex items-center justify-between">
-              <div className="flex items-center space-x-3 text-white">
-                <AlertCircle className="h-6 w-6 flex-shrink-0" />
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-widest opacity-70">Accès Refusé</p>
-                  <p className="text-sm font-semibold">{error}</p>
-                </div>
-              </div>
-              <button 
-                onClick={() => setError(null)}
-                className="text-white/80 hover:text-white p-2 hover:bg-white/10 rounded-full transition-all"
-              >
-                <X className="h-5 w-5" />
-              </button>
+          <div style={{
+            position: 'fixed',
+            top: '100px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 9999,
+            width: 'calc(100% - 2rem)',
+            maxWidth: '400px',
+            backgroundColor: '#dc2626',
+            color: 'white',
+            padding: '1rem',
+            borderRadius: '1rem',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.75rem',
+            border: '2px solid rgba(255,255,255,0.2)',
+          }}>
+            <AlertCircle size={24} style={{ flexShrink: 0 }} />
+            <div style={{ flex: 1 }}>
+              <p style={{ margin: 0, fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', opacity: 0.8 }}>Erreur de connexion</p>
+              <p style={{ margin: 0, fontSize: '14px', fontWeight: '600', lineHeight: '1.2' }}>{error}</p>
             </div>
+            <button 
+              onClick={() => {
+                console.log('[Connexion.tsx] Manual error clear');
+                setError(null);
+              }}
+              style={{ backgroundColor: 'transparent', border: 'none', color: 'white', cursor: 'pointer', padding: '0.5rem', display: 'flex' }}
+            >
+              <X size={20} />
+            </button>
           </div>
         )}
 
