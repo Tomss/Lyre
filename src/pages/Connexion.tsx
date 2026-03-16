@@ -15,7 +15,6 @@ const Connexion = () => {
     console.log('[Connexion.tsx] handleLogin triggered');
     setLoading(true);
     setError(null);
-    setNotification(prev => ({ ...prev, show: false }));
 
     try {
       console.log(`[Connexion.tsx] Calling login with email: ${email}`);
