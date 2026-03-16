@@ -74,7 +74,7 @@ const AdminNews = () => {
     };
 
     useEffect(() => {
-        if (isAuthenticated && currentUser?.role === 'Admin') {
+        if (isAuthenticated && (currentUser?.role === "Admin" || currentUser?.managedModules?.includes("news"))) {
             fetchNews();
         }
     }, [isAuthenticated, currentUser, token]);
@@ -216,8 +216,8 @@ const AdminNews = () => {
         news.title.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    if (isAuthenticated && currentUser?.role !== 'Admin') {
-        return <Navigate to="/dashboard" />;
+    if (isAuthenticated && currentUser?.role !== 'Admin' && (!currentUser?.managedModules || !currentUser.managedModules.includes('news'))) {
+      return <Navigate to="/dashboard" />;
     }
 
     return (

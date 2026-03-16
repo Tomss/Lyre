@@ -1,4 +1,4 @@
-import express from 'express';
+﻿import express from 'express';
 import db from '../db';
 import crypto from 'crypto';
 import { authenticateToken } from '../middleware/auth';
@@ -12,15 +12,15 @@ router.get('/', async (req, res) => {
         res.json(partners);
     } catch (error) {
         console.error('Error fetching partners:', error);
-        res.status(500).json({ message: 'Erreur lors de la récupération des partenaires.' });
+        res.status(500).json({ message: 'Erreur lors de la rÃ©cupÃ©ration des partenaires.' });
     }
 });
 
 // POST /api/partners - Create a new partner (Admin only)
 router.post('/', authenticateToken, async (req, res) => {
     // @ts-ignore
-    if (req.user.role !== 'Admin') {
-        return res.status(403).json({ message: 'Accès refusé.' });
+    if ((req as any).user.role !== 'Admin' && (!(req as any).user.managedModules || !(req as any).user.managedModules.includes('partners'))) {
+        return res.status(403).json({ message: 'AccÃ¨s refusÃ©.' });
     }
     const { name, logo_url, description, website_url } = req.body;
 
@@ -45,15 +45,15 @@ router.post('/', authenticateToken, async (req, res) => {
         res.status(201).json(Array.isArray(newPartner) ? newPartner[0] : newPartner);
     } catch (error) {
         console.error('Error creating partner:', error);
-        res.status(500).json({ message: 'Erreur lors de la création du partenaire.' });
+        res.status(500).json({ message: 'Erreur lors de la crÃ©ation du partenaire.' });
     }
 });
 
 // PUT /api/partners/reorder - Reorder partners (Admin only)
 router.put('/reorder', authenticateToken, async (req, res) => {
     // @ts-ignore
-    if (req.user.role !== 'Admin') {
-        return res.status(403).json({ message: 'Accès refusé.' });
+    if ((req as any).user.role !== 'Admin' && (!(req as any).user.managedModules || !(req as any).user.managedModules.includes('partners'))) {
+        return res.status(403).json({ message: 'AccÃ¨s refusÃ©.' });
     }
     const { items } = req.body; // Expecting array of IDs in order
 
@@ -70,11 +70,11 @@ router.put('/reorder', authenticateToken, async (req, res) => {
         }
 
         await connection.commit();
-        res.json({ message: 'Ordre des partenaires mis à jour.' });
+        res.json({ message: 'Ordre des partenaires mis Ã  jour.' });
     } catch (error) {
         await connection.rollback();
         console.error('Error reordering partners:', error);
-        res.status(500).json({ message: 'Erreur lors du réordonnancement.' });
+        res.status(500).json({ message: 'Erreur lors du rÃ©ordonnancement.' });
     } finally {
         connection.release();
     }
@@ -83,8 +83,8 @@ router.put('/reorder', authenticateToken, async (req, res) => {
 // PUT /api/partners/:id - Update a partner (Admin only)
 router.put('/:id', authenticateToken, async (req, res) => {
     // @ts-ignore
-    if (req.user.role !== 'Admin') {
-        return res.status(403).json({ message: 'Accès refusé.' });
+    if ((req as any).user.role !== 'Admin' && (!(req as any).user.managedModules || !(req as any).user.managedModules.includes('partners'))) {
+        return res.status(403).json({ message: 'AccÃ¨s refusÃ©.' });
     }
     const { id } = req.params;
     const { name, logo_url, description, website_url } = req.body;
@@ -100,22 +100,22 @@ router.put('/:id', authenticateToken, async (req, res) => {
         );
 
         if (result.affectedRows === 0) {
-            return res.status(404).json({ message: 'Partenaire non trouvé.' });
+            return res.status(404).json({ message: 'Partenaire non trouvÃ©.' });
         }
 
         const [updatedPartner] = await db.query('SELECT * FROM partners WHERE id = ?', [id]);
         res.json(Array.isArray(updatedPartner) ? updatedPartner[0] : updatedPartner);
     } catch (error) {
         console.error('Error updating partner:', error);
-        res.status(500).json({ message: 'Erreur lors de la mise à jour du partenaire.' });
+        res.status(500).json({ message: 'Erreur lors de la mise Ã  jour du partenaire.' });
     }
 });
 
 // DELETE /api/partners/:id - Delete a partner (Admin only)
 router.delete('/:id', authenticateToken, async (req, res) => {
     // @ts-ignore
-    if (req.user.role !== 'Admin') {
-        return res.status(403).json({ message: 'Accès refusé.' });
+    if ((req as any).user.role !== 'Admin' && (!(req as any).user.managedModules || !(req as any).user.managedModules.includes('partners'))) {
+        return res.status(403).json({ message: 'AccÃ¨s refusÃ©.' });
     }
     const { id } = req.params;
 
@@ -123,10 +123,10 @@ router.delete('/:id', authenticateToken, async (req, res) => {
         const [result]: any = await db.query('DELETE FROM partners WHERE id = ?', [id]);
 
         if (result.affectedRows === 0) {
-            return res.status(404).json({ message: 'Partenaire non trouvé.' });
+            return res.status(404).json({ message: 'Partenaire non trouvÃ©.' });
         }
 
-        res.json({ message: 'Partenaire supprimé avec succès.' });
+        res.json({ message: 'Partenaire supprimÃ© avec succÃ¨s.' });
     } catch (error) {
         console.error('Error deleting partner:', error);
         res.status(500).json({ message: 'Erreur lors de la suppression du partenaire.' });

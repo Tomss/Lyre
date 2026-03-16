@@ -1,4 +1,4 @@
-import { Router } from 'express';
+﻿import { Router } from 'express';
 import { authenticateToken } from '../middleware/auth';
 import pool from '../db';
 import { RowDataPacket } from 'mysql2';
@@ -7,7 +7,7 @@ const router = Router();
 
 router.get('/', authenticateToken, async (req, res) => {
   // @ts-ignore
-  const userId = req.user.id;
+  const userId = (req as any).user.id;
   console.log('Fetching dashboard data for userId:', userId);
 
   if (!userId) {
@@ -15,7 +15,7 @@ router.get('/', authenticateToken, async (req, res) => {
   }
 
   try {
-    // Exécuter les requêtes de base en parallèle
+    // ExÃ©cuter les requÃªtes de base en parallÃ¨le
     const [
       userInstrumentsRes,
       userOrchestrasRes,
@@ -62,7 +62,7 @@ router.get('/', authenticateToken, async (req, res) => {
     console.log('rawPartitions found:', rawPartitions.length);
 
 
-    // Récupérer tous les orchestres pour les morceaux concernés
+    // RÃ©cupÃ©rer tous les orchestres pour les morceaux concernÃ©s
     const morceauIds = [...new Set(rawPartitions.map(p => p.morceau_id).filter(id => id))];
     let morceauOrchestras: RowDataPacket[] = [];
     if (morceauIds.length > 0) {
@@ -83,7 +83,7 @@ router.get('/', authenticateToken, async (req, res) => {
       orchestrasByMorceauId.get(mo.morceau_id).push({ id: mo.id, name: mo.name });
     });
 
-    // Formatter les partitions pour correspondre à la structure attendue par le frontend
+    // Formatter les partitions pour correspondre Ã  la structure attendue par le frontend
     const userPartitions = rawPartitions.map(p => ({
       id: p.id,
       nom: p.nom,

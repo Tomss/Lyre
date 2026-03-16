@@ -103,7 +103,7 @@ const AdminEvents = () => {
   };
 
   useEffect(() => {
-    if (isAuthenticated && currentUser?.role === 'Admin') {
+    if (isAuthenticated && (currentUser?.role === "Admin" || currentUser?.managedModules?.includes("news"))) {
       fetchEvents();
       fetchOrchestras();
     }
@@ -307,7 +307,7 @@ const AdminEvents = () => {
     });
   };
 
-  if (currentUser?.role !== 'Admin') {
+  if (currentUser && currentUser.role !== 'Admin' && (!currentUser.managedModules || !currentUser.managedModules.includes('news'))) {
     return <Navigate to="/dashboard" />;
   }
 

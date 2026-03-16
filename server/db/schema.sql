@@ -66,6 +66,7 @@ CREATE TABLE `profiles` (
   `first_name` text,
   `last_name` text,
   `role` enum('Membre','Admin','Professeur','Gestionnaire') DEFAULT 'Membre',
+  `managed_modules` JSON,
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   CONSTRAINT `profiles_id_fkey` FOREIGN KEY (`id`) REFERENCES `users` (`id`) ON DELETE CASCADE

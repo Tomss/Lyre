@@ -153,7 +153,7 @@ const AdminOrchestras = () => {
   };
 
   useEffect(() => {
-    if (isAuthenticated && currentUser?.role === 'Admin') {
+    if (isAuthenticated && (currentUser?.role === "Admin" || currentUser?.managedModules?.includes("orchestras"))) {
       fetchOrchestras();
     }
   }, [isAuthenticated, currentUser, token]);
@@ -290,7 +290,7 @@ const AdminOrchestras = () => {
     (orchestra.description && orchestra.description.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  if (isAuthenticated && currentUser?.role !== 'Admin') {
+  if (isAuthenticated && currentUser?.role !== 'Admin' && (!currentUser?.managedModules || !currentUser.managedModules.includes('orchestras'))) {
     return <Navigate to="/dashboard" />;
   }
 

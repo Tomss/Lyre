@@ -1,4 +1,4 @@
-import { Router } from 'express';
+﻿import { Router } from 'express';
 import { authenticateToken } from '../middleware/auth';
 import pool from '../db';
 import { RowDataPacket } from 'mysql2';
@@ -27,7 +27,7 @@ router.get('/', async (req, res) => {
 // POST /api/settings (Admin) - Update settings (Batch update)
 router.post('/', authenticateToken, async (req, res) => {
     // @ts-ignore
-    if (req.user.role !== 'Admin') {
+    if ((req as any).user.role !== 'Admin' && (!(req as any).user.managedModules || !(req as any).user.managedModules.includes('theme'))) {
         return res.status(403).json({ message: 'Access denied.' });
     }
 
@@ -82,7 +82,7 @@ router.get('/headers', async (req, res) => {
 // POST /api/settings/headers (Admin) - Update page headers
 router.post('/headers', authenticateToken, async (req, res) => {
     // @ts-ignore
-    if (req.user.role !== 'Admin') {
+    if ((req as any).user.role !== 'Admin' && (!(req as any).user.managedModules || !(req as any).user.managedModules.includes('theme'))) {
         return res.status(403).json({ message: 'Access denied.' });
     }
 

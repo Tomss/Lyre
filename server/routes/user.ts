@@ -1,35 +1,35 @@
-import { Router } from 'express';
+﻿import { Router } from 'express';
 import { authenticateToken } from '../middleware/auth';
 import pool from '../db';
 
 const router = Router();
 
-// Toutes les routes dans ce fichier sont protégées
+// Toutes les routes dans ce fichier sont protÃ©gÃ©es
 router.use(authenticateToken);
 
 router.get('/events', async (req, res) => {
   // @ts-ignore
-  const userId = req.user.id;
+  const userId = (req as any).user.id;
 
   if (!userId) {
     return res.status(400).json({ message: 'User ID not found in token' });
   }
 
   try {
-    // Récupère les IDs des orchestres de l'utilisateur
+    // RÃ©cupÃ¨re les IDs des orchestres de l'utilisateur
     const [userOrchestraRows] = await pool.query<any[]>(
       'SELECT orchestra_id FROM user_orchestras WHERE user_id = ?',
       [userId]
     );
 
     if (userOrchestraRows.length === 0) {
-      // L'utilisateur n'est dans aucun orchestre, donc aucun événement
+      // L'utilisateur n'est dans aucun orchestre, donc aucun Ã©vÃ©nement
       return res.json([]);
     }
 
     const orchestraIds = userOrchestraRows.map((row: { orchestra_id: any; }) => row.orchestra_id);
 
-    // Récupère les événements associés à ces orchestres
+    // RÃ©cupÃ¨re les Ã©vÃ©nements associÃ©s Ã  ces orchestres
     const query = `
       SELECT DISTINCT
         e.*,
@@ -55,7 +55,7 @@ router.get('/events', async (req, res) => {
 
   } catch (error) {
     console.error('Error fetching user events:', error);
-    res.status(500).json({ message: 'Erreur lors de la récupération de vos événements.' });
+    res.status(500).json({ message: 'Erreur lors de la rÃ©cupÃ©ration de vos Ã©vÃ©nements.' });
   }
 });
 

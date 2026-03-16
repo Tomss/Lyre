@@ -1,4 +1,4 @@
-import { Router } from 'express';
+﻿import { Router } from 'express';
 import { authenticateToken } from '../middleware/auth';
 import pool from '../db';
 import crypto from 'crypto';
@@ -7,11 +7,11 @@ const router = Router();
 
 router.use(authenticateToken);
 
-// GET /api/morceaux - Récupérer tous les morceaux avec leurs orchestres
+// GET /api/morceaux - RÃ©cupÃ©rer tous les morceaux avec leurs orchestres
 router.get('/', async (req, res) => {
   // @ts-ignore
-  if (!['Admin', 'Gestionnaire'].includes(req.user.role)) {
-    return res.status(403).json({ message: 'Accès refusé.' });
+  if (!['Admin', 'Gestionnaire'].includes((req as any).user.role)) {
+    return res.status(403).json({ message: 'AccÃ¨s refusÃ©.' });
   }
   try {
     const [morceaux] = await pool.query(`
@@ -32,11 +32,11 @@ router.get('/', async (req, res) => {
   }
 });
 
-// POST /api/morceaux - Créer un nouveau morceau
+// POST /api/morceaux - CrÃ©er un nouveau morceau
 router.post('/', async (req, res) => {
   // @ts-ignore
-  if (!['Admin', 'Gestionnaire'].includes(req.user.role)) {
-    return res.status(403).json({ message: 'Accès refusé.' });
+  if (!['Admin', 'Gestionnaire'].includes((req as any).user.role)) {
+    return res.status(403).json({ message: 'AccÃ¨s refusÃ©.' });
   }
   const { nom, compositeur, arrangement, orchestra_ids } = req.body;
   if (!nom || !orchestra_ids || orchestra_ids.length === 0) {
@@ -58,21 +58,21 @@ router.post('/', async (req, res) => {
       );
     }
     await connection.commit();
-    res.status(201).json({ message: 'Morceau créé avec succès.' });
+    res.status(201).json({ message: 'Morceau crÃ©Ã© avec succÃ¨s.' });
   } catch (error) {
     await connection.rollback();
     console.error(error);
-    res.status(500).json({ message: 'Erreur lors de la création du morceau.' });
+    res.status(500).json({ message: 'Erreur lors de la crÃ©ation du morceau.' });
   } finally {
     connection.release();
   }
 });
 
-// PUT /api/morceaux/:id - Mettre à jour un morceau
+// PUT /api/morceaux/:id - Mettre Ã  jour un morceau
 router.put('/:id', async (req, res) => {
   // @ts-ignore
-  if (!['Admin', 'Gestionnaire'].includes(req.user.role)) {
-    return res.status(403).json({ message: 'Accès refusé.' });
+  if (!['Admin', 'Gestionnaire'].includes((req as any).user.role)) {
+    return res.status(403).json({ message: 'AccÃ¨s refusÃ©.' });
   }
   const { id } = req.params;
   const { nom, compositeur, arrangement, orchestra_ids } = req.body;
@@ -95,11 +95,11 @@ router.put('/:id', async (req, res) => {
       );
     }
     await connection.commit();
-    res.status(200).json({ message: 'Morceau mis à jour avec succès.' });
+    res.status(200).json({ message: 'Morceau mis Ã  jour avec succÃ¨s.' });
   } catch (error) {
     await connection.rollback();
     console.error(error);
-    res.status(500).json({ message: 'Erreur lors de la mise à jour du morceau.' });
+    res.status(500).json({ message: 'Erreur lors de la mise Ã  jour du morceau.' });
   } finally {
     connection.release();
   }
@@ -108,23 +108,23 @@ router.put('/:id', async (req, res) => {
 // DELETE /api/morceaux/:id - Supprimer un morceau
 router.delete('/:id', async (req, res) => {
   // @ts-ignore
-  if (req.user.role !== 'Admin') {
-    return res.status(403).json({ message: 'Accès refusé.' });
+  if ((req as any).user.role !== 'Admin' && (!(req as any).user.managedModules || !(req as any).user.managedModules.includes('morceaux'))) {
+    return res.status(403).json({ message: 'AccÃ¨s refusÃ©.' });
   }
   const { id } = req.params;
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
-    // Supprimer les partitions associées (si la logique métier le demande)
+    // Supprimer les partitions associÃ©es (si la logique mÃ©tier le demande)
     // await connection.query('DELETE FROM partitions WHERE morceau_id = ?', [id]);
     await connection.query('DELETE FROM morceau_orchestras WHERE morceau_id = ?', [id]);
     const [result] = await connection.query('DELETE FROM morceaux WHERE id = ?', [id]);
     // @ts-ignore
     if (result.affectedRows === 0) {
-      throw new Error('Morceau non trouvé.');
+      throw new Error('Morceau non trouvÃ©.');
     }
     await connection.commit();
-    res.status(200).json({ message: 'Morceau supprimé avec succès.' });
+    res.status(200).json({ message: 'Morceau supprimÃ© avec succÃ¨s.' });
   } catch (error) {
     await connection.rollback();
     console.error(error);

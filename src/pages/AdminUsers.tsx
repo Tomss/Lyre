@@ -11,6 +11,7 @@ interface UserData {
   last_name: string;
   email: string;
   role: 'Membre' | 'Gestionnaire' | 'Admin';
+  managed_modules?: string[];
 }
 
 interface Instrument {
@@ -65,7 +66,19 @@ const AdminUsers = () => {
     role: 'Membre' as 'Membre' | 'Gestionnaire' | 'Admin',
     instruments: [] as string[],
     orchestras: [] as string[],
+    managedModules: [] as string[],
   });
+
+  const availableModules = [
+    { id: 'news', label: 'Actualités & Événements' },
+    { id: 'orchestras', label: 'Orchestres' },
+    { id: 'instruments', label: 'Instruments & Professeurs' },
+    { id: 'media', label: 'Média & Photos' },
+    { id: 'morceaux', label: 'Répertoire Musical' },
+    { id: 'partners', label: 'Partenaires' },
+    { id: 'theme', label: 'Configuration du thème' },
+    { id: 'users', label: 'Utilisateurs' },
+  ];
 
   const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
     setNotification({ show: true, message, type });
@@ -170,7 +183,7 @@ const AdminUsers = () => {
   };
 
   useEffect(() => {
-    if (isAuthenticated && currentUser?.role === 'Admin') {
+    if (isAuthenticated && (currentUser?.role === "Admin" || currentUser?.managedModules?.includes("users"))) {
       fetchUsers();
       fetchInstruments();
       fetchOrchestras();
@@ -205,6 +218,15 @@ const AdminUsers = () => {
       orchestras: checked
         ? [...prev.orchestras, orchestraId]
         : prev.orchestras.filter(id => id !== orchestraId)
+    }));
+  };
+
+  const handleModuleChange = (moduleId: string, checked: boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      managedModules: checked
+        ? [...prev.managedModules, moduleId]
+        : prev.managedModules.filter(id => id !== moduleId)
     }));
   };
 
@@ -325,6 +347,7 @@ const AdminUsers = () => {
       role: user.role,
       instruments: userInsts.map(inst => inst.id),
       orchestras: userOrcs.map(orc => orc.id),
+      managedModules: user.managed_modules || [],
     });
     setShowAddForm(true);
   };
@@ -340,6 +363,7 @@ const AdminUsers = () => {
       role: 'Membre',
       instruments: [],
       orchestras: [],
+      managedModules: [],
     });
   };
 
@@ -380,7 +404,7 @@ const AdminUsers = () => {
     return matchesSearch && matchesRole;
   });
 
-  if (currentUser && currentUser.role !== 'Admin') {
+  if (currentUser && currentUser.role !== 'Admin' && (!currentUser.managedModules || !currentUser.managedModules.includes('users'))) {
     return <Navigate to="/dashboard" />;
   }
 
@@ -576,6 +600,26 @@ const AdminUsers = () => {
                     <option value="Admin">Admin</option>
                   </select>
                 </div>
+
+                {formData.role === 'Gestionnaire' && (
+                  <div>
+                    <h4 className="font-semibold mb-2 text-gray-700">Permissions des Modules</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 border p-4 rounded-lg bg-gray-50">
+                      {availableModules.map(module => (
+                        <label key={module.id} className="flex items-center space-x-3 cursor-pointer">
+                          <input 
+                            type="checkbox" 
+                            checked={formData.managedModules.includes(module.id)} 
+                            onChange={(e) => handleModuleChange(module.id, e.target.checked)} 
+                            className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500" 
+                          />
+                          <span className="text-gray-700 text-sm font-medium">{module.label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <h4 className="font-semibold mb-2 text-gray-700">Orchestres</h4>

@@ -83,8 +83,8 @@ const AdminPartners = () => {
     const { token, logout, currentUser } = useAuth();
     const [partners, setPartners] = useState<Partner[]>([]);
 
-    if (currentUser && currentUser.role !== 'Admin') {
-        return <Navigate to="/dashboard" />;
+    if (currentUser && currentUser.role !== 'Admin' && (!currentUser.managedModules || !currentUser.managedModules.includes('partners'))) {
+      return <Navigate to="/dashboard" />;
     }
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');

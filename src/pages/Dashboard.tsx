@@ -280,67 +280,93 @@ const Dashboard = () => {
             </div>
             
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-              <Link to="/admin/users" className="admin-card group">
-                <div className="w-16 h-16 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300 shadow-sm">
-                  <Users className="h-8 w-8" />
-                </div>
-                <span className="font-bold text-slate-700 group-hover:text-slate-900 transition-colors">Musiciens</span>
-              </Link>
-              <Link to="/admin/orchestras" className="admin-card group">
-                <div className="w-16 h-16 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-purple-600 group-hover:text-white transition-all duration-300 shadow-sm">
-                  <Music2 className="h-8 w-8" />
-                </div>
-                <span className="font-bold text-slate-700 group-hover:text-slate-900 transition-colors">Orchestres</span>
-              </Link>
-              <Link to="/admin/morceaux" className="admin-card group">
-                <div className="w-16 h-16 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-300 shadow-sm">
-                  <Music className="h-8 w-8" />
-                </div>
-                <span className="font-bold text-slate-700 group-hover:text-slate-900 transition-colors">Morceaux</span>
-              </Link>
-              <Link to="/admin/instruments" className="admin-card group">
-                <div className="w-16 h-16 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-amber-500 group-hover:text-white transition-all duration-300 shadow-sm">
-                  <Music className="h-8 w-8" />
-                </div>
-                <span className="font-bold text-slate-700 group-hover:text-slate-900 transition-colors">Instruments</span>
-              </Link>
+              {(currentUser?.role === 'Admin' || currentUser?.managedModules?.includes('users')) && (
+                <Link to="/admin/users" className="admin-card group">
+                  <div className="w-16 h-16 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300 shadow-sm">
+                    <Users className="h-8 w-8" />
+                  </div>
+                  <span className="font-bold text-slate-700 group-hover:text-slate-900 transition-colors">Musiciens</span>
+                </Link>
+              )}
+              
+              {(currentUser?.role === 'Admin' || currentUser?.managedModules?.includes('orchestras')) && (
+                <Link to="/admin/orchestras" className="admin-card group">
+                  <div className="w-16 h-16 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-purple-600 group-hover:text-white transition-all duration-300 shadow-sm">
+                    <Music2 className="h-8 w-8" />
+                  </div>
+                  <span className="font-bold text-slate-700 group-hover:text-slate-900 transition-colors">Orchestres</span>
+                </Link>
+              )}
 
-              <Link to="/admin/news" className="admin-card group">
-                <div className="w-16 h-16 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-rose-500 group-hover:text-white transition-all duration-300 shadow-sm">
-                  <Newspaper className="h-8 w-8" />
-                </div>
-                <span className="font-bold text-slate-700 group-hover:text-slate-900 transition-colors">Actualités</span>
-              </Link>
-              <Link to="/admin/events" className="admin-card group">
-                <div className="w-16 h-16 rounded-2xl bg-red-100 text-red-600 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-red-500 group-hover:text-white transition-all duration-300 shadow-sm">
-                  <Calendar className="h-8 w-8" />
-                </div>
-                <span className="font-bold text-slate-700 group-hover:text-slate-900 transition-colors">Agenda</span>
-              </Link>
-              <Link to="/admin/partitions" className="admin-card group">
-                <div className="w-16 h-16 rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300 shadow-sm">
-                  <FileText className="h-8 w-8" />
-                </div>
-                <span className="font-bold text-slate-700 group-hover:text-slate-900 transition-colors">Partitions</span>
-              </Link>
-              <Link to="/admin/media" className="admin-card group">
-                <div className="w-16 h-16 rounded-2xl bg-pink-100 text-pink-600 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-pink-500 group-hover:text-white transition-all duration-300 shadow-sm">
-                  <Image className="h-8 w-8" />
-                </div>
-                <span className="font-bold text-slate-700 group-hover:text-slate-900 transition-colors">Médias</span>
-              </Link>
-              <Link to="/admin/theme" className="admin-card group">
-                <div className="w-16 h-16 rounded-2xl bg-teal-100 text-teal-600 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 shadow-sm">
-                  <Palette className="h-8 w-8" />
-                </div>
-                <span className="font-bold text-slate-700 group-hover:text-slate-900 transition-colors">Thème</span>
-              </Link>
-              <Link to="/admin/partners" className="admin-card group">
-                <div className="w-16 h-16 rounded-2xl bg-cyan-100 text-cyan-600 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-cyan-600 group-hover:text-white transition-all duration-300 shadow-sm">
-                  <Building2 className="h-8 w-8" />
-                </div>
-                <span className="font-bold text-slate-700 group-hover:text-slate-900 transition-colors">Partenaires</span>
-              </Link>
+              {(currentUser?.role === 'Admin' || currentUser?.managedModules?.includes('morceaux')) && (
+                <>
+                  <Link to="/admin/morceaux" className="admin-card group">
+                    <div className="w-16 h-16 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-300 shadow-sm">
+                      <Music className="h-8 w-8" />
+                    </div>
+                    <span className="font-bold text-slate-700 group-hover:text-slate-900 transition-colors">Morceaux</span>
+                  </Link>
+                  <Link to="/admin/partitions" className="admin-card group">
+                    <div className="w-16 h-16 rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300 shadow-sm">
+                      <FileText className="h-8 w-8" />
+                    </div>
+                    <span className="font-bold text-slate-700 group-hover:text-slate-900 transition-colors">Partitions</span>
+                  </Link>
+                </>
+              )}
+
+              {(currentUser?.role === 'Admin' || currentUser?.managedModules?.includes('instruments')) && (
+                <Link to="/admin/instruments" className="admin-card group">
+                  <div className="w-16 h-16 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-amber-500 group-hover:text-white transition-all duration-300 shadow-sm">
+                    <Music className="h-8 w-8" />
+                  </div>
+                  <span className="font-bold text-slate-700 group-hover:text-slate-900 transition-colors">Instruments</span>
+                </Link>
+              )}
+
+              {(currentUser?.role === 'Admin' || currentUser?.managedModules?.includes('news')) && (
+                <>
+                  <Link to="/admin/news" className="admin-card group">
+                    <div className="w-16 h-16 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-rose-500 group-hover:text-white transition-all duration-300 shadow-sm">
+                      <Newspaper className="h-8 w-8" />
+                    </div>
+                    <span className="font-bold text-slate-700 group-hover:text-slate-900 transition-colors">Actualités</span>
+                  </Link>
+                  <Link to="/admin/events" className="admin-card group">
+                    <div className="w-16 h-16 rounded-2xl bg-red-100 text-red-600 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-red-500 group-hover:text-white transition-all duration-300 shadow-sm">
+                      <Calendar className="h-8 w-8" />
+                    </div>
+                    <span className="font-bold text-slate-700 group-hover:text-slate-900 transition-colors">Agenda</span>
+                  </Link>
+                </>
+              )}
+
+              {(currentUser?.role === 'Admin' || currentUser?.managedModules?.includes('media')) && (
+                <Link to="/admin/media" className="admin-card group">
+                  <div className="w-16 h-16 rounded-2xl bg-pink-100 text-pink-600 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-pink-500 group-hover:text-white transition-all duration-300 shadow-sm">
+                    <Image className="h-8 w-8" />
+                  </div>
+                  <span className="font-bold text-slate-700 group-hover:text-slate-900 transition-colors">Médias</span>
+                </Link>
+              )}
+
+              {(currentUser?.role === 'Admin' || currentUser?.managedModules?.includes('theme')) && (
+                <Link to="/admin/theme" className="admin-card group">
+                  <div className="w-16 h-16 rounded-2xl bg-teal-100 text-teal-600 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 shadow-sm">
+                    <Palette className="h-8 w-8" />
+                  </div>
+                  <span className="font-bold text-slate-700 group-hover:text-slate-900 transition-colors">Thème</span>
+                </Link>
+              )}
+
+              {(currentUser?.role === 'Admin' || currentUser?.managedModules?.includes('partners')) && (
+                <Link to="/admin/partners" className="admin-card group">
+                  <div className="w-16 h-16 rounded-2xl bg-cyan-100 text-cyan-600 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-cyan-600 group-hover:text-white transition-all duration-300 shadow-sm">
+                    <Building2 className="h-8 w-8" />
+                  </div>
+                  <span className="font-bold text-slate-700 group-hover:text-slate-900 transition-colors">Partenaires</span>
+                </Link>
+              )}
             </div>
           </div>
         )}
