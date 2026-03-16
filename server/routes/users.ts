@@ -85,12 +85,14 @@ router.post('/', async (req, res) => {
         ]);
 
         // 3. CrÃ©er le profil
-        await connection.query('INSERT INTO profiles (id, first_name, last_name, role, managed_modules) VALUES (?, ?, ?, ?, ?)', [
+        const status = password_hash ? 'Active' : 'Inactive';
+        await connection.query('INSERT INTO profiles (id, first_name, last_name, role, managed_modules, status) VALUES (?, ?, ?, ?, ?, ?)', [
             newUserId,
             firstName,
             lastName,
             role,
-            modulesJson
+            modulesJson,
+            status
         ]);
 
         // 4. Associer les instruments
@@ -155,6 +157,8 @@ router.put('/:id', async (req, res) => {
             const salt = await bcrypt.genSalt(10);
             const password_hash = await bcrypt.hash(password, salt);
             await connection.query('UPDATE users SET password_hash = ? WHERE id = ?', [password_hash, id]);
+            // Si on définit un mot de passe manuellement, l'utilisateur devient Actif
+            await connection.query('UPDATE profiles SET status = ? WHERE id = ?', ['Active', id]);
         }
 
         // 3. Synchroniser les instruments (Delete then Insert)
