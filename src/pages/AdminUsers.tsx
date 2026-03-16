@@ -1,5 +1,5 @@
 import React, { useState, useEffect, FormEvent } from 'react';
-import { Edit, Trash2, Plus, Users, Mail, User, Shield, X, UserPlus, CheckCircle, Music, Search, ArrowLeft, ChevronRight } from 'lucide-react';
+import { Edit, Trash2, Users, Mail, User, Shield, X, UserPlus, CheckCircle, Search, ArrowLeft, ChevronRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Navigate, Link } from 'react-router-dom';
 
@@ -12,6 +12,7 @@ interface UserData {
   email: string;
   role: 'Membre' | 'Gestionnaire' | 'Admin';
   managed_modules?: string[];
+  status?: 'Inactive' | 'Invited' | 'Active';
 }
 
 interface Instrument {
@@ -230,6 +231,32 @@ const AdminUsers = () => {
     }));
   };
 
+  const handleInvite = async (userId: string) => {
+    if (!token) return;
+    setLoading(true);
+    try {
+      const response = await fetch(`${API_URL}/users/${userId}/invite`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Erreur lors de l'envoi");
+      }
+
+      const result = await response.json();
+      showNotification(result.message);
+      fetchUsers(); // Actualiser pour voir la pastille "🟡 Invité"
+    } catch (err: any) {
+      console.error("Erreur d'invitation:", err);
+      showNotification(err.message, 'error');
+    }
+    setLoading(false);
+  };
+
   // MIGRÉ
   const handleCreate = async (e: FormEvent) => {
     e.preventDefault();
@@ -372,6 +399,17 @@ const AdminUsers = () => {
       case 'Admin': return 'bg-red-100 text-red-800';
       case 'Gestionnaire': return 'bg-blue-100 text-blue-800';
       default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getStatusBadge = (status?: string) => {
+    switch (status) {
+      case 'Active':
+        return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800"><span className="w-2 h-2 mr-1 bg-green-500 rounded-full"></span> Actif</span>;
+      case 'Invited':
+        return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800"><span className="w-2 h-2 mr-1 bg-yellow-500 rounded-full"></span> Invité</span>;
+      default:
+        return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800"><span className="w-2 h-2 mr-1 bg-red-500 rounded-full"></span> Inactif</span>;
     }
   };
 
@@ -541,6 +579,9 @@ const AdminUsers = () => {
                           <div className="flex items-center mb-2">
                             <p className="font-bold text-lg text-gray-800">{user.last_name.toUpperCase()} {user.first_name}</p>
                             <span className={`ml-3 px-2.5 py-1 text-xs font-semibold rounded-full ${getRoleColor(user.role)}`}>{user.role}</span>
+                            <div className="ml-3">
+                              {getStatusBadge(user.status)}
+                            </div>
                           </div>
                           <div className="flex items-center text-gray-500 text-sm">
                             <Mail size={14} className="mr-2" /> {user.email}
@@ -565,8 +606,13 @@ const AdminUsers = () => {
                           </div>
                         </div>
                         <div className="flex items-center space-x-3 flex-shrink-0">
-                          <button onClick={() => handleEdit(user)} className="p-2 text-blue-600 bg-blue-100 hover:bg-blue-200 rounded-full transition-colors duration-200"><Edit size={18} /></button>
-                          <button onClick={() => confirmDelete(user)} className="p-2 text-red-600 bg-red-100 hover:bg-red-200 rounded-full transition-colors duration-200"><Trash2 size={18} /></button>
+                          {user.role !== 'Admin' && (!user.status || user.status === 'Inactive' || user.status === 'Invited') && (
+                            <button onClick={() => handleInvite(user.id)} title="Envoyer invitation d'activation" className="p-2 text-indigo-600 bg-indigo-100 hover:bg-indigo-200 rounded-full transition-colors duration-200">
+                              <Mail size={18} />
+                            </button>
+                          )}
+                          <button onClick={() => handleEdit(user)} title="Modifier" className="p-2 text-blue-600 bg-blue-100 hover:bg-blue-200 rounded-full transition-colors duration-200"><Edit size={18} /></button>
+                          <button onClick={() => confirmDelete(user)} title="Supprimer" className="p-2 text-red-600 bg-red-100 hover:bg-red-200 rounded-full transition-colors duration-200"><Trash2 size={18} /></button>
                         </div>
                       </div>
                     ))}
@@ -591,7 +637,7 @@ const AdminUsers = () => {
                   <input type="text" name="lastName" value={formData.lastName} onChange={handleInputChange} placeholder="Nom" required className="w-full px-4 py-2 border rounded-lg" />
                 </div>
                 <input type="email" name="email" value={formData.email} onChange={handleInputChange} placeholder="Email" required className="w-full px-4 py-2 border rounded-lg" />
-                <input type="password" name="password" value={formData.password} onChange={handleInputChange} placeholder={editingUser ? 'Nouveau mot de passe (laisser vide pour ne pas changer)' : 'Mot de passe'} className="w-full px-4 py-2 border rounded-lg" />
+                
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Rôle</label>
                   <select name="role" value={formData.role} onChange={handleInputChange} className="w-full px-4 py-2 border rounded-lg bg-white">
@@ -600,6 +646,14 @@ const AdminUsers = () => {
                     <option value="Admin">Admin</option>
                   </select>
                 </div>
+
+                {formData.role === 'Admin' && (
+                  <div className="bg-red-50 p-4 rounded-lg border border-red-100">
+                    <label className="block text-sm font-medium text-red-800 mb-1">Mot de passe de l'Administrateur</label>
+                    <input type="password" name="password" value={formData.password} onChange={handleInputChange} placeholder={editingUser ? 'Nouveau mot de passe (laisser vide pour ne pas changer)' : 'Mot de passe obligatoire'} required={!editingUser && formData.role === 'Admin'} className="w-full px-4 py-2 border border-red-300 rounded-lg focus:ring-red-500 focus:border-red-500" />
+                    <p className="text-xs text-red-600 mt-1">Les profils Admin ne peuvent pas être activés par email, leur mot de passe doit être défini ici.</p>
+                  </div>
+                )}
 
                 {formData.role === 'Gestionnaire' && (
                   <div>

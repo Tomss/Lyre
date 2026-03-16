@@ -104,4 +104,65 @@ router.get('/me', authenticateToken, (req, res) => {
   });
 });
 
+// POST /api/auth/activate - Activer un compte
+router.post('/activate', async (req, res) => {
+  const { token, password } = req.body;
+
+  if (!token || !password) {
+    return res.status(400).json({ message: 'Token et mot de passe sont requis.' });
+  }
+
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+
+    // Verify token and expiration
+    const [users] = await connection.query(`
+      SELECT u.id, u.email, u.token_expires_at 
+      FROM users u 
+      WHERE u.activation_token = ?
+    `, [token]);
+
+    const userRows = users as any[];
+
+    if (userRows.length === 0) {
+      return res.status(400).json({ message: 'Lien invalide ou expiré.' });
+    }
+
+    const user = userRows[0];
+    
+    if (new Date(user.token_expires_at) < new Date()) {
+      return res.status(400).json({ message: "Le lien d'activation a expiré." });
+    }
+
+    // Hash the new password
+    const salt = await bcrypt.genSalt(10);
+    const password_hash = await bcrypt.hash(password, salt);
+
+    // Update the user: set password, clear token
+    await connection.query(`
+      UPDATE users 
+      SET password_hash = ?, activation_token = NULL, token_expires_at = NULL 
+      WHERE id = ?
+    `, [password_hash, user.id]);
+
+    // Update profile status
+    await connection.query(`
+      UPDATE profiles 
+      SET status = 'Active' 
+      WHERE id = ?
+    `, [user.id]);
+
+    await connection.commit();
+    res.json({ message: 'Compte activé avec succès.' });
+
+  } catch (error) {
+    await connection.rollback();
+    console.error('Activation error:', error);
+    res.status(500).json({ message: 'Erreur interne du serveur.' });
+  } finally {
+    connection.release();
+  }
+});
+
 export default router;

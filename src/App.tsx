@@ -1,18 +1,16 @@
 // src/App.tsx
-import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
-import { ThemeProvider } from './context/ThemeContext';
 import Home from './pages/Home';
 import School from './pages/School';
 import Orchestras from './pages/Orchestras';
-import Events from './pages/Events';
 import Media from './pages/Media';
 import Contact from './pages/Contact';
 import Connexion from './pages/Connexion'; // Importer la page de connexion
 import Dashboard from './pages/Dashboard'; // Importer le dashboard
+import Activation from './pages/Activation';
 import AdminUsers from './pages/AdminUsers'; // Importer la page d'administration des utilisateurs
 import AdminInstruments from './pages/AdminInstruments'; // Importer la page d'administration des instruments
 import AdminOrchestras from './pages/AdminOrchestras'; // Importer la page d'administration des orchestres
@@ -43,6 +41,7 @@ function App() {
           <Route path="/media" element={<Media />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/connexion" element={<Connexion />} /> {/* Route pour la connexion */}
+          <Route path="/activer-compte" element={<Activation />} />
           <Route path="/dashboard" element={<Dashboard />} /> {/* Route (non protégée pour l'instant) */}
           <Route path="/admin/users" element={<AdminUsers />} /> {/* Route pour l'administration des utilisateurs */}
           <Route path="/admin/instruments" element={<AdminInstruments />} /> {/* Route pour l'administration des instruments */}
