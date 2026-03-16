@@ -195,6 +195,13 @@ router.delete('/:id', async (req, res) => {
     }
 
     const { id } = req.params;
+
+    // Empêcher l'auto-suppression
+    const currentUserId = (req as any).user.id;
+    if (id === currentUserId) {
+        return res.status(400).json({ message: 'Vous ne pouvez pas supprimer votre propre compte.' });
+    }
+
     const connection = await pool.getConnection();
 
     try {

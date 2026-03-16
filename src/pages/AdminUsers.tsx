@@ -617,7 +617,9 @@ const AdminUsers = () => {
                             </button>
                           )}
                           <button onClick={() => handleEdit(user)} title="Modifier" className="p-2 text-blue-600 bg-blue-100 hover:bg-blue-200 rounded-full transition-colors duration-200"><Edit size={18} /></button>
-                          <button onClick={() => confirmDelete(user)} title="Supprimer" className="p-2 text-red-600 bg-red-100 hover:bg-red-200 rounded-full transition-colors duration-200"><Trash2 size={18} /></button>
+                          {currentUser?.id !== user.id && (
+                            <button onClick={() => confirmDelete(user)} title="Supprimer" className="p-2 text-red-600 bg-red-100 hover:bg-red-200 rounded-full transition-colors duration-200"><Trash2 size={18} /></button>
+                          )}
                         </div>
                       </div>
                     ))}
