@@ -274,6 +274,7 @@ router.post('/:id/invite', async (req, res) => {
         }
 
         const user = (users as any[])[0];
+        const isReset = user.status === 'Active';
 
         // Generate token
         const token = crypto.randomBytes(32).toString('hex');
@@ -291,8 +292,8 @@ router.post('/:id/invite', async (req, res) => {
         ]);
         
         // Send Email
-        console.log(`[API] Tentative d'envoi d'email à: ${user.email} avec Resend...`);
-        const emailSent = await sendActivationEmail(user.email, user.first_name, token);
+        console.log(`[API] Tentative d'envoi d'email à: ${user.email} (type: ${isReset ? 'reset' : 'activation'})`);
+        const emailSent = await sendActivationEmail(user.email, user.first_name, token, isReset);
 
         if (!emailSent) {
              await connection.rollback();
@@ -300,15 +301,18 @@ router.post('/:id/invite', async (req, res) => {
              return res.status(500).json({ message: "Échec de l'envoi de l'email. Vérifiez votre configuration Resend." });
         }
 
-        // Update profile status only if email was sent
-        await connection.query('UPDATE profiles SET status = ? WHERE id = ?', [
-            'Invited',
-            id
-        ]);
+        // Update profile status only if it's an initial invitation/activation
+        if (!isReset) {
+            await connection.query('UPDATE profiles SET status = ? WHERE id = ?', [
+                'Invited',
+                id
+            ]);
+        }
 
         await connection.commit();
-        console.log(`[API] Invitation envoyée avec succès pour ${user.email}`);
-        res.status(200).json({ message: 'Invitation envoyée avec succès sur ' + user.email });
+        const successMsg = isReset ? 'Lien de réinitialisation envoyé avec succès' : 'Invitation envoyée avec succès';
+        console.log(`[API] ${successMsg} pour ${user.email}`);
+        res.status(200).json({ message: successMsg + ' sur ' + user.email });
     } catch (error) {
         if (connection) await connection.rollback();
         console.error('Error sending invite:', error);
