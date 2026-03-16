@@ -13,6 +13,7 @@ interface UserData {
   role: 'Membre' | 'Gestionnaire' | 'Admin';
   managed_modules?: string[];
   status?: 'Inactive' | 'Invited' | 'Active';
+  has_password: boolean;
 }
 
 interface Instrument {
@@ -276,9 +277,13 @@ const AdminUsers = () => {
       } else if (user.status === 'Invited') {
         newStatus = 'Inactive';
       } else {
-        // Inactif -> Bloqué en UI, mais par sécurité si appelé
-        showNotification("L'activation nécessite l'envoi d'un mail", "error");
-        return;
+        // Inactif -> Activable direct SI a un mot de passe (Option 1)
+        if (user.has_password) {
+          newStatus = 'Active';
+        } else {
+          showNotification("L'activation nécessite l'envoi d'un mail", "error");
+          return;
+        }
       }
     }
     
@@ -512,7 +517,19 @@ const AdminUsers = () => {
             </button>
           );
         }
-        // Pour les autres, activation manuelle désactivée (passer par le mail)
+        // Pour les autres, activation manuelle autorisée SI a un mot de passe (Option 1)
+        if (user.has_password) {
+          return (
+            <button 
+              onClick={() => handleToggleStatus(user)}
+              title="Réactiver le compte"
+              className="group inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 hover:bg-green-100 hover:text-green-800 transition-colors"
+            >
+              <Power className="w-3 h-3 mr-1 text-red-500 group-hover:text-green-500 transition-colors" /> Inactif
+            </button>
+          );
+        }
+        
         return (
           <span 
             title="Activation par mail requise"
