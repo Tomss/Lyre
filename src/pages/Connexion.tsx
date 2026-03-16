@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const Connexion = () => {
@@ -7,6 +6,8 @@ const Connexion = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  console.log(`[Connexion.tsx] Rendering. Error state:`, error);
   
   const { login } = useAuth();
 
@@ -46,13 +47,13 @@ const Connexion = () => {
         <div className="bg-white shadow-xl rounded-2xl border border-gray-100 overflow-hidden">
           <div className="p-8">
             {error && (
-              <div className="mb-6 bg-red-50 border-2 border-red-500 text-red-700 p-4 rounded-xl flex items-start space-x-3 animate-in fade-in slide-in-from-top-2 duration-300" role="alert">
-                <div className="flex-shrink-0">
-                  <X className="h-6 w-6 text-red-600 font-bold" />
-                </div>
-                <div>
-                  <p className="font-extrabold text-sm uppercase tracking-wide">Accès refusé</p>
-                  <p className="text-sm font-medium leading-relaxed">{error}</p>
+              <div style={{ backgroundColor: '#fee2e2', border: '2px solid #ef4444', color: '#b91c1c', padding: '1rem', borderRadius: '0.75rem', marginBottom: '1.5rem', fontWeight: 'bold' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <span style={{ fontSize: '1.5rem' }}>⚠️</span>
+                  <div>
+                    <div style={{ textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.05em' }}>Accès refusé</div>
+                    <div style={{ fontSize: '0.875rem' }}>{error}</div>
+                  </div>
                 </div>
               </div>
             )}
