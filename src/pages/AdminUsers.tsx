@@ -265,7 +265,22 @@ const AdminUsers = () => {
 
   const handleToggleStatus = async (user: UserData) => {
     if (!token) return;
-    const newStatus = user.status === 'Active' ? 'Inactive' : 'Active';
+    
+    let newStatus: 'Active' | 'Inactive' | 'Invited';
+    
+    if (user.role === 'Admin') {
+      newStatus = user.status === 'Active' ? 'Inactive' : 'Active';
+    } else {
+      if (user.status === 'Active') {
+        newStatus = 'Inactive';
+      } else if (user.status === 'Invited') {
+        newStatus = 'Inactive';
+      } else {
+        // Inactif -> Bloqué en UI, mais par sécurité si appelé
+        showNotification("L'activation nécessite l'envoi d'un mail", "error");
+        return;
+      }
+    }
     
     // Optimistic update
     setUsers(prev => prev.map(u => u.id === user.id ? { ...u, status: newStatus } : u));
@@ -458,7 +473,9 @@ const AdminUsers = () => {
         );
     }
 
-    const { status } = user;
+    const { status, role } = user;
+    const isAdmin = role === 'Admin';
+
     switch (status) {
       case 'Active':
         return (
@@ -472,23 +489,37 @@ const AdminUsers = () => {
         );
       case 'Invited':
         return (
-          <button 
-            onClick={() => handleToggleStatus(user)}
-            title="Activer le compte manuellement"
-            className="group inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800 hover:bg-green-100 hover:text-green-800 transition-colors"
-          >
-            <span className="w-2 h-2 mr-1 bg-yellow-500 rounded-full group-hover:bg-green-500 transition-colors"></span> Invité
-          </button>
+          <div className="flex items-center space-x-2">
+            <button 
+              onClick={() => handleToggleStatus(user)}
+              title="Retourner en Inactif"
+              className="group inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800 hover:bg-red-100 hover:text-red-800 transition-colors"
+            >
+              <span className="w-2 h-2 mr-1 bg-yellow-500 rounded-full group-hover:bg-red-500 transition-colors"></span> Invité
+            </button>
+          </div>
         );
       default:
+        // Pour les Admins, on peut activer direct car pas de mail
+        if (isAdmin) {
+          return (
+            <button 
+              onClick={() => handleToggleStatus(user)}
+              title="Activer le compte Admin"
+              className="group inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 hover:bg-green-100 hover:text-green-800 transition-colors"
+            >
+              <Power className="w-3 h-3 mr-1 text-red-500 group-hover:text-green-500 transition-colors" /> Inactif
+            </button>
+          );
+        }
+        // Pour les autres, activation manuelle désactivée (passer par le mail)
         return (
-          <button 
-            onClick={() => handleToggleStatus(user)}
-            title="Activer le compte"
-            className="group inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 hover:bg-green-100 hover:text-green-800 transition-colors"
+          <span 
+            title="Activation par mail requise"
+            className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200"
           >
-            <Power className="w-3 h-3 mr-1 text-red-500 group-hover:text-green-500 transition-colors" /> Inactif
-          </button>
+            <Power className="w-3 h-3 mr-1" /> Inactif
+          </span>
         );
     }
   };
@@ -687,7 +718,15 @@ const AdminUsers = () => {
                         </div>
                         <div className="flex items-center space-x-3 flex-shrink-0">
                           {user.role !== 'Admin' && (
-                            <button onClick={() => handleInvite(user.id)} title="Envoyer invitation d'activation / Réinitialisation" className="p-2 text-indigo-600 bg-indigo-100 hover:bg-indigo-200 rounded-full transition-colors duration-200">
+                            <button 
+                              onClick={() => handleInvite(user.id)} 
+                              title={user.status === 'Active' ? "Envoyer un lien de réinitialisation" : "Envoyer invitation d'activation"} 
+                              className={`p-2 rounded-full transition-colors duration-200 ${
+                                user.status === 'Active' 
+                                  ? 'text-amber-600 bg-amber-100 hover:bg-amber-200' 
+                                  : 'text-indigo-600 bg-indigo-100 hover:bg-indigo-200'
+                              }`}
+                            >
                               <Mail size={18} />
                             </button>
                           )}

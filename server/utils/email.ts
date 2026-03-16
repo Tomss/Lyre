@@ -1,10 +1,17 @@
 import pool from '../db';
 
-export const sendActivationEmail = async (email: string, firstName: string, token: string) => {
+export const sendActivationEmail = async (email: string, firstName: string, token: string, isReset: boolean = false) => {
     // Le lien frontend où l'utilisateur créera son mot de passe
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
     const activationLink = `${frontendUrl}/activer-compte?token=${token}`;
     const resendApiKey = process.env.RESEND_API_KEY;
+
+    const subject = isReset ? 'La Lyre - Réinitialisation de votre mot de passe' : 'La Lyre - Accès à votre Espace Membre';
+    const title = isReset ? 'Demande de réinitialisation' : 'Accès à votre espace membre';
+    const introText = isReset 
+        ? `Vous avez demandé à réinitialiser votre mot de passe pour votre espace membre sur le site de <strong>La Lyre</strong>.`
+        : `Vous recevez ce message pour accéder à votre espace membre sur le site de <strong>La Lyre</strong>.`;
+    const actionText = isReset ? 'Réinitialiser mon mot de passe' : 'Activer mon espace membre';
 
     console.log(`[Email Debug] API Key présente: ${!!resendApiKey}`);
     if (resendApiKey) {
@@ -24,14 +31,15 @@ export const sendActivationEmail = async (email: string, firstName: string, toke
             
             <div style="background-color: #f9fafb; padding: 30px; border-radius: 10px;">
                 <h2 style="color: #4f46e5; margin-top: 0;">Bonjour ${firstName},</h2>
+                <h3 style="color: #374151;">${title}</h3>
                 <p style="font-size: 16px; line-height: 1.5;">
-                    Vous recevez ce message pour accéder à votre espace membre sur le site de <strong>La Lyre</strong>. 
-                    Pour vous connecter, veuillez cliquer sur le bouton ci-dessous pour (re)définir votre mot de passe en toute sécurité.
+                    ${introText} 
+                    Pour continuer, veuillez cliquer sur le bouton ci-dessous pour définir votre mot de passe en toute sécurité.
                 </p>
                 
                 <div style="text-align: center; margin: 30px 0;">
                     <a href="${activationLink}" style="background-color: #4f46e5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
-                        (Ré)activer mon espace membre
+                        ${actionText}
                     </a>
                 </div>
                 
@@ -60,7 +68,7 @@ export const sendActivationEmail = async (email: string, firstName: string, toke
             body: JSON.stringify({
                 from: 'Association La Lyre <communication@lalyre.fr>',
                 to: [email],
-                subject: 'La Lyre - Accès à votre Espace Membre',
+                subject: subject,
                 html: htmlContent
             })
         });
