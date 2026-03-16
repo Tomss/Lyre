@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { X, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const Connexion = () => {
@@ -27,8 +28,6 @@ const Connexion = () => {
       // Extraire le message d'erreur si disponible
       const msg = err.message || 'Une erreur est survenue lors de la connexion. Veuillez vérifier vos identifiants.';
       setError(msg);
-      // Alerte de secours pour débloquer le test
-      alert(`Erreur de connexion : ${msg}`);
     } finally {
       setLoading(false);
     }
@@ -46,20 +45,26 @@ const Connexion = () => {
           </p>
         </div>
         
-        <div className="bg-white shadow-xl rounded-2xl border border-gray-100 overflow-hidden">
-          <div className="p-8">
-            {error && (
-              <div style={{ backgroundColor: '#fee2e2', border: '2px solid #ef4444', color: '#b91c1c', padding: '1rem', borderRadius: '0.75rem', marginBottom: '1.5rem', fontWeight: 'bold' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                  <span style={{ fontSize: '1.5rem' }}>⚠️</span>
-                  <div>
-                    <div style={{ textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.05em' }}>Accès refusé</div>
-                    <div style={{ fontSize: '0.875rem' }}>{error}</div>
-                  </div>
-                </div>
+        <div className="bg-white shadow-2xl rounded-3xl border border-gray-100 overflow-hidden transform transition-all duration-300">
+          {error && (
+            <div className="bg-red-600 p-4 text-white flex items-center space-x-3 animate-in slide-in-from-top duration-500">
+              <div className="flex-shrink-0 bg-white/20 p-2 rounded-full">
+                <AlertCircle className="h-5 w-5 text-white" />
               </div>
-            )}
-
+              <div className="flex-1">
+                <p className="text-xs font-bold uppercase tracking-widest opacity-80 mb-0.5">Erreur de connexion</p>
+                <p className="text-sm font-medium">{error}</p>
+              </div>
+              <button 
+                onClick={() => setError(null)}
+                className="hover:scale-110 transition-transform p-1"
+              >
+                <X className="h-4 w-4 text-white/70" />
+              </button>
+            </div>
+          )}
+          
+          <div className="p-8 sm:p-10">
             <form onSubmit={handleLogin} className="space-y-6">
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-dark mb-2">
