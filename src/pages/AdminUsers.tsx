@@ -1,5 +1,5 @@
 import React, { useState, useEffect, FormEvent } from 'react';
-import { Edit, Trash2, Users, Mail, User, Shield, X, UserPlus, CheckCircle, Search, ArrowLeft, ChevronRight } from 'lucide-react';
+import { Edit, Trash2, Users, Mail, User, Shield, X, UserPlus, CheckCircle, Search, ArrowLeft, ChevronRight, Power } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Navigate, Link } from 'react-router-dom';
 
@@ -263,6 +263,42 @@ const AdminUsers = () => {
     setLoading(false);
   };
 
+  const handleToggleStatus = async (user: UserData) => {
+    if (!token) return;
+    const newStatus = user.status === 'Active' ? 'Inactive' : 'Active';
+    
+    // Optimistic update
+    setUsers(prev => prev.map(u => u.id === user.id ? { ...u, status: newStatus } : u));
+
+    try {
+      const response = await fetch(`${API_URL}/users/${user.id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          firstName: user.first_name,
+          lastName: user.last_name,
+          email: user.email,
+          role: user.role,
+          status: newStatus,
+          managedModules: user.managed_modules,
+          instruments: userInstruments[user.id]?.map(i => i.id) || [],
+          orchestras: userOrchestras[user.id]?.map(o => o.id) || [],
+        }),
+      });
+
+      if (!response.ok) throw new Error('Erreur lors du changement de statut');
+      showNotification(`Compte ${newStatus === 'Active' ? 'activé' : 'désactivé'} avec succès`);
+    } catch (err: any) {
+      console.error(err);
+      showNotification(err.message, 'error');
+      // Rollback
+      fetchUsers();
+    }
+  };
+
   // MIGRÉ
   const handleCreate = async (e: FormEvent) => {
     e.preventDefault();
@@ -410,14 +446,47 @@ const AdminUsers = () => {
     }
   };
 
-  const getStatusBadge = (status?: string) => {
+  const getStatusBadge = (user: UserData) => {
+    if (currentUser?.id === user.id) {
+        return (
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                <span className="w-2 h-2 mr-1 bg-green-500 rounded-full"></span> Actif (Moi)
+            </span>
+        );
+    }
+
+    const { status } = user;
     switch (status) {
       case 'Active':
-        return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800"><span className="w-2 h-2 mr-1 bg-green-500 rounded-full"></span> Actif</span>;
+        return (
+          <button 
+            onClick={() => handleToggleStatus(user)}
+            title="Désactiver le compte"
+            className="group inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 hover:bg-red-100 hover:text-red-800 transition-colors"
+          >
+            <Power className="w-3 h-3 mr-1 text-green-500 group-hover:text-red-500 transition-colors" /> Actif
+          </button>
+        );
       case 'Invited':
-        return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800"><span className="w-2 h-2 mr-1 bg-yellow-500 rounded-full"></span> Invité</span>;
+        return (
+          <button 
+            onClick={() => handleToggleStatus(user)}
+            title="Activer le compte manuellement"
+            className="group inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800 hover:bg-green-100 hover:text-green-800 transition-colors"
+          >
+            <span className="w-2 h-2 mr-1 bg-yellow-500 rounded-full group-hover:bg-green-500 transition-colors"></span> Invité
+          </button>
+        );
       default:
-        return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800"><span className="w-2 h-2 mr-1 bg-red-500 rounded-full"></span> Inactif</span>;
+        return (
+          <button 
+            onClick={() => handleToggleStatus(user)}
+            title="Activer le compte"
+            className="group inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 hover:bg-green-100 hover:text-green-800 transition-colors"
+          >
+            <Power className="w-3 h-3 mr-1 text-red-500 group-hover:text-green-500 transition-colors" /> Inactif
+          </button>
+        );
     }
   };
 
@@ -588,7 +657,7 @@ const AdminUsers = () => {
                             <p className="font-bold text-lg text-gray-800">{user.last_name.toUpperCase()} {user.first_name}</p>
                             <span className={`ml-3 px-2.5 py-1 text-xs font-semibold rounded-full ${getRoleColor(user.role)}`}>{user.role}</span>
                             <div className="ml-3">
-                              {getStatusBadge(user.status)}
+                              {getStatusBadge(user)}
                             </div>
                           </div>
                           <div className="flex items-center text-gray-500 text-sm">
