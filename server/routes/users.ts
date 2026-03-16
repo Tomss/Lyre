@@ -252,6 +252,7 @@ router.post('/:id/invite', async (req, res) => {
 
         // Generate token
         const token = crypto.randomBytes(32).toString('hex');
+        console.log(`[API] Token généré pour l'utilisateur ${id}: ${token.substring(0, 8)}...`);
         
         // Default expiry in 48 hours
         const expiresAt = new Date();
