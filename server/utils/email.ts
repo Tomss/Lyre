@@ -1,5 +1,11 @@
 import nodemailer from 'nodemailer';
 
+console.log('--- Configuration SMTP au démarrage ---');
+console.log('Host:', process.env.EMAIL_HOST || 'ssl0.ovh.net (default)');
+console.log('Port:', process.env.EMAIL_PORT || '587 (default)');
+console.log('Secure:', process.env.EMAIL_SECURE || 'false (default)');
+console.log('User:', process.env.EMAIL_USER);
+console.log('----------------------------------------');
 // Configuration du transporteur d'emails
 export const transporter = nodemailer.createTransport({
     host: process.env.EMAIL_HOST || 'ssl0.ovh.net',
