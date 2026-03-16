@@ -25,13 +25,13 @@ export const sendActivationEmail = async (email: string, firstName: string, toke
             <div style="background-color: #f9fafb; padding: 30px; border-radius: 10px;">
                 <h2 style="color: #4f46e5; margin-top: 0;">Bonjour ${firstName},</h2>
                 <p style="font-size: 16px; line-height: 1.5;">
-                    Votre espace membre sur le site de <strong>La Lyre</strong> a été créé. Pour y accéder, 
-                    vous devez simplement activer votre compte en définissant votre mot de passe privé.
+                    Vous recevez ce message pour accéder à votre espace membre sur le site de <strong>La Lyre</strong>. 
+                    Pour vous connecter, veuillez cliquer sur le bouton ci-dessous pour (re)définir votre mot de passe en toute sécurité.
                 </p>
                 
                 <div style="text-align: center; margin: 30px 0;">
                     <a href="${activationLink}" style="background-color: #4f46e5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
-                        Activer mon espace membre
+                        (Ré)activer mon espace membre
                     </a>
                 </div>
                 
@@ -43,7 +43,8 @@ export const sendActivationEmail = async (email: string, firstName: string, toke
             </div>
             
             <div style="text-align: center; margin-top: 20px; font-size: 12px; color: #9ca3af;">
-                Ceci est un email automatique, merci de ne pas y répondre.
+                Ceci est un email automatique, merci de ne pas y répondre.<br>
+                Si vous n'avez pas demandé ce lien, vous pouvez ignorer cet email.
             </div>
         </div>
     `;
@@ -59,7 +60,7 @@ export const sendActivationEmail = async (email: string, firstName: string, toke
             body: JSON.stringify({
                 from: 'Association La Lyre <communication@lalyre.fr>',
                 to: [email],
-                subject: 'La Lyre - Activation de votre Espace Membre',
+                subject: 'La Lyre - Accès à votre Espace Membre',
                 html: htmlContent
             })
         });

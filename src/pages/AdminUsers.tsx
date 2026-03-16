@@ -611,8 +611,8 @@ const AdminUsers = () => {
                           </div>
                         </div>
                         <div className="flex items-center space-x-3 flex-shrink-0">
-                          {user.role !== 'Admin' && (!user.status || user.status === 'Inactive' || user.status === 'Invited') && (
-                            <button onClick={() => handleInvite(user.id)} title="Envoyer invitation d'activation" className="p-2 text-indigo-600 bg-indigo-100 hover:bg-indigo-200 rounded-full transition-colors duration-200">
+                          {user.role !== 'Admin' && (
+                            <button onClick={() => handleInvite(user.id)} title="Envoyer invitation d'activation / Réinitialisation" className="p-2 text-indigo-600 bg-indigo-100 hover:bg-indigo-200 rounded-full transition-colors duration-200">
                               <Mail size={18} />
                             </button>
                           )}
