@@ -85,7 +85,7 @@ const AdminInstruments = () => {
   };
 
   useEffect(() => {
-    if (isAuthenticated && currentUser?.role === 'Admin') {
+    if (isAuthenticated && (currentUser?.role === "Admin" || currentUser?.managedModules?.includes("instruments"))) {
       fetchInstruments();
     }
   }, [isAuthenticated, currentUser, token]);
@@ -292,7 +292,7 @@ const AdminInstruments = () => {
   if (!isAuthenticated) {
     return <Navigate to="/connexion" />;
   }
-  if (currentUser?.role !== 'Admin') {
+  if (currentUser?.role !== 'Admin' && (!currentUser?.managedModules || !currentUser.managedModules.includes('instruments'))) {
     return <Navigate to="/dashboard" />;
   }
 

@@ -1,4 +1,4 @@
-import { Router } from 'express';
+﻿import { Router } from 'express';
 import { authenticateToken } from '../middleware/auth';
 import pool from '../db';
 import crypto from 'crypto';
@@ -7,7 +7,7 @@ const router = Router();
 
 router.use(authenticateToken);
 
-// GET /api/events - Récupérer tous les événements avec leurs orchestres
+// GET /api/events - RÃ©cupÃ©rer tous les Ã©vÃ©nements avec leurs orchestres
 router.get('/', async (req, res) => {
   try {
     const [events] = await pool.query(`
@@ -28,11 +28,11 @@ router.get('/', async (req, res) => {
   }
 });
 
-// POST /api/events - Créer un nouvel événement
+// POST /api/events - CrÃ©er un nouvel Ã©vÃ©nement
 router.post('/', async (req, res) => {
   // @ts-ignore
-  if (req.user.role !== 'Admin') {
-    return res.status(403).json({ message: 'Accès refusé.' });
+  if ((req as any).user.role !== 'Admin' && (!(req as any).user.managedModules || !(req as any).user.managedModules.includes('news'))) {
+    return res.status(403).json({ message: 'AccÃ¨s refusÃ©.' });
   }
   const { title, description, event_type, event_date, location, orchestra_ids, practical_info, is_public } = req.body;
   if (!title || !event_type || !event_date) {
@@ -54,21 +54,21 @@ router.post('/', async (req, res) => {
       );
     }
     await connection.commit();
-    res.status(201).json({ message: 'Événement créé avec succès.' });
+    res.status(201).json({ message: 'Ã‰vÃ©nement crÃ©Ã© avec succÃ¨s.' });
   } catch (error) {
     await connection.rollback();
     console.error(error);
-    res.status(500).json({ message: 'Erreur lors de la création de l\'événement.' });
+    res.status(500).json({ message: 'Erreur lors de la crÃ©ation de l\'Ã©vÃ©nement.' });
   } finally {
     connection.release();
   }
 });
 
-// PUT /api/events/:id - Mettre à jour un événement
+// PUT /api/events/:id - Mettre Ã  jour un Ã©vÃ©nement
 router.put('/:id', async (req, res) => {
   // @ts-ignore
-  if (req.user.role !== 'Admin') {
-    return res.status(403).json({ message: 'Accès refusé.' });
+  if ((req as any).user.role !== 'Admin' && (!(req as any).user.managedModules || !(req as any).user.managedModules.includes('news'))) {
+    return res.status(403).json({ message: 'AccÃ¨s refusÃ©.' });
   }
   const { id } = req.params;
   const { title, description, event_type, event_date, location, orchestra_ids, practical_info, is_public } = req.body;
@@ -95,21 +95,21 @@ router.put('/:id', async (req, res) => {
       }
     }
     await connection.commit();
-    res.status(200).json({ message: 'Événement mis à jour avec succès.' });
+    res.status(200).json({ message: 'Ã‰vÃ©nement mis Ã  jour avec succÃ¨s.' });
   } catch (error) {
     await connection.rollback();
     console.error(error);
-    res.status(500).json({ message: 'Erreur lors de la mise à jour de l\'événement.' });
+    res.status(500).json({ message: 'Erreur lors de la mise Ã  jour de l\'Ã©vÃ©nement.' });
   } finally {
     connection.release();
   }
 });
 
-// DELETE /api/events/:id - Supprimer un événement
+// DELETE /api/events/:id - Supprimer un Ã©vÃ©nement
 router.delete('/:id', async (req, res) => {
   // @ts-ignore
-  if (req.user.role !== 'Admin') {
-    return res.status(403).json({ message: 'Accès refusé.' });
+  if ((req as any).user.role !== 'Admin' && (!(req as any).user.managedModules || !(req as any).user.managedModules.includes('news'))) {
+    return res.status(403).json({ message: 'AccÃ¨s refusÃ©.' });
   }
   const { id } = req.params;
   const connection = await pool.getConnection();
@@ -119,14 +119,14 @@ router.delete('/:id', async (req, res) => {
     const [result] = await connection.query('DELETE FROM events WHERE id = ?', [id]);
     // @ts-ignore
     if (result.affectedRows === 0) {
-      throw new Error('Événement non trouvé.');
+      throw new Error('Ã‰vÃ©nement non trouvÃ©.');
     }
     await connection.commit();
-    res.status(200).json({ message: 'Événement supprimé avec succès.' });
+    res.status(200).json({ message: 'Ã‰vÃ©nement supprimÃ© avec succÃ¨s.' });
   } catch (error) {
     await connection.rollback();
     console.error(error);
-    res.status(500).json({ message: 'Erreur lors de la suppression de l\'événement.' });
+    res.status(500).json({ message: 'Erreur lors de la suppression de l\'Ã©vÃ©nement.' });
   } finally {
     connection.release();
   }

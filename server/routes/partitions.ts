@@ -1,4 +1,4 @@
-import { Router } from 'express';
+﻿import { Router } from 'express';
 import { authenticateToken } from '../middleware/auth';
 import pool from '../db';
 import crypto from 'crypto';
@@ -7,17 +7,17 @@ const router = Router();
 
 router.use(authenticateToken);
 
-// Route sécurisée pour récupérer la liste des partitions avec les données associées
+// Route sÃ©curisÃ©e pour rÃ©cupÃ©rer la liste des partitions avec les donnÃ©es associÃ©es
 router.get('/', async (req, res) => {
   // @ts-ignore
-  const userRole = req.user.role;
+  const userRole = (req as any).user.role;
 
-  if (userRole !== 'Admin' && userRole !== 'Gestionnaire') {
-    return res.status(403).json({ message: 'Accès refusé.' });
+  if (userRole !== 'Admin' && (!(req as any).user.managedModules || !(req as any).user.managedModules.includes('morceaux')) && userRole !== 'Gestionnaire') {
+    return res.status(403).json({ message: 'AccÃ¨s refusÃ©.' });
   }
 
   try {
-    // Requête complexe pour joindre toutes les informations nécessaires et les formater comme l'attend le frontend
+    // RequÃªte complexe pour joindre toutes les informations nÃ©cessaires et les formater comme l'attend le frontend
     const query = `
       SELECT 
         p.*,
@@ -50,15 +50,15 @@ router.get('/', async (req, res) => {
 
   } catch (error) {
     console.error('Error fetching partitions:', error);
-    res.status(500).json({ message: 'Erreur lors de la récupération des partitions.' });
+    res.status(500).json({ message: 'Erreur lors de la rÃ©cupÃ©ration des partitions.' });
   }
 });
 
 router.post('/', async (req, res) => {
     // @ts-ignore
-    const userRole = req.user.role;
-    if (userRole !== 'Admin' && userRole !== 'Gestionnaire') {
-        return res.status(403).json({ message: 'Accès refusé.' });
+    const userRole = (req as any).user.role;
+    if (userRole !== 'Admin' && (!(req as any).user.managedModules || !(req as any).user.managedModules.includes('morceaux')) && userRole !== 'Gestionnaire') {
+        return res.status(403).json({ message: 'AccÃ¨s refusÃ©.' });
     }
 
     const { nom, morceau_id, instrument_id, file_path, file_name, file_type, file_size } = req.body;
@@ -86,19 +86,19 @@ router.post('/', async (req, res) => {
             [newPartition.id, newPartition.nom, newPartition.morceau_id, newPartition.instrument_id, newPartition.file_path, newPartition.file_name, newPartition.file_type, newPartition.file_size, newPartition.created_at, newPartition.updated_at]
         );
 
-        res.status(201).json({ message: 'Partition créée avec succès', partition: newPartition });
+        res.status(201).json({ message: 'Partition crÃ©Ã©e avec succÃ¨s', partition: newPartition });
 
     } catch (error) {
         console.error('Error creating partition:', error);
-        res.status(500).json({ message: 'Erreur lors de la création de la partition.' });
+        res.status(500).json({ message: 'Erreur lors de la crÃ©ation de la partition.' });
     }
 });
 
 router.put('/:id', async (req, res) => {
     // @ts-ignore
-    const userRole = req.user.role;
-    if (userRole !== 'Admin' && userRole !== 'Gestionnaire') {
-        return res.status(403).json({ message: 'Accès refusé.' });
+    const userRole = (req as any).user.role;
+    if (userRole !== 'Admin' && (!(req as any).user.managedModules || !(req as any).user.managedModules.includes('morceaux')) && userRole !== 'Gestionnaire') {
+        return res.status(403).json({ message: 'AccÃ¨s refusÃ©.' });
     }
 
     const { id } = req.params;
@@ -116,36 +116,36 @@ router.put('/:id', async (req, res) => {
 
         // @ts-ignore
         if (result.affectedRows === 0) {
-            return res.status(404).json({ message: 'Partition non trouvée.' });
+            return res.status(404).json({ message: 'Partition non trouvÃ©e.' });
         }
 
-        res.status(200).json({ message: 'Partition mise à jour avec succès.' });
+        res.status(200).json({ message: 'Partition mise Ã  jour avec succÃ¨s.' });
 
     } catch (error) {
         console.error(`Error updating partition with id ${id}:`, error);
-        res.status(500).json({ message: 'Erreur lors de la mise à jour de la partition.' });
+        res.status(500).json({ message: 'Erreur lors de la mise Ã  jour de la partition.' });
     }
 });
 
 router.delete('/:id', async (req, res) => {
     // @ts-ignore
-    const userRole = req.user.role;
-    if (userRole !== 'Admin' && userRole !== 'Gestionnaire') {
-        return res.status(403).json({ message: 'Accès refusé.' });
+    const userRole = (req as any).user.role;
+    if (userRole !== 'Admin' && (!(req as any).user.managedModules || !(req as any).user.managedModules.includes('morceaux')) && userRole !== 'Gestionnaire') {
+        return res.status(403).json({ message: 'AccÃ¨s refusÃ©.' });
     }
 
     const { id } = req.params;
 
     try {
-        // TODO: Gérer la suppression du fichier associé dans le stockage
+        // TODO: GÃ©rer la suppression du fichier associÃ© dans le stockage
         const [result] = await pool.query('DELETE FROM partitions WHERE id = ?', [id]);
 
         // @ts-ignore
         if (result.affectedRows === 0) {
-            return res.status(404).json({ message: 'Partition non trouvée.' });
+            return res.status(404).json({ message: 'Partition non trouvÃ©e.' });
         }
 
-        res.status(200).json({ message: 'Partition supprimée avec succès.' });
+        res.status(200).json({ message: 'Partition supprimÃ©e avec succÃ¨s.' });
 
     } catch (error) {
         console.error(`Error deleting partition with id ${id}:`, error);

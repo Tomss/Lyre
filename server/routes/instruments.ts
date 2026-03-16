@@ -1,4 +1,4 @@
-import { Router } from 'express';
+﻿import { Router } from 'express';
 import { authenticateToken } from '../middleware/auth';
 import pool from '../db';
 import crypto from 'crypto';
@@ -11,7 +11,7 @@ router.use(authenticateToken);
 // GET /api/instruments
 router.get('/', async (req, res) => {
   // @ts-ignore
-  if (req.user.role !== 'Admin') {
+  if ((req as any).user.role !== 'Admin' && (!(req as any).user.managedModules || !(req as any).user.managedModules.includes('instruments'))) {
     return res.status(403).json({ message: 'Acces refuse.' });
   }
   try {
@@ -25,7 +25,7 @@ router.get('/', async (req, res) => {
 // POST /api/instruments
 router.post('/', async (req, res) => {
   // @ts-ignore
-  if (req.user.role !== 'Admin') {
+  if ((req as any).user.role !== 'Admin' && (!(req as any).user.managedModules || !(req as any).user.managedModules.includes('instruments'))) {
     return res.status(403).json({ message: 'Acces refuse.' });
   }
   const { name, teacher, description, photo_url } = req.body;
@@ -54,7 +54,7 @@ router.post('/', async (req, res) => {
 // PUT /api/instruments/:id
 router.put('/:id', async (req, res) => {
   // @ts-ignore
-  if (req.user.role !== 'Admin') {
+  if ((req as any).user.role !== 'Admin' && (!(req as any).user.managedModules || !(req as any).user.managedModules.includes('instruments'))) {
     return res.status(403).json({ message: 'Acces refuse.' });
   }
   const { id } = req.params;
@@ -80,7 +80,7 @@ router.put('/:id', async (req, res) => {
 // DELETE /api/instruments/:id
 router.delete('/:id', async (req, res) => {
   // @ts-ignore
-  if (req.user.role !== 'Admin') {
+  if ((req as any).user.role !== 'Admin' && (!(req as any).user.managedModules || !(req as any).user.managedModules.includes('instruments'))) {
     return res.status(403).json({ message: 'Acces refuse.' });
   }
   const { id } = req.params;

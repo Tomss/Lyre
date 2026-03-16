@@ -1,11 +1,11 @@
-import { Router } from 'express';
+﻿import { Router } from 'express';
 import { authenticateToken } from '../middleware/auth';
 import pool from '../db';
 import crypto from 'crypto';
 
 const router = Router();
 
-// GET /api/carousel (Public) - Récupérer les images actives triées
+// GET /api/carousel (Public) - RÃ©cupÃ©rer les images actives triÃ©es
 router.get('/', async (req, res) => {
     try {
         const query = 'SELECT * FROM carousel_images WHERE is_active = TRUE ORDER BY sort_order ASC, created_at DESC';
@@ -13,15 +13,15 @@ router.get('/', async (req, res) => {
         res.json(images);
     } catch (error) {
         console.error('Error fetching carousel images:', error);
-        res.status(500).json({ message: 'Erreur lors de la récupération des images.' });
+        res.status(500).json({ message: 'Erreur lors de la rÃ©cupÃ©ration des images.' });
     }
 });
 
-// GET /api/carousel/admin (Admin) - Récupérer toutes les images
+// GET /api/carousel/admin (Admin) - RÃ©cupÃ©rer toutes les images
 router.get('/admin', authenticateToken, async (req, res) => {
     // @ts-ignore
-    if (req.user.role !== 'Admin') {
-        return res.status(403).json({ message: 'Accès refusé.' });
+    if ((req as any).user.role !== 'Admin' && (!(req as any).user.managedModules || !(req as any).user.managedModules.includes('theme'))) {
+        return res.status(403).json({ message: 'AccÃ¨s refusÃ©.' });
     }
     try {
         const query = 'SELECT * FROM carousel_images ORDER BY sort_order ASC, created_at DESC';
@@ -29,15 +29,15 @@ router.get('/admin', authenticateToken, async (req, res) => {
         res.json(images);
     } catch (error) {
         console.error('Error fetching admin carousel images:', error);
-        res.status(500).json({ message: 'Erreur lors de la récupération des images.' });
+        res.status(500).json({ message: 'Erreur lors de la rÃ©cupÃ©ration des images.' });
     }
 });
 
 // POST /api/carousel (Admin) - Ajouter une image
 router.post('/', authenticateToken, async (req, res) => {
     // @ts-ignore
-    if (req.user.role !== 'Admin') {
-        return res.status(403).json({ message: 'Accès refusé.' });
+    if ((req as any).user.role !== 'Admin' && (!(req as any).user.managedModules || !(req as any).user.managedModules.includes('theme'))) {
+        return res.status(403).json({ message: 'AccÃ¨s refusÃ©.' });
     }
 
     const { image_url, title, subtitle, sort_order, is_active } = req.body;
@@ -54,18 +54,18 @@ router.post('/', authenticateToken, async (req, res) => {
     try {
         const query = 'INSERT INTO carousel_images (id, image_url, title, subtitle, sort_order, is_active) VALUES (?, ?, ?, ?, ?, ?)';
         await pool.query(query, [id, image_url, title, subtitle, order, active]);
-        res.status(201).json({ message: 'Image ajoutée avec succès.', id });
+        res.status(201).json({ message: 'Image ajoutÃ©e avec succÃ¨s.', id });
     } catch (error) {
         console.error('Error adding carousel image:', error);
         res.status(500).json({ message: 'Erreur lors de l\'ajout de l\'image.' });
     }
 });
 
-// PUT /api/carousel/reorder (Admin) - Réordonner les images
+// PUT /api/carousel/reorder (Admin) - RÃ©ordonner les images
 router.put('/reorder', authenticateToken, async (req, res) => {
     // @ts-ignore
-    if (req.user.role !== 'Admin') {
-        return res.status(403).json({ message: 'Accès refusé.' });
+    if ((req as any).user.role !== 'Admin' && (!(req as any).user.managedModules || !(req as any).user.managedModules.includes('theme'))) {
+        return res.status(403).json({ message: 'AccÃ¨s refusÃ©.' });
     }
 
     const { items } = req.body; // Array of IDs in new order
@@ -84,11 +84,11 @@ router.put('/reorder', authenticateToken, async (req, res) => {
         }
 
         await connection.commit();
-        res.json({ message: 'Ordre mis à jour avec succès.' });
+        res.json({ message: 'Ordre mis Ã  jour avec succÃ¨s.' });
     } catch (error) {
         await connection.rollback();
         console.error('Error reordering carousel images:', error);
-        res.status(500).json({ message: 'Erreur lors du réordonnancement.' });
+        res.status(500).json({ message: 'Erreur lors du rÃ©ordonnancement.' });
     } finally {
         connection.release();
     }
@@ -97,8 +97,8 @@ router.put('/reorder', authenticateToken, async (req, res) => {
 // PUT /api/carousel/:id (Admin) - Modifier une image
 router.put('/:id', authenticateToken, async (req, res) => {
     // @ts-ignore
-    if (req.user.role !== 'Admin') {
-        return res.status(403).json({ message: 'Accès refusé.' });
+    if ((req as any).user.role !== 'Admin' && (!(req as any).user.managedModules || !(req as any).user.managedModules.includes('theme'))) {
+        return res.status(403).json({ message: 'AccÃ¨s refusÃ©.' });
     }
 
     const { id } = req.params;
@@ -111,24 +111,24 @@ router.put('/:id', authenticateToken, async (req, res) => {
       WHERE id = ?
     `;
         await pool.query(query, [image_url, title, subtitle, sort_order, is_active, id]);
-        res.json({ message: 'Image mise à jour avec succès.' });
+        res.json({ message: 'Image mise Ã  jour avec succÃ¨s.' });
     } catch (error) {
         console.error('Error updating carousel image:', error);
-        res.status(500).json({ message: 'Erreur lors de la mise à jour de l\'image.' });
+        res.status(500).json({ message: 'Erreur lors de la mise Ã  jour de l\'image.' });
     }
 });
 
 router.delete('/:id', authenticateToken, async (req, res) => {
     // @ts-ignore
-    if (req.user.role !== 'Admin') {
-        return res.status(403).json({ message: 'Accès refusé.' });
+    if ((req as any).user.role !== 'Admin' && (!(req as any).user.managedModules || !(req as any).user.managedModules.includes('theme'))) {
+        return res.status(403).json({ message: 'AccÃ¨s refusÃ©.' });
     }
 
     const { id } = req.params;
 
     try {
         await pool.query('DELETE FROM carousel_images WHERE id = ?', [id]);
-        res.json({ message: 'Image supprimée avec succès.' });
+        res.json({ message: 'Image supprimÃ©e avec succÃ¨s.' });
     } catch (error) {
         console.error('Error deleting carousel image:', error);
         res.status(500).json({ message: 'Erreur lors de la suppression de l\'image.' });

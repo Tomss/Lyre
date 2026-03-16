@@ -1,4 +1,4 @@
-import { Router } from 'express';
+﻿import { Router } from 'express';
 import { authenticateToken } from '../middleware/auth';
 import pool from '../db';
 import crypto from 'crypto';
@@ -10,8 +10,8 @@ router.use(authenticateToken);
 // GET /api/orchestras
 router.get('/', async (req, res) => {
   // @ts-ignore
-  const userRole = req.user.role;
-  if (userRole !== 'Admin' && userRole !== 'Gestionnaire') {
+  const userRole = (req as any).user.role;
+  if (userRole !== 'Admin' && (!(req as any).user.managedModules || !(req as any).user.managedModules.includes('orchestras')) && userRole !== 'Gestionnaire') {
     return res.status(403).json({ message: 'Acces refuse.' });
   }
   try {
@@ -35,7 +35,7 @@ router.get('/', async (req, res) => {
 // POST /api/orchestras
 router.post('/', async (req, res) => {
   // @ts-ignore
-  if (req.user.role !== 'Admin') {
+  if ((req as any).user.role !== 'Admin' && (!(req as any).user.managedModules || !(req as any).user.managedModules.includes('orchestras'))) {
     return res.status(403).json({ message: 'Acces refuse.' });
   }
   const { name, description, photo_url } = req.body;
@@ -63,7 +63,7 @@ router.post('/', async (req, res) => {
 // PUT /api/orchestras/reorder
 router.put('/reorder', async (req, res) => {
   // @ts-ignore
-  if (req.user.role !== 'Admin') {
+  if ((req as any).user.role !== 'Admin' && (!(req as any).user.managedModules || !(req as any).user.managedModules.includes('orchestras'))) {
     return res.status(403).json({ message: 'Acces refuse.' });
   }
   const { orderedIds } = req.body;
@@ -90,7 +90,7 @@ router.put('/reorder', async (req, res) => {
 // PUT /api/orchestras/:id
 router.put('/:id', async (req, res) => {
   // @ts-ignore
-  if (req.user.role !== 'Admin') {
+  if ((req as any).user.role !== 'Admin' && (!(req as any).user.managedModules || !(req as any).user.managedModules.includes('orchestras'))) {
     return res.status(403).json({ message: 'Acces refuse.' });
   }
   const { id } = req.params;
@@ -153,7 +153,7 @@ router.put('/:id', async (req, res) => {
 // DELETE /api/orchestras/:id
 router.delete('/:id', async (req, res) => {
   // @ts-ignore
-  if (req.user.role !== 'Admin') {
+  if ((req as any).user.role !== 'Admin' && (!(req as any).user.managedModules || !(req as any).user.managedModules.includes('orchestras'))) {
     return res.status(403).json({ message: 'Acces refuse.' });
   }
   const { id } = req.params;

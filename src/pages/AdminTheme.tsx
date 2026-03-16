@@ -175,7 +175,7 @@ const AdminTheme = () => {
     };
 
     useEffect(() => {
-        if (isAuthenticated && currentUser?.role === 'Admin') {
+        if (isAuthenticated && (currentUser?.role === "Admin" || currentUser?.managedModules?.includes("theme"))) {
             fetchImages();
         }
     }, [isAuthenticated, currentUser, token]);
@@ -355,13 +355,13 @@ const AdminTheme = () => {
         } catch (error) {
             setSettingsNotification({ message: 'Erreur lors de la sauvegarde.', type: 'error' });
         } finally {
-            setSavingSettings(false);
+                setSavingSettings(false);
         }
     };
 
 
-    if (currentUser?.role !== 'Admin') {
-        return <Navigate to="/dashboard" />;
+    if (currentUser?.role !== 'Admin' && (!currentUser?.managedModules || !currentUser.managedModules.includes('theme'))) {
+      return <Navigate to="/dashboard" />;
     }
 
     return (

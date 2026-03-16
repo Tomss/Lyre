@@ -29,18 +29,33 @@ router.post('/login', async (req, res) => {
     }
 
     // 3. Récupérer le profil de l'utilisateur
-    const [profileRows] = await pool.query<any[]>('SELECT first_name, last_name, role FROM profiles WHERE id = ?', [user.id]);
+    const [profileRows] = await pool.query<any[]>(`      SELECT u.id, u.email, p.first_name, p.last_name, p.role, p.managed_modules
+      FROM users u
+      JOIN profiles p ON u.id = p.id
+      WHERE u.id = ?`, [user.id]);
     if (profileRows.length === 0) {
       // Should not happen if data is consistent
       return res.status(500).json({ message: 'Profil utilisateur introuvable.' });
     }
-    const profile = profileRows[0];
+
+    const { first_name, last_name, role, managed_modules } = profileRows[0];
+
+    // Parse managed_modules JSON if it exists (it comes as a string from MySQL sometimes depending on the driver version)
+    let parsedModules = [];
+    if (managed_modules) {
+        try {
+            parsedModules = typeof managed_modules === 'string' ? JSON.parse(managed_modules) : managed_modules;
+        } catch (e) {
+            console.error("Failed to parse managed_modules:", e);
+        }
+    }
 
     // 4. Créer le JWT
     const payload = {
       id: user.id,
       email: user.email,
-      role: profile.role,
+      role: role,
+      managedModules: parsedModules,
     };
 
     const secret = process.env.JWT_SECRET;
@@ -56,9 +71,10 @@ router.post('/login', async (req, res) => {
       user: {
         id: user.id,
         email: user.email,
-        firstName: profile.first_name,
-        lastName: profile.last_name,
-        role: profile.role,
+        firstName: first_name,
+        lastName: last_name,
+        role: role,
+        managedModules: parsedModules
       },
     });
 
@@ -83,6 +99,7 @@ router.get('/me', authenticateToken, (req, res) => {
       id: user.id || '',
       email: user.email || '',
       role: user.role || 'User',
+      managedModules: user.managedModules || [],
     }
   });
 });

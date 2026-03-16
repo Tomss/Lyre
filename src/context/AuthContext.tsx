@@ -8,6 +8,7 @@ interface User {
   firstName: string;
   lastName: string;
   role: string;
+  managedModules?: string[];
 }
 
 // Interface pour le contexte d'authentification
