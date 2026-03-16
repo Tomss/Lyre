@@ -39,6 +39,7 @@ const Header = () => {
 
   const isUtilityPage = location.pathname.startsWith('/admin') ||
     location.pathname.startsWith('/connexion') ||
+    location.pathname.startsWith('/activer-compte') ||
     location.pathname.startsWith('/dashboard');
 
   const headerIsSolid = isScrolled || isUtilityPage;
