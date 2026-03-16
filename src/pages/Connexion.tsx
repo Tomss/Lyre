@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const Connexion = () => {
@@ -46,8 +47,14 @@ const Connexion = () => {
           <div className="p-8">
             <form onSubmit={handleLogin} className="space-y-6">
               {error && (
-                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative" role="alert">
-                  <span className="block sm:inline">{error}</span>
+                <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-lg shadow-inner flex items-start space-x-3" role="alert">
+                  <div className="flex-shrink-0 mt-0.5">
+                    <X className="h-5 w-5 bg-red-500 text-white rounded-full p-1" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-sm">Erreur</p>
+                    <p className="text-xs">{error}</p>
+                  </div>
                 </div>
               )}
               <div>

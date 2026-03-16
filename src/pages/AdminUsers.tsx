@@ -289,7 +289,10 @@ const AdminUsers = () => {
         }),
       });
 
-      if (!response.ok) throw new Error('Erreur lors du changement de statut');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Erreur lors du changement de statut');
+      }
       showNotification(`Compte ${newStatus === 'Active' ? 'activé' : 'désactivé'} avec succès`);
     } catch (err: any) {
       console.error(err);
@@ -816,10 +819,10 @@ const AdminUsers = () => {
 
         {/* Notification */}
         {notification.show && (
-          <div className={`fixed top-5 right-5 p-4 rounded-lg shadow-lg text-white ${notification.type === 'success' ? 'bg-green-500' : 'bg-red-500'}`}>
-            <div className="flex items-center">
-              <CheckCircle size={20} className="mr-2" />
-              {notification.message}
+          <div className={`fixed top-5 right-5 p-4 rounded-xl shadow-2xl text-white z-[100] transition-all duration-300 animate-in fade-in slide-in-from-top-4 ${notification.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
+            <div className="flex items-center space-x-3">
+              {notification.type === 'success' ? <CheckCircle size={24} /> : <X size={24} />}
+              <div className="font-semibold">{notification.message}</div>
             </div>
           </div>
         )}
