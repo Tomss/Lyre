@@ -68,6 +68,7 @@ const AdminUsers = () => {
     instruments: [] as string[],
     orchestras: [] as string[],
     managedModules: [] as string[],
+    status: 'Inactive' as 'Inactive' | 'Invited' | 'Active',
   });
 
   const availableModules = [
@@ -380,6 +381,7 @@ const AdminUsers = () => {
       instruments: userInsts.map(inst => inst.id),
       orchestras: userOrcs.map(orc => orc.id),
       managedModules: user.managed_modules || [],
+      status: user.status || 'Inactive',
     });
     setShowAddForm(true);
   };
@@ -396,6 +398,7 @@ const AdminUsers = () => {
       instruments: [],
       orchestras: [],
       managedModules: [],
+      status: 'Inactive',
     });
   };
 
@@ -693,6 +696,18 @@ const AdminUsers = () => {
                       ))}
                     </div>
                   </div>
+                
+                {editingUser && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Statut du compte</label>
+                    <select name="status" value={formData.status} onChange={handleInputChange} className="w-full px-4 py-2 border rounded-lg bg-white">
+                      <option value="Inactive">🔴 Inactif</option>
+                      <option value="Invited">🟡 Invité (En attente d'activation)</option>
+                      <option value="Active">🟢 Actif</option>
+                    </select>
+                  </div>
+                )}
+
                   <div>
                     <h4 className="font-semibold mb-2 text-gray-700">Instruments</h4>
                     <div className="space-y-2 max-h-48 overflow-y-auto border p-3 rounded-lg">
