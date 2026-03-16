@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { API_URL } from '../config';
 import { Music, Lock, CheckCircle, AlertCircle } from 'lucide-react';
 
@@ -8,6 +9,7 @@ const Activation = () => {
   const navigate = useNavigate();
   const token = searchParams.get('token');
 
+  const { logout, isAuthenticated } = useAuth();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -19,7 +21,13 @@ const Activation = () => {
       setStatus('error');
       setMessage("Le lien d'activation est invalide ou manquant.");
     }
-  }, [token]);
+    
+    // Sécurité : Si une session est déjà ouverte, on la ferme pour éviter les conflits
+    if (isAuthenticated) {
+      console.log('[Activation.tsx] Active session detected, logging out for a clean activation environment.');
+      logout();
+    }
+  }, [token, isAuthenticated, logout]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
