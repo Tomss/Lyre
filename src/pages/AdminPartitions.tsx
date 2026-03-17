@@ -1,5 +1,5 @@
 import React, { useState, useEffect, FormEvent } from 'react';
-import { Edit, Trash2, Plus, FileText, Search, X, CheckCircle, ArrowLeft, Upload, Music, Download, Users, Music2, ChevronRight } from 'lucide-react';
+import { Edit, Trash2, Plus, FileText, Search, X, ArrowLeft, Download, Music2, ChevronRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Navigate, Link } from 'react-router-dom';
 
@@ -483,11 +483,6 @@ const AdminPartitions = () => {
     return acc;
   }, {} as Record<string, { morceau: any; partitions: Partition[] }>);
 
-  const openFile = (partition: Partition) => {
-    if (partition.file_path) {
-      window.open(partition.file_path, '_blank');
-    }
-  };
 
   if (currentUser && !['Admin', 'Gestionnaire'].includes(currentUser.role)) {
     return <Navigate to="/dashboard" />;
@@ -588,7 +583,7 @@ const AdminPartitions = () => {
                           <FileText size={24} className="text-gray-500" />
                           <div>
                             <p className="font-semibold text-lg">{partition.nom} <span className="font-normal text-gray-600">({partition.instruments.name})</span></p>
-                            {partition.file_name && <p className="text-xs text-gray-500">{partition.file_name} - {(partition.file_size / 1024).toFixed(2)} KB</p>}
+                            {partition.file_name && <p className="text-xs text-gray-500">{partition.file_name} - {((partition.file_size || 0) / 1024).toFixed(2)} KB</p>}
                           </div>
                         </div>
                         <div className="flex items-center space-x-2">

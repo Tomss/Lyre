@@ -1,5 +1,5 @@
 import React, { useState, useEffect, FormEvent } from 'react';
-import { Edit, Trash2, Plus, Music, Search, X, CheckCircle, ArrowLeft, Users, ChevronRight } from 'lucide-react';
+import { Edit, Trash2, Plus, Music, X, ArrowLeft, Users, ChevronRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Navigate, Link } from 'react-router-dom';
 
@@ -34,7 +34,6 @@ const AdminMorceaux = () => {
   const { currentUser, token, isAuthenticated } = useAuth();
   const [morceaux, setMorceaux] = useState<Morceau[]>([]);
   const [orchestras, setOrchestras] = useState<Orchestra[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
   const [orchestraFilter, setOrchestraFilter] = useState<string[]>([]);
   const [expandedOrchestras, setExpandedOrchestras] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
@@ -193,16 +192,9 @@ const AdminMorceaux = () => {
   };
 
   const filteredMorceaux = morceaux.filter(morceau => {
-    const searchLower = searchTerm.toLowerCase();
-    const matchesSearch = (
-      morceau.nom.toLowerCase().includes(searchLower) ||
-      (morceau.compositeur && morceau.compositeur.toLowerCase().includes(searchLower)) ||
-      morceau.orchestras.some(o => o.name.toLowerCase().includes(searchLower))
-    );
-
     const matchesOrchestra = orchestraFilter.length === 0 || morceau.orchestras.some(o => orchestraFilter.includes(o.id));
 
-    return matchesSearch && matchesOrchestra;
+    return matchesOrchestra;
   });
 
   const morceauxByOrchestra = filteredMorceaux.reduce((acc, morceau) => {

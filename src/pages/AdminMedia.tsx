@@ -1,7 +1,7 @@
 import React, { useState, useEffect, FormEvent } from 'react';
-import { Edit, Trash2, Plus, Image, Search, X, CheckCircle, ArrowLeft, Upload, File, Music, FileText, Camera } from 'lucide-react';
+import { Edit, Trash2, Plus, Image, Search, X, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { Navigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import FileUploadPreview from '../components/FileUploadPreview';
 import MediaPreview from '../components/MediaPreview';
 import ExistingFilesPreview from '../components/ExistingFilesPreview';
@@ -26,6 +26,7 @@ interface MediaItem {
   media_type: 'album' | 'enregistrement' | 'journal' | 'lyrissimot';
   published: boolean;
   is_featured: boolean;
+  media_date: string | null;
   created_at: string;
   files: MediaFile[];
 }
@@ -318,7 +319,7 @@ const AdminMedia = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">Fichiers</label>
                   <input type="file" multiple onChange={handleFileChange} className="w-full" />
                   <FileUploadPreview files={selectedFiles} onRemove={removeFile} />
-                  {editingMedia && <ExistingFilesPreview files={editingMedia.files} onRemove={removeExistingFile} filesToRemove={filesToRemove} />}
+                  {editingMedia && <ExistingFilesPreview files={editingMedia.files.filter(f => !filesToRemove.includes(f.id))} onRemove={removeExistingFile} />}
                 </div>
                 <div className="flex justify-end pt-4 border-t">
                   <button type="button" onClick={cancelEdit} className="mr-4 px-6 py-2 rounded-lg border hover:bg-gray-100">Annuler</button>

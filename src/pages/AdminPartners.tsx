@@ -80,7 +80,7 @@ const SortableItem = ({ id, children }: { id: string, children: React.ReactNode 
 };
 
 const AdminPartners = () => {
-    const { token, logout, currentUser } = useAuth();
+    const { token, currentUser } = useAuth();
     const [partners, setPartners] = useState<Partner[]>([]);
 
     if (currentUser && currentUser.role !== 'Admin' && (!currentUser.managedModules || !currentUser.managedModules.includes('partners'))) {
