@@ -8,7 +8,6 @@ import HomeAgendaSection from '../components/HomeAgendaSection';
 import { API_URL } from '../config';
 
 const Home = () => {
-  const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
   const [backgroundImages, setBackgroundImages] = React.useState<string[]>([]);
 
   // Images par défaut (fallback)
@@ -45,19 +44,6 @@ const Home = () => {
     fetchCarouselImages();
   }, []);
 
-  useEffect(() => {
-    if (backgroundImages.length === 0) return;
-
-    // Carousel d'images de fond
-    const intervalTime = parseInt(settings.carousel_interval || '5000');
-    const imageInterval = setInterval(() => {
-      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % backgroundImages.length);
-    }, intervalTime);
-
-    return () => {
-      clearInterval(imageInterval);
-    };
-  }, [backgroundImages, settings.carousel_interval]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -120,32 +106,13 @@ const Home = () => {
           })}
         </div>
 
-        {/* Floating Content - No Card Overlay */}
+        {/* Floating Title Only */}
         <div className="relative z-20 container mx-auto px-4 flex flex-col items-center justify-center min-h-screen">
-            <div className="flex flex-col items-center text-center animate-fade-in">
-              <div className="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-teal-500/10 border border-teal-500/30 text-teal-300 text-[10px] md:text-sm font-bold uppercase tracking-[0.5em] mb-12 shadow-[0_0_30px_rgba(20,184,166,0.2)]">
-                L’Excellence Musicale depuis 1886
-              </div>
-
-              <h1 className="flex flex-col items-center gap-4 font-poppins font-extrabold text-white mb-16 select-none">
-                <span className="text-8xl md:text-[12rem] tracking-tighter leading-none drop-shadow-[0_20px_40px_rgba(0,0,0,0.8)] flex items-center">
-                  La <span className="text-transparent bg-clip-text bg-gradient-to-br from-teal-200 via-emerald-400 to-cyan-400 ml-4 md:ml-10">Lyre</span>
-                </span>
-                <span className="text-base md:text-2xl font-light tracking-[0.8em] uppercase text-white/50 mt-4 drop-shadow-lg">
-                  Harmonie & École de Musique
-                </span>
-              </h1>
-
-              <div className="flex flex-wrap items-center justify-center gap-6 md:gap-12 mt-4">
-                <a href="#la-lyre" className="group relative px-12 py-6 bg-teal-500 hover:bg-teal-400 text-white font-bold rounded-2xl transition-all duration-500 hover:scale-110 hover:shadow-[0_30px_60px_-15px_rgba(20,184,166,0.6)] overflow-hidden shadow-2xl">
-                  <span className="relative z-10">Découvrir l'Association</span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/30 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-                </a>
-                <a href="#agenda" className="px-12 py-6 bg-white/5 hover:bg-white/10 text-white font-bold rounded-2xl border border-white/20 backdrop-blur-md transition-all duration-500 hover:scale-110 hover:shadow-2xl">
-                  Prochains Concerts
-                </a>
-              </div>
-            </div>
+            <h1 className="flex flex-col items-center gap-4 font-poppins font-extrabold text-white select-none animate-fade-in">
+              <span className="text-8xl md:text-[14rem] tracking-tighter leading-none drop-shadow-[0_20px_40px_rgba(0,0,0,0.8)] flex items-center">
+                La <span className="text-transparent bg-clip-text bg-gradient-to-br from-teal-200 via-emerald-400 to-cyan-400 ml-4 md:ml-12">Lyre</span>
+              </span>
+            </h1>
         </div>
 
         {/* Elegant Scroll Indicator */}
@@ -170,13 +137,16 @@ const Home = () => {
                   <strong className="font-semibold text-slate-800">Association musicale fondée en 1886</strong>, La Lyre, de croches en noires, de répétitions en répétitions, de concerts en concerts, de voyages en rivages, motive jeunes et moins jeunes, sages et exubérants, à vivre et partager ce langage aux mille et une harmoniques...
                </p>
 
-               <div className="bg-white rounded-2xl p-8 md:p-12 shadow-md border border-slate-100">
-                 <p className="text-lg md:text-xl text-slate-700 leading-relaxed mb-6">
-                    L’association <strong className="text-teal-600 uppercase tracking-wide">LYRE</strong>, c'est un <strong className="font-semibold text-slate-800">orchestre d'Harmonie</strong>.
+               <div className="group relative bg-white rounded-3xl p-8 md:p-14 shadow-xl border border-slate-100 overflow-hidden hover:shadow-2xl transition-all duration-500 animate-on-scroll">
+                 {/* Internal glow effects on hover */}
+                 <div className="absolute -top-20 -right-20 w-40 h-40 bg-teal-500/5 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+                 
+                 <p className="relative z-10 text-xl md:text-2xl text-slate-700 leading-relaxed mb-8 group-hover:text-slate-900 transition-colors">
+                    L’association <strong className="text-teal-600 font-bold">LYRE</strong>, c'est un <strong className="font-bold text-slate-800">orchestre d'Harmonie</strong>.
                  </p>
-                 <div className="w-16 h-px bg-slate-200 mx-auto my-6"></div>
-                 <p className="text-lg md:text-xl text-slate-700 leading-relaxed">
-                    Et c'est aussi une <strong className="text-teal-600 uppercase tracking-wide">ÉCOLE</strong> fixant les bases musicales théoriques et pratiques, nécessaires afin de gravir les échelons des petits orchestres vers le Grand.
+                 <div className="w-24 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent mx-auto my-8 group-hover:scale-x-150 transition-transform duration-700"></div>
+                 <p className="relative z-10 text-xl md:text-2xl text-slate-700 leading-relaxed group-hover:text-slate-900 transition-colors">
+                    Et c'est aussi une <strong className="text-teal-600 font-bold">ÉCOLE</strong> fixant les bases musicales indispensables pour gravir les échelons du Grand Orchestre.
                  </p>
                </div>
 
@@ -213,24 +183,27 @@ const Home = () => {
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
               <div className="text-center group">
-                <div className="bg-slate-50 border border-slate-100 rounded-2xl p-6 mb-4 transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-lg">
-                  <Calendar className="h-8 w-8 text-slate-600 mx-auto mb-3" />
-                  <h3 className="font-semibold text-slate-800">Concerts réguliers</h3>
-                  <p className="text-slate-500 mt-2 text-sm">Plusieurs représentations par an</p>
+                <div className="bg-white border border-slate-100 rounded-3xl p-8 mb-4 transition-all duration-500 group-hover:-translate-y-3 group-hover:shadow-2xl group-hover:border-teal-200 relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-br from-teal-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  <Calendar className="h-10 w-10 text-slate-400 mx-auto mb-4 group-hover:text-teal-500 group-hover:scale-110 transition-all duration-500" />
+                  <h3 className="font-bold text-slate-800 text-lg mb-2">Concerts réguliers</h3>
+                  <p className="text-slate-500 text-sm">Plusieurs représentations par an</p>
                 </div>
               </div>
               <div className="text-center group">
-                <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-6 mb-4 transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-lg">
-                  <Users className="h-8 w-8 text-indigo-600 mx-auto mb-3" />
-                  <h3 className="font-semibold text-indigo-900">Tous niveaux</h3>
-                  <p className="text-indigo-700 mt-2 text-sm">De l'éveil au niveau supérieur</p>
+                <div className="bg-white border border-slate-100 rounded-3xl p-8 mb-4 transition-all duration-500 group-hover:-translate-y-3 group-hover:shadow-2xl group-hover:border-indigo-200 relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  <Users className="h-10 w-10 text-slate-400 mx-auto mb-4 group-hover:text-indigo-500 group-hover:scale-110 transition-all duration-500" />
+                  <h3 className="font-bold text-slate-800 text-lg mb-2">Tous niveaux</h3>
+                  <p className="text-slate-500 text-sm">De l'éveil au niveau supérieur</p>
                 </div>
               </div>
               <div className="text-center group">
-                <div className="bg-teal-50 border border-teal-100 rounded-2xl p-6 mb-4 transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-lg">
-                  <Music2 className="h-8 w-8 text-teal-600 mx-auto mb-3" />
-                  <h3 className="font-semibold text-teal-900">Répertoire varié</h3>
-                  <p className="text-teal-700 mt-2 text-sm">Classique, moderne, populaire</p>
+                <div className="bg-white border border-slate-100 rounded-3xl p-8 mb-4 transition-all duration-500 group-hover:-translate-y-3 group-hover:shadow-2xl group-hover:border-cyan-200 relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-br from-cyan-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  <Music2 className="h-10 w-10 text-slate-400 mx-auto mb-4 group-hover:text-cyan-500 group-hover:scale-110 transition-all duration-500" />
+                  <h3 className="font-bold text-slate-800 text-lg mb-2">Répertoire varié</h3>
+                  <p className="text-slate-500 text-sm">Classique, moderne, populaire</p>
                 </div>
               </div>
             </div>
