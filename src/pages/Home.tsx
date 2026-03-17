@@ -152,16 +152,16 @@ const Home = () => {
 
                   <div className="space-y-6">
                     <div className="flex flex-col lg:flex-row lg:items-center gap-4 group">
-                      <div className="h-px w-8 bg-teal-500/40 group-hover:w-12 group-hover:bg-teal-500 transition-all duration-500 rounded-full hidden lg:block"></div>
+                      <div className="h-px w-8 bg-blue-500/40 group-hover:w-12 group-hover:bg-blue-500 transition-all duration-500 rounded-full hidden lg:block"></div>
                       <p className="text-xl md:text-2xl text-slate-800 font-poppins font-medium">
-                        L’association <span className="text-teal-600 font-bold uppercase tracking-tight">LYRE</span>, c'est un <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-emerald-600 font-bold">orchestre d'Harmonie</span>.
+                        L’association La Lyre, c'est un <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 font-bold">Orchestre d'Harmonie</span>.
                       </p>
                     </div>
                     
                     <div className="flex flex-col lg:flex-row lg:items-center gap-4 group">
-                      <div className="h-px w-8 bg-cyan-500/40 group-hover:w-12 group-hover:bg-cyan-500 transition-all duration-500 rounded-full hidden lg:block"></div>
+                      <div className="h-px w-8 bg-indigo-500/40 group-hover:w-12 group-hover:bg-indigo-500 transition-all duration-500 rounded-full hidden lg:block"></div>
                       <p className="text-xl md:text-2xl text-slate-800 font-poppins font-medium">
-                        Et c'est aussi une <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-cyan-600 font-extrabold uppercase tracking-tight">ÉCOLE</span> fixant les bases musicales indispensables.
+                        Et c'est aussi une <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-600 font-extrabold">Ecole</span> fixant les bases musicales indispensables.
                       </p>
                     </div>
                   </div>
