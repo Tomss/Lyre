@@ -101,19 +101,27 @@ const HomeAgendaSection = () => {
     // Auto Scroll Logic
     useEffect(() => {
         const scrollContainer = scrollRef.current;
-        if (!scrollContainer) return;
+        if (!scrollContainer || events.length === 0) return;
 
         let animationFrameId: number;
+        let lastTime = performance.now();
 
-        const scroll = () => {
+        const scroll = (currentTime: number) => {
             if (!isPaused && scrollContainer) {
-                scrollContainer.scrollLeft += 1.0;
+                const deltaTime = currentTime - lastTime;
+                const speed = 0.05; // Pixels per millisecond
 
-                // Reset to start when we reach the end
-                if (scrollContainer.scrollLeft + scrollContainer.clientWidth >= scrollContainer.scrollWidth - 1) {
+                scrollContainer.scrollLeft += speed * deltaTime;
+
+                // Reset to start when we reach the halfway point (end of first set)
+                // with gap-8 (32px), the reset point is (scrollWidth + 32) / 2
+                const halfWidth = (scrollContainer.scrollWidth + 32) / 2;
+
+                if (scrollContainer.scrollLeft >= halfWidth) {
                     scrollContainer.scrollLeft = 0;
                 }
             }
+            lastTime = currentTime;
             animationFrameId = requestAnimationFrame(scroll);
         };
 
@@ -318,10 +326,6 @@ const HomeAgendaSection = () => {
                 onMouseEnter={() => setIsPaused(true)}
                 onMouseLeave={handleMouseLeave}
             >
-                {/* Gradient Masks (Darker for dark theme) */}
-                <div className="absolute inset-y-0 left-0 w-32 md:w-64 bg-gradient-to-r from-slate-900 via-slate-900/90 to-transparent z-20 pointer-events-none"></div>
-                <div className="absolute inset-y-0 right-0 w-32 md:w-64 bg-gradient-to-l from-slate-900 via-slate-900/90 to-transparent z-20 pointer-events-none"></div>
-
                 {/* Navigation Buttons (Updated for Dark Theme / Teal) */}
                 <button
                     onClick={() => scrollManual('left')}
@@ -348,8 +352,9 @@ const HomeAgendaSection = () => {
                         onMouseMove={handleMouseMove}
                         onMouseLeave={handleMouseLeave}
                     >
-                        {events.map((event, index) => (
-                            <div key={`${event.id}-${index}`} className="w-[350px] md:w-[400px] shrink-0 group relative h-[500px]">
+                        {/* Duplicate the array to create the infinite loop effect */}
+                        {[...events, ...events].map((event, index) => (
+                            <div key={`${event.id}-${index}`} className="w-[300px] md:w-[350px] shrink-0 group relative h-[460px]">
                                 {/* Dark Glass Card - Teal / Emerald Theme */}
                                 <div className="h-full bg-slate-800/50 backdrop-blur-sm rounded-[2rem] border border-white/10 shadow-xl shadow-black/30 hover:shadow-2xl hover:shadow-teal-900/30 hover:bg-slate-800/80 hover:border-teal-500/40 transition-all duration-300 overflow-hidden flex flex-col relative group hover:-translate-y-2">
 
@@ -362,7 +367,7 @@ const HomeAgendaSection = () => {
                                     ></div>
 
                                     {/* Image / Header */}
-                                    <div className="h-[240px] relative overflow-hidden bg-slate-900/50 flex-shrink-0">
+                                    <div className="h-[200px] relative overflow-hidden bg-slate-900/50 flex-shrink-0">
                                         <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent opacity-80 z-10"></div>
                                         {event.image_url ? (
                                             <img
