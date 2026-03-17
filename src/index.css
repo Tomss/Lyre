@@ -47,9 +47,50 @@
 
   /* Hide scrollbar for IE, Edge and Firefox */
   .no-scrollbar {
-    -ms-overflow-style: none;
-    /* IE and Edge */
-    scrollbar-width: none;
-    /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+
+  .animate-scroll-vertical {
+    animation: scroll-vertical 60s linear infinite;
+  }
+
+  .animate-scroll-vertical-reverse {
+    animation: scroll-vertical-reverse 60s linear infinite;
+  }
+
+  .animate-float {
+    animation: float 20s ease-in-out infinite;
+  }
+
+  .animate-drift-slow {
+    animation: drift 35s ease-in-out infinite;
+  }
+
+  .animate-drift-fast {
+    animation: drift 25s ease-in-out infinite;
+  }
+
+  @keyframes scroll-vertical {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-50%); }
+  }
+
+  @keyframes scroll-vertical-reverse {
+    0% { transform: translateY(-50%); }
+    100% { transform: translateY(0); }
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    33% { transform: translate(10px, -20px) rotate(1deg); }
+    66% { transform: translate(-10px, -10px) rotate(-1deg); }
+  }
+
+  @keyframes drift {
+    0%, 100% { transform: translate(0, 0); }
+    25% { transform: translate(1%, -1%); }
+    50% { transform: translate(-0.5%, -1.5%); }
+    75% { transform: translate(-1%, 0.5%); }
   }
 }
