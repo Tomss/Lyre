@@ -120,38 +120,32 @@ const Home = () => {
           })}
         </div>
 
-        {/* Ultra-Transparent Glassmorphic Content Card */}
-        <div className="relative z-20 container mx-auto px-4 flex flex-col items-center">
-          <div className="relative group p-8 md:p-14 rounded-[3rem] border border-white/10 bg-white/[0.02] backdrop-blur-md shadow-[0_40px_100px_-20px_rgba(0,0,0,0.6)] overflow-hidden transition-all duration-700 hover:border-white/20 hover:bg-white/[0.05]">
-            {/* Soft Glow effects */}
-            <div className="absolute -top-32 -left-32 w-80 h-80 bg-teal-500/10 rounded-full blur-[120px] animate-pulse"></div>
-            <div className="absolute -bottom-32 -right-32 w-80 h-80 bg-cyan-500/10 rounded-full blur-[120px] animate-pulse pointer-events-none"></div>
-
-            <div className="relative z-10 flex flex-col items-center text-center">
-              <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white/5 border border-white/10 text-teal-300 text-[10px] md:text-xs font-bold uppercase tracking-[0.4em] mb-8 animate-fade-in shadow-xl">
+        {/* Floating Content - No Card Overlay */}
+        <div className="relative z-20 container mx-auto px-4 flex flex-col items-center justify-center min-h-screen">
+            <div className="flex flex-col items-center text-center animate-fade-in">
+              <div className="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-teal-500/10 border border-teal-500/30 text-teal-300 text-[10px] md:text-sm font-bold uppercase tracking-[0.5em] mb-12 shadow-[0_0_30px_rgba(20,184,166,0.2)]">
                 L’Excellence Musicale depuis 1886
               </div>
 
-              <h1 className="flex flex-col items-center gap-3 font-poppins font-extrabold text-white mb-10">
-                <span className="text-7xl md:text-[10rem] tracking-tighter leading-none drop-shadow-[0_15px_15px_rgba(0,0,0,0.5)] flex items-center">
-                  La <span className="text-transparent bg-clip-text bg-gradient-to-br from-teal-200 via-emerald-400 to-cyan-400 ml-2 md:ml-6">Lyre</span>
+              <h1 className="flex flex-col items-center gap-4 font-poppins font-extrabold text-white mb-16 select-none">
+                <span className="text-8xl md:text-[12rem] tracking-tighter leading-none drop-shadow-[0_20px_40px_rgba(0,0,0,0.8)] flex items-center">
+                  La <span className="text-transparent bg-clip-text bg-gradient-to-br from-teal-200 via-emerald-400 to-cyan-400 ml-4 md:ml-10">Lyre</span>
                 </span>
-                <span className="text-sm md:text-xl font-light tracking-[0.6em] uppercase text-white/50 mt-2">
+                <span className="text-base md:text-2xl font-light tracking-[0.8em] uppercase text-white/50 mt-4 drop-shadow-lg">
                   Harmonie & École de Musique
                 </span>
               </h1>
 
-              <div className="flex flex-wrap items-center justify-center gap-4 md:gap-8 mt-4">
-                <a href="#la-lyre" className="group relative px-10 py-5 bg-teal-500 hover:bg-teal-400 text-white font-bold rounded-2xl transition-all duration-500 hover:scale-105 hover:shadow-[0_25px_50px_-12px_rgba(20,184,166,0.6)] overflow-hidden shadow-2xl">
+              <div className="flex flex-wrap items-center justify-center gap-6 md:gap-12 mt-4">
+                <a href="#la-lyre" className="group relative px-12 py-6 bg-teal-500 hover:bg-teal-400 text-white font-bold rounded-2xl transition-all duration-500 hover:scale-110 hover:shadow-[0_30px_60px_-15px_rgba(20,184,166,0.6)] overflow-hidden shadow-2xl">
                   <span className="relative z-10">Découvrir l'Association</span>
                   <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/30 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
                 </a>
-                <a href="#agenda" className="px-10 py-5 bg-white/5 hover:bg-white/10 text-white font-bold rounded-2xl border border-white/10 backdrop-blur-md transition-all duration-500 hover:scale-105 hover:shadow-2xl">
+                <a href="#agenda" className="px-12 py-6 bg-white/5 hover:bg-white/10 text-white font-bold rounded-2xl border border-white/20 backdrop-blur-md transition-all duration-500 hover:scale-110 hover:shadow-2xl">
                   Prochains Concerts
                 </a>
               </div>
             </div>
-          </div>
         </div>
 
         {/* Elegant Scroll Indicator */}
