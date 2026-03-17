@@ -81,41 +81,76 @@ const Home = () => {
 
   return (
     <div className="font-inter">
-      {/* Hero Section */}
-      <section id="accueil" className="relative min-h-screen flex items-center py-24 md:py-32 justify-center bg-cover bg-center bg-no-repeat bg-gray-900 overflow-hidden"
-      >
-        {/* Images de fond avec transition */}
-        {backgroundImages.map((image, index) => (
-          <div
-            key={index}
-            className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-1000 ${index === currentImageIndex ? 'opacity-100' : 'opacity-0'}`}
-            style={{ backgroundImage: `linear-gradient(rgba(15, 23, 42, 0.6), rgba(15, 23, 42, 0.6)), url("${image}")` }}
-          />
-        ))}
-        
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full flex flex-col items-center justify-center text-center">
-            {/* Main Title Only */}
-            <h1 className="flex flex-col items-center gap-4 font-poppins font-bold text-white mb-8 animate-fade-in-up">
-              <span className="text-7xl md:text-[8rem] tracking-tighter drop-shadow-2xl leading-none">
-                La <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-emerald-400 to-cyan-500">Lyre</span>
-              </span>
-              <div className="h-1 w-24 md:w-32 bg-gradient-to-r from-transparent via-teal-400 to-transparent my-2 opacity-80"></div>
-              <span className="text-xl md:text-3xl font-light tracking-[0.3em] uppercase text-white/90 drop-shadow-lg text-center">
-                École de Musique de Chalindrey
-              </span>
-            </h1>
+      {/* Hero Section: Animated Multi-Column Photo Wall */}
+      <section id="accueil" className="relative h-screen w-full bg-slate-950 overflow-hidden flex items-center justify-center">
+        {/* Background Photo Wall */}
+        <div className="absolute inset-0 flex gap-4 opacity-40 scale-110 pointer-events-none">
+          {[0, 1, 2, 3].map((colIndex) => {
+            // Distribute images across 4 columns
+            const colImages = [...backgroundImages, ...backgroundImages].filter((_, i) => i % 4 === colIndex);
+            // Ensure we have enough images for the scroll to look seamless
+            const displayImages = [...colImages, ...colImages, ...colImages];
+            
+            return (
+              <div 
+                key={colIndex} 
+                className={`flex-1 flex flex-col gap-4 ${
+                  colIndex % 2 === 0 ? 'animate-scroll-vertical' : 'animate-scroll-vertical-reverse'
+                }`}
+              >
+                {displayImages.map((image, imgIndex) => (
+                  <div 
+                    key={imgIndex}
+                    className="aspect-[3/4] rounded-2xl bg-cover bg-center shadow-2xl animate-float transition-all duration-700"
+                    style={{ 
+                      backgroundImage: `url("${image}")`,
+                      animationDelay: `${imgIndex * 0.5 + colIndex * 1.2}s`,
+                      animationDuration: `${12 + colIndex * 2}s`
+                    }}
+                  />
+                ))}
+              </div>
+            );
+          })}
         </div>
 
-        {/* Indicateurs de carousel */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-4 z-20">
-          {backgroundImages.map((_, index) => (
-            <button
-              key={index}
-              className={`w-3 h-3 rounded-full transition-all duration-300 ${index === currentImageIndex ? 'bg-teal-400 scale-125 shadow-[0_0_10px_rgba(45,212,191,0.8)]' : 'bg-white/40 hover:bg-white/60'}`}
-              onClick={() => setCurrentImageIndex(index)}
-              aria-label={`Aller à l'image ${index + 1}`}
-            />
-          ))}
+        {/* Glassmorphic Content Card */}
+        <div className="relative z-20 container mx-auto px-4 flex flex-col items-center">
+          <div className="relative group p-8 md:p-16 rounded-[2.5rem] border border-white/20 bg-white/5 backdrop-blur-2xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] overflow-hidden transition-all duration-500 hover:border-white/30 hover:bg-white/10">
+            {/* Animated Glow in background of the card */}
+            <div className="absolute -top-24 -left-24 w-64 h-64 bg-teal-500/20 rounded-full blur-[100px] animate-pulse"></div>
+            <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-cyan-500/20 rounded-full blur-[100px] animate-pulse"></div>
+
+            <div className="relative z-10 flex flex-col items-center text-center">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-teal-500/10 border border-teal-500/30 text-teal-300 text-xs font-bold uppercase tracking-[0.3em] mb-6 animate-fade-in">
+                Depuis 1886
+              </div>
+
+              <h1 className="flex flex-col items-center gap-2 font-poppins font-extrabold text-white mb-8">
+                <span className="text-7xl md:text-9xl tracking-tighter leading-none drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]">
+                  La <span className="text-transparent bg-clip-text bg-gradient-to-br from-teal-300 via-emerald-400 to-cyan-400">Lyre</span>
+                </span>
+                <span className="text-lg md:text-2xl font-light tracking-[0.4em] uppercase text-slate-300/90 mt-4">
+                  École de Musique de Chalindrey
+                </span>
+              </h1>
+
+              <div className="flex flex-wrap items-center justify-center gap-6 mt-4">
+                <a href="#la-lyre" className="group relative px-8 py-4 bg-teal-500 hover:bg-teal-400 text-white font-bold rounded-2xl transition-all duration-300 hover:scale-105 hover:shadow-[0_20px_40px_-10px_rgba(20,184,166,0.5)] overflow-hidden">
+                  <span className="relative z-10">Découvrir l'Association</span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                </a>
+                <a href="#agenda" className="px-8 py-4 bg-white/10 hover:bg-white/20 text-white font-bold rounded-2xl border border-white/20 backdrop-blur-sm transition-all duration-300 hover:scale-105">
+                  Prochains Concerts
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Scroll Indicator */}
+        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 animate-bounce">
+          <div className="w-1 h-12 rounded-full bg-gradient-to-b from-teal-500 to-transparent"></div>
         </div>
       </section>
 
