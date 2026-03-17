@@ -88,7 +88,7 @@ const Home = () => {
             className={`absolute inset-0 transition-opacity duration-1000 ${index === currentImageIndex ? 'opacity-100' : 'opacity-0'}`}
           >
             {/* Main Stage - Contained and Sharp */}
-            <div className="relative h-full w-full max-w-[2560px] mx-auto overflow-hidden">
+            <div className="relative h-full w-full overflow-hidden">
                <div 
                  className="absolute inset-0 bg-cover bg-center bg-no-repeat"
                  style={{ backgroundImage: `linear-gradient(rgba(15, 23, 42, 0.4), rgba(15, 23, 42, 0.4)), url("${image}")` }}
