@@ -40,6 +40,7 @@ const AdminMedia = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState<string[]>(['album', 'enregistrement', 'journal', 'lyrissimot']);
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingMedia, setEditingMedia] = useState<MediaItem | null>(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState<DeleteConfirmation>({ isOpen: false, media: null });
@@ -133,7 +134,7 @@ const AdminMedia = () => {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!token) return;
-    setLoading(true);
+    setSubmitting(true);
 
     try {
       let uploadedFilesData: any[] = [];
@@ -166,7 +167,7 @@ const AdminMedia = () => {
     } catch (err: any) {
       showNotification(err.message, 'error');
     }
-    setLoading(false);
+    setSubmitting(false);
   };
 
   const handleDelete = async () => {
@@ -414,7 +415,7 @@ const AdminMedia = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-1.5">Type de média</label>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1.5">Type de média *</label>
                     <div className="relative">
                         <select name="media_type" value={formData.media_type} onChange={handleInputChange} className="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-white appearance-none">
                             <option value="album">📸 Album Photo</option>
@@ -426,8 +427,8 @@ const AdminMedia = () => {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-1.5">Date associée</label>
-                    <input type="date" name="media_date" value={formData.media_date} onChange={handleInputChange} className="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition" />
+                    <label className="block text-sm font-semibold text-slate-700 mb-1.5">Date associée *</label>
+                    <input type="date" name="media_date" value={formData.media_date} onChange={handleInputChange} required className="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition" />
                   </div>
                 </div>
 
@@ -468,9 +469,9 @@ const AdminMedia = () => {
                 </div>
 
                 <div className="space-y-3">
-                  <label className="block text-sm font-semibold text-slate-700">Gestion des fichiers</label>
+                  <label className="block text-sm font-semibold text-slate-700">Gestion des fichiers *</label>
                   <div className="border-2 border-dashed border-slate-200 rounded-2xl p-8 text-center hover:border-indigo-400 transition-colors group cursor-pointer relative bg-slate-50/50">
-                    <input type="file" multiple onChange={handleFileChange} className="absolute inset-0 opacity-0 cursor-pointer" />
+                    <input type="file" multiple onChange={handleFileChange} className="absolute inset-0 opacity-0 cursor-pointer z-10" />
                     <div className="flex flex-col items-center">
                         <div className="w-12 h-12 bg-indigo-50 text-indigo-500 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform shadow-sm">
                             <Plus size={24} />
@@ -499,8 +500,8 @@ const AdminMedia = () => {
                   <button type="button" onClick={cancelEdit} className="px-6 py-3 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl font-bold transition flex-1 sm:flex-none text-center">
                     Annuler
                   </button>
-                  <button type="submit" disabled={loading} className="px-8 py-3 text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl font-bold transition shadow-lg shadow-indigo-200 flex-1 sm:flex-none flex items-center justify-center disabled:opacity-50">
-                    {loading ? (
+                  <button type="submit" disabled={submitting} className="px-8 py-3 text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl font-bold transition shadow-lg shadow-indigo-200 flex-1 sm:flex-none flex items-center justify-center disabled:opacity-50">
+                    {submitting ? (
                         <>
                             <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
                             Envoi...
