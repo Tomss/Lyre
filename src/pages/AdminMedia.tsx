@@ -62,6 +62,17 @@ const AdminMedia = () => {
     setTimeout(() => setNotification({ show: false, message: '', type: 'success' }), 3000);
   };
 
+  useEffect(() => {
+    if (showAddForm) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [showAddForm]);
+
   const fetchMedia = async () => {
     if (!token) return;
     setLoading(true);
@@ -396,9 +407,9 @@ const AdminMedia = () => {
 
         {/* Add/Edit Form Modal */}
         {showAddForm && (
-          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 flex justify-center items-start p-4 overflow-y-auto pt-24">
-            <div className="bg-slate-50 rounded-3xl shadow-2xl w-full max-w-3xl flex flex-col overflow-hidden border border-white mb-12 animate-in fade-in zoom-in duration-300">
-              <div className="flex justify-between items-center p-6 bg-white border-b border-slate-100">
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-40 flex justify-center items-start p-4 pt-24">
+            <div className="bg-slate-50 rounded-3xl shadow-2xl w-full max-w-3xl flex flex-col overflow-hidden border border-white max-h-[calc(100vh-120px)] animate-in fade-in zoom-in duration-300">
+              <div className="flex justify-between items-center p-6 bg-white border-b border-slate-100 flex-shrink-0">
                 <div className="flex items-center">
                     <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg mr-3">
                         {editingMedia ? <Edit size={20} /> : <Plus size={20} />}
@@ -501,7 +512,7 @@ const AdminMedia = () => {
                   )}
                 </div>
 
-                <div className="flex items-center justify-end p-6 bg-white border-t border-slate-100 gap-3">
+                <div className="flex items-center justify-end p-6 bg-white border-t border-slate-100 gap-3 flex-shrink-0">
                   <button type="button" onClick={cancelEdit} className="px-6 py-3 text-slate-500 hover:text-slate-700 font-bold transition hover:bg-slate-50 rounded-xl">
                     Annuler
                   </button>
