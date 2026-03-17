@@ -94,19 +94,28 @@ const HomeNewsSection = () => {
     // Auto Scroll Logic
     useEffect(() => {
         const scrollContainer = scrollRef.current;
-        if (!scrollContainer) return;
+        if (!scrollContainer || news.length === 0) return;
 
         let animationFrameId: number;
+        let lastTime = performance.now();
 
-        const scroll = () => {
+        const scroll = (currentTime: number) => {
             if (!isPaused && scrollContainer) {
-                scrollContainer.scrollLeft += 1.0;
+                const deltaTime = currentTime - lastTime;
+                const speed = 0.05; // Pixels per millisecond
+                
+                scrollContainer.scrollLeft += speed * deltaTime;
 
-                // Reset to start when we reach the end
-                if (scrollContainer.scrollLeft + scrollContainer.clientWidth >= scrollContainer.scrollWidth - 1) {
+                // For a perfectly seamless loop with duplicated items,
+                // we should reset to 0 when we've scrolled exactly one full set of items + gaps.
+                // In a flex container with gap-8 (32px), this is (scrollWidth + gap) / 2
+                const halfWidth = (scrollContainer.scrollWidth + 32) / 2;
+
+                if (scrollContainer.scrollLeft >= halfWidth) {
                     scrollContainer.scrollLeft = 0;
                 }
             }
+            lastTime = currentTime;
             animationFrameId = requestAnimationFrame(scroll);
         };
 
@@ -257,10 +266,6 @@ const HomeNewsSection = () => {
                 onMouseEnter={() => setIsPaused(true)}
                 onMouseLeave={handleMouseLeave}
             >
-                {/* Gradient Masks */}
-                <div className="absolute inset-y-0 left-0 w-32 md:w-64 bg-gradient-to-r from-white via-white/90 to-transparent z-20 pointer-events-none"></div>
-                <div className="absolute inset-y-0 right-0 w-32 md:w-64 bg-gradient-to-l from-white via-white/90 to-transparent z-20 pointer-events-none"></div>
-
                 {/* Navigation Buttons */}
                 <button
                     onClick={() => scrollManual('left')}
@@ -286,10 +291,11 @@ const HomeNewsSection = () => {
                     onMouseMove={handleMouseMove}
                     onMouseLeave={handleMouseLeave}
                 >
-                    {news.map((item, index) => (
+                    {/* Duplicate the array to create the infinite loop effect */}
+                    {[...news, ...news].map((item, index) => (
                         <div
                             key={`${item.id}-${index}`}
-                            className="w-[350px] md:w-[400px] shrink-0 group relative h-[500px]" // Increased height
+                            className="w-[300px] md:w-[350px] shrink-0 group relative h-[460px]" // Standardized size
                         >
                             <div className="h-full bg-gradient-to-br from-teal-50/80 to-cyan-50/50 rounded-[2rem] shadow-lg shadow-teal-900/5 border border-teal-100/50 hover:border-teal-300/50 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:shadow-teal-100/60 overflow-hidden flex flex-col relative group">
                                 {/* Border Gradient Trick */}
@@ -304,7 +310,7 @@ const HomeNewsSection = () => {
                                 ></div>
 
                                 {/* Image Section */}
-                                <div className="h-[240px] relative overflow-hidden bg-teal-100/30">
+                                <div className="h-[200px] relative overflow-hidden bg-teal-100/30">
                                     <div className="absolute inset-0 bg-gradient-to-t from-teal-900/60 via-teal-900/10 to-transparent opacity-60 group-hover:opacity-40 transition-opacity z-10"></div>
                                     {item.image_url ? (
                                         <img
