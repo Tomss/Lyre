@@ -1,5 +1,5 @@
 // src/App.tsx
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
@@ -28,42 +28,40 @@ import NewsArchive from './pages/NewsArchive';
 
 function App() {
   return (
-    <Router>
-      <div className="min-h-screen bg-white">
-        {/* Global Wrapper for Ultra-Wide Resolutions */}
-        <div className="max-w-[2560px] mx-auto bg-white flex flex-col min-h-screen relative">
-          <ScrollToTop />
-          <Header />
-          <main className="flex-grow">
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/toutes-les-actualites" element={<NewsArchive />} />
-              <Route path="/school" element={<School />} />
-    
-              <Route path="/orchestres" element={<Orchestras />} />
-              <Route path="/media" element={<Media />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/connexion" element={<Connexion />} />
-              <Route path="/activer-compte" element={<Activation />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/admin/users" element={<AdminUsers />} />
-              <Route path="/admin/instruments" element={<AdminInstruments />} />
-              <Route path="/admin/orchestras" element={<AdminOrchestras />} />
-              <Route path="/admin/events" element={<AdminEvents />} />
-              <Route path="/user/events" element={<UserEvents />} />
-              <Route path="/admin/media" element={<AdminMedia />} />
-              <Route path="/admin/theme" element={<AdminTheme />} />
-              <Route path="/admin/partners" element={<AdminPartners />} />
-              <Route path="/admin/morceaux" element={<AdminMorceaux />} />
-    
-              <Route path="/admin/partitions" element={<AdminPartitions />} />
-              <Route path="/admin/news" element={<AdminNews />} />
-            </Routes>
-          </main>
-          <Footer />
-        </div>
+    <div className="min-h-screen bg-white">
+      {/* Global Wrapper for Ultra-Wide Resolutions */}
+      <div className="max-w-[2560px] mx-auto bg-white flex flex-col min-h-screen relative">
+        <ScrollToTop />
+        <Header />
+        <main className="flex-grow">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/toutes-les-actualites" element={<NewsArchive />} />
+            <Route path="/school" element={<School />} />
+  
+            <Route path="/orchestres" element={<Orchestras />} />
+            <Route path="/media" element={<Media />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/connexion" element={<Connexion />} />
+            <Route path="/activer-compte" element={<Activation />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/admin/users" element={<AdminUsers />} />
+            <Route path="/admin/instruments" element={<AdminInstruments />} />
+            <Route path="/admin/orchestras" element={<AdminOrchestras />} />
+            <Route path="/admin/events" element={<AdminEvents />} />
+            <Route path="/user/events" element={<UserEvents />} />
+            <Route path="/admin/media" element={<AdminMedia />} />
+            <Route path="/admin/theme" element={<AdminTheme />} />
+            <Route path="/admin/partners" element={<AdminPartners />} />
+            <Route path="/admin/morceaux" element={<AdminMorceaux />} />
+  
+            <Route path="/admin/partitions" element={<AdminPartitions />} />
+            <Route path="/admin/news" element={<AdminNews />} />
+          </Routes>
+        </main>
+        <Footer />
       </div>
-    </Router>
+    </div>
   );
 }
 
