@@ -6,6 +6,10 @@ import { useTheme } from '../context/ThemeContext';
 import { API_URL } from '../config';
 
 const Header = () => {
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const location = useLocation();
   const { currentUser, logout } = useAuth();
   const { settings } = useTheme();
 
