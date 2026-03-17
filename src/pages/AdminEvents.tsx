@@ -475,14 +475,20 @@ const AdminEvents = () => {
         {showAddForm && (
           <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-40 flex justify-center items-start p-4 pt-24">
             <div className="bg-slate-50 rounded-3xl shadow-2xl w-full max-w-2xl flex flex-col overflow-hidden border border-white max-h-[calc(100vh-120px)] animate-in fade-in zoom-in duration-300">
-              <div className="flex justify-between items-center p-6 bg-white border-b border-slate-100 flex-shrink-0">
+              <div className="flex justify-between items-center p-6 bg-white border-b border-slate-100 flex-shrink-0 relative">
+                <div className="absolute top-0 left-0 w-1 h-full bg-indigo-600"></div>
                 <div className="flex items-center">
-                    <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg mr-3">
-                        {editingEvent ? <Edit size={20} /> : <Plus size={20} />}
+                    <div className="w-12 h-12 bg-gradient-to-br from-indigo-600 to-violet-600 text-white rounded-2xl flex items-center justify-center mr-4 shadow-lg shadow-indigo-200 -rotate-3 group-hover:rotate-0 transition-transform">
+                        {editingEvent ? <Edit size={22} /> : <Plus size={22} />}
                     </div>
-                    <h2 className="text-xl font-bold text-slate-800">{editingEvent ? 'Modifier l\'événement' : 'Nouvel événement'}</h2>
+                    <div>
+                        <h2 className="text-xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700">
+                            {editingEvent ? 'Modifier l\'événement' : 'Nouvel événement'}
+                        </h2>
+                        <p className="text-xs font-semibold text-indigo-500 uppercase tracking-widest mt-0.5">Gestion de l'agenda</p>
+                    </div>
                 </div>
-                <button onClick={cancelEdit} className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"><X size={20} /></button>
+                <button onClick={cancelEdit} className="p-2.5 rounded-xl hover:bg-slate-50 text-slate-400 hover:text-slate-600 transition-all border border-transparent hover:border-slate-100"><X size={20} /></button>
               </div>
               <form onSubmit={handleSubmit} className="flex-grow overflow-y-auto p-6 space-y-5 bg-gradient-to-b from-slate-50 to-white">
                 <div>
