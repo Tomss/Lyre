@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { API_URL } from '../config';
+import { API_URL, BASE_URL } from '../config';
 import { ExternalLink, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -64,7 +64,7 @@ const PartnersSection = () => {
 
                                 {/* Logo */}
                                 <img
-                                    src={partner.logo_url}
+                                    src={partner.logo_url.startsWith('http') ? partner.logo_url : `${BASE_URL}${partner.logo_url}`}
                                     alt={partner.name}
                                     className="max-w-full max-h-full object-contain transition-transform duration-300 transform group-hover:scale-110"
                                 />

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Newspaper, ArrowRight, CalendarDays, X } from 'lucide-react';
 
-import { API_URL } from '../config';
+import { API_URL, BASE_URL } from '../config';
 
 interface NewsItem {
     id: string;
@@ -137,7 +137,7 @@ const HomeNewsSection = () => {
                         {/* Header/Image */}
                         <div className="relative h-64 sm:h-80 bg-slate-100 flex-shrink-0">
                             {selectedNews.image_url ? (
-                                <img src={selectedNews.image_url} alt={selectedNews.title} className="w-full h-full object-cover" />
+                                <img src={selectedNews.image_url.startsWith('http') ? selectedNews.image_url : `${BASE_URL}${selectedNews.image_url}`} alt={selectedNews.title} className="w-full h-full object-cover" />
                             ) : (
                                 <div className="w-full h-full flex flex-col items-center justify-center bg-teal-50 text-teal-300">
                                     <Newspaper className="h-16 w-16 mb-4 opacity-50" />
@@ -209,7 +209,7 @@ const HomeNewsSection = () => {
                                     >
                                         <div className="w-24 h-24 sm:w-32 sm:h-24 flex-shrink-0 bg-slate-100 relative rounded-lg overflow-hidden mr-4">
                                             {item.image_url ? (
-                                                <img src={item.image_url} alt={item.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                                                <img src={item.image_url.startsWith('http') ? item.image_url : `${BASE_URL}${item.image_url}`} alt={item.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                                             ) : (
                                                 <div className="w-full h-full flex flex-col items-center justify-center text-teal-300 bg-teal-50">
                                                     <Newspaper className="w-6 h-6 opacity-50 mb-1" />
@@ -308,7 +308,7 @@ const HomeNewsSection = () => {
                                     <div className="absolute inset-0 bg-gradient-to-t from-teal-900/60 via-teal-900/10 to-transparent opacity-60 group-hover:opacity-40 transition-opacity z-10"></div>
                                     {item.image_url ? (
                                         <img
-                                            src={item.image_url}
+                                            src={item.image_url.startsWith('http') ? item.image_url : `${BASE_URL}${item.image_url}`}
                                             alt={item.title}
                                             className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-1000 pointer-events-none"
                                         />

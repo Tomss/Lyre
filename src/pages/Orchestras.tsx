@@ -11,7 +11,7 @@ interface Orchestra {
     photos?: { id: string; photo_url: string; display_order: number }[];
 }
 
-import { API_URL } from '../config';
+import { API_URL, BASE_URL } from '../config';
 
 const PhotoStack = ({ photos, altPrefix, height = "h-[400px] md:h-[500px]" }: { photos: { id: string; photo_url: string; display_order: number }[], altPrefix: string, height?: string }) => {
     // Local state to manage the stack order. We clone the props to mutable state.
@@ -36,7 +36,7 @@ const PhotoStack = ({ photos, altPrefix, height = "h-[400px] md:h-[500px]" }: { 
             /* Single Photo Fallback */
             <div className={`relative rounded-2xl overflow-hidden shadow-2xl border-[6px] border-white ${height}`}>
                 <img
-                    src={photos[0].photo_url}
+                    src={photos[0].photo_url.startsWith('http') ? photos[0].photo_url : `${BASE_URL}${photos[0].photo_url}`}
                     alt={altPrefix}
                     className="w-full h-full object-cover transform hover:scale-[1.01] transition-transform duration-700"
                 />
@@ -61,7 +61,7 @@ const PhotoStack = ({ photos, altPrefix, height = "h-[400px] md:h-[500px]" }: { 
                 >
                     <div className="relative rounded-2xl overflow-hidden shadow-2xl border-[6px] border-white h-full bg-slate-200">
                         <img
-                            src={photo.photo_url}
+                            src={photo.photo_url.startsWith('http') ? photo.photo_url : `${BASE_URL}${photo.photo_url}`}
                             alt={`${altPrefix} - ${photo.display_order}`}
                             className="w-full h-full object-cover"
                         />
@@ -196,8 +196,8 @@ const Orchestras = () => {
                                             className="group flex items-center gap-3 pr-4 pl-2 py-1.5 rounded-full bg-slate-50 border border-slate-200 hover:bg-teal-50 hover:border-teal-200 transition-all duration-300 shrink-0"
                                         >
                                             <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-sm group-hover:scale-110 transition-transform duration-300">
-                                                <img
-                                                    src={orch.photo_url || "https://via.placeholder.com/150"}
+                                                 <img
+                                                    src={orch.photo_url?.startsWith('http') ? orch.photo_url : (orch.photo_url ? `${BASE_URL}${orch.photo_url}` : "https://via.placeholder.com/150")}
                                                     alt={orch.name}
                                                     className="w-full h-full object-cover"
                                                 />
