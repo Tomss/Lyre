@@ -93,6 +93,10 @@ const Home = () => {
                  className="absolute inset-0 bg-cover bg-center bg-no-repeat"
                  style={{ backgroundImage: `linear-gradient(rgba(15, 23, 42, 0.4), rgba(15, 23, 42, 0.4)), url("${image}")` }}
                />
+               
+               {/* Side Fades - Creates seamless transition to white edges on ultra-wide */}
+               <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-white to-transparent opacity-100 hidden 2xl:block pointer-events-none"></div>
+               <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-white to-transparent opacity-100 hidden 2xl:block pointer-events-none"></div>
             </div>
           </div>
         ))}
