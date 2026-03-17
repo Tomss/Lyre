@@ -4,6 +4,8 @@ import { useAuth } from '../context/AuthContext';
 import { Navigate, Link } from 'react-router-dom';
 
 import { API_URL } from '../config';
+import FileUploadPreview from '../components/FileUploadPreview';
+import ExistingFilesPreview from '../components/ExistingFilesPreview';
 
 interface NewsItem {
     id: string;
@@ -49,8 +51,8 @@ const AdminNews = () => {
         published_at: new Date().toISOString().split('T')[0],
     });
 
-    const [selectedFile, setSelectedFile] = useState<File | null>(null);
-    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+    const [filesToRemove, setFilesToRemove] = useState<string[]>([]);
 
     const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
         setNotification({ show: true, message, type });
@@ -85,12 +87,15 @@ const AdminNews = () => {
     };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            const file = e.target.files[0];
-            setSelectedFile(file);
-            setPreviewUrl(URL.createObjectURL(file));
+        if (e.target.files) {
+            const files = Array.from(e.target.files);
+            // We only keep the last selected file since news only support 1 image
+            setSelectedFiles([files[files.length - 1]]);
         }
     };
+
+    const removeFile = () => setSelectedFiles([]);
+    const removeExistingFile = () => setFilesToRemove([editingNews?.id || '']);
 
     const handleCreate = async (e: FormEvent) => {
         e.preventDefault();
@@ -98,9 +103,9 @@ const AdminNews = () => {
         try {
             let imageUrl = null;
 
-            if (selectedFile) {
+            if (selectedFiles.length > 0) {
                 const uploadData = new FormData();
-                uploadData.append('file', selectedFile);
+                uploadData.append('file', selectedFiles[0]);
                 const uploadResponse = await fetch(`${API_URL}/upload`, {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${token}` },
@@ -138,14 +143,14 @@ const AdminNews = () => {
         try {
             let imageUrl: string | null | undefined = editingNews.image_url;
             
-            // If the user removed the image (previewUrl is null) and didn't select a new one
-            if (!previewUrl && !selectedFile) {
+            // If the user removed the image and didn't select a new one
+            if (filesToRemove.length > 0 && selectedFiles.length === 0) {
                 imageUrl = null;
             }
 
-            if (selectedFile) {
+            if (selectedFiles.length > 0) {
                 const uploadData = new FormData();
-                uploadData.append('file', selectedFile);
+                uploadData.append('file', selectedFiles[0]);
                 const uploadResponse = await fetch(`${API_URL}/upload`, {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${token}` },
@@ -200,7 +205,8 @@ const AdminNews = () => {
             content: news.content,
             published_at: news.published_at ? new Date(news.published_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
         });
-        setPreviewUrl(news.image_url || null);
+        setFilesToRemove([]);
+        setSelectedFiles([]);
         setShowAddForm(true);
     };
 
@@ -208,8 +214,8 @@ const AdminNews = () => {
         setEditingNews(null);
         setShowAddForm(false);
         setFormData({ title: '', content: '', published_at: new Date().toISOString().split('T')[0] });
-        setSelectedFile(null);
-        setPreviewUrl(null);
+        setSelectedFiles([]);
+        setFilesToRemove([]);
     };
 
     const filteredNews = newsList.filter(news =>
@@ -383,28 +389,42 @@ const AdminNews = () => {
                                                     <ImageIcon className="w-4 h-4 mr-1.5 text-slate-400" />
                                                     Image de couverture
                                                 </label>
-                                                <div className="relative">
-                                                    <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" id="news-image" />
-                                                    <label htmlFor="news-image" className="w-full flex items-center justify-center px-4 py-2 bg-white border border-slate-200 border-dashed rounded-xl cursor-pointer hover:bg-slate-50 transition-colors text-slate-500 text-sm font-medium">
-                                                        {selectedFile ? selectedFile.name : 'Choisir un fichier...'}
-                                                    </label>
+                                                <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+                                                    <div className="border-2 border-dashed border-slate-200 rounded-2xl p-6 text-center hover:border-indigo-400 transition-colors group cursor-pointer relative bg-slate-50/50">
+                                                        <input type="file" accept="image/*" onChange={handleFileChange} className="absolute inset-0 opacity-0 cursor-pointer z-10" />
+                                                        <div className="flex flex-col items-center">
+                                                            <div className="w-10 h-10 bg-indigo-50 text-indigo-500 rounded-full flex items-center justify-center mb-2 group-hover:scale-110 transition-transform shadow-sm">
+                                                                <Plus size={20} />
+                                                            </div>
+                                                            <p className="text-xs font-semibold text-slate-700">Cliquez ou glissez votre photo ici</p>
+                                                            <p className="text-[10px] text-slate-500 mt-0.5">Format JPG, PNG ou WebP</p>
+                                                        </div>
+                                                    </div>
+
+                                                    {selectedFiles.length > 0 && (
+                                                        <div className="pt-2 animate-in fade-in slide-in-from-top-2">
+                                                            <FileUploadPreview files={selectedFiles} onRemove={removeFile} />
+                                                        </div>
+                                                    )}
+
+                                                    {editingNews && editingNews.image_url && filesToRemove.length === 0 && (
+                                                        <div className="pt-2">
+                                                            <ExistingFilesPreview 
+                                                                files={[{
+                                                                    id: editingNews.id,
+                                                                    file_name: "Image actuelle",
+                                                                    file_path: editingNews.image_url,
+                                                                    file_type: 'image',
+                                                                    alt_text: editingNews.title,
+                                                                    sort_order: 0
+                                                                }]} 
+                                                                onRemove={removeExistingFile} 
+                                                            />
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
-
-                                        {previewUrl && (
-                                            <div className="relative w-full h-40 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 group">
-                                                <img src={previewUrl} alt="Aperçu" className="w-full h-full object-cover" />
-                                                <button 
-                                                    type="button" 
-                                                    onClick={() => { setPreviewUrl(null); setSelectedFile(null); }} 
-                                                    className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
-                                                    title="Supprimer l'image"
-                                                >
-                                                    <Trash2 size={16} />
-                                                </button>
-                                            </div>
-                                        )}
                                     </div>
 
                                     {/* Section 2: Contenu */}
