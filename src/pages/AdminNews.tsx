@@ -293,7 +293,7 @@ const AdminNews = () => {
                                     {/* Content Info */}
                                     <div className="flex-grow min-w-0">
                                         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 mb-1">
-                                            <h3 className="font-bold text-slate-800 truncate group-hover:text-indigo-600 transition-colors">
+                                            <h3 className="font-bold text-slate-800 truncate">
                                                 {news.title}
                                             </h3>
                                             <span className="hidden sm:block text-slate-300">•</span>
@@ -311,14 +311,14 @@ const AdminNews = () => {
                                     <div className="flex items-center gap-1 sm:gap-2 sm:ml-4 flex-shrink-0">
                                         <button 
                                             onClick={() => handleEdit(news)} 
-                                            className="p-2 sm:p-2.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all" 
+                                            className="p-2 sm:p-2.5 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition-all shadow-sm border border-indigo-100" 
                                             title="Modifier"
                                         >
                                             <Edit size={18} />
                                         </button>
                                         <button 
                                             onClick={() => setDeleteConfirmation({ isOpen: true, news })} 
-                                            className="p-2 sm:p-2.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all" 
+                                            className="p-2 sm:p-2.5 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-all shadow-sm border border-red-100" 
                                             title="Supprimer"
                                         >
                                             <Trash2 size={18} />
