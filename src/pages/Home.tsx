@@ -125,26 +125,41 @@ const Home = () => {
               </h2>
             </div>
             
-            <div className="max-w-3xl mx-auto text-center space-y-8 animate-on-scroll">
-               <p className="text-lg md:text-xl text-slate-600 leading-relaxed">
-                  <strong className="font-semibold text-slate-800">Association musicale fondée en 1886</strong>, La Lyre, de croches en noires, de répétitions en répétitions, de concerts en concerts, de voyages en rivages, motive jeunes et moins jeunes, sages et exubérants, à vivre et partager ce langage aux mille et une harmoniques...
-               </p>
-
-               <div className="group relative bg-white rounded-3xl p-8 md:p-14 shadow-xl border border-slate-100 overflow-hidden hover:shadow-2xl transition-all duration-500 animate-on-scroll">
-                 <div className="absolute -top-20 -right-20 w-40 h-40 bg-teal-500/5 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
-                 
-                 <p className="relative z-10 text-xl md:text-2xl text-slate-700 leading-relaxed mb-8 group-hover:text-slate-900 transition-colors">
-                    L’association <strong className="text-teal-600 font-bold">LYRE</strong>, c'est un <strong className="font-bold text-slate-800">orchestre d'Harmonie</strong>.
-                 </p>
-                 <div className="w-24 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent mx-auto my-8 group-hover:scale-x-150 transition-transform duration-700"></div>
-                 <p className="relative z-10 text-xl md:text-2xl text-slate-700 leading-relaxed group-hover:text-slate-900 transition-colors">
-                    Et c'est aussi une <strong className="text-teal-600 font-bold">ÉCOLE</strong> fixant les bases musicales indispensables pour gravir les échelons du Grand Orchestre.
-                 </p>
+            <div className="max-w-6xl mx-auto flex flex-col lg:flex-row items-center gap-12 lg:gap-20 animate-on-scroll">
+               {/* Site Logo Emblem */}
+               <div className="lg:w-1/3 flex justify-center lg:justify-end order-2 lg:order-1">
+                 <div className="relative group">
+                   <div className="absolute -inset-4 bg-gradient-to-tr from-teal-500/20 to-cyan-500/20 rounded-[3rem] blur-2xl group-hover:blur-3xl transition-all duration-700 opacity-60"></div>
+                   <div className="relative bg-white p-8 md:p-12 rounded-[3.5rem] shadow-2xl border border-white/50 backdrop-blur-sm transition-transform duration-700 group-hover:scale-105 group-hover:rotate-3 overflow-hidden">
+                      <div className="absolute inset-0 bg-gradient-to-br from-white to-slate-50/50"></div>
+                      <img 
+                        src={settings.secondary_logo_url || settings.site_logo_url || "/lyre-logo.png"} 
+                        alt="Logo de La Lyre" 
+                        className="relative z-10 w-48 h-48 md:w-64 md:h-64 object-contain drop-shadow-xl"
+                      />
+                   </div>
+                 </div>
                </div>
 
-               <p className="italic text-teal-700 text-lg md:text-xl font-medium mt-8 pt-6 border-t border-slate-200 inline-block">
-                  Spectateurs à l'ouïe fine, futur(e)s virtuoses ou simples curieux(se)s, prenez le temps de parcourir notre site..
-               </p>
+               <div className="lg:w-2/3 text-center lg:text-left space-y-8 order-1 lg:order-2">
+                  <p className="text-lg md:text-2xl text-slate-600 leading-relaxed font-light">
+                     <strong className="font-semibold text-slate-800">Association musicale fondée en 1886</strong>, La Lyre, de croches en noires, de répétitions en répétitions, de concerts en concerts, de voyages en rivages, motive jeunes et moins jeunes, sages et exubérants, à vivre et partager ce langage aux mille et une harmoniques...
+                  </p>
+
+                  <div className="group relative bg-white rounded-3xl p-8 md:p-12 shadow-xl border border-slate-100 overflow-hidden hover:shadow-2xl transition-all duration-500">
+                    <div className="absolute -top-20 -right-20 w-40 h-40 bg-teal-500/5 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+                    
+                    <p className="relative z-10 text-xl md:text-2xl text-slate-700 leading-relaxed group-hover:text-slate-900 transition-colors">
+                       L’association <strong className="text-teal-600 font-bold uppercase tracking-wide">LYRE</strong>, c'est un <strong className="font-bold text-slate-800">orchestre d'Harmonie</strong>.
+                       <br /><br />
+                       Et c'est aussi une <strong className="text-teal-600 font-bold uppercase tracking-wide">ÉCOLE</strong> fixant les bases musicales indispensables pour gravir les échelons du Grand Orchestre.
+                    </p>
+                  </div>
+
+                  <p className="italic text-teal-700 text-lg md:text-xl font-medium mt-8 pt-6 border-t border-slate-200 inline-block">
+                     Spectateurs à l'ouïe fine, futur(e)s virtuoses ou simples curieux(se)s, prenez le temps de parcourir notre site..
+                  </p>
+               </div>
             </div>
         </div>
       </section>
