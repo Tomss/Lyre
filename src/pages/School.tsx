@@ -29,7 +29,7 @@ const getInstrumentConfig = (name: string) => {
 };
 
 const School = () => {
-  const { pageHeaders } = useTheme();
+  const { settings, pageHeaders } = useTheme();
   const [instruments, setInstruments] = useState<Instrument[]>([]);
   const [instrumentsLoading, setInstrumentsLoading] = useState(true);
   const [selectedInstrument, setSelectedInstrument] = useState<Instrument | null>(null);
@@ -80,35 +80,64 @@ const School = () => {
 
 
 
-      {/* Main Content: Text + Features Grid */}
-      <section id="presentation" className="scroll-mt-20 py-20 bg-slate-50 border-b border-slate-100 relative overflow-hidden">
+      {/* Main Content: Notre École Section */}
+      <section id="presentation" className="scroll-mt-20 py-24 bg-white relative overflow-hidden">
+        {/* Soft Background Accents */}
+        <div className="absolute top-0 right-0 -translate-y-1/4 translate-x-1/4 w-[500px] h-[500px] bg-teal-50/30 rounded-full blur-[100px] pointer-events-none"></div>
+        <div className="absolute bottom-0 left-0 translate-y-1/4 -translate-x-1/4 w-[400px] h-[400px] bg-cyan-50/30 rounded-full blur-[80px] pointer-events-none"></div>
+
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <div className="max-w-4xl mx-auto text-center mb-12 animate-on-scroll">
-              <h2 className="text-3xl md:text-5xl font-poppins font-bold text-slate-800 mb-6 relative inline-block">
+            <div className="max-w-4xl mx-auto text-center mb-16 animate-on-scroll">
+              <h2 className="font-poppins font-bold text-3xl md:text-5xl text-slate-900 mb-6 relative inline-block">
                 Notre École
-                <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-24 h-1 bg-teal-500 rounded-full"></div>
+                <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-16 h-1 bg-teal-500 rounded-full"></div>
               </h2>
             </div>
             
-            <div className="max-w-3xl mx-auto text-center space-y-8 animate-on-scroll">
-               <p className="text-lg md:text-xl text-slate-600 leading-relaxed">
-                  L'école propose une formation musicale du <strong className="font-semibold text-slate-800">niveau Eveil</strong> au <strong className="font-semibold text-slate-800">niveau fin de 2nd cycle</strong>.
-                  L’enseignement est dispensé par des professeurs titulaires d’un D.E. ou d’un D.N.S.P.M., diplômés de Conservatoires à Rayonnement Régional ou Supérieur, passionnés par la musique et la pédagogie.
-               </p>
-
-               <div className="bg-white rounded-2xl p-8 md:p-12 shadow-md border border-slate-100">
-                 <p className="text-lg md:text-xl text-slate-700 leading-relaxed mb-6">
-                    Les cours suivent le rythme scolaire : un cours de solfège, une demi-heure d’instrument et une activité orchestrale par semaine.
-                 </p>
-                 <div className="w-16 h-px bg-slate-200 mx-auto my-6"></div>
-                 <p className="text-lg md:text-xl text-slate-700 leading-relaxed">
-                    Aux activités d’éveil ludiques, succède l’intégration progressive dans les orchestres d’élèves, jusqu’à l’accession aux rangs du <strong className="text-teal-600 uppercase tracking-wide">Grand Orchestre d’Harmonie</strong>.
-                 </p>
+            <div className="max-w-6xl mx-auto flex flex-col lg:flex-row items-center gap-12 lg:gap-20 animate-on-scroll">
+               {/* Site Logo - Subtle Animation */}
+               <div className="lg:w-1/3 flex justify-center order-2 lg:order-1">
+                 <div className="relative group/logo">
+                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[130%] h-[130%] bg-teal-500/5 rounded-full blur-[60px]"></div>
+                   <div className="relative animate-float">
+                      <img 
+                        src={settings.secondary_logo_url || settings.site_logo_url || "/lyre-logo.png"} 
+                        alt="Logo de La Lyre" 
+                        className="w-56 h-56 md:w-72 md:h-72 object-contain drop-shadow-lg transition-transform duration-1000 group-hover/logo:scale-105"
+                      />
+                   </div>
+                 </div>
                </div>
 
-               <p className="italic text-teal-700 text-lg md:text-xl font-medium mt-8 pt-6 border-t border-slate-200 inline-block">
-                  Envie de faire de la musique, de nous rencontrer ? Marie-Christine et les professeurs sont présents pour vous accueillir !
-               </p>
+               {/* Content - Clean & Balanced */}
+               <div className="lg:w-2/3 text-center lg:text-left space-y-10 order-1 lg:order-2">
+                  <p className="text-lg md:text-xl text-slate-600 leading-relaxed font-poppins font-light">
+                    L'école propose une formation musicale du <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 font-bold">niveau Eveil</span> au <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-600 font-bold">niveau fin de 2nd cycle</span>.
+                    L’enseignement est dispensé par des professeurs titulaires d’un D.E. ou d’un D.N.S.P.M., diplômés de Conservatoires à Rayonnement Régional ou Supérieur, passionnés par la musique et la pédagogie.
+                  </p>
+
+                  <div className="space-y-6">
+                    <div className="flex flex-col lg:flex-row lg:items-center gap-4 group">
+                      <div className="h-px w-8 bg-blue-500/40 group-hover:w-12 group-hover:bg-blue-500 transition-all duration-500 rounded-full hidden lg:block"></div>
+                      <p className="text-xl md:text-2xl text-slate-800 font-poppins font-medium leading-relaxed">
+                        Les cours suivent le rythme scolaire : un cours de solfège, une demi-heure d’instrument et une activité orchestrale par semaine.
+                      </p>
+                    </div>
+                    
+                    <div className="flex flex-col lg:flex-row lg:items-center gap-4 group">
+                      <div className="h-px w-8 bg-teal-500/40 group-hover:w-12 group-hover:bg-teal-500 transition-all duration-500 rounded-full hidden lg:block"></div>
+                      <p className="text-xl md:text-2xl text-slate-800 font-poppins font-medium leading-relaxed">
+                        Aux activités d’éveil ludiques, succède l’intégration progressive dans les orchestres d’élèves, jusqu’à l’accession aux rangs du <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-emerald-600 font-extrabold uppercase tracking-wide">Grand Orchestre d’Harmonie</span>.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="pt-6 border-t border-slate-50 inline-block">
+                    <p className="italic text-teal-700/80 text-lg md:text-xl font-medium">
+                      Envie de faire de la musique, de nous rencontrer ? Marie-Christine et les professeurs sont présents pour vous accueillir !
+                    </p>
+                  </div>
+               </div>
             </div>
         </div>
       </section>
