@@ -1,5 +1,5 @@
 import React, { useState, useEffect, FormEvent } from 'react';
-import { Edit, Trash2, Users, Mail, User, Shield, X, UserPlus, CheckCircle, Search, ArrowLeft, ChevronRight, Power } from 'lucide-react';
+import { Edit, Trash2, Users, Mail, User, Shield, X, UserPlus, CheckCircle, Search, ArrowLeft, ChevronRight, Power, Lock, Music, LayoutGrid } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Navigate, Link } from 'react-router-dom';
 
@@ -49,6 +49,7 @@ const AdminUsers = () => {
   const [roleFilter, setRoleFilter] = useState<string[]>(['Admin', 'Gestionnaire', 'Membre']);
   const [statusFilter, setStatusFilter] = useState<string[]>(['Active', 'Invited', 'Inactive']);
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingUser, setEditingUser] = useState<UserData | null>(null);
   const [expandedRoles, setExpandedRoles] = useState<Set<string>>(new Set(['Admin', 'Gestionnaire', 'Membre']));
@@ -327,8 +328,7 @@ const AdminUsers = () => {
   const handleCreate = async (e: FormEvent) => {
     e.preventDefault();
     if (!token) return;
-    setLoading(true);
-
+    setSubmitting(true);
     try {
       const response = await fetch(`${API_URL}/users`, {
         method: 'POST',
@@ -348,20 +348,19 @@ const AdminUsers = () => {
       showNotification(result.message);
       cancelEdit();
       fetchUsers();
-      fetchAllUserAssociations(); // Re-fetch associations
+      fetchAllUserAssociations();
     } catch (err: any) {
       console.error('Erreur de création:', err);
       showNotification(err.message, 'error');
     }
-    setLoading(false);
+    setSubmitting(false);
   };
 
   // MIGRÉ
   const handleUpdate = async (e: FormEvent) => {
     e.preventDefault();
     if (!editingUser || !token) return;
-    setLoading(true);
-
+    setSubmitting(true);
     try {
       const response = await fetch(`${API_URL}/users/${editingUser.id}`, {
         method: 'PUT',
@@ -381,12 +380,12 @@ const AdminUsers = () => {
       showNotification(result.message);
       cancelEdit();
       fetchUsers();
-      fetchAllUserAssociations(); // Re-fetch associations
+      fetchAllUserAssociations();
     } catch (err: any) {
       console.error('Erreur de mise à jour:', err);
       showNotification(err.message, 'error');
     }
-    setLoading(false);
+    setSubmitting(false);
   };
 
   // Supprimer un utilisateur
@@ -805,84 +804,168 @@ const AdminUsers = () => {
 
         {/* Add/Edit Form Modal */}
         {showAddForm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 z-40 flex justify-center items-center p-4">
-            <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
-              <div className="flex justify-between items-center p-5 border-b">
-                <h2 className="text-2xl font-bold text-gray-800">{editingUser ? 'Modifier' : 'Ajouter'} un utilisateur</h2>
-                <button onClick={cancelEdit} className="p-2 rounded-full hover:bg-gray-200"><X size={24} /></button>
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-40 flex justify-center items-start p-4 pt-24">
+            <div className="bg-slate-50 rounded-3xl shadow-2xl w-full max-w-2xl flex flex-col overflow-hidden border border-white max-h-[calc(100vh-120px)] animate-in fade-in zoom-in duration-300">
+              <div className="flex justify-between items-center p-5 bg-white border-b border-slate-100 flex-shrink-0">
+                <div className="flex items-center">
+                    <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mr-4">
+                        {editingUser ? <Edit size={20} /> : <UserPlus size={20} />}
+                    </div>
+                    <h2 className="text-xl font-bold text-slate-800 tracking-tight">
+                        {editingUser ? 'Modifier l\'utilisateur' : 'Nouvel utilisateur'}
+                    </h2>
+                </div>
+                <button onClick={cancelEdit} className="p-2 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
+                    <X size={20} />
+                </button>
               </div>
-              <form onSubmit={editingUser ? handleUpdate : handleCreate} className="flex-grow overflow-y-auto p-6 space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <input type="text" name="firstName" value={formData.firstName} onChange={handleInputChange} placeholder="Prénom" required className="w-full px-4 py-2 border rounded-lg" />
-                  <input type="text" name="lastName" value={formData.lastName} onChange={handleInputChange} placeholder="Nom" required className="w-full px-4 py-2 border rounded-lg" />
-                </div>
-                <input type="email" name="email" value={formData.email} onChange={handleInputChange} placeholder="Email" required className="w-full px-4 py-2 border rounded-lg" />
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Rôle</label>
-                  <select name="role" value={formData.role} onChange={handleInputChange} className="w-full px-4 py-2 border rounded-lg bg-white">
-                    <option value="Membre">Membre</option>
-                    <option value="Gestionnaire">Gestionnaire</option>
-                    <option value="Admin">Admin</option>
-                  </select>
+              <form onSubmit={editingUser ? handleUpdate : handleCreate} className="flex-grow overflow-y-auto p-5 space-y-6 bg-gradient-to-b from-slate-50 to-white">
+                {/* Section: Informations personnelles */}
+                <div className="space-y-4">
+                    <div className="flex items-center space-x-2 text-indigo-600 mb-1">
+                        <User size={16} />
+                        <h3 className="text-xs font-bold uppercase tracking-wider">Informations personnelles</h3>
+                    </div>
+                    
+                    <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label className="flex items-center text-sm font-semibold text-slate-700 mb-1">
+                                    <User size={14} className="mr-2 text-slate-400" /> Prénom *
+                                </label>
+                                <input type="text" name="firstName" value={formData.firstName} onChange={handleInputChange} placeholder="Prénom" required className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-slate-50/30 focus:bg-white text-sm" />
+                            </div>
+                            <div>
+                                <label className="flex items-center text-sm font-semibold text-slate-700 mb-1">
+                                    <User size={14} className="mr-2 text-slate-400" /> Nom *
+                                </label>
+                                <input type="text" name="lastName" value={formData.lastName} onChange={handleInputChange} placeholder="Nom" required className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-slate-50/30 focus:bg-white text-sm" />
+                            </div>
+                        </div>
+                        <div>
+                            <label className="flex items-center text-sm font-semibold text-slate-700 mb-1">
+                                <Mail size={14} className="mr-2 text-slate-400" /> Adresse Email *
+                            </label>
+                            <input type="email" name="email" value={formData.email} onChange={handleInputChange} placeholder="Email" required className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-slate-50/30 focus:bg-white text-sm" />
+                        </div>
+                    </div>
                 </div>
 
-                {formData.role === 'Admin' && (
-                  <div className="bg-red-50 p-4 rounded-lg border border-red-100">
-                    <label className="block text-sm font-medium text-red-800 mb-1">Mot de passe de l'Administrateur</label>
-                    <input type="password" name="password" value={formData.password} onChange={handleInputChange} placeholder={editingUser ? 'Nouveau mot de passe (laisser vide pour ne pas changer)' : 'Mot de passe obligatoire'} required={!editingUser && formData.role === 'Admin'} className="w-full px-4 py-2 border border-red-300 rounded-lg focus:ring-red-500 focus:border-red-500" />
-                    <p className="text-xs text-red-600 mt-1">Les profils Admin ne peuvent pas être activés par email, leur mot de passe doit être défini ici.</p>
-                  </div>
-                )}
+                {/* Section: Rôle & Permissions */}
+                <div className="space-y-4">
+                    <div className="flex items-center space-x-2 text-indigo-600 mb-1">
+                        <Shield size={16} />
+                        <h3 className="text-xs font-bold uppercase tracking-wider">Rôle & Permissions</h3>
+                    </div>
 
-                {formData.role === 'Gestionnaire' && (
-                  <div>
-                    <h4 className="font-semibold mb-2 text-gray-700">Permissions des Modules</h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 border p-4 rounded-lg bg-gray-50">
-                      {availableModules.map(module => (
-                        <label key={module.id} className="flex items-center space-x-3 cursor-pointer">
-                          <input 
-                            type="checkbox" 
-                            checked={formData.managedModules.includes(module.id)} 
-                            onChange={(e) => handleModuleChange(module.id, e.target.checked)} 
-                            className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500" 
-                          />
-                          <span className="text-gray-700 text-sm font-medium">{module.label}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                    <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label className="flex items-center text-sm font-semibold text-slate-700 mb-1">
+                                    <LayoutGrid size={14} className="mr-2 text-slate-400" /> Rôle
+                                </label>
+                                <div className="relative">
+                                    <select name="role" value={formData.role} onChange={handleInputChange} className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-slate-50/30 focus:bg-white appearance-none text-sm">
+                                        <option value="Membre">👤 Membre</option>
+                                        <option value="Gestionnaire">🛠️ Gestionnaire</option>
+                                        <option value="Admin">⚡ Admin</option>
+                                    </select>
+                                    <ChevronRight className="absolute right-3 top-1/2 -translate-y-1/2 rotate-90 text-slate-400 pointer-events-none" size={14} />
+                                </div>
+                            </div>
+                            {formData.role === 'Admin' && (
+                                <div>
+                                    <label className="flex items-center text-sm font-semibold text-red-700 mb-1">
+                                        <Lock size={14} className="mr-2 text-red-400" /> Mot de passe Admin
+                                    </label>
+                                    <input type="password" name="password" value={formData.password} onChange={handleInputChange} placeholder={editingUser ? 'Laisser vide pour ne pas changer' : 'Requis pour Admin'} required={!editingUser && formData.role === 'Admin'} className="w-full px-4 py-2 rounded-xl border border-red-200 focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition bg-red-50/30 focus:bg-white text-sm" />
+                                </div>
+                            )}
+                        </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <h4 className="font-semibold mb-2 text-gray-700">Orchestres</h4>
-                    <div className="space-y-2 max-h-48 overflow-y-auto border p-3 rounded-lg">
-                      {orchestras.map(orc => (
-                        <label key={orc.id} className="flex items-center space-x-3">
-                          <input type="checkbox" checked={formData.orchestras.includes(orc.id)} onChange={(e) => handleOrchestraChange(orc.id, e.target.checked)} className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
-                          <span className="text-gray-700">{orc.name}</span>
-                        </label>
-                      ))}
+                        {formData.role === 'Gestionnaire' && (
+                            <div className="animate-in fade-in slide-in-from-top-2">
+                                <label className="flex items-center text-sm font-semibold text-slate-700 mb-2">
+                                    <CheckCircle size={14} className="mr-2 text-slate-400" /> Modules gérés
+                                </label>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-3 bg-slate-50/50 rounded-xl border border-slate-100">
+                                    {availableModules.map(module => (
+                                        <label key={module.id} className="flex items-center space-x-2 cursor-pointer group p-1">
+                                            <input 
+                                                type="checkbox" 
+                                                checked={formData.managedModules.includes(module.id)} 
+                                                onChange={(e) => handleModuleChange(module.id, e.target.checked)} 
+                                                className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 accent-indigo-600 cursor-pointer" 
+                                            />
+                                            <span className="text-slate-600 text-xs group-hover:text-indigo-600 transition-colors">{module.label}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
-                  </div>
-                
-                  <div>
-                    <h4 className="font-semibold mb-2 text-gray-700">Instruments</h4>
-                    <div className="space-y-2 max-h-48 overflow-y-auto border p-3 rounded-lg">
-                      {instruments.map(inst => (
-                        <label key={inst.id} className="flex items-center space-x-3">
-                          <input type="checkbox" checked={formData.instruments.includes(inst.id)} onChange={(e) => handleInstrumentChange(inst.id, e.target.checked)} className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
-                          <span className="text-gray-700">{inst.name}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
                 </div>
-                <div className="flex justify-end pt-4 border-t">
-                  <button type="button" onClick={cancelEdit} className="mr-4 px-6 py-2 rounded-lg border hover:bg-gray-100">Annuler</button>
-                  <button type="submit" disabled={loading} className="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition disabled:bg-blue-300">
-                    {loading ? 'Enregistrement...' : (editingUser ? 'Mettre à jour' : 'Créer')}
+
+                {/* Section: Orchestres & Instruments */}
+                <div className="space-y-4">
+                    <div className="flex items-center space-x-2 text-indigo-600 mb-1">
+                        <Users size={16} />
+                        <h3 className="text-xs font-bold uppercase tracking-wider">Orchestres & Instruments</h3>
+                    </div>
+
+                    <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label className="flex items-center text-sm font-semibold text-slate-700 mb-2">
+                                    <Users size={14} className="mr-2 text-slate-400" /> Orchestres
+                                </label>
+                                <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto p-2 bg-slate-50/50 rounded-xl border border-slate-100 shadow-inner">
+                                    {orchestras.map(orchestra => (
+                                        <label key={orchestra.id} className="flex items-center space-x-2 bg-white px-3 py-1.5 rounded-lg border border-slate-100 shadow-sm cursor-pointer group hover:border-indigo-200 hover:bg-indigo-50/30 transition-all">
+                                            <input 
+                                                type="checkbox" 
+                                                checked={formData.orchestras.includes(orchestra.id)} 
+                                                onChange={(e) => handleOrchestraChange(orchestra.id, e.target.checked)} 
+                                                className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 accent-indigo-600" 
+                                            />
+                                            <span className="text-xs font-medium text-slate-600 group-hover:text-indigo-700">{orchestra.name}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+                            <div>
+                                <label className="flex items-center text-sm font-semibold text-slate-700 mb-2">
+                                    <Music size={14} className="mr-2 text-slate-400" /> Instruments
+                                </label>
+                                <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto p-2 bg-slate-50/50 rounded-xl border border-slate-100 shadow-inner">
+                                    {instruments.map(instrument => (
+                                        <label key={instrument.id} className="flex items-center space-x-2 bg-white px-3 py-1.5 rounded-lg border border-slate-100 shadow-sm cursor-pointer group hover:border-emerald-200 hover:bg-emerald-50/30 transition-all">
+                                            <input 
+                                                type="checkbox" 
+                                                checked={formData.instruments.includes(instrument.id)} 
+                                                onChange={(e) => handleInstrumentChange(instrument.id, e.target.checked)} 
+                                                className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 accent-emerald-600" 
+                                            />
+                                            <span className="text-xs font-medium text-slate-600 group-hover:text-emerald-700">{instrument.name}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="flex items-center justify-end p-5 bg-white border-t border-slate-100 gap-3 flex-shrink-0">
+                  <button type="button" onClick={cancelEdit} className="px-5 py-2.5 text-slate-500 hover:text-slate-700 font-bold transition hover:bg-slate-50 rounded-xl text-sm">
+                    Annuler
+                  </button>
+                  <button type="submit" disabled={submitting} className="px-8 py-2.5 text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl font-bold transition shadow-lg shadow-indigo-200 flex items-center justify-center text-sm">
+                    {submitting ? (
+                        <>
+                            <div className="animate-spin rounded-full h-3 w-3 border-2 border-white border-t-transparent mr-2"></div>
+                            Validation...
+                        </>
+                    ) : (editingUser ? 'Mettre à jour' : 'Créer l\'utilisateur')}
                   </button>
                 </div>
               </form>
