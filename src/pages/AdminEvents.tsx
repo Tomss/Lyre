@@ -338,7 +338,7 @@ const AdminEvents = () => {
               <Calendar className="mr-3 h-8 w-8 text-indigo-600" />
               Gestion des Événements
             </h1>
-            <button onClick={() => { setEditingEvent(null); setShowAddForm(true); }} className="flex items-center px-5 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-200">
+            <button onClick={() => { setEditingEvent(null); setShowAddForm(true); }} className="flex items-center px-5 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-200 mt-4 md:mt-0">
               <Plus className="mr-2 h-5 w-5" />
               Ajouter un événement
             </button>
@@ -364,7 +364,7 @@ const AdminEvents = () => {
           </div>
 
           {/* Row 2: Filters */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-2 border-t border-slate-100">
+          <div className="flex flex-col lg:flex-row gap-6 pt-2 border-t border-slate-100">
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-3 flex items-center">
                 <Clock className="w-4 h-4 mr-2 text-indigo-500" /> Filtrer par type
@@ -384,10 +384,12 @@ const AdminEvents = () => {
                 <button onClick={() => setTimeFilter('all')} className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${timeFilter === 'all' ? 'bg-indigo-600 text-white shadow-md shadow-indigo-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>Tous</button>
                 <button onClick={() => setTimeFilter('upcoming')} className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${timeFilter === 'upcoming' ? 'bg-amber-500 text-white shadow-md shadow-amber-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>À venir</button>
                 <button onClick={() => setTimeFilter('past')} className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${timeFilter === 'past' ? 'bg-slate-500 text-white shadow-md shadow-slate-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>Passés</button>
-                <div className="flex items-center space-x-2 ml-auto">
-                    <button onClick={expandAllTypes} className="text-sm bg-slate-100 text-slate-600 px-3 py-1.5 rounded-lg hover:bg-slate-200 transition">Tout déplier</button>
-                    <button onClick={collapseAllTypes} className="text-sm bg-slate-100 text-slate-600 px-3 py-1.5 rounded-lg hover:bg-slate-200 transition">Tout replier</button>
-                </div>
+              </div>
+            </div>
+            <div className="lg:border-l lg:pl-6 border-slate-100 flex items-end lg:ml-auto pt-4 lg:pt-0 pb-0.5">
+              <div className="flex items-center space-x-2">
+                <button onClick={expandAllTypes} className="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl hover:bg-slate-200 transition text-sm font-medium whitespace-nowrap">Tout déplier</button>
+                <button onClick={collapseAllTypes} className="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl hover:bg-slate-200 transition text-sm font-medium whitespace-nowrap">Tout replier</button>
               </div>
             </div>
           </div>
