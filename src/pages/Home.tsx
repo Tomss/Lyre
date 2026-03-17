@@ -117,73 +117,59 @@ const Home = () => {
 
       {/* Qui sommes-nous ? Section */}
       <section id="la-lyre" className="scroll-mt-20 py-24 bg-white relative overflow-hidden">
-        {/* Decorative Background Elements - More vivid and modern */}
-        <div className="absolute top-0 right-0 -translate-y-1/4 translate-x-1/4 w-[600px] h-[600px] bg-teal-50/40 rounded-full blur-[120px] pointer-events-none opacity-60"></div>
-        <div className="absolute bottom-0 left-0 translate-y-1/4 -translate-x-1/4 w-[500px] h-[500px] bg-cyan-50/40 rounded-full blur-[100px] pointer-events-none opacity-50"></div>
-        
-        {/* Large faint background text for depth */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[25rem] font-black text-slate-50 select-none pointer-events-none z-0 opacity-[0.35] font-poppins tracking-tighter uppercase whitespace-nowrap">
-          L'AME DE LA MUSIQUE
-        </div>
+        {/* Soft Background Accents */}
+        <div className="absolute top-0 right-0 -translate-y-1/4 translate-x-1/4 w-[500px] h-[500px] bg-teal-50/30 rounded-full blur-[100px] pointer-events-none"></div>
+        <div className="absolute bottom-0 left-0 translate-y-1/4 -translate-x-1/4 w-[400px] h-[400px] bg-cyan-50/30 rounded-full blur-[80px] pointer-events-none"></div>
 
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div className="max-w-4xl mx-auto text-center mb-16 animate-on-scroll">
               <h2 className="font-poppins font-bold text-3xl md:text-5xl text-slate-900 mb-6 relative inline-block">
                 Qui sommes-nous ?
-                <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-24 h-1.5 bg-gradient-to-r from-teal-500 to-cyan-500 rounded-full shadow-sm shadow-teal-100"></div>
+                <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-16 h-1 bg-teal-500 rounded-full"></div>
               </h2>
             </div>
             
-            <div className="max-w-6xl mx-auto flex flex-col lg:flex-row items-center gap-16 lg:gap-24 animate-on-scroll">
-               {/* Site Logo - Floating & Vivid */}
-               <div className="lg:w-2/5 flex justify-center order-2 lg:order-1">
+            <div className="max-w-6xl mx-auto flex flex-col lg:flex-row items-center gap-12 lg:gap-20 animate-on-scroll">
+               {/* Site Logo - Subtle Animation */}
+               <div className="lg:w-1/3 flex justify-center order-2 lg:order-1">
                  <div className="relative group/logo">
-                   {/* Layered glowing effects */}
-                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150%] h-[150%] bg-gradient-to-tr from-teal-500/10 via-cyan-400/5 to-transparent rounded-full blur-[90px] animate-pulse-slow"></div>
-                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[110%] h-[110%] bg-white/40 rounded-full blur-3xl opacity-0 group-hover/logo:opacity-100 transition-opacity duration-1000"></div>
-                   
+                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[130%] h-[130%] bg-teal-500/5 rounded-full blur-[60px]"></div>
                    <div className="relative animate-float">
                       <img 
                         src={settings.secondary_logo_url || settings.site_logo_url || "/lyre-logo.png"} 
                         alt="Logo de La Lyre" 
-                        className="w-64 h-64 md:w-80 md:h-80 object-contain drop-shadow-[0_25px_50px_rgba(0,0,0,0.08)] transition-all duration-1000 group-hover/logo:scale-110 group-hover/logo:rotate-3"
+                        className="w-56 h-56 md:w-72 md:h-72 object-contain drop-shadow-lg transition-transform duration-1000 group-hover/logo:scale-105"
                       />
                    </div>
                  </div>
                </div>
 
-               {/* Content - Modern Typography with Original Text */}
-               <div className="lg:w-3/5 text-center lg:text-left space-y-12 order-1 lg:order-2">
-                  <div className="relative">
-                    {/* Quotation mark decoration */}
-                    <div className="absolute -top-10 -left-6 text-teal-100/50 text-9xl font-serif pointer-events-none select-none -z-10">“</div>
-                    
-                    <p className="text-xl md:text-2xl text-slate-600 leading-relaxed font-poppins font-light tracking-wide">
-                       <strong className="font-bold text-slate-900 border-b-4 border-teal-500/10 pb-1">Association musicale fondée en 1886</strong>, La Lyre, de croches en noires, de répétitions en répétitions, de concerts en concerts, de voyages en rivages, motive jeunes et moins jeunes, sages et exubérants, à vivre et partager ce langage aux mille et une harmoniques...
-                    </p>
-                  </div>
+               {/* Content - Clean & Balanced */}
+               <div className="lg:w-2/3 text-center lg:text-left space-y-10 order-1 lg:order-2">
+                  <p className="text-lg md:text-xl text-slate-600 leading-relaxed font-poppins font-light">
+                     Association musicale fondée en 1886, La Lyre, de croches en noires, de répétitions en répétitions, de concerts en concerts, de voyages en rivages, motive jeunes et moins jeunes, sages et exubérants, à vivre et partager ce langage aux mille et une harmoniques...
+                  </p>
 
                   <div className="space-y-6">
                     <div className="flex flex-col lg:flex-row lg:items-center gap-4 group">
-                      <div className="h-0.5 w-12 bg-teal-500/30 group-hover:w-20 group-hover:bg-teal-500 transition-all duration-500 rounded-full hidden lg:block"></div>
-                      <p className="text-2xl md:text-3xl text-slate-800 font-poppins leading-tight">
-                        L’association <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-cyan-600 font-extrabold tracking-tight">LYRE</span>, c'est un <strong className="font-bold">orchestre d'Harmonie</strong>.
+                      <div className="h-px w-8 bg-teal-500/40 group-hover:w-12 group-hover:bg-teal-500 transition-all duration-500 rounded-full hidden lg:block"></div>
+                      <p className="text-xl md:text-2xl text-slate-800 font-poppins font-medium">
+                        L’association <span className="text-teal-600 font-bold uppercase tracking-tight">LYRE</span>, c'est un <strong className="font-bold underline decoration-teal-500/20 underline-offset-4">orchestre d'Harmonie</strong>.
                       </p>
                     </div>
                     
                     <div className="flex flex-col lg:flex-row lg:items-center gap-4 group">
-                      <div className="h-0.5 w-12 bg-cyan-500/30 group-hover:w-20 group-hover:bg-cyan-500 transition-all duration-500 rounded-full hidden lg:block"></div>
-                      <p className="text-2xl md:text-3xl text-slate-800 font-poppins leading-tight">
-                        Et c'est aussi une <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-indigo-600 font-extrabold tracking-tight">ÉCOLE</span> fixant les bases musicales indispensables.
+                      <div className="h-px w-8 bg-cyan-500/40 group-hover:w-12 group-hover:bg-cyan-500 transition-all duration-500 rounded-full hidden lg:block"></div>
+                      <p className="text-xl md:text-2xl text-slate-800 font-poppins font-medium">
+                        Et c'est aussi une <span className="text-teal-600 font-bold uppercase tracking-tight">ÉCOLE</span> fixant les bases musicales indispensables.
                       </p>
                     </div>
                   </div>
 
-                  <div className="pt-6 relative inline-block">
-                    <p className="italic text-teal-700 text-lg md:text-xl font-medium relative z-10">
+                  <div className="pt-6 border-t border-slate-50 inline-block">
+                    <p className="italic text-teal-700/80 text-lg font-medium">
                       Spectateurs à l'ouïe fine, futur(e)s virtuoses ou simples curieux(se)s, prenez le temps de parcourir notre site..
                     </p>
-                    <div className="absolute bottom-0 left-0 w-full h-3 bg-teal-50 -z-10 -rotate-1 rounded-sm"></div>
                   </div>
                </div>
             </div>
