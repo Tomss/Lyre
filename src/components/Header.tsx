@@ -6,11 +6,6 @@ import { useTheme } from '../context/ThemeContext';
 import { API_URL } from '../config';
 
 const Header = () => {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isVisible, setIsVisible] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const location = useLocation();
   const { currentUser, logout } = useAuth();
   const { settings } = useTheme();
 
@@ -18,8 +13,8 @@ const Header = () => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
       
-      // Determine if we've scrolled past the top
-      setIsScrolled(currentScrollY > 20);
+      // Determine if we've scrolled past the top - (isVisible handles actual display)
+      // setIsScrolled(currentScrollY > 20); // Removed unused
 
       // Smart scrolling logic: hide on scroll down, show on scroll up
       if (currentScrollY > lastScrollY && currentScrollY > 100) {
@@ -38,7 +33,6 @@ const Header = () => {
   }, [lastScrollY]);
 
   // Header is now always solid white for consistency
-  const headerIsSolid = true;
 
   /* Orchestras Dropdown Logic */
   const [orchestraLinks, setOrchestraLinks] = useState<{ label: string; path: string }[]>([]);
@@ -130,8 +124,8 @@ const Header = () => {
         <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2 font-poppins font-bold text-xl transition-colors text-teal-800 hover:text-teal-600">
-            {settings?.site_logo_url ? (
-              <img src={settings.site_logo_url} alt="La Lyre" className="h-10 lg:h-16 w-auto object-contain transition-all duration-300" />
+            {(settings?.header_logo_url || settings?.site_logo_url) ? (
+              <img src={settings.header_logo_url || settings.site_logo_url} alt="La Lyre" className="h-10 lg:h-16 w-auto object-contain transition-all duration-300" />
             ) : (
               <div className="flex items-center space-x-2">
                 <Music className="h-8 w-8 lg:h-10 lg:w-10 text-teal-600" />
@@ -220,7 +214,7 @@ const Header = () => {
                   </span>
                 </Link>
                 <button
-                  onClick={logout}
+                  onClick={() => logout()}
                   className="font-inter font-medium px-4 py-2 rounded-full transition-all duration-300 hover:scale-105 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200"
                 >
                   Déconnexion

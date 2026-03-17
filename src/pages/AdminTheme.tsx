@@ -371,6 +371,7 @@ const AdminTheme = () => {
             }
 
             const newSettings = {
+                site_logo_url: headerLogoUrl, // Keep in sync for legacy components
                 header_logo_url: headerLogoUrl,
                 secondary_logo_url: secondaryLogoUrl,
                 theme_primary_color: generalForm.theme_primary_color,
