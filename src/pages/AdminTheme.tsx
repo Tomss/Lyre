@@ -701,7 +701,6 @@ const AdminTheme = () => {
                                     {[
                                         { id: 'school', title: "L'École", desc: "Page de présentation de l'école et des professeurs." },
                                         { id: 'orchestres', title: "Nos Orchestres", desc: "Page dédiée aux ensembles et orchestres." },
-                                        { id: 'events', title: "Événements", desc: "Calendrier et liste des événements." },
                                         { id: 'media', title: "Médias", desc: "Galeries photos et vidéos." },
                                         { id: 'contact', title: "Contact", desc: "Page de contact et formulaire." },
                                     ].map((page) => (
