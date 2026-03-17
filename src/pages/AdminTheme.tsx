@@ -695,6 +695,13 @@ const AdminTheme = () => {
                         {activeTab === 'headers' && (
                             <div>
                                 <h3 className="text-lg font-bold text-slate-800 mb-6">En-têtes de Pages</h3>
+                                
+                                {carouselNotification && (
+                                    <div className={`mb-6 p-4 rounded-lg shadow-sm ${carouselNotification.type === 'success' ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-red-100 text-red-800 border border-red-200'}`}>
+                                        {carouselNotification.message}
+                                    </div>
+                                )}
+
                                 <p className="text-slate-500 mb-8">Personnalisez les images d'en-tête pour les différentes sections du site.</p>
 
                                 <div className="grid grid-cols-1 gap-6">
