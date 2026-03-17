@@ -31,7 +31,11 @@ if (useCloudinary) {
         cloudinary: cloudinary,
         params: {
             folder: 'lyre-uploads', // Le dossier qui sera créé sur ton espace Cloudinary
-            allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif'],
+            allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif', 'svg'],
+            format: (req: any, file: any) => {
+                if (file.mimetype === 'image/svg+xml') return 'svg';
+                return undefined;
+            }
         } as any
     });
 } else {
