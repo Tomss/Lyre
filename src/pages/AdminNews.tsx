@@ -221,7 +221,7 @@ const AdminNews = () => {
     }
 
     return (
-        <div className="font-inter pt-20 lg:pt-40 pb-20 min-h-screen bg-gray-50">
+        <div className="font-inter pt-8 lg:pt-12 pb-20 min-h-screen bg-gray-50">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
 
                 {/* Header */}

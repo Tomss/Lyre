@@ -187,7 +187,7 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="font-inter pt-28 lg:pt-40 pb-20 min-h-screen bg-slate-50 relative overflow-hidden">
+    <div className="font-inter pt-8 lg:pt-12 pb-20 min-h-screen bg-slate-50 relative overflow-hidden">
       {/* Decorative background elements */}
       <div className="absolute top-0 right-0 -m-32 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl pointer-events-none"></div>
       <div className="absolute bottom-0 left-0 -m-32 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>

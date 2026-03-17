@@ -80,7 +80,7 @@ const Activation = () => {
 
   if (!token && status === 'error') {
     return (
-      <div className="min-h-screen pt-32 pb-20 flex items-center justify-center bg-gray-50 px-4">
+      <div className="min-h-screen pt-12 pb-20 flex items-center justify-center bg-gray-50 px-4">
         <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
           <AlertCircle className="w-16 h-16 text-red-500 mx-auto justify-center mb-4" />
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Lien invalide</h2>
@@ -94,7 +94,7 @@ const Activation = () => {
   }
 
   return (
-    <div className="min-h-screen pt-32 pb-20 flex items-center justify-center bg-gray-50 px-4">
+    <div className="min-h-screen pt-12 pb-20 flex items-center justify-center bg-gray-50 px-4">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <div className="bg-indigo-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-indigo-200">
