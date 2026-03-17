@@ -284,7 +284,7 @@ const AdminMedia = () => {
               <Image className="mr-3 h-8 w-8 text-indigo-600" />
               Gestion des Médias
             </h1>
-            <button onClick={() => { setEditingMedia(null); setShowAddForm(true); }} className="flex items-center px-5 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-200">
+            <button onClick={() => { setEditingMedia(null); setShowAddForm(true); }} className="flex items-center px-5 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-200 mt-4 md:mt-0">
               <Plus className="mr-2 h-5 w-5" />
               Ajouter un média
             </button>
@@ -309,8 +309,8 @@ const AdminMedia = () => {
             </div>
           </div>
 
-          {/* Row 2: Type Filters */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-2 border-t border-slate-100">
+          {/* Row 2: Type Filters & Expand/Collapse */}
+          <div className="flex flex-col lg:flex-row gap-6 pt-2 border-t border-slate-100">
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-3 flex items-center">
                 <LayoutGrid className="w-4 h-4 mr-2 text-indigo-500" /> Filtrer par type
@@ -323,10 +323,10 @@ const AdminMedia = () => {
                 <button onClick={() => setTypeFilter(['lyrissimot'])} className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${typeFilter.length === 1 && typeFilter[0] === 'lyrissimot' ? 'bg-rose-500 text-white shadow-md shadow-rose-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>Lyrissimots</button>
               </div>
             </div>
-            <div className="lg:border-l lg:pl-6 border-slate-100 flex items-center">
-              <div className="flex items-center space-x-2 ml-auto">
-                <button onClick={expandAllTypes} className="text-sm bg-slate-100 text-slate-600 px-3 py-1.5 rounded-lg hover:bg-slate-200 transition">Tout déplier</button>
-                <button onClick={collapseAllTypes} className="text-sm bg-slate-100 text-slate-600 px-3 py-1.5 rounded-lg hover:bg-slate-200 transition">Tout replier</button>
+            <div className="lg:border-l lg:pl-6 border-slate-100 flex items-end lg:ml-auto pt-4 lg:pt-0 pb-0.5">
+              <div className="flex items-center space-x-2">
+                <button onClick={expandAllTypes} className="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl hover:bg-slate-200 transition text-sm font-medium whitespace-nowrap">Tout déplier</button>
+                <button onClick={collapseAllTypes} className="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl hover:bg-slate-200 transition text-sm font-medium whitespace-nowrap">Tout replier</button>
               </div>
             </div>
           </div>

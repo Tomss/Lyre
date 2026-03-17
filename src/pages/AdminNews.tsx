@@ -1,5 +1,5 @@
 import React, { useState, useEffect, FormEvent } from 'react';
-import { Edit, Trash2, Plus, Search, X, CheckCircle, ArrowLeft, Newspaper } from 'lucide-react';
+import { Edit, Trash2, Plus, Search, X, CheckCircle, ArrowLeft, Newspaper, Type, Calendar, Image as ImageIcon, AlignLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Navigate, Link } from 'react-router-dom';
 
@@ -225,35 +225,40 @@ const AdminNews = () => {
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
 
                 {/* Header */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-                    <div>
-                        <Link to="/dashboard" className="text-slate-400 hover:text-indigo-600 transition flex items-center mb-2 group">
-                            <ArrowLeft className="h-4 w-4 mr-1 group-hover:-translate-x-1 transition-transform" />
-                            Retour au tableau de bord
-                        </Link>
-                        <h1 className="text-3xl font-bold text-slate-800 font-poppins flex items-center">
+                <div className="mb-8">
+                    <Link to="/dashboard" className="text-slate-400 hover:text-indigo-600 transition flex items-center mb-2 group">
+                        <ArrowLeft className="h-4 w-4 mr-1 group-hover:-translate-x-1 transition-transform" />
+                        Retour au tableau de bord
+                    </Link>
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+                        <div className="flex items-center">
                             <Newspaper className="mr-3 h-8 w-8 text-indigo-600" />
-                            Gestion des Actualités
-                        </h1>
-                        <p className="text-slate-500 mt-1">Gérez les articles et annonces du site.</p>
+                            <h1 className="text-3xl font-bold text-slate-800 font-poppins">
+                                Gestion des Actualités
+                            </h1>
+                        </div>
+                        <button onClick={() => { setEditingNews(null); setShowAddForm(true); }} className="flex items-center px-5 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-200 mt-4 md:mt-0">
+                            <Plus className="mr-2 h-5 w-5" />
+                            Ajouter une actualité
+                        </button>
                     </div>
-                    <button onClick={() => { setEditingNews(null); setShowAddForm(true); }} className="flex items-center px-5 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-200">
-                        <Plus className="mr-2 h-5 w-5" />
-                        Nouvelle Actualité
-                    </button>
                 </div>
 
                 {/* Search */}
-                <div className="mb-6 bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-                    <div className="relative">
-                        <Search size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                        <input
-                            type="text"
-                            placeholder="Rechercher une actualité..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all"
-                        />
+                <div className="mb-6 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <div>
+                        <label htmlFor="search" className="block text-sm font-semibold text-slate-700 mb-2">Rechercher une actualité</label>
+                        <div className="relative">
+                            <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                            <input
+                                type="text"
+                                id="search"
+                                placeholder="Rechercher par titre ou contenu..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none"
+                            />
+                        </div>
                     </div>
                 </div>
 
@@ -264,42 +269,66 @@ const AdminNews = () => {
                         <p className="text-slate-500">Chargement des actualités...</p>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {filteredNews.map((news) => (
-                            <div key={news.id} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-shadow group">
-                                <div className="aspect-video bg-slate-100 relative overflow-hidden">
-                                    {news.image_url ? (
-                                        <img src={news.image_url} alt={news.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                                    ) : (
-                                        <div className="flex items-center justify-center h-full text-slate-300">
-                                            <Newspaper className="h-12 w-12" />
-                                        </div>
-                                    )}
-                                    <div className="absolute top-2 right-2 bg-white/90 backdrop-blur px-2 py-1 rounded text-xs font-medium text-slate-700">
-                                        {new Date(news.published_at).toLocaleDateString()}
+                    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                        <div className="divide-y divide-slate-50">
+                            {filteredNews.map((news) => (
+                                <div key={news.id} className="p-4 sm:p-5 hover:bg-slate-50/50 transition-colors group flex items-start sm:items-center gap-4">
+                                    {/* Thumbnail */}
+                                    <div className="flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden bg-slate-100 border border-slate-200/50">
+                                        {news.image_url ? (
+                                            <img src={news.image_url} alt={news.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                                        ) : (
+                                            <div className="flex items-center justify-center h-full text-slate-300">
+                                                <Newspaper className="h-8 w-8" />
+                                            </div>
+                                        )}
                                     </div>
-                                </div>
-                                <div className="p-5">
-                                    <h3 className="font-bold text-lg text-slate-800 mb-2 line-clamp-1">{news.title}</h3>
-                                    <p className="text-slate-500 text-sm mb-4 line-clamp-2">{news.content}</p>
 
-                                    <div className="flex justify-end pt-3 border-t border-slate-100 gap-2">
-                                        <button onClick={() => handleEdit(news)} className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors">
+                                    {/* Content Info */}
+                                    <div className="flex-grow min-w-0">
+                                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 mb-1">
+                                            <h3 className="font-bold text-slate-800 truncate group-hover:text-indigo-600 transition-colors">
+                                                {news.title}
+                                            </h3>
+                                            <span className="hidden sm:block text-slate-300">•</span>
+                                            <span className="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg flex items-center shadow-sm">
+                                                <Calendar className="w-3 h-3 mr-1" />
+                                                {new Date(news.published_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                            </span>
+                                        </div>
+                                        <p className="text-slate-500 text-sm line-clamp-1 leading-relaxed">
+                                            {news.content}
+                                        </p>
+                                    </div>
+
+                                    {/* Actions */}
+                                    <div className="flex items-center gap-1 sm:gap-2 sm:ml-4 flex-shrink-0">
+                                        <button 
+                                            onClick={() => handleEdit(news)} 
+                                            className="p-2 sm:p-2.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all" 
+                                            title="Modifier"
+                                        >
                                             <Edit size={18} />
                                         </button>
-                                        <button onClick={() => setDeleteConfirmation({ isOpen: true, news })} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                                        <button 
+                                            onClick={() => setDeleteConfirmation({ isOpen: true, news })} 
+                                            className="p-2 sm:p-2.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all" 
+                                            title="Supprimer"
+                                        >
                                             <Trash2 size={18} />
                                         </button>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
-                        {filteredNews.length === 0 && (
-                            <div className="col-span-full py-12 text-center bg-white rounded-xl border border-dashed border-slate-300">
-                                <Newspaper className="h-10 w-10 text-slate-300 mx-auto mb-3" />
-                                <p className="text-slate-500">Aucune actualité trouvée.</p>
-                            </div>
-                        )}
+                            ))}
+                            {filteredNews.length === 0 && (
+                                <div className="py-20 text-center">
+                                    <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <Newspaper className="h-8 w-8 text-slate-200" />
+                                    </div>
+                                    <p className="text-slate-400 font-medium italic">Aucune actualité trouvée.</p>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 )}
 
@@ -311,52 +340,102 @@ const AdminNews = () => {
                                 <h2 className="text-2xl font-bold text-slate-800">{editingNews ? 'Modifier' : 'Nouvelle'} Actualité</h2>
                                 <button onClick={cancelEdit} className="p-2 rounded-full hover:bg-slate-100 text-slate-500 transition-colors"><X size={24} /></button>
                             </div>
-                            <form onSubmit={editingNews ? handleUpdate : handleCreate} className="flex-grow overflow-y-auto p-6 space-y-6">
-
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Titre</label>
-                                    <input type="text" name="title" value={formData.title} onChange={handleInputChange} placeholder="Titre de l'article" required className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-1">Date de publication</label>
-                                        <input type="date" name="published_at" value={formData.published_at} onChange={handleInputChange} className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-1">Image de couverture</label>
-                                        <div className="relative">
-                                            <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" id="news-image" />
-                                            <label htmlFor="news-image" className="w-full flex items-center justify-center px-4 py-2 border border-slate-200 border-dashed rounded-lg cursor-pointer hover:bg-slate-50 transition-colors text-slate-500 text-sm">
-                                                {selectedFile ? selectedFile.name : 'Choisir une image...'}
+                            <form onSubmit={editingNews ? handleUpdate : handleCreate} className="flex-grow overflow-y-auto p-0">
+                                <div className="p-6 space-y-6">
+                                    {/* Section 1: Informations Générales */}
+                                    <div className="bg-slate-50/50 p-5 rounded-2xl border border-slate-100 space-y-4">
+                                        <div className="flex items-center text-indigo-600 font-semibold mb-2">
+                                            <Type className="w-5 h-5 mr-2" />
+                                            Informations Générales
+                                        </div>
+                                        
+                                        <div>
+                                            <label className="block text-sm font-semibold text-slate-700 mb-1.5 flex items-center">
+                                                Titre de l'actualité <span className="text-rose-500 ml-1">*</span>
                                             </label>
+                                            <input 
+                                                type="text" 
+                                                name="title" 
+                                                value={formData.title} 
+                                                onChange={handleInputChange} 
+                                                placeholder="Donnez un titre percutant..." 
+                                                required 
+                                                className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all" 
+                                            />
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-sm font-semibold text-slate-700 mb-1.5 flex items-center">
+                                                    <Calendar className="w-4 h-4 mr-1.5 text-slate-400" />
+                                                    Date de publication
+                                                </label>
+                                                <input 
+                                                    type="date" 
+                                                    name="published_at" 
+                                                    value={formData.published_at} 
+                                                    onChange={handleInputChange} 
+                                                    className="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all" 
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-semibold text-slate-700 mb-1.5 flex items-center">
+                                                    <ImageIcon className="w-4 h-4 mr-1.5 text-slate-400" />
+                                                    Image de couverture
+                                                </label>
+                                                <div className="relative">
+                                                    <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" id="news-image" />
+                                                    <label htmlFor="news-image" className="w-full flex items-center justify-center px-4 py-2 bg-white border border-slate-200 border-dashed rounded-xl cursor-pointer hover:bg-slate-50 transition-colors text-slate-500 text-sm font-medium">
+                                                        {selectedFile ? selectedFile.name : 'Choisir un fichier...'}
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {previewUrl && (
+                                            <div className="relative w-full h-40 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 group">
+                                                <img src={previewUrl} alt="Aperçu" className="w-full h-full object-cover" />
+                                                <button 
+                                                    type="button" 
+                                                    onClick={() => { setPreviewUrl(null); setSelectedFile(null); }} 
+                                                    className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                                                    title="Supprimer l'image"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Section 2: Contenu */}
+                                    <div className="bg-slate-50/50 p-5 rounded-2xl border border-slate-100 space-y-4">
+                                        <div className="flex items-center text-indigo-600 font-semibold mb-2">
+                                            <AlignLeft className="w-5 h-5 mr-2" />
+                                            Corps de l'article
+                                        </div>
+                                        
+                                        <div>
+                                            <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+                                                Rédigez votre contenu <span className="text-rose-500 ml-1">*</span>
+                                            </label>
+                                            <textarea 
+                                                name="content" 
+                                                value={formData.content} 
+                                                onChange={handleInputChange} 
+                                                placeholder="Partagez les dernières nouvelles..." 
+                                                required 
+                                                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl h-56 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all resize-none"
+                                            ></textarea>
                                         </div>
                                     </div>
                                 </div>
 
-                                {previewUrl && (
-                                    <div className="relative w-full h-48 rounded-lg overflow-hidden bg-slate-100 border border-slate-200 group">
-                                        <img src={previewUrl} alt="Aperçu" className="w-full h-full object-cover" />
-                                        <button 
-                                            type="button" 
-                                            onClick={() => { setPreviewUrl(null); setSelectedFile(null); }} 
-                                            className="absolute top-2 right-2 bg-red-500/90 hover:bg-red-600 text-white p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm"
-                                            title="Supprimer l'image"
-                                        >
-                                            <Trash2 size={18} />
-                                        </button>
-                                    </div>
-                                )}
-
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Contenu</label>
-                                    <textarea name="content" value={formData.content} onChange={handleInputChange} placeholder="Rédigez votre article ici..." required className="w-full px-4 py-3 border border-slate-200 rounded-lg h-64 focus:ring-2 focus:ring-indigo-500 outline-none resize-none"></textarea>
-                                </div>
-
-                                <div className="flex justify-end pt-4 border-t border-slate-100 gap-3">
-                                    <button type="button" onClick={cancelEdit} className="px-6 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 font-medium transition-colors">Annuler</button>
-                                    <button type="submit" disabled={loading} className="bg-indigo-600 text-white px-6 py-2 rounded-xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all font-medium disabled:opacity-70 disabled:cursor-not-allowed">
-                                        {loading ? 'Enregistrement...' : (editingNews ? 'Mettre à jour' : 'Publier')}
+                                <div className="flex justify-end p-6 border-t border-slate-100 gap-3 bg-white rounded-b-2xl sticky bottom-0">
+                                    <button type="button" onClick={cancelEdit} className="px-6 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 font-semibold transition-all">
+                                        Annuler
+                                    </button>
+                                    <button type="submit" disabled={loading} className="bg-indigo-600 text-white px-8 py-2.5 rounded-xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-0.5 active:translate-y-0 transition-all font-bold disabled:opacity-70 disabled:cursor-not-allowed">
+                                        {loading ? 'Enregistrement...' : (editingNews ? 'Mettre à jour' : 'Publier l\'article')}
                                     </button>
                                 </div>
                             </form>

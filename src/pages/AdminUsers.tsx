@@ -654,17 +654,12 @@ const AdminUsers = () => {
           </Link>
           <div className="flex flex-col md:flex-row md:items-center md:justify-between">
             <h1 className="text-3xl font-bold text-slate-800 font-poppins flex items-center">
-              <Users className="mr-3 h-8 w-8 text-indigo-600" />
               Gestion des Utilisateurs
             </h1>
-            <div className="flex items-center space-x-2 mt-4 md:mt-0">
-              <button onClick={() => { setEditingUser(null); setShowAddForm(true); }} className="flex items-center px-5 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-200">
-                <UserPlus className="mr-2 h-5 w-5" />
-                Ajouter un utilisateur
-              </button>
-              <button onClick={expandAllRoles} className="bg-gray-200 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-300 transition">Tout déplier</button>
-              <button onClick={collapseAllRoles} className="bg-gray-200 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-300 transition">Tout replier</button>
-            </div>
+            <button onClick={() => { setEditingUser(null); setShowAddForm(true); }} className="flex items-center px-5 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-200 mt-4 md:mt-0">
+              <UserPlus className="mr-2 h-5 w-5" />
+              Ajouter un utilisateur
+            </button>
           </div>
         </div>
 
@@ -686,8 +681,8 @@ const AdminUsers = () => {
             </div>
           </div>
 
-          {/* Row 2: Filters (Roles & Status) */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-2 border-t border-slate-100">
+          {/* Row 2: Filters (Roles, Status, Expand/Collapse) */}
+          <div className="flex flex-col lg:flex-row gap-6 pt-2 border-t border-slate-100">
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-3 flex items-center">
                 <Shield className="w-4 h-4 mr-2 text-indigo-500" /> Filtrer par rôle
@@ -718,6 +713,13 @@ const AdminUsers = () => {
                   </button>
                 ))}
                 <button onClick={clearAllStatuses} className="px-4 py-1.5 rounded-full text-sm font-medium bg-slate-100 text-slate-400 hover:bg-slate-200 transition-all italic">Aucun</button>
+              </div>
+            </div>
+            
+            <div className="lg:border-l lg:pl-6 border-slate-100 flex items-end lg:ml-auto pt-4 lg:pt-0 pb-0.5">
+              <div className="flex items-center space-x-2">
+                <button onClick={expandAllRoles} className="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl hover:bg-slate-200 transition text-sm font-medium whitespace-nowrap">Tout déplier</button>
+                <button onClick={collapseAllRoles} className="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl hover:bg-slate-200 transition text-sm font-medium whitespace-nowrap">Tout replier</button>
               </div>
             </div>
           </div>
