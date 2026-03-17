@@ -1,5 +1,5 @@
 import React, { useState, useEffect, FormEvent } from 'react';
-import { Edit, Trash2, Plus, Image, Search, X, ArrowLeft, ChevronRight, Star, Eye, EyeOff, FileText, Music, Play, LayoutGrid, Calendar } from 'lucide-react';
+import { Edit, Trash2, Plus, Image, Search, X, ArrowLeft, ChevronRight, Star, Eye, EyeOff, FileText, Music, Play, LayoutGrid, Calendar, Info, AlignLeft, Globe, Users } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import FileUploadPreview from '../components/FileUploadPreview';
@@ -422,100 +422,153 @@ const AdminMedia = () => {
                     <X size={24} />
                 </button>
               </div>
-              <form onSubmit={handleSubmit} className="flex-grow overflow-y-auto p-6 space-y-6 bg-gradient-to-b from-slate-50 to-white">
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-1.5">Titre de l'album ou média *</label>
-                  <input type="text" name="title" value={formData.title} onChange={handleInputChange} placeholder="Ex: Concert du 14 Juillet" required className="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition" />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-1.5">Description</label>
-                  <textarea name="description" value={formData.description} onChange={handleInputChange} placeholder="Une courte description du contenu..." className="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition h-24 resize-none"></textarea>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-1.5">Type de média *</label>
-                    <div className="relative">
-                        <select name="media_type" value={formData.media_type} onChange={handleInputChange} className="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-white appearance-none">
-                            <option value="album">📸 Album Photo</option>
-                            <option value="enregistrement">🎧 Enregistrement Audio</option>
-                            <option value="journal">📰 Journal</option>
-                            <option value="lyrissimot">🎼 Lyrissimot</option>
-                        </select>
-                        <ChevronRight className="absolute right-3 top-1/2 -translate-y-1/2 rotate-90 text-slate-400 pointer-events-none" size={16} />
+              <form onSubmit={handleSubmit} className="flex-grow overflow-y-auto p-6 space-y-8 bg-gradient-to-b from-slate-50 to-white">
+                {/* Section: Informations générales */}
+                <div className="space-y-5">
+                    <div className="flex items-center space-x-2 text-indigo-600 mb-1">
+                        <Info size={18} />
+                        <h3 className="text-sm font-bold uppercase tracking-wider">Informations générales</h3>
                     </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-1.5">Date associée *</label>
-                    <input type="date" name="media_date" value={formData.media_date} onChange={handleInputChange} required className="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition" />
-                  </div>
+
+                    <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-5">
+                        <div>
+                            <label className="flex items-center text-sm font-semibold text-slate-700 mb-1.5">
+                                <FileText size={16} className="mr-2 text-slate-400" /> Titre de l'album ou média *
+                            </label>
+                            <input type="text" name="title" value={formData.title} onChange={handleInputChange} placeholder="Ex: Concert du 14 Juillet" required className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-slate-50/30 focus:bg-white" />
+                        </div>
+
+                        <div>
+                            <label className="flex items-center text-sm font-semibold text-slate-700 mb-1.5">
+                                <AlignLeft size={16} className="mr-2 text-slate-400" /> Description
+                            </label>
+                            <textarea name="description" value={formData.description} onChange={handleInputChange} placeholder="Une courte description du contenu..." className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-slate-50/30 focus:bg-white h-24 resize-none"></textarea>
+                        </div>
+                    </div>
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-4 px-4 py-3 bg-slate-50 rounded-2xl border border-slate-100 shadow-inner">
-                    <label className="flex items-center space-x-3 cursor-pointer group flex-1">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${formData.published ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-200 text-slate-400'} border border-transparent`}>
-                            {formData.published ? <Eye size={18} /> : <EyeOff size={18} />}
-                        </div>
-                        <div className="flex-grow">
-                            <div className="flex items-center">
-                                <span className={`font-semibold text-sm ${formData.published ? 'text-slate-800' : 'text-slate-500'}`}>Publier</span>
-                                <input type="checkbox" name="published" checked={formData.published} onChange={handleInputChange} className="sr-only" />
-                                <div className={`ml-auto w-10 h-5 rounded-full relative transition-colors ${formData.published ? 'bg-emerald-500' : 'bg-slate-300'}`}>
-                                    <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-transform ${formData.published ? 'translate-x-6' : 'translate-x-1'}`}></div>
+                {/* Section: Type & Date */}
+                <div className="space-y-5">
+                    <div className="flex items-center space-x-2 text-indigo-600 mb-1">
+                        <LayoutGrid size={18} />
+                        <h3 className="text-sm font-bold uppercase tracking-wider">Type & Date</h3>
+                    </div>
+
+                    <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-5">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div>
+                                <label className="flex items-center text-sm font-semibold text-slate-700 mb-1.5">
+                                    <LayoutGrid size={16} className="mr-2 text-slate-400" /> Type de média *
+                                </label>
+                                <div className="relative">
+                                    <select name="media_type" value={formData.media_type} onChange={handleInputChange} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-slate-50/30 focus:bg-white appearance-none">
+                                        <option value="album">📸 Album Photo</option>
+                                        <option value="enregistrement">🎧 Enregistrement Audio</option>
+                                        <option value="journal">📰 Journal</option>
+                                        <option value="lyrissimot">🎼 Lyrissimot</option>
+                                    </select>
+                                    <ChevronRight className="absolute right-3 top-1/2 -translate-y-1/2 rotate-90 text-slate-400 pointer-events-none" size={16} />
                                 </div>
                             </div>
-                            <p className="text-[10px] text-slate-500">Visible par tout le monde</p>
+                            <div>
+                                <label className="flex items-center text-sm font-semibold text-slate-700 mb-1.5">
+                                    <Calendar size={16} className="mr-2 text-slate-400" /> Date associée *
+                                </label>
+                                <input type="date" name="media_date" value={formData.media_date} onChange={handleInputChange} required className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-slate-50/30 focus:bg-white" />
+                            </div>
                         </div>
-                    </label>
+                    </div>
+                </div>
 
-                    <div className="hidden sm:block w-px bg-slate-200 my-1"></div>
+                {/* Section: Visibilité & En vedette */}
+                <div className="space-y-5">
+                    <div className="flex items-center space-x-2 text-indigo-600 mb-1">
+                        <Globe size={18} />
+                        <h3 className="text-sm font-bold uppercase tracking-wider">Visibilité & En vedette</h3>
+                    </div>
 
-                    <label className="flex items-center space-x-3 cursor-pointer group flex-1">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${formData.is_featured ? 'bg-amber-100 text-amber-600 border-amber-200' : 'bg-slate-200 text-slate-400'} border border-transparent`}>
-                            <Star size={18} fill={formData.is_featured ? "currentColor" : "none"} />
-                        </div>
-                        <div className="flex-grow">
-                            <div className="flex items-center">
-                                <span className={`font-semibold text-sm ${formData.is_featured ? 'text-slate-800' : 'text-slate-500'}`}>En vedette</span>
-                                <input type="checkbox" name="is_featured" checked={formData.is_featured} onChange={handleInputChange} className="sr-only" />
-                                <div className={`ml-auto w-10 h-5 rounded-full relative transition-colors ${formData.is_featured ? 'bg-amber-500' : 'bg-slate-300'}`}>
-                                    <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-transform ${formData.is_featured ? 'translate-x-6' : 'translate-x-1'}`}></div>
+                    <div className="flex flex-col sm:flex-row gap-4 p-5 bg-white rounded-2xl border border-slate-100 shadow-sm transition-all">
+                        <label className="flex items-center space-x-3 cursor-pointer group flex-1 p-3 rounded-xl hover:bg-slate-50 transition-colors">
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${formData.published ? 'bg-emerald-100 text-emerald-600 shadow-sm' : 'bg-slate-100 text-slate-400'}`}>
+                                {formData.published ? <Eye size={18} /> : <EyeOff size={18} />}
+                            </div>
+                            <div className="flex-grow">
+                                <div className="flex items-center justify-between">
+                                    <span className={`font-semibold text-sm ${formData.published ? 'text-slate-800' : 'text-slate-500'}`}>Publier</span>
+                                    <input type="checkbox" name="published" checked={formData.published} onChange={handleInputChange} className="sr-only" />
+                                    <div className={`w-8 h-4 rounded-full relative transition-colors ${formData.published ? 'bg-emerald-500' : 'bg-slate-300'}`}>
+                                        <div className={`absolute top-0.5 w-3 h-3 bg-white rounded-full transition-transform ${formData.published ? 'translate-x-[18px]' : 'translate-x-0.5'}`}></div>
+                                    </div>
+                                </div>
+                                <p className="text-[10px] text-slate-500">Visible par tous</p>
+                            </div>
+                        </label>
+
+                        <div className="hidden sm:block w-px bg-slate-100 my-2"></div>
+
+                        <label className="flex items-center space-x-3 cursor-pointer group flex-1 p-3 rounded-xl hover:bg-slate-50 transition-colors">
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${formData.is_featured ? 'bg-amber-100 text-amber-600 shadow-sm' : 'bg-slate-100 text-slate-400'}`}>
+                                <Star size={18} fill={formData.is_featured ? "currentColor" : "none"} />
+                            </div>
+                            <div className="flex-grow">
+                                <div className="flex items-center justify-between">
+                                    <span className={`font-semibold text-sm ${formData.is_featured ? 'text-slate-800' : 'text-slate-500'}`}>En vedette</span>
+                                    <input type="checkbox" name="is_featured" checked={formData.is_featured} onChange={handleInputChange} className="sr-only" />
+                                    <div className={`w-8 h-4 rounded-full relative transition-colors ${formData.is_featured ? 'bg-amber-500' : 'bg-slate-300'}`}>
+                                        <div className={`absolute top-0.5 w-3 h-3 bg-white rounded-full transition-transform ${formData.is_featured ? 'translate-x-[18px]' : 'translate-x-0.5'}`}></div>
+                                    </div>
+                                </div>
+                                <p className="text-[10px] text-slate-500">Mise en avant accueil</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                {/* Section: Gestion des fichiers */}
+                <div className="space-y-5">
+                    <div className="flex items-center space-x-2 text-indigo-600 mb-1">
+                        <Users size={18} />
+                        <h3 className="text-sm font-bold uppercase tracking-wider">Gestion des fichiers</h3>
+                    </div>
+
+                    <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-5">
+                        <div>
+                            <label className="flex items-center text-sm font-semibold text-slate-700 mb-2">
+                                <Plus size={16} className="mr-2 text-slate-400" /> Sélectionner des fichiers *
+                            </label>
+                            <div className="border-2 border-dashed border-slate-200 rounded-2xl p-8 text-center hover:border-indigo-400 transition-colors group cursor-pointer relative bg-slate-50/50">
+                                <input type="file" multiple onChange={handleFileChange} className="absolute inset-0 opacity-0 cursor-pointer z-10" />
+                                <div className="flex flex-col items-center">
+                                    <div className="w-12 h-12 bg-indigo-50 text-indigo-500 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform shadow-sm">
+                                        <Plus size={24} />
+                                    </div>
+                                    <p className="text-sm font-semibold text-slate-700">Cliquez ou glissez vos fichiers ici</p>
+                                    <p className="text-xs text-slate-500 mt-1">Photos, Vidéos, Audio ou PDF (Lyrissimots)</p>
                                 </div>
                             </div>
-                            <p className="text-[10px] text-slate-500">Mise en avant sur l'accueil</p>
                         </div>
-                    </label>
-                </div>
+                        
+                        {selectedFiles.length > 0 && (
+                            <div className="pt-2 animate-in fade-in slide-in-from-top-2">
+                                <h4 className="flex items-center text-xs font-bold text-indigo-600 uppercase tracking-widest mb-3">
+                                    <div className="w-1 h-3 bg-indigo-600 mr-2 rounded-full"></div>
+                                    Nouveaux fichiers ({selectedFiles.length})
+                                </h4>
+                                <FileUploadPreview files={selectedFiles} onRemove={removeFile} />
+                            </div>
+                        )}
 
-                <div className="space-y-3">
-                  <label className="block text-sm font-semibold text-slate-700">Gestion des fichiers *</label>
-                  <div className="border-2 border-dashed border-slate-200 rounded-2xl p-8 text-center hover:border-indigo-400 transition-colors group cursor-pointer relative bg-slate-50/50">
-                    <input type="file" multiple onChange={handleFileChange} className="absolute inset-0 opacity-0 cursor-pointer z-10" />
-                    <div className="flex flex-col items-center">
-                        <div className="w-12 h-12 bg-indigo-50 text-indigo-500 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform shadow-sm">
-                            <Plus size={24} />
-                        </div>
-                        <p className="text-sm font-semibold text-slate-700">Cliquez ou glissez vos fichiers ici</p>
-                        <p className="text-xs text-slate-500 mt-1">Photos, Vidéos, Audio ou PDF (Lyrissimots)</p>
+                        {editingMedia && editingMedia.files.length > filesToRemove.length && (
+                            <div className="pt-2">
+                                <h4 className="flex items-center text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">
+                                    <div className="w-1 h-3 bg-slate-300 mr-2 rounded-full"></div>
+                                    Fichiers existants
+                                </h4>
+                                <ExistingFilesPreview files={editingMedia.files.filter(f => !filesToRemove.includes(f.id))} onRemove={removeExistingFile} />
+                            </div>
+                        )}
                     </div>
-                  </div>
-                  
-                  {selectedFiles.length > 0 && (
-                      <div className="pt-2">
-                        <h4 className="text-xs font-bold text-indigo-600 uppercase tracking-widest mb-3">Nouveaux fichiers ({selectedFiles.length})</h4>
-                        <FileUploadPreview files={selectedFiles} onRemove={removeFile} />
-                      </div>
-                  )}
-
-                  {editingMedia && editingMedia.files.length > filesToRemove.length && (
-                      <div className="pt-2">
-                        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Fichiers existants</h4>
-                        <ExistingFilesPreview files={editingMedia.files.filter(f => !filesToRemove.includes(f.id))} onRemove={removeExistingFile} />
-                      </div>
-                  )}
                 </div>
-
                 <div className="flex items-center justify-end p-6 bg-white border-t border-slate-100 gap-3 flex-shrink-0">
                   <button type="button" onClick={cancelEdit} className="px-6 py-3 text-slate-500 hover:text-slate-700 font-bold transition hover:bg-slate-50 rounded-xl">
                     Annuler
