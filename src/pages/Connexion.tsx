@@ -31,7 +31,7 @@ const Connexion = () => {
   };
 
   return (
-    <div className="font-inter pt-32 pb-20 bg-gradient-to-br from-orange-50 via-amber-25 to-yellow-25 min-h-screen">
+    <div className="font-inter pt-12 pb-20 bg-gradient-to-br from-orange-50 via-amber-25 to-yellow-25 min-h-screen">
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-md relative">
         <div className="text-center mb-8">

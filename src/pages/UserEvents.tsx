@@ -267,7 +267,7 @@ const UserEvents = () => {
   };
 
   return (
-    <div className="font-inter pt-20 lg:pt-40 pb-20 min-h-screen bg-slate-50/50">
+    <div className="font-inter pt-8 lg:pt-12 pb-20 min-h-screen bg-slate-50/50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">
         {/* Header */}
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8 mb-8">
