@@ -79,25 +79,19 @@ const Home = () => {
 
   return (
     <div className="font-inter">
-      {/* Hero Section - Classic Carousel Version */}
-      <section id="accueil" className="relative min-h-screen flex items-center py-24 md:py-32 justify-center bg-gray-900 overflow-hidden">
-        {/* Images de fond avec structure Dual-Layer pour Ultra-Wide */}
+      {/* Hero Section - Optimisé Ultra-Wide (Style Samsung) */}
+      <section id="accueil" className="relative min-h-screen flex items-center py-24 md:py-32 justify-center bg-white overflow-hidden">
+        {/* Images de fond avec structure Contenue pour Ultra-Wide */}
         {backgroundImages.map((image, index) => (
           <div
             key={index}
             className={`absolute inset-0 transition-opacity duration-1000 ${index === currentImageIndex ? 'opacity-100' : 'opacity-0'}`}
           >
-            {/* 1. Background Extension (Blurred) - Only visible on ultra-wide screens */}
-            <div 
-              className="absolute inset-0 bg-cover bg-center scale-110 blur-[80px] opacity-40 pointer-events-none"
-              style={{ backgroundImage: `url("${image}")` }}
-            />
-            
-            {/* 2. Main Stage - Contained and Sharp */}
-            <div className="relative h-full w-full max-w-[2560px] mx-auto overflow-hidden shadow-[0_0_100px_rgba(0,0,0,0.5)]">
+            {/* Main Stage - Contained and Sharp */}
+            <div className="relative h-full w-full max-w-[2560px] mx-auto overflow-hidden">
                <div 
                  className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-                 style={{ backgroundImage: `linear-gradient(rgba(15, 23, 42, 0.5), rgba(15, 23, 42, 0.5)), url("${image}")` }}
+                 style={{ backgroundImage: `linear-gradient(rgba(15, 23, 42, 0.4), rgba(15, 23, 42, 0.4)), url("${image}")` }}
                />
             </div>
           </div>
