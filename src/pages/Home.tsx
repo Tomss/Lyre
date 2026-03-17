@@ -116,49 +116,75 @@ const Home = () => {
       </section>
 
       {/* Qui sommes-nous ? Section */}
-      <section id="la-lyre" className="scroll-mt-20 py-20 bg-slate-50 border-b border-slate-100 relative overflow-hidden">
+      <section id="la-lyre" className="scroll-mt-20 py-24 bg-white relative overflow-hidden">
+        {/* Background Decorative Elements */}
+        <div className="absolute top-0 right-0 -translate-y-1/4 translate-x-1/4 w-[500px] h-[500px] bg-teal-50/50 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 left-0 translate-y-1/4 -translate-x-1/4 w-[600px] h-[600px] bg-cyan-50/30 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[20rem] font-bold text-slate-50 select-none pointer-events-none z-0 opacity-40 font-poppins">
+          LYRE
+        </div>
+
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <div className="max-w-4xl mx-auto text-center mb-12 animate-on-scroll">
-              <h2 className="text-3xl md:text-5xl font-poppins font-bold text-slate-800 mb-6 relative inline-block">
+            <div className="max-w-4xl mx-auto text-center mb-16 animate-on-scroll">
+              <h2 className="text-4xl md:text-6xl font-poppins font-extrabold text-slate-900 mb-6 relative inline-block">
                 Qui sommes-nous ?
-                <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-24 h-1 bg-teal-500 rounded-full"></div>
+                <div className="absolute -bottom-4 left-0 w-1/2 h-1.5 bg-gradient-to-r from-teal-500 to-cyan-400 rounded-full"></div>
               </h2>
             </div>
             
-            <div className="max-w-6xl mx-auto flex flex-col lg:flex-row items-center gap-12 lg:gap-20 animate-on-scroll">
-               {/* Site Logo Emblem */}
-               <div className="lg:w-1/3 flex justify-center lg:justify-end order-2 lg:order-1">
-                 <div className="relative group">
-                   <div className="absolute -inset-4 bg-gradient-to-tr from-teal-500/20 to-cyan-500/20 rounded-[3rem] blur-2xl group-hover:blur-3xl transition-all duration-700 opacity-60"></div>
-                   <div className="relative bg-white p-8 md:p-12 rounded-[3.5rem] shadow-2xl border border-white/50 backdrop-blur-sm transition-transform duration-700 group-hover:scale-105 group-hover:rotate-3 overflow-hidden">
-                      <div className="absolute inset-0 bg-gradient-to-br from-white to-slate-50/50"></div>
+            <div className="max-w-6xl mx-auto flex flex-col lg:flex-row items-center gap-16 lg:gap-24 animate-on-scroll">
+               {/* Site Logo - Floating & Integrated */}
+               <div className="lg:w-2/5 flex justify-center order-2 lg:order-1">
+                 <div className="relative">
+                   {/* Multiple layered glows for a soft organic feel */}
+                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[140%] h-[140%] bg-gradient-to-tr from-teal-500/10 via-cyan-400/5 to-transparent rounded-full blur-[80px] animate-pulse-slow"></div>
+                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100%] h-[100%] bg-white/60 rounded-full blur-3xl"></div>
+                   
+                   <div className="relative animate-float">
                       <img 
                         src={settings.secondary_logo_url || settings.site_logo_url || "/lyre-logo.png"} 
                         alt="Logo de La Lyre" 
-                        className="relative z-10 w-48 h-48 md:w-64 md:h-64 object-contain drop-shadow-xl"
+                        className="w-64 h-64 md:w-80 md:h-80 object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.1)] transition-transform duration-700 hover:scale-110"
                       />
                    </div>
                  </div>
                </div>
 
-               <div className="lg:w-2/3 text-center lg:text-left space-y-8 order-1 lg:order-2">
-                  <p className="text-lg md:text-2xl text-slate-600 leading-relaxed font-light">
-                     <strong className="font-semibold text-slate-800">Association musicale fondée en 1886</strong>, La Lyre, de croches en noires, de répétitions en répétitions, de concerts en concerts, de voyages en rivages, motive jeunes et moins jeunes, sages et exubérants, à vivre et partager ce langage aux mille et une harmoniques...
-                  </p>
-
-                  <div className="group relative bg-white rounded-3xl p-8 md:p-12 shadow-xl border border-slate-100 overflow-hidden hover:shadow-2xl transition-all duration-500">
-                    <div className="absolute -top-20 -right-20 w-40 h-40 bg-teal-500/5 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
-                    
-                    <p className="relative z-10 text-xl md:text-2xl text-slate-700 leading-relaxed group-hover:text-slate-900 transition-colors">
-                       L’association <strong className="text-teal-600 font-bold uppercase tracking-wide">LYRE</strong>, c'est un <strong className="font-bold text-slate-800">orchestre d'Harmonie</strong>.
-                       <br /><br />
-                       Et c'est aussi une <strong className="text-teal-600 font-bold uppercase tracking-wide">ÉCOLE</strong> fixant les bases musicales indispensables pour gravir les échelons du Grand Orchestre.
+               {/* Content - Clean & Typedographic */}
+               <div className="lg:w-3/5 text-center lg:text-left space-y-10 order-1 lg:order-2">
+                  <div className="space-y-6">
+                    <p className="text-xl md:text-3xl text-slate-700 leading-snug font-poppins font-light">
+                       <span className="text-teal-600 font-bold border-b-2 border-teal-100 pb-1">Depuis 1886</span>, La Lyre est bien plus qu'une association.
+                    </p>
+                    <p className="text-lg md:text-xl text-slate-500 leading-relaxed max-w-2xl">
+                       De croches en noires, de répétitions en répétitions, notre ensemble motive jeunes et moins jeunes à vivre et partager ce langage aux mille et une harmoniques.
                     </p>
                   </div>
 
-                  <p className="italic text-teal-700 text-lg md:text-xl font-medium mt-8 pt-6 border-t border-slate-200 inline-block">
-                     Spectateurs à l'ouïe fine, futur(e)s virtuoses ou simples curieux(se)s, prenez le temps de parcourir notre site..
-                  </p>
+                  <div className="space-y-8 py-4">
+                    <div className="flex items-start gap-4">
+                      <div className="w-1.5 h-12 bg-gradient-to-b from-teal-500 to-cyan-400 rounded-full mt-1 shrink-0"></div>
+                      <div>
+                        <h3 className="text-2xl md:text-3xl font-bold text-slate-800 mb-2">Orchestre d'Harmonie</h3>
+                        <p className="text-slate-600 text-lg">Le cœur battant de notre association, où la passion rencontre l'excellence collective.</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-start gap-4">
+                      <div className="w-1.5 h-12 bg-gradient-to-b from-cyan-400 to-indigo-400 rounded-full mt-1 shrink-0"></div>
+                      <div>
+                        <h3 className="text-2xl md:text-3xl font-bold text-slate-800 mb-2">École de Musique</h3>
+                        <p className="text-slate-600 text-lg">La transmission du savoir pour forger les virtuoses de demain.</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-8 block">
+                    <p className="text-teal-700 text-lg md:text-xl font-medium flex items-center gap-3 justify-center lg:justify-start">
+                      <span className="h-px w-8 bg-teal-200"></span>
+                      Prenez le temps de parcourir notre univers..
+                    </p>
+                  </div>
                </div>
             </div>
         </div>
