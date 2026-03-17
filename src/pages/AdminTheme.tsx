@@ -96,8 +96,12 @@ const AdminTheme = () => {
         theme_primary_color: settings.theme_primary_color || '#0D9488',
         theme_secondary_color: settings.theme_secondary_color || '#0891B2'
     });
-    const [logoFile, setLogoFile] = useState<File | null>(null);
-    const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(settings.site_logo_url || null);
+    const [headerLogoFile, setHeaderLogoFile] = useState<File | null>(null);
+    const [headerLogoPreviewUrl, setHeaderLogoPreviewUrl] = useState<string | null>(settings.header_logo_url || settings.site_logo_url || null);
+    
+    const [secondaryLogoFile, setSecondaryLogoFile] = useState<File | null>(null);
+    const [secondaryLogoPreviewUrl, setSecondaryLogoPreviewUrl] = useState<string | null>(settings.secondary_logo_url || null);
+
     const [savingSettings, setSavingSettings] = useState(false);
     const [settingsNotification, setSettingsNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
@@ -186,7 +190,8 @@ const AdminTheme = () => {
             theme_primary_color: settings.theme_primary_color,
             theme_secondary_color: settings.theme_secondary_color
         });
-        setLogoPreviewUrl(settings.site_logo_url);
+        setHeaderLogoPreviewUrl(settings.header_logo_url || settings.site_logo_url);
+        setSecondaryLogoPreviewUrl(settings.secondary_logo_url);
         if (settings.carousel_interval) {
             setCarouselInterval(parseInt(settings.carousel_interval) / 1000);
         }
@@ -302,11 +307,19 @@ const AdminTheme = () => {
 
 
     // --- GENERAL SETTINGS LOGIC ---
-    const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleHeaderLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             const selectedFile = e.target.files[0];
-            setLogoFile(selectedFile);
-            setLogoPreviewUrl(URL.createObjectURL(selectedFile));
+            setHeaderLogoFile(selectedFile);
+            setHeaderLogoPreviewUrl(URL.createObjectURL(selectedFile));
+        }
+    };
+
+    const handleSecondaryLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const selectedFile = e.target.files[0];
+            setSecondaryLogoFile(selectedFile);
+            setSecondaryLogoPreviewUrl(URL.createObjectURL(selectedFile));
         }
     };
 
@@ -326,32 +339,50 @@ const AdminTheme = () => {
         setSettingsNotification(null);
 
         try {
-            let logoUrl = settings.site_logo_url;
+            let headerLogoUrl = settings.header_logo_url || settings.site_logo_url;
+            let secondaryLogoUrl = settings.secondary_logo_url;
 
-            // Upload Logo if changed
-            if (logoFile) {
+            // Upload Header Logo if changed
+            if (headerLogoFile) {
                 const uploadData = new FormData();
-                uploadData.append('file', logoFile);
-
-                // Reuse existing upload endpoint
-                const uploadResponse = await fetch(`${API_URL}/upload`, {
+                uploadData.append('file', headerLogoFile);
+                const res = await fetch(`${API_URL}/upload`, {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${token}` },
                     body: uploadData
                 });
-                if (!uploadResponse.ok) throw new Error('Erreur upload logo');
-                const uploadResult = await uploadResponse.json();
-                logoUrl = uploadResult.filePath;
+                if (!res.ok) throw new Error('Erreur upload logo header');
+                const data = await res.json();
+                headerLogoUrl = data.filePath;
+            }
+
+            // Upload Secondary Logo if changed
+            if (secondaryLogoFile) {
+                const uploadData = new FormData();
+                uploadData.append('file', secondaryLogoFile);
+                const res = await fetch(`${API_URL}/upload`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: uploadData
+                });
+                if (!res.ok) throw new Error('Erreur upload logo site');
+                const data = await res.json();
+                secondaryLogoUrl = data.filePath;
             }
 
             const newSettings = {
-                site_logo_url: logoUrl,
+                header_logo_url: headerLogoUrl,
+                secondary_logo_url: secondaryLogoUrl,
                 theme_primary_color: generalForm.theme_primary_color,
                 theme_secondary_color: generalForm.theme_secondary_color
             };
 
             await updateSettings(newSettings);
             setSettingsNotification({ message: 'Configuration sauvegardée !', type: 'success' });
+            
+            // Clean up files
+            setHeaderLogoFile(null);
+            setSecondaryLogoFile(null);
         } catch (error) {
             setSettingsNotification({ message: 'Erreur lors de la sauvegarde.', type: 'error' });
         } finally {
@@ -418,35 +449,69 @@ const AdminTheme = () => {
                                 )}
 
                                 <div className="space-y-8">
-                                    {/* Logo Section */}
-                                    <div>
-                                        <h3 className="text-lg font-bold text-slate-800 mb-4 border-b pb-2">Logo du Site</h3>
-                                        <div className="flex items-center space-x-6">
-                                            <div className="relative h-32 w-32 rounded-xl bg-slate-100 border-2 border-dashed border-slate-300 flex items-center justify-center overflow-hidden shrink-0 group">
-                                                {logoPreviewUrl ? (
-                                                    <>
-                                                        <img src={logoPreviewUrl} alt="Logo" className="w-full h-full object-contain p-2" />
-                                                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                                            <Upload className="text-white h-8 w-8" />
+                                    {/* Logos Section */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        <div>
+                                            <h3 className="text-lg font-bold text-slate-800 mb-4 border-b pb-2">Logo du Header</h3>
+                                            <div className="flex items-center space-x-6">
+                                                <div className="relative h-32 w-32 rounded-xl bg-slate-100 border-2 border-dashed border-slate-300 flex items-center justify-center overflow-hidden shrink-0 group">
+                                                    {headerLogoPreviewUrl ? (
+                                                        <>
+                                                            <img src={headerLogoPreviewUrl} alt="Logo Header" className="w-full h-full object-contain p-2" />
+                                                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity p-2">
+                                                                <Upload className="text-white h-8 w-8" />
+                                                            </div>
+                                                        </>
+                                                    ) : (
+                                                        <div className="text-center p-4">
+                                                            <ImageIcon className="h-8 w-8 text-slate-300 mx-auto mb-1" />
+                                                            <span className="text-xs text-slate-400">Aucun logo</span>
                                                         </div>
-                                                    </>
-                                                ) : (
-                                                    <div className="text-center p-4">
-                                                        <ImageIcon className="h-8 w-8 text-slate-300 mx-auto mb-1" />
-                                                        <span className="text-xs text-slate-400">Aucun logo</span>
-                                                    </div>
-                                                )}
-                                                <input
-                                                    type="file"
-                                                    accept="image/*"
-                                                    onChange={handleLogoChange}
-                                                    className="absolute inset-0 opacity-0 cursor-pointer"
-                                                />
+                                                    )}
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        onChange={handleHeaderLogoChange}
+                                                        className="absolute inset-0 opacity-0 cursor-pointer"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <p className="font-medium text-slate-700">Logo du Header</p>
+                                                    <p className="text-sm text-slate-500 mb-2">Utilisé dans la barre de navigation.</p>
+                                                    <p className="text-xs text-slate-400">PNG/SVG transparent.</p>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <p className="font-medium text-slate-700">Changer le logo</p>
-                                                <p className="text-sm text-slate-500 mb-2">Cliquez sur l'aperçu pour uploader un nouveau fichier.</p>
-                                                <p className="text-xs text-slate-400">Recommandé : PNG transparent, 200px de large.</p>
+                                        </div>
+
+                                        <div>
+                                            <h3 className="text-lg font-bold text-slate-800 mb-4 border-b pb-2">Logo du Site</h3>
+                                            <div className="flex items-center space-x-6">
+                                                <div className="relative h-32 w-32 rounded-xl bg-slate-100 border-2 border-dashed border-slate-300 flex items-center justify-center overflow-hidden shrink-0 group">
+                                                    {secondaryLogoPreviewUrl ? (
+                                                        <>
+                                                            <img src={secondaryLogoPreviewUrl} alt="Logo Site" className="w-full h-full object-contain p-2" />
+                                                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity p-2">
+                                                                <Upload className="text-white h-8 w-8" />
+                                                            </div>
+                                                        </>
+                                                    ) : (
+                                                        <div className="text-center p-4">
+                                                            <ImageIcon className="h-8 w-8 text-slate-300 mx-auto mb-1" />
+                                                            <span className="text-xs text-slate-400">Aucun logo</span>
+                                                        </div>
+                                                    )}
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        onChange={handleSecondaryLogoChange}
+                                                        className="absolute inset-0 opacity-0 cursor-pointer"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <p className="font-medium text-slate-700">Logo du Site</p>
+                                                    <p className="text-sm text-slate-500 mb-2">Utilisé sur la page d'accueil (Qui sommes-nous).</p>
+                                                    <p className="text-xs text-slate-400">Recommandé : Format haute qualité.</p>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
