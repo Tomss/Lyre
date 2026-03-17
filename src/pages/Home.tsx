@@ -83,29 +83,35 @@ const Home = () => {
     <div className="font-inter">
       {/* Hero Section: Animated Multi-Column Photo Wall */}
       <section id="accueil" className="relative h-screen w-full bg-slate-950 overflow-hidden flex items-center justify-center">
-        {/* Background Photo Wall */}
-        <div className="absolute inset-0 flex gap-4 opacity-40 scale-110 pointer-events-none">
+        {/* Background Photo Wall - Disordered & Asymmetrical */}
+        <div className="absolute inset-0 flex gap-4 md:gap-8 opacity-50 scale-110 pointer-events-none px-4">
           {[0, 1, 2, 3].map((colIndex) => {
             // Distribute images across 4 columns
             const colImages = [...backgroundImages, ...backgroundImages].filter((_, i) => i % 4 === colIndex);
             // Ensure we have enough images for the scroll to look seamless
             const displayImages = [...colImages, ...colImages, ...colImages];
             
+            // Uniqueness per column
+            const columnOffsets = ['-mt-12', 'mt-24', '-mt-32', 'mt-10'];
+            const animationSpeeds = ['60s', '45s', '70s', '55s'];
+            
             return (
               <div 
                 key={colIndex} 
-                className={`flex-1 flex flex-col gap-4 ${
+                className={`flex-1 flex flex-col gap-4 md:gap-8 ${columnOffsets[colIndex]} ${
                   colIndex % 2 === 0 ? 'animate-scroll-vertical' : 'animate-scroll-vertical-reverse'
                 }`}
+                style={{ animationDuration: animationSpeeds[colIndex] }}
               >
                 {displayImages.map((image, imgIndex) => (
                   <div 
                     key={imgIndex}
-                    className="aspect-[3/4] rounded-2xl bg-cover bg-center shadow-2xl animate-float transition-all duration-700"
+                    className="aspect-[3/4] rounded-3xl bg-cover bg-center shadow-[0_20px_50px_rgba(0,0,0,0.3)] animate-float transition-all duration-700"
                     style={{ 
                       backgroundImage: `url("${image}")`,
-                      animationDelay: `${imgIndex * 0.5 + colIndex * 1.2}s`,
-                      animationDuration: `${12 + colIndex * 2}s`
+                      animationDelay: `${imgIndex * 0.7 + colIndex * 1.5}s`,
+                      animationDuration: `${14 + colIndex * 3}s`,
+                      transform: `rotate(${(imgIndex % 2 === 0 ? 1 : -1) * (1 + (imgIndex % 3))}deg)`
                     }}
                   />
                 ))}
@@ -114,33 +120,33 @@ const Home = () => {
           })}
         </div>
 
-        {/* Glassmorphic Content Card */}
+        {/* Ultra-Transparent Glassmorphic Content Card */}
         <div className="relative z-20 container mx-auto px-4 flex flex-col items-center">
-          <div className="relative group p-8 md:p-16 rounded-[2.5rem] border border-white/20 bg-white/5 backdrop-blur-2xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] overflow-hidden transition-all duration-500 hover:border-white/30 hover:bg-white/10">
-            {/* Animated Glow in background of the card */}
-            <div className="absolute -top-24 -left-24 w-64 h-64 bg-teal-500/20 rounded-full blur-[100px] animate-pulse"></div>
-            <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-cyan-500/20 rounded-full blur-[100px] animate-pulse"></div>
+          <div className="relative group p-8 md:p-14 rounded-[3rem] border border-white/10 bg-white/[0.02] backdrop-blur-md shadow-[0_40px_100px_-20px_rgba(0,0,0,0.6)] overflow-hidden transition-all duration-700 hover:border-white/20 hover:bg-white/[0.05]">
+            {/* Soft Glow effects */}
+            <div className="absolute -top-32 -left-32 w-80 h-80 bg-teal-500/10 rounded-full blur-[120px] animate-pulse"></div>
+            <div className="absolute -bottom-32 -right-32 w-80 h-80 bg-cyan-500/10 rounded-full blur-[120px] animate-pulse pointer-events-none"></div>
 
             <div className="relative z-10 flex flex-col items-center text-center">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-teal-500/10 border border-teal-500/30 text-teal-300 text-xs font-bold uppercase tracking-[0.3em] mb-6 animate-fade-in">
-                Depuis 1886
+              <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white/5 border border-white/10 text-teal-300 text-[10px] md:text-xs font-bold uppercase tracking-[0.4em] mb-8 animate-fade-in shadow-xl">
+                L’Excellence Musicale depuis 1886
               </div>
 
-              <h1 className="flex flex-col items-center gap-2 font-poppins font-extrabold text-white mb-8">
-                <span className="text-7xl md:text-9xl tracking-tighter leading-none drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]">
-                  La <span className="text-transparent bg-clip-text bg-gradient-to-br from-teal-300 via-emerald-400 to-cyan-400">Lyre</span>
+              <h1 className="flex flex-col items-center gap-3 font-poppins font-extrabold text-white mb-10">
+                <span className="text-7xl md:text-[10rem] tracking-tighter leading-none drop-shadow-[0_15px_15px_rgba(0,0,0,0.5)] flex items-center">
+                  La <span className="text-transparent bg-clip-text bg-gradient-to-br from-teal-200 via-emerald-400 to-cyan-400 ml-2 md:ml-6">Lyre</span>
                 </span>
-                <span className="text-lg md:text-2xl font-light tracking-[0.4em] uppercase text-slate-300/90 mt-4">
-                  École de Musique de Chalindrey
+                <span className="text-sm md:text-xl font-light tracking-[0.6em] uppercase text-white/50 mt-2">
+                  Harmonie & École de Musique
                 </span>
               </h1>
 
-              <div className="flex flex-wrap items-center justify-center gap-6 mt-4">
-                <a href="#la-lyre" className="group relative px-8 py-4 bg-teal-500 hover:bg-teal-400 text-white font-bold rounded-2xl transition-all duration-300 hover:scale-105 hover:shadow-[0_20px_40px_-10px_rgba(20,184,166,0.5)] overflow-hidden">
+              <div className="flex flex-wrap items-center justify-center gap-4 md:gap-8 mt-4">
+                <a href="#la-lyre" className="group relative px-10 py-5 bg-teal-500 hover:bg-teal-400 text-white font-bold rounded-2xl transition-all duration-500 hover:scale-105 hover:shadow-[0_25px_50px_-12px_rgba(20,184,166,0.6)] overflow-hidden shadow-2xl">
                   <span className="relative z-10">Découvrir l'Association</span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/30 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
                 </a>
-                <a href="#agenda" className="px-8 py-4 bg-white/10 hover:bg-white/20 text-white font-bold rounded-2xl border border-white/20 backdrop-blur-sm transition-all duration-300 hover:scale-105">
+                <a href="#agenda" className="px-10 py-5 bg-white/5 hover:bg-white/10 text-white font-bold rounded-2xl border border-white/10 backdrop-blur-md transition-all duration-500 hover:scale-105 hover:shadow-2xl">
                   Prochains Concerts
                 </a>
               </div>
@@ -148,9 +154,10 @@ const Home = () => {
           </div>
         </div>
 
-        {/* Scroll Indicator */}
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 animate-bounce">
-          <div className="w-1 h-12 rounded-full bg-gradient-to-b from-teal-500 to-transparent"></div>
+        {/* Elegant Scroll Indicator */}
+        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-4">
+            <span className="text-[10px] uppercase tracking-[0.5em] text-white/30 font-bold hidden md:block">Explorer</span>
+            <div className="w-[2px] h-16 rounded-full bg-gradient-to-b from-teal-500 via-teal-500/50 to-transparent animate-bounce"></div>
         </div>
       </section>
 
