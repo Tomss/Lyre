@@ -41,6 +41,7 @@ const AdminEvents = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState<string[]>(['concert', 'repetition', 'divers']);
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [expandedTypes, setExpandedTypes] = useState<Set<string>>(new Set(['concert', 'repetition', 'divers']));
@@ -146,12 +147,12 @@ const AdminEvents = () => {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!token) return;
-    setLoading(true);
-
-    const url = editingEvent ? `${API_URL}/events/${editingEvent.id}` : `${API_URL}/events`;
-    const method = editingEvent ? 'PUT' : 'POST';
-
+    setSubmitting(true);
     try {
+      const isUpdating = !!editingEvent;
+      const url = isUpdating ? `${API_URL}/events/${editingEvent.id}` : `${API_URL}/events`;
+      const method = isUpdating ? 'PUT' : 'POST';
+
       const response = await fetch(url, {
         method,
         headers: {
@@ -173,7 +174,7 @@ const AdminEvents = () => {
     } catch (err: any) {
       showNotification(err.message, 'error');
     }
-    setLoading(false);
+    setSubmitting(false);
   };
 
   const handleDelete = async () => {
@@ -475,28 +476,28 @@ const AdminEvents = () => {
         {showAddForm && (
           <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-40 flex justify-center items-start p-4 pt-24">
             <div className="bg-slate-50 rounded-3xl shadow-2xl w-full max-w-2xl flex flex-col overflow-hidden border border-white max-h-[calc(100vh-120px)] animate-in fade-in zoom-in duration-300">
-              <div className="flex justify-between items-center p-6 bg-white border-b border-slate-100 flex-shrink-0">
+              <div className="flex justify-between items-center p-5 bg-white border-b border-slate-100 flex-shrink-0">
                 <div className="flex items-center">
-                    <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mr-4">
-                        {editingEvent ? <Edit size={24} /> : <Plus size={24} />}
+                    <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mr-4">
+                        {editingEvent ? <Edit size={20} /> : <Plus size={20} />}
                     </div>
-                    <h2 className="text-2xl font-bold text-slate-800 tracking-tight">
+                    <h2 className="text-xl font-bold text-slate-800 tracking-tight">
                         {editingEvent ? 'Modifier l\'événement' : 'Nouvel événement'}
                     </h2>
                 </div>
                 <button onClick={cancelEdit} className="p-2 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
-                    <X size={24} />
+                    <X size={20} />
                 </button>
               </div>
-              <form onSubmit={handleSubmit} className="flex-grow overflow-y-auto p-6 space-y-8 bg-gradient-to-b from-slate-50 to-white">
+              <form onSubmit={handleSubmit} className="flex-grow overflow-y-auto p-5 space-y-5 bg-gradient-to-b from-slate-50 to-white">
                 {/* Section: Informations générales */}
-                <div className="space-y-5">
+                <div className="space-y-4">
                     <div className="flex items-center space-x-2 text-indigo-600 mb-1">
-                        <Info size={18} />
-                        <h3 className="text-sm font-bold uppercase tracking-wider">Informations générales</h3>
+                        <Info size={16} />
+                        <h3 className="text-xs font-bold uppercase tracking-wider">Informations générales</h3>
                     </div>
                     
-                    <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-5">
+                    <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-4">
                         <div>
                             <label className="flex items-center text-sm font-semibold text-slate-700 mb-1.5">
                                 <FileText size={16} className="mr-2 text-slate-400" /> Titre de l'événement *
@@ -541,19 +542,19 @@ const AdminEvents = () => {
                             <label className="flex items-center text-sm font-semibold text-slate-700 mb-1.5">
                                 <AlignLeft size={16} className="mr-2 text-slate-400" /> Description
                             </label>
-                            <textarea name="description" value={formData.description} onChange={handleInputChange} placeholder="Description courte..." className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-slate-50/30 focus:bg-white h-24 resize-none"></textarea>
+                            <textarea name="description" value={formData.description} onChange={handleInputChange} placeholder="Description courte..." className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-slate-50/30 focus:bg-white h-20 resize-none text-sm"></textarea>
                         </div>
                     </div>
                 </div>
 
                 {/* Section: Date & Lieu */}
-                <div className="space-y-5">
+                <div className="space-y-4">
                     <div className="flex items-center space-x-2 text-indigo-600 mb-1">
-                        <MapPin size={18} />
-                        <h3 className="text-sm font-bold uppercase tracking-wider">Date & Lieu</h3>
+                        <MapPin size={16} />
+                        <h3 className="text-xs font-bold uppercase tracking-wider">Date & Lieu</h3>
                     </div>
 
-                    <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-5">
+                    <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <div>
                                 <label className="flex items-center text-sm font-semibold text-slate-700 mb-1.5">
@@ -573,19 +574,19 @@ const AdminEvents = () => {
                             <label className="flex items-center text-sm font-semibold text-slate-700 mb-1.5">
                                 <Info size={16} className="mr-2 text-slate-400" /> Infos pratiques <span className="text-[10px] ml-1.5 text-slate-400 font-normal">(Membres uniquement)</span>
                             </label>
-                            <textarea name="practical_info" value={formData.practical_info} onChange={handleInputChange} placeholder="Horaires de rdv, tenue, etc..." className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-slate-50/30 focus:bg-white h-24 resize-none"></textarea>
+                            <textarea name="practical_info" value={formData.practical_info} onChange={handleInputChange} placeholder="Horaires de rdv, tenue, etc..." className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-slate-50/30 focus:bg-white h-20 resize-none text-sm"></textarea>
                         </div>
                     </div>
                 </div>
 
                 {/* Section: Orchestres */}
-                <div className="space-y-5">
+                <div className="space-y-4">
                     <div className="flex items-center space-x-2 text-indigo-600 mb-1">
-                        <Users size={18} />
-                        <h3 className="text-sm font-bold uppercase tracking-wider">Orchestres concernés</h3>
+                        <Users size={16} />
+                        <h3 className="text-xs font-bold uppercase tracking-wider">Orchestres concernés</h3>
                     </div>
 
-                    <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+                    <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             {orchestras.map(orchestra => (
                                 <label key={orchestra.id} className="flex items-center p-3 rounded-xl border border-slate-50 hover:border-indigo-100 hover:bg-indigo-50/30 transition-all cursor-pointer group">
@@ -604,15 +605,15 @@ const AdminEvents = () => {
                     </div>
                 </div>
 
-                <div className="flex items-center justify-end p-6 bg-white border-t border-slate-100 gap-3 flex-shrink-0">
-                  <button type="button" onClick={cancelEdit} className="px-6 py-3 text-slate-500 hover:text-slate-700 font-bold transition hover:bg-slate-50 rounded-xl">
+                <div className="flex items-center justify-end p-5 bg-white border-t border-slate-100 gap-3 flex-shrink-0">
+                  <button type="button" onClick={cancelEdit} className="px-5 py-2.5 text-slate-500 hover:text-slate-700 font-bold transition hover:bg-slate-50 rounded-xl text-sm">
                     Annuler
                   </button>
-                  <button type="submit" disabled={loading} className="px-8 py-3 text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl font-bold transition shadow-lg shadow-indigo-200 flex items-center justify-center">
-                    {loading ? (
+                  <button type="submit" disabled={submitting} className="px-8 py-2.5 text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl font-bold transition shadow-lg shadow-indigo-200 flex items-center justify-center disabled:opacity-50 min-w-[140px] text-sm">
+                    {submitting ? (
                         <>
-                            <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
-                            Enregistrement...
+                            <div className="animate-spin rounded-full h-3 w-3 border-2 border-white border-t-transparent mr-2"></div>
+                            Validation...
                         </>
                     ) : (editingEvent ? 'Mettre à jour' : 'Créer l\'événement')}
                   </button>
