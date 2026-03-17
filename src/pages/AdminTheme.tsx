@@ -8,7 +8,7 @@ import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, us
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
-import { API_URL } from '../config';
+import { API_URL, BASE_URL } from '../config';
 
 interface CarouselImage {
     id: string;
@@ -190,8 +190,8 @@ const AdminTheme = () => {
             theme_primary_color: settings.theme_primary_color,
             theme_secondary_color: settings.theme_secondary_color
         });
-        setHeaderLogoPreviewUrl(settings.header_logo_url || settings.site_logo_url);
-        setSecondaryLogoPreviewUrl(settings.secondary_logo_url);
+        setHeaderLogoPreviewUrl(settings.header_logo_url?.startsWith('http') ? settings.header_logo_url : (settings.header_logo_url ? `${BASE_URL}${settings.header_logo_url}` : (settings.site_logo_url?.startsWith('http') ? settings.site_logo_url : (settings.site_logo_url ? `${BASE_URL}${settings.site_logo_url}` : null))));
+        setSecondaryLogoPreviewUrl(settings.secondary_logo_url?.startsWith('http') ? settings.secondary_logo_url : (settings.secondary_logo_url ? `${BASE_URL}${settings.secondary_logo_url}` : null));
         if (settings.carousel_interval) {
             setCarouselInterval(parseInt(settings.carousel_interval) / 1000);
         }
@@ -456,9 +456,9 @@ const AdminTheme = () => {
                                             <h3 className="text-lg font-bold text-slate-800 mb-4 border-b pb-2">Logo du Header</h3>
                                             <div className="flex items-center space-x-6">
                                                 <div className="relative h-32 w-32 rounded-xl bg-slate-100 border-2 border-dashed border-slate-300 flex items-center justify-center overflow-hidden shrink-0 group">
-                                                    {headerLogoPreviewUrl ? (
+                                                     {headerLogoPreviewUrl ? (
                                                         <>
-                                                            <img src={headerLogoPreviewUrl} alt="Logo Header" className="w-full h-full object-contain p-2" />
+                                                            <img src={headerLogoPreviewUrl?.startsWith('http') || headerLogoPreviewUrl?.startsWith('blob:') ? headerLogoPreviewUrl : `${BASE_URL}${headerLogoPreviewUrl}`} alt="Logo Header" className="w-full h-full object-contain p-2" />
                                                             <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity p-2">
                                                                 <Upload className="text-white h-8 w-8" />
                                                             </div>
@@ -488,9 +488,9 @@ const AdminTheme = () => {
                                             <h3 className="text-lg font-bold text-slate-800 mb-4 border-b pb-2">Logo du Site</h3>
                                             <div className="flex items-center space-x-6">
                                                 <div className="relative h-32 w-32 rounded-xl bg-slate-100 border-2 border-dashed border-slate-300 flex items-center justify-center overflow-hidden shrink-0 group">
-                                                    {secondaryLogoPreviewUrl ? (
+                                                     {secondaryLogoPreviewUrl ? (
                                                         <>
-                                                            <img src={secondaryLogoPreviewUrl} alt="Logo Site" className="w-full h-full object-contain p-2" />
+                                                            <img src={secondaryLogoPreviewUrl?.startsWith('http') || secondaryLogoPreviewUrl?.startsWith('blob:') ? secondaryLogoPreviewUrl : `${BASE_URL}${secondaryLogoPreviewUrl}`} alt="Logo Site" className="w-full h-full object-contain p-2" />
                                                             <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity p-2">
                                                                 <Upload className="text-white h-8 w-8" />
                                                             </div>
@@ -655,8 +655,8 @@ const AdminTheme = () => {
                                                             <div className="cursor-grab p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded hidden group-hover:block" title="Déplacer">
                                                                 <GripVertical className="h-5 w-5" />
                                                             </div>
-                                                            <div className="h-16 w-24 bg-slate-100 rounded overflow-hidden flex-shrink-0">
-                                                                <img src={img.image_url} alt={img.title} className="w-full h-full object-cover" />
+                                                             <div className="h-16 w-24 bg-slate-100 rounded overflow-hidden flex-shrink-0">
+                                                                <img src={img.image_url.startsWith('http') ? img.image_url : `${BASE_URL}${img.image_url}`} alt={img.title} className="w-full h-full object-cover" />
                                                             </div>
                                                             <div className="flex-grow min-w-0">
                                                                 <h4 className="font-semibold text-slate-800 truncate">{img.title || 'Sans titre'}</h4>
@@ -713,9 +713,9 @@ const AdminTheme = () => {
                                     ].map((page) => (
                                         <div key={page.id} className="bg-white border border-slate-200 rounded-xl p-6 flex flex-col md:flex-row md:items-center gap-6">
                                             <div className="relative h-32 w-full md:w-48 bg-slate-100 rounded-lg overflow-hidden flex-shrink-0 border border-slate-200 group">
-                                                {localPageHeaders[page.id] ? (
+                                                 {localPageHeaders[page.id] ? (
                                                     <>
-                                                        <img src={localPageHeaders[page.id]} alt={page.title} className="w-full h-full object-cover" />
+                                                        <img src={localPageHeaders[page.id]?.startsWith('http') ? localPageHeaders[page.id] : `${BASE_URL}${localPageHeaders[page.id]}`} alt={page.title} className="w-full h-full object-cover" />
                                                         <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                                                             <Upload className="text-white h-6 w-6" />
                                                         </div>

@@ -5,7 +5,7 @@ import { useTheme } from '../context/ThemeContext';
 import PartnersSection from '../components/PartnersSection';
 import HomeNewsSection from '../components/HomeNewsSection';
 import HomeAgendaSection from '../components/HomeAgendaSection';
-import { API_URL } from '../config';
+import { API_URL, BASE_URL } from '../config';
 
 const Home = () => {
   const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
@@ -29,7 +29,9 @@ const Home = () => {
         if (response.ok) {
           const data = await response.json();
           if (data.length > 0) {
-            setBackgroundImages(data.map((item: any) => item.image_url));
+            setBackgroundImages(data.map((item: any) => 
+               item.image_url.startsWith('http') ? item.image_url : `${BASE_URL}${item.image_url}`
+            ));
           } else {
             setBackgroundImages(defaultImages);
           }
@@ -80,7 +82,7 @@ const Home = () => {
   return (
     <div className="font-inter">
       {/* Hero Section - Optimisé Ultra-Wide (Style Samsung) */}
-      <section id="accueil" className="relative min-h-screen flex items-center py-24 md:py-32 justify-center bg-white overflow-hidden">
+      <section id="accueil" className="relative h-[calc(100vh-80px)] flex items-center justify-center bg-white overflow-hidden">
         {/* Images de fond avec structure Contenue pour Ultra-Wide */}
         {backgroundImages.map((image, index) => (
           <div

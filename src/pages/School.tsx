@@ -17,7 +17,7 @@ interface Instrument {
 
 
 
-import { API_URL } from '../config';
+import { API_URL, BASE_URL } from '../config';
 
 const getInstrumentConfig = (name: string) => {
   const n = name.toLowerCase();
@@ -100,8 +100,8 @@ const School = () => {
                  <div className="relative group/logo">
                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[130%] h-[130%] bg-teal-500/5 rounded-full blur-[60px]"></div>
                    <div className="relative animate-float">
-                      <img 
-                        src={settings.secondary_logo_url || settings.site_logo_url || "/lyre-logo.png"} 
+                       <img 
+                        src={settings.secondary_logo_url?.startsWith('http') ? settings.secondary_logo_url : (settings.secondary_logo_url ? `${BASE_URL}${settings.secondary_logo_url}` : (settings.site_logo_url?.startsWith('http') ? settings.site_logo_url : (settings.site_logo_url ? `${BASE_URL}${settings.site_logo_url}` : "/lyre-logo.png")))} 
                         alt="Logo de La Lyre" 
                         className="w-56 h-56 md:w-72 md:h-72 object-contain drop-shadow-lg transition-transform duration-1000 group-hover/logo:scale-105"
                       />
@@ -194,8 +194,8 @@ const School = () => {
                     {/* Image Background */}
                     {inst.photo_url && (
                       <div className="absolute inset-0 z-0">
-                        <img
-                          src={inst.photo_url}
+                         <img
+                          src={inst.photo_url?.startsWith('http') ? inst.photo_url : (inst.photo_url ? `${BASE_URL}${inst.photo_url}` : "")}
                           alt={inst.name}
                           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-50 group-hover:opacity-40 mix-blend-overlay"
                           onError={(e) => {
@@ -239,8 +239,8 @@ const School = () => {
                 <div className="bg-slate-900 rounded-3xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto border border-white/10" onClick={(e) => e.stopPropagation()}>
                     {/* Header/Image */}
                     <div className="relative h-64 sm:h-80 bg-slate-800 flex-shrink-0">
-                        {selectedInstrument.photo_url ? (
-                            <img src={selectedInstrument.photo_url} alt={selectedInstrument.name} className="w-full h-full object-cover" />
+                         {selectedInstrument.photo_url ? (
+                            <img src={selectedInstrument.photo_url.startsWith('http') ? selectedInstrument.photo_url : `${BASE_URL}${selectedInstrument.photo_url}`} alt={selectedInstrument.name} className="w-full h-full object-cover" />
                         ) : (
                             <div className="w-full h-full flex flex-col items-center justify-center bg-slate-900 text-teal-400">
                                 <Sparkles className="h-16 w-16 mb-4 opacity-50" />

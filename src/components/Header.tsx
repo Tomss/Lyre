@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Music, UserCircle, ChevronDown } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import { API_URL } from '../config';
+import { API_URL, BASE_URL } from '../config';
 
 const Header = () => {
   const [isVisible, setIsVisible] = useState(true);
@@ -129,7 +129,7 @@ const Header = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2 font-poppins font-bold text-xl transition-colors text-teal-800 hover:text-teal-600">
             {(settings?.header_logo_url || settings?.site_logo_url) ? (
-              <img src={settings.header_logo_url || settings.site_logo_url} alt="La Lyre" className="h-10 lg:h-16 w-auto object-contain transition-all duration-300" />
+              <img src={settings.header_logo_url?.startsWith('http') ? settings.header_logo_url : (settings.header_logo_url ? `${BASE_URL}${settings.header_logo_url}` : (settings.site_logo_url?.startsWith('http') ? settings.site_logo_url : `${BASE_URL}${settings.site_logo_url}`))} alt="La Lyre" className="h-10 lg:h-16 w-auto object-contain transition-all duration-300" />
             ) : (
               <div className="flex items-center space-x-2">
                 <Music className="h-8 w-8 lg:h-10 lg:w-10 text-teal-600" />
