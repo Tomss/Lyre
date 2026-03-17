@@ -334,34 +334,49 @@ const AdminEvents = () => {
         </div>
 
         {/* Search and Filters */}
-        <div className="mb-6 bg-white p-4 rounded-lg shadow-sm">
-          <div className="relative mb-4">
-            <Search size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Rechercher un événement..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-            />
+        <div className="mb-6 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-6">
+          {/* Row 1: Search Bar */}
+          <div>
+            <label htmlFor="search" className="block text-sm font-semibold text-slate-700 mb-2">Rechercher un événement</label>
+            <div className="relative">
+              <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                id="search"
+                placeholder="Rechercher par titre, description, lieu ou orchestre..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none"
+              />
+            </div>
           </div>
-          <div className="flex justify-between items-center">
-            <div className="flex items-center space-x-2">
-              <span className="text-sm font-medium text-gray-700">Type:</span>
-      <button onClick={() => setTypeFilter(['concert', 'repetition', 'divers'])} className={`px-3 py-1 rounded-full text-sm ${typeFilter.length >= 3 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-700'}`}>Tous</button>
-              <button onClick={() => setTypeFilter(['concert'])} className={`px-3 py-1 rounded-full text-sm ${typeFilter.length === 1 && typeFilter[0] === 'concert' ? 'bg-indigo-500 text-white' : 'bg-gray-200 text-gray-700'}`}>Concerts</button>
-              <button onClick={() => setTypeFilter(['repetition'])} className={`px-3 py-1 rounded-full text-sm ${typeFilter.length === 1 && typeFilter[0] === 'repetition' ? 'bg-indigo-500 text-white' : 'bg-gray-200 text-gray-700'}`}>Répétitions</button>
-              <button onClick={() => setTypeFilter(['divers'])} className={`px-3 py-1 rounded-full text-sm ${typeFilter.length === 1 && typeFilter[0] === 'divers' ? 'bg-indigo-500 text-white' : 'bg-gray-200 text-gray-700'}`}>Divers</button>
+
+          {/* Row 2: Filters */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-2 border-t border-slate-100">
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-3 flex items-center">
+                <Clock className="w-4 h-4 mr-2 text-indigo-500" /> Filtrer par type
+              </label>
+              <div className="flex flex-wrap gap-2">
+                <button onClick={() => setTypeFilter(['concert', 'repetition', 'divers'])} className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${typeFilter.length >= 3 ? 'bg-indigo-600 text-white shadow-md shadow-indigo-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>Tous</button>
+                <button onClick={() => setTypeFilter(['concert'])} className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${typeFilter.length === 1 && typeFilter[0] === 'concert' ? 'bg-green-500 text-white shadow-md shadow-green-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>Concerts</button>
+                <button onClick={() => setTypeFilter(['repetition'])} className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${typeFilter.length === 1 && typeFilter[0] === 'repetition' ? 'bg-blue-500 text-white shadow-md shadow-blue-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>Répétitions</button>
+                <button onClick={() => setTypeFilter(['divers'])} className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${typeFilter.length === 1 && typeFilter[0] === 'divers' ? 'bg-purple-500 text-white shadow-md shadow-purple-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>Divers</button>
+              </div>
             </div>
-            <div className="flex items-center space-x-2">
-              <span className="text-sm font-medium text-gray-700">Date:</span>
-              <button onClick={() => setTimeFilter('all')} className={`px-3 py-1 rounded-full text-sm ${timeFilter === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}>Tous</button>
-              <button onClick={() => setTimeFilter('upcoming')} className={`px-3 py-1 rounded-full text-sm ${timeFilter === 'upcoming' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}>À venir</button>
-              <button onClick={() => setTimeFilter('past')} className={`px-3 py-1 rounded-full text-sm ${timeFilter === 'past' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}>Passés</button>
-            </div>
-            <div className="flex items-center space-x-2">
-              <button onClick={expandAllTypes} className="text-sm bg-gray-200 px-3 py-1 rounded-md">Tout déplier</button>
-              <button onClick={collapseAllTypes} className="text-sm bg-gray-200 px-3 py-1 rounded-md">Tout replier</button>
+            <div className="lg:border-l lg:pl-6 border-slate-100">
+              <label className="block text-sm font-semibold text-slate-700 mb-3 flex items-center">
+                <Calendar className="w-4 h-4 mr-2 text-amber-500" /> Filtrer par date
+              </label>
+              <div className="flex flex-wrap gap-2">
+                <button onClick={() => setTimeFilter('all')} className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${timeFilter === 'all' ? 'bg-indigo-600 text-white shadow-md shadow-indigo-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>Tous</button>
+                <button onClick={() => setTimeFilter('upcoming')} className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${timeFilter === 'upcoming' ? 'bg-amber-500 text-white shadow-md shadow-amber-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>À venir</button>
+                <button onClick={() => setTimeFilter('past')} className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${timeFilter === 'past' ? 'bg-slate-500 text-white shadow-md shadow-slate-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>Passés</button>
+                <div className="flex items-center space-x-2 ml-auto">
+                    <button onClick={expandAllTypes} className="text-sm bg-slate-100 text-slate-600 px-3 py-1.5 rounded-lg hover:bg-slate-200 transition">Tout déplier</button>
+                    <button onClick={collapseAllTypes} className="text-sm bg-slate-100 text-slate-600 px-3 py-1.5 rounded-lg hover:bg-slate-200 transition">Tout replier</button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -378,9 +393,9 @@ const AdminEvents = () => {
           <div className="space-y-8">
             {Object.entries(eventsByType).map(([type, eventList]) => (
               <div key={type} className="bg-white rounded-xl shadow-lg border border-gray-200/80 overflow-hidden">
-                <div onClick={() => toggleTypeExpansion(type)} className="p-5 flex justify-between items-center cursor-pointer bg-gray-50/80 border-b border-gray-200/80 hover:bg-gray-100/50 transition-colors">
+                <div onClick={() => toggleTypeExpansion(type)} className={`p-5 flex justify-between items-center cursor-pointer border-b border-gray-200/80 transition-colors ${getTypeColor(type).replace('text-', 'bg-').replace('-800', '-200')} hover:bg-gray-100/50`}>
                   <div className="flex items-center">
-                    {React.createElement(getTypeIcon(type), { className: `h-8 w-8 mr-4 ${getTypeColor(type).split(' ')[1]}` })}
+                    {React.createElement(getTypeIcon(type), { className: `h-8 w-8 mr-4 ${getTypeColor(type).split(' ')[1].replace('-800', '-600')}` })}
                     <h2 className={`text-2xl font-bold ${getTypeColor(type).split(' ')[1].replace('-800', '-900')}`}>
                       {type === 'concert' ? 'Concerts' : type === 'divers' ? 'Divers' : 'Répétitions'} <span className="text-lg font-normal">({eventList.length})</span>
                     </h2>
@@ -390,37 +405,51 @@ const AdminEvents = () => {
                 {expandedTypes.has(type) && (
                   <div className="divide-y divide-gray-200/80">
                     {eventList.map(event => (
-                      <div key={event.id} className={`p-4 flex flex-col md:flex-row md:items-center md:justify-between hover:bg-gray-50/50 transition-colors duration-200`}>
-                        <div className="flex items-center flex-1 mb-4 md:mb-0">
-                          <div className={`p-3 rounded-xl mr-4 border ${getTypeColor(event.event_type)}`}>
-                            {React.createElement(getTypeIcon(event.event_type), { className: "h-6 w-6" })}
-                          </div>
-                          <div className="flex-grow">
-                            <div className="flex items-center gap-3 mb-1">
-                              <p className="font-bold text-lg text-gray-800 leading-none">{event.title}</p>
+                      <div key={event.id} className={`p-4 flex flex-col md:flex-row md:items-center md:justify-between hover:bg-gray-50/50 transition-colors duration-200 border-l-4 ${getTypeColor(event.event_type).replace('bg', 'border').replace('-100', '-500')}`}>
+                        <div className="flex-1 mb-4 md:mb-0">
+                          <div className="flex items-center mb-1">
+                            <p className="font-bold text-lg text-gray-800">{event.title}</p>
+                            <span className={`ml-3 px-2.5 py-1 text-xs font-semibold rounded-full border ${getTypeColor(event.event_type)}`}>
+                              {event.event_type === 'concert' ? 'Concert' : event.event_type === 'divers' ? 'Divers' : 'Répétition'}
+                            </span>
+                            <div className="ml-3">
                               {event.is_public ? (
-                                <span className="px-2 py-0.5 rounded-md bg-teal-50 text-teal-600 text-xs font-semibold uppercase tracking-wider border border-teal-100">Public</span>
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-teal-100 text-teal-800">
+                                  <span className="w-2 h-2 mr-1 bg-teal-500 rounded-full"></span> Public
+                                </span>
                               ) : (
-                                <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-500 text-xs font-semibold uppercase tracking-wider border border-slate-200">Interne</span>
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-500">
+                                  <span className="w-2 h-2 mr-1 bg-slate-400 rounded-full"></span> Interne
+                                </span>
                               )}
                             </div>
-                            <div className="flex items-center text-gray-600 text-sm mb-2">
-                              <Calendar size={16} className="mr-2" /> {formatDate(event.event_date)}
+                          </div>
+                          <div className="flex flex-col space-y-1">
+                            <div className="flex items-center text-gray-500 text-sm">
+                              <Calendar size={14} className="mr-2" /> {formatDate(event.event_date)}
                             </div>
-                            {event.location && <div className="flex items-center text-gray-600 text-sm">
-                              <MapPin size={16} className="mr-2" /> {event.location}
-                            </div>}
+                            {event.location && (
+                                <div className="flex items-center text-gray-500 text-sm">
+                                    <MapPin size={14} className="mr-2" /> {event.location}
+                                </div>
+                            )}
                           </div>
                         </div>
-                        <div className="flex-1 text-sm">
-                          <h4 className="font-semibold text-gray-700 mb-1">Orchestres:</h4>
-                          <ul className="list-disc list-inside text-gray-600">
-                            {event.orchestras.map(o => <li key={o.id}>{o.name}</li>)}
-                          </ul>
+                        <div className="flex-1 mb-4 md:mb-0">
+                          <h4 className="font-semibold text-gray-600 text-sm mb-1">Orchestres</h4>
+                          {event.orchestras && event.orchestras.length > 0 ? (
+                            <div className="flex flex-wrap gap-1">
+                              {event.orchestras.map(orc => (
+                                  <span key={orc.id} className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded">
+                                      {orc.name}
+                                  </span>
+                              ))}
+                            </div>
+                          ) : <p className="text-gray-400 text-xs italic">Aucun</p>}
                         </div>
-                        <div className="flex items-center space-x-3 flex-shrink-0 ml-4">
-                          <button onClick={() => handleEdit(event)} className="p-2 text-blue-600 bg-blue-100 hover:bg-blue-200 rounded-full transition-colors duration-200"><Edit size={18} /></button>
-                          <button onClick={() => confirmDelete(event)} className="p-2 text-red-600 bg-red-100 hover:bg-red-200 rounded-full transition-colors duration-200"><Trash2 size={18} /></button>
+                        <div className="flex items-center space-x-3 flex-shrink-0">
+                          <button onClick={() => handleEdit(event)} title="Modifier" className="p-2 text-blue-600 bg-blue-100 hover:bg-blue-200 rounded-full transition-colors duration-200"><Edit size={18} /></button>
+                          <button onClick={() => confirmDelete(event)} title="Supprimer" className="p-2 text-red-600 bg-red-100 hover:bg-red-200 rounded-full transition-colors duration-200"><Trash2 size={18} /></button>
                         </div>
                       </div>
                     ))}
@@ -439,44 +468,74 @@ const AdminEvents = () => {
                 <h2 className="text-2xl font-bold text-gray-800">{editingEvent ? 'Modifier' : 'Ajouter'} un événement</h2>
                 <button onClick={cancelEdit} className="p-2 rounded-full hover:bg-gray-200"><X size={24} /></button>
               </div>
-              <form onSubmit={handleSubmit} className="flex-grow overflow-y-auto p-6 space-y-4">
-                <input type="text" name="title" value={formData.title} onChange={handleInputChange} placeholder="Titre de l'événement" required className="w-full px-4 py-2 border rounded-lg" />
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <select name="event_type" value={formData.event_type} onChange={handleInputChange} className="w-full px-4 py-2 border rounded-lg bg-white focus:ring-2 focus:ring-indigo-500 outline-none">
-                    <option value="concert">Concert</option>
-                    <option value="repetition">Répétition</option>
-                    <option value="divers">Divers</option>
-                  </select>
-                  <label className="flex items-center space-x-3 p-2 bg-slate-50 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors">
-                    <input 
-                      type="checkbox" 
-                      name="is_public" 
-                      checked={formData.is_public} 
-                      onChange={handleInputChange} 
-                      className="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500 accent-indigo-600" 
-                    />
-                    <span className="font-medium text-slate-700">Visible par le grand public</span>
-                  </label>
-                </div>
-                <textarea name="description" value={formData.description} onChange={handleInputChange} placeholder="Description" className="w-full px-4 py-2 border rounded-lg h-24"></textarea>
-                <textarea name="practical_info" value={formData.practical_info} onChange={handleInputChange} placeholder="Informations pratiques (visible uniquement par les membres)" className="w-full px-4 py-2 border rounded-lg h-24"></textarea>
-                <input type="datetime-local" name="event_date" value={formData.event_date} onChange={handleInputChange} required className="w-full px-4 py-2 border rounded-lg" />
-                <input type="text" name="location" value={formData.location} onChange={handleInputChange} placeholder="Lieu" className="w-full px-4 py-2 border rounded-lg" />
+              <form onSubmit={handleSubmit} className="flex-grow overflow-y-auto p-6 space-y-5">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Orchestres</label>
-                  <div className="grid grid-cols-2 gap-2">
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Titre de l'événement *</label>
+                  <input type="text" name="title" value={formData.title} onChange={handleInputChange} placeholder="Ex: Concert de Printemps" required className="w-full px-4 py-2 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition" />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Type d'événement</label>
+                    <select name="event_type" value={formData.event_type} onChange={handleInputChange} className="w-full px-4 py-2 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-white">
+                      <option value="concert">Concert</option>
+                      <option value="repetition">Répétition</option>
+                      <option value="divers">Divers</option>
+                    </select>
+                  </div>
+                  <div className="flex items-end">
+                    <label className="flex items-center space-x-3 p-2 bg-slate-50 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors w-full h-[42px]">
+                      <input 
+                        type="checkbox" 
+                        name="is_public" 
+                        checked={formData.is_public} 
+                        onChange={handleInputChange} 
+                        className="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500 accent-indigo-600" 
+                      />
+                      <span className="font-medium text-slate-700 text-sm">Visible par le grand public</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Description</label>
+                  <textarea name="description" value={formData.description} onChange={handleInputChange} placeholder="Description courte..." className="w-full px-4 py-2 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition h-24 resize-none"></textarea>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Informations pratiques (Membres uniquement)</label>
+                  <textarea name="practical_info" value={formData.practical_info} onChange={handleInputChange} placeholder="Horaires de rdv, tenue, etc..." className="w-full px-4 py-2 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition h-24 resize-none"></textarea>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Date et heure *</label>
+                    <input type="datetime-local" name="event_date" value={formData.event_date} onChange={handleInputChange} required className="w-full px-4 py-2 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Lieu</label>
+                    <input type="text" name="location" value={formData.location} onChange={handleInputChange} placeholder="Ex: Salle des fêtes" className="w-full px-4 py-2 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition" />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Orchestres concernés</label>
+                  <div className="grid grid-cols-2 gap-3 p-4 bg-slate-50 rounded-xl border border-slate-200">
                     {orchestras.map(orchestra => (
-                      <label key={orchestra.id} className="flex items-center space-x-2">
-                        <input type="checkbox" checked={formData.orchestra_ids.includes(orchestra.id)} onChange={e => handleOrchestraChange(orchestra.id, e.target.checked)} className="rounded" />
-                        <span>{orchestra.name}</span>
+                      <label key={orchestra.id} className="flex items-center space-x-3 cursor-pointer group">
+                        <input type="checkbox" checked={formData.orchestra_ids.includes(orchestra.id)} onChange={e => handleOrchestraChange(orchestra.id, e.target.checked)} className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500 accent-indigo-600 cursor-pointer" />
+                        <span className="text-sm text-slate-700 group-hover:text-indigo-600 transition-colors">{orchestra.name}</span>
                       </label>
                     ))}
                   </div>
                 </div>
-                <div className="flex justify-end pt-4 border-t">
-                  <button type="button" onClick={cancelEdit} className="mr-4 px-6 py-2 rounded-lg border hover:bg-gray-100">Annuler</button>
-                  <button type="submit" disabled={loading} className="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition disabled:bg-blue-300">
-                    {loading ? 'Enregistrement...' : (editingEvent ? 'Mettre à jour' : 'Créer')}
+
+                <div className="flex justify-end pt-6 border-t border-slate-100 gap-3">
+                  <button type="button" onClick={cancelEdit} className="px-6 py-3 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl font-medium transition flex-1 md:flex-none text-center">
+                    Annuler
+                  </button>
+                  <button type="submit" disabled={loading} className="px-6 py-3 text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl font-medium transition shadow-lg shadow-indigo-200 flex-1 md:flex-none flex items-center justify-center">
+                    {loading ? 'Enregistrement...' : (editingEvent ? 'Mettre à jour' : 'Créer l\'événement')}
                   </button>
                 </div>
               </form>
