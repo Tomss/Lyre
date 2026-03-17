@@ -122,7 +122,7 @@ const Header = () => {
   }, [location]);
 
   return (
-    <header className={`absolute top-0 left-0 right-0 z-50 transition-all duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'
+    <header className={`sticky top-0 left-0 right-0 z-50 transition-all duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'
       } bg-white transition-shadow duration-300`}>
       <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 lg:h-20">
