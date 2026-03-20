@@ -194,6 +194,7 @@ const Media = () => {
                     <MediaPreview
                       files={media.media_files}
                       mediaType={media.media_type}
+                      title={media.title}
                       onClick={() => openGallery(media)}
                       className="cursor-pointer"
                     />
@@ -421,6 +422,7 @@ const Media = () => {
                           <MediaPreview
                             files={media.media_files}
                             mediaType={media.media_type}
+                            title={media.title}
                             onClick={() => openGallery(media)}
                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                           />
