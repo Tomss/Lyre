@@ -31,7 +31,6 @@ dotenv.config();
 // Emergency Activation for admin@lyre.fr (Production Rescue)
 (async () => {
   try {
-    console.log('[Emergency] SOS: Tentative de super-activation de admin@lyre.fr...');
     await pool.query(`
       UPDATE profiles p
       JOIN users u ON u.id = p.id

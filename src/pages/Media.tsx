@@ -2,7 +2,7 @@ import React from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { API_URL } from '../config';
 import { Link } from 'react-router-dom';
-import { Image, Camera, Music, FileText, File, Filter, Search, X, ChevronRight, Star } from 'lucide-react';
+import { Image, Camera, Music, FileText, File, Filter, Search, X, ChevronRight, Star, Calendar } from 'lucide-react';
 import MediaGallery from '../components/MediaGallery';
 import MediaPreview from '../components/MediaPreview';
 import PageHero from '../components/PageHero';
@@ -33,7 +33,8 @@ const Media = () => {
   const [mediaItems, setMediaItems] = React.useState<MediaItem[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [searchTerm, setSearchTerm] = React.useState('');
-  const [selectedType, setSelectedType] = React.useState('album'); // Présélectionner Albums par défaut
+  const [selectedType, setSelectedType] = React.useState('all');
+  const [selectedPeriod, setSelectedPeriod] = React.useState<'all' | '6m' | '1y'>('all'); // Nouveau filtre temporel
   const [selectedMedia, setSelectedMedia] = React.useState<MediaItem | null>(null);
   const [isGalleryOpen, setIsGalleryOpen] = React.useState(false);
 
@@ -64,11 +65,11 @@ const Media = () => {
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case 'album': return 'bg-teal-100 text-teal-800';
-      case 'enregistrement': return 'bg-sky-100 text-sky-800';
-      case 'journal': return 'bg-slate-100 text-slate-800';
-      case 'lyrissimot': return 'bg-indigo-100 text-indigo-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'album': return 'bg-teal-50 text-teal-600 border-teal-100';
+      case 'enregistrement': return 'bg-sky-50 text-sky-600 border-sky-100';
+      case 'journal': return 'bg-slate-50 text-slate-600 border-slate-200';
+      case 'lyrissimot': return 'bg-indigo-50 text-indigo-600 border-indigo-100';
+      default: return 'bg-gray-50 text-gray-600 border-gray-100';
     }
   };
 
@@ -84,16 +85,32 @@ const Media = () => {
 
   const getTypeLabel = (type: string) => {
     switch (type) {
-      case 'album': return 'Album';
-      case 'enregistrement': return 'Enregistrement';
-      case 'journal': return 'Journal';
-      case 'lyrissimot': return 'Lyrissimot';
+      case 'album': return 'Albums';
+      case 'enregistrement': return 'Audios';
+      case 'journal': return 'Presse';
+      case 'lyrissimot': return 'Lyrissimots';
       default: return type;
     }
   };
 
   const selectType = (type: string) => {
     setSelectedType(type);
+  };
+
+  // Logic pour filtrer par période
+  const isWithinPeriod = (dateStr?: string, createdAt?: string) => {
+    if (selectedPeriod === 'all') return true;
+    
+    const date = new Date(dateStr || createdAt || '');
+    if (isNaN(date.getTime())) return true; // Si pas de date, on garde
+
+    const now = new Date();
+    const diffMonths = (now.getFullYear() - date.getFullYear()) * 12 + (now.getMonth() - date.getMonth());
+
+    if (selectedPeriod === '6m') return diffMonths <= 6;
+    if (selectedPeriod === '1y') return diffMonths <= 12;
+    
+    return true;
   };
 
   // Filtrer les médias
@@ -105,8 +122,9 @@ const Media = () => {
     );
 
     const matchesType = selectedType === 'all' || media.media_type === selectedType;
+    const matchesPeriod = isWithinPeriod(media.media_date, media.created_at);
 
-    return matchesSearch && matchesType;
+    return matchesSearch && matchesType && matchesPeriod;
   });
 
   // Séparer les médias mis en avant
@@ -294,99 +312,139 @@ const Media = () => {
                   </p>
                 </div>
 
-                {/* Barre de filtres et recherche */}
-                <div className="bg-white rounded-3xl p-8 shadow-xl border border-slate-100">
-                  <div className="flex flex-col lg:flex-row items-center justify-between space-y-6 lg:space-y-0 lg:space-x-8">
-                    {/* Filtres à gauche */}
-                    <div className="flex items-center space-x-3">
-                      <div className="flex items-center space-x-2 text-slate-600 mr-4">
-                        <Filter className="h-5 w-5" />
-                        <span className="font-medium text-sm">Filtrer :</span>
+                {/* Barre de filtres et recherche modernisée */}
+                <div className="bg-white/70 backdrop-blur-md rounded-[2.5rem] p-4 lg:p-6 shadow-2xl shadow-slate-200/50 border border-white/50 space-y-6">
+                  <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-6">
+                    
+                    {/* Filtres par Type */}
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-2 text-slate-500 mb-3 ml-2">
+                        <Filter className="h-4 w-4" />
+                        <span className="text-xs font-bold uppercase tracking-wider">Type de média</span>
                       </div>
                       <div className="flex flex-wrap items-center gap-2">
                         <button
                           onClick={() => selectType('all')}
-                          className={`inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 border ${selectedType === 'all'
-                            ? 'bg-teal-600 text-white border-teal-500 shadow-lg shadow-teal-500/25'
-                            : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                          className={`px-5 py-2.5 rounded-2xl text-sm font-semibold transition-all duration-500 ${selectedType === 'all'
+                            ? 'bg-slate-800 text-white shadow-lg shadow-slate-800/20 scale-105'
+                            : 'bg-white text-slate-600 border border-slate-100 hover:border-teal-200 hover:bg-teal-50/30'
                             }`}
                         >
-                          <span>Tout</span>
+                          Tout
                         </button>
-                        {[{ key: 'album', label: 'Albums', icon: Camera },
-                        { key: 'enregistrement', label: 'Audio', icon: Music },
-                        { key: 'journal', label: 'Presse', icon: FileText },
-                        { key: 'lyrissimot', label: 'Lyrissimots', icon: File }].map(({ key, label, icon: Icon }) => (
+                        {[
+                          { key: 'album', label: 'Albums', icon: Camera, color: 'teal' },
+                          { key: 'enregistrement', label: 'Audios', icon: Music, color: 'sky' },
+                          { key: 'journal', label: 'Presse', icon: FileText, color: 'slate' },
+                          { key: 'lyrissimot', label: 'Lyrissimots', icon: File, color: 'indigo' }
+                        ].map(({ key, label, icon: Icon, color }) => (
                           <button
                             key={key}
                             onClick={() => selectType(key)}
-                            className={`inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 border ${selectedType === key
-                              ? 'bg-teal-600 text-white border-teal-500 shadow-lg shadow-teal-500/25'
-                              : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                            className={`flex items-center space-x-2 px-5 py-2.5 rounded-2xl text-sm font-semibold transition-all duration-500 group ${selectedType === key
+                              ? `bg-${color}-500 text-white shadow-lg shadow-${color}-500/20 scale-105`
+                              : `bg-white text-slate-600 border border-slate-100 hover:border-${color}-200 hover:bg-${color}-50/30`
                               }`}
                           >
-                            <Icon className="h-4 w-4" />
-                            <span className="hidden sm:inline">{label}</span>
+                            <Icon className={`h-4 w-4 ${selectedType === key ? 'text-white' : `text-${color}-500 group-hover:scale-110 transition-transform`}`} />
+                            <span>{label}</span>
                           </button>
                         ))}
                       </div>
                     </div>
 
-                    {/* Recherche à droite */}
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <Search className="h-5 w-5 text-slate-400" />
+                    {/* Filtres par Période */}
+                    <div className="lg:w-auto">
+                      <div className="flex items-center space-x-2 text-slate-500 mb-3 ml-2">
+                        <Calendar className="h-4 w-4" />
+                        <span className="text-xs font-bold uppercase tracking-wider">Période</span>
                       </div>
-                      <input
-                        type="text"
-                        placeholder="Rechercher..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-12 pr-12 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-400 w-64 text-slate-800 placeholder-slate-400 transition-all duration-300"
-                      />
-                      {searchTerm && (
-                        <button
-                          onClick={() => setSearchTerm('')}
-                          className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
-                        >
-                          <X className="h-4 w-4" />
-                        </button>
-                      )}
+                      <div className="inline-flex p-1.5 bg-slate-100/50 rounded-2xl border border-slate-100">
+                        {[
+                          { key: 'all', label: 'Tout' },
+                          { key: '6m', label: '6 mois' },
+                          { key: '1y', label: '1 an' }
+                        ].map(({ key, label }) => (
+                          <button
+                            key={key}
+                            onClick={() => setSelectedPeriod(key as any)}
+                            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300 ${selectedPeriod === key
+                              ? 'bg-white text-teal-600 shadow-sm'
+                              : 'text-slate-500 hover:text-slate-800'
+                              }`}
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Recherche */}
+                    <div className="lg:w-72">
+                      <div className="flex items-center space-x-2 text-slate-500 mb-3 ml-2">
+                        <Search className="h-4 w-4" />
+                        <span className="text-xs font-bold uppercase tracking-wider">Recherche</span>
+                      </div>
+                      <div className="relative group">
+                        <input
+                          type="text"
+                          placeholder="Un titre, un souvenir..."
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          className="w-full pl-5 pr-12 py-3 bg-slate-50/50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-teal-400 focus:bg-white transition-all duration-500 placeholder-slate-400 text-sm"
+                        />
+                        {searchTerm ? (
+                          <button
+                            onClick={() => setSearchTerm('')}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-slate-300 hover:text-rose-500 transition-colors"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        ) : (
+                          <div className="absolute right-5 top-1/2 -translate-y-1/2 group-focus-within:scale-110 transition-transform">
+                            <Search className="h-4 w-4 text-slate-300" />
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
 
-                  {/* Informations et actions */}
-                  <div className="flex flex-col sm:flex-row items-center justify-between mt-6 pt-6 border-t border-slate-100">
-                    <div className="flex items-center space-x-4 text-sm text-slate-500 mb-4 sm:mb-0">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-2 h-2 bg-teal-500 rounded-full animate-pulse"></div>
-                        <span>{filteredMedia.length} résultat{filteredMedia.length > 1 ? 's' : ''}</span>
-                      </div>
-                      {(selectedType !== 'all' || searchTerm) && (
-                        <div className="flex items-center space-x-2">
-                          <div className="w-1 h-4 bg-slate-300 rounded-full"></div>
-                          <span className="text-teal-600">
-                            {selectedType !== 'all' && `Filtré par ${selectedType === 'album' ? 'Albums' : selectedType === 'enregistrement' ? 'Audio' : selectedType === 'journal' ? 'Presse' : selectedType === 'lyrissimot' ? 'Lyrissimots' : ''}`}
-                            {selectedType !== 'all' && searchTerm && ' • '}
-                            {searchTerm && `"${searchTerm}"`}
-                          </span>
+                  {/* Résumé des filtres actifs */}
+                  {(selectedType !== 'all' || searchTerm || selectedPeriod !== 'all') && (
+                    <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-slate-100/50">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Filtres actifs :</span>
+                        <div className="flex flex-wrap gap-2">
+                          {selectedType !== 'all' && (
+                            <span className="inline-flex items-center px-3 py-1 rounded-full bg-teal-50 text-teal-600 text-[10px] font-bold border border-teal-100">
+                              {getTypeLabel(selectedType)}
+                            </span>
+                          )}
+                          {selectedPeriod !== 'all' && (
+                            <span className="inline-flex items-center px-3 py-1 rounded-full bg-amber-50 text-amber-600 text-[10px] font-bold border border-amber-100">
+                              {selectedPeriod === '6m' ? '6 derniers mois' : 'Dernière année'}
+                            </span>
+                          )}
+                          {searchTerm && (
+                            <span className="inline-flex items-center px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-[10px] font-bold italic">
+                              "{searchTerm}"
+                            </span>
+                          )}
                         </div>
-                      )}
-                    </div>
-
-                    {(selectedType !== 'all' || searchTerm) && (
+                      </div>
                       <button
                         onClick={() => {
                           setSelectedType('all');
                           setSearchTerm('');
+                          setSelectedPeriod('all');
                         }}
-                        className="inline-flex items-center space-x-2 text-sm text-slate-500 hover:text-slate-700 font-medium transition-colors bg-slate-100 px-4 py-2 rounded-xl border border-slate-200 hover:bg-slate-200"
+                        className="text-[10px] font-black uppercase text-rose-400 hover:text-rose-600 transition-colors tracking-[0.2em] flex items-center space-x-1"
                       >
                         <X className="h-3 w-3" />
-                        <span>Réinitialiser</span>
+                        <span>Réinitialiser tout</span>
                       </button>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
