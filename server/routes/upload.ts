@@ -8,6 +8,13 @@ import fs from 'fs';
 
 const router = Router();
 
+// Configuration Cloudinary explicite
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
 // Ensure local uploads directory exists
 const localUploadDir = path.join(__dirname, '../../uploads');
 if (!fs.existsSync(localUploadDir)) {
@@ -41,31 +48,29 @@ const upload = multer({
 });
 
 // Route POST pour uploader un fichier (protégée)
-router.post('/', authenticateToken, (req, res, next) => {
+router.post('/', authenticateToken, (req, res) => {
     upload.single('file')(req, res, (err) => {
         if (err) {
             console.error('[Upload Error]', err);
             return res.status(500).json({ 
-                message: 'Erreur lors de l\'envoi du fichier au serveur.',
+                message: 'Erreur lors de l\'envoi du fichier à Cloudinary.',
                 error: err.message
             });
         }
         
         if (!req.file) {
-            return res.status(400).json({ message: 'Aucun fichier n\'a été uploadé.' });
+            return res.status(400).json({ message: 'Aucun fichier reçu.' });
         }
 
         try {
             const filePath = useCloudinary ? req.file.path : `/uploads/${req.file.filename}`;
-            console.log(`[Upload Success] Path: ${filePath}`);
-            
             res.status(200).json({
                 message: 'Fichier uploadé avec succès',
                 filePath: filePath
             });
         } catch (error: any) {
-            console.error('[Upload Route Error]', error);
-            res.status(500).json({ message: 'Erreur lors du traitement du fichier.', error: error.message });
+            console.error('[Upload Success Error]', error);
+            res.status(500).json({ message: 'Erreur lors de la réponse serveur.', error: error.message });
         }
     });
 });
