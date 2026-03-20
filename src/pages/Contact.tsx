@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTheme } from '../context/ThemeContext';
-import { MapPin, Mail, Clock, Send, MessageSquare, CheckCircle, AlertCircle, Heart } from 'lucide-react';
+import { MapPin, Mail, Clock, Send, MessageSquare, CheckCircle, AlertCircle, Heart, ChevronDown } from 'lucide-react';
 import PageHero from '../components/PageHero';
 import { BASE_URL } from '../config';
 
@@ -73,169 +73,10 @@ const Contact = () => {
         subtitle="Une question ? Envie de nous rejoindre ? Prenons contact pour votre projet musical."
         backgroundImage={pageHeaders['contact'] || "https://images.pexels.com/photos/1407322/pexels-photo-1407322.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop"}
         anchors={[
-          { label: "Nous écrire", targetId: "formulaire", icon: MessageSquare, color: "teal" },
-          { label: "Où nous trouver ?", targetId: "localisation", icon: MapPin, color: "cyan" }
+          { label: "Où nous trouver ?", targetId: "localisation", icon: MapPin, color: "cyan" },
+          { label: "Nous écrire", targetId: "formulaire", icon: MessageSquare, color: "teal" }
         ]}
       />
-
-      {/* Section Formulaire */}
-      <section id="formulaire" className="scroll-mt-20 py-24 bg-white relative">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Section Title */}
-          <div className="max-w-4xl mx-auto text-center mb-16">
-            <h2 className="font-poppins font-bold text-3xl md:text-5xl text-slate-900 mb-6 relative inline-block">
-              Nous écrire
-              <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-16 h-1 bg-teal-500 rounded-full"></div>
-            </h2>
-          </div>
-
-          <div className="max-w-5xl mx-auto">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
-              
-              {/* Infos & Pourquoi nous écrire */}
-              <div className="lg:col-span-5 space-y-8">
-                <div className="space-y-6">
-                  <h2 className="font-poppins font-bold text-4xl text-slate-900 leading-tight">
-                    Parlons de votre <br />
-                    <span className="text-teal-600">passion musicale</span>
-                  </h2>
-                  <p className="text-slate-600 text-lg leading-relaxed max-w-md">
-                    Que ce soit pour une inscription, une demande de partenariat ou pour tout autre renseignement, notre équipe est à votre écoute.
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 gap-4">
-                  {[
-                    { icon: CheckCircle, title: "Inscriptions ouvertes", text: "Toute l'année pour tous les niveaux", color: "text-teal-500", bg: "bg-teal-50" },
-                    { icon: Clock, title: "Réponse rapide", text: "Nous traitons vos messages sous 48h", color: "text-cyan-500", bg: "bg-cyan-50" },
-                    { icon: Heart, title: "Venez nous rencontrer", text: "À l'occasion de nos portes ouvertes ou manifestations", color: "text-emerald-500", bg: "bg-emerald-50" }
-                  ].map((item, i) => (
-                    <div key={i} className="flex items-start space-x-4 p-4 rounded-2xl bg-slate-50 border border-slate-100/50 hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300">
-                      <div className={`${item.bg} p-3 rounded-xl shadow-inner`}>
-                        <item.icon className={`h-6 w-6 ${item.color}`} />
-                      </div>
-                      <div>
-                        <h4 className="font-poppins font-bold text-slate-800 text-sm">{item.title}</h4>
-                        <p className="text-slate-500 text-xs mt-1 leading-relaxed">{item.text}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Formulaire de Contact Premium */}
-              <div className="lg:col-span-7">
-                <div className="bg-white rounded-[2.5rem] p-8 md:p-10 shadow-2xl shadow-slate-200/60 border border-slate-100 relative group">
-                  {/* Decorative dot */}
-                  <div className="absolute top-8 right-8 w-3 h-3 bg-teal-500 rounded-full animate-pulse shadow-[0_0_15px_rgba(20,184,166,0.5)]"></div>
-                  
-                  <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Nom Complet</label>
-                        <input
-                          type="text"
-                          name="name"
-                          value={formData.name}
-                          onChange={handleInputChange}
-                          required
-                          className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-teal-400 focus:bg-white transition-all duration-300 text-slate-800 font-medium"
-                          placeholder="Jean Dupont"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Email</label>
-                        <input
-                          type="email"
-                          name="email"
-                          value={formData.email}
-                          onChange={handleInputChange}
-                          required
-                          className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-teal-400 focus:bg-white transition-all duration-300 text-slate-800 font-medium"
-                          placeholder="jean@exemple.com"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Téléphone</label>
-                        <input
-                          type="tel"
-                          name="phone"
-                          value={formData.phone}
-                          onChange={handleInputChange}
-                          className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-teal-400 focus:bg-white transition-all duration-300 text-slate-800 font-medium"
-                          placeholder="06 00 00 00 00"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Sujet</label>
-                        <select
-                          name="subject"
-                          value={formData.subject}
-                          onChange={handleInputChange}
-                          required
-                          className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-teal-400 focus:bg-white transition-all duration-300 text-slate-800 font-medium appearance-none cursor-pointer"
-                        >
-                          <option value="">Sélectionnez un sujet</option>
-                          {subjectOptions.map((option, index) => (
-                            <option key={index} value={option}>{option}</option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Message</label>
-                      <textarea
-                        name="message"
-                        value={formData.message}
-                        onChange={handleInputChange}
-                        required
-                        rows={5}
-                        className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-teal-400 focus:bg-white transition-all duration-300 text-slate-800 font-medium resize-none"
-                        placeholder="Votre message ici..."
-                      />
-                    </div>
-
-                    <div className="pt-2">
-                      {formStatus.type !== 'idle' && (
-                        <div className={`mb-6 p-4 rounded-2xl animate-in fade-in slide-in-from-top-2 duration-300 border flex items-center space-x-3 ${
-                          formStatus.type === 'success' ? 'bg-emerald-50 border-emerald-100 text-emerald-800' : 
-                          formStatus.type === 'error' ? 'bg-rose-50 border-rose-100 text-rose-800' : 
-                          'bg-slate-50 border-slate-100 text-slate-700'
-                        }`}>
-                          {formStatus.type === 'success' && <CheckCircle className="h-5 w-5 text-emerald-500" />}
-                          {formStatus.type === 'error' && <AlertCircle className="h-5 w-5 text-rose-500" />}
-                          {formStatus.type === 'loading' && <div className="animate-spin rounded-full h-4 w-4 border-2 border-teal-500 border-t-transparent"></div>}
-                          <span className="text-sm font-bold">{formStatus.message}</span>
-                        </div>
-                      )}
-
-                      <button
-                        type="submit"
-                        disabled={formStatus.type === 'loading'}
-                        className="w-full group relative overflow-hidden bg-slate-900 text-white font-black uppercase tracking-[0.2em] text-xs py-5 rounded-2xl transition-all duration-500 hover:bg-teal-600 hover:shadow-2xl hover:shadow-teal-900/40 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <div className="absolute inset-0 bg-gradient-to-r from-teal-500 to-cyan-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                        <div className="relative flex items-center justify-center space-x-3">
-                          {formStatus.type === 'loading' ? (
-                            <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white"></div>
-                          ) : (
-                            <Send className="h-4 w-4 transform group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-                          )}
-                          <span>{formStatus.type === 'loading' ? 'Envoi en cours...' : 'Envoyer le message'}</span>
-                        </div>
-                      </button>
-                    </div>
-                  </form>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Section Localisation */}
       <section id="localisation" className="scroll-mt-20 py-24 bg-slate-50 relative overflow-hidden">
@@ -326,6 +167,195 @@ const Contact = () => {
                     title="Localisation de la Lyre Cheminote et Municipale de Chalindrey"
                     className="w-full h-full grayscale-[0.3] hover:grayscale-0 transition-all duration-1000"
                   ></iframe>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Section Formulaire */}
+      <section id="formulaire" className="scroll-mt-20 py-24 bg-white relative overflow-hidden">
+        {/* Decorative background elements */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full pointer-events-none">
+          <div className="absolute top-1/4 -left-20 w-96 h-96 bg-teal-50 rounded-full blur-3xl opacity-60"></div>
+          <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-cyan-50 rounded-full blur-3xl opacity-60"></div>
+        </div>
+
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          {/* Section Title */}
+          <div className="max-w-4xl mx-auto text-center mb-20">
+            <h2 className="font-poppins font-bold text-3xl md:text-5xl text-slate-900 mb-6 relative inline-block">
+              Nous écrire
+              <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-16 h-1 bg-teal-500 rounded-full"></div>
+            </h2>
+            <p className="text-slate-500 mt-8 max-w-2xl mx-auto text-lg">
+              Une question précise ou un projet musical ? Utilisez notre formulaire premium pour une mise en relation immédiate.
+            </p>
+          </div>
+
+          <div className="max-w-6xl mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-stretch">
+              
+              {/* Infos & Pourquoi nous écrire */}
+              <div className="lg:col-span-4 flex flex-col space-y-8">
+                <div className="flex-1 space-y-8">
+                  <div className="space-y-4">
+                    <h3 className="font-poppins font-bold text-3xl text-slate-900 leading-tight">
+                      Votre futur <br />
+                      <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-cyan-600">commence ici</span>
+                    </h3>
+                    <p className="text-slate-600 text-base leading-relaxed">
+                      Que ce soit pour une inscription, une demande de partenariat ou pour tout autre renseignement, notre équipe est à votre écoute.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4">
+                    {[
+                      { icon: CheckCircle, title: "Inscriptions", text: "Ouvertes toute l'année", color: "text-teal-500", bg: "bg-teal-50" },
+                      { icon: Clock, title: "Réduction", text: "Réponse garantie sous 48h", color: "text-cyan-500", bg: "bg-cyan-50" },
+                      { icon: Heart, title: "Bienveillance", text: "Manifestations et portes ouvertes", color: "text-rose-500", bg: "bg-rose-50" }
+                    ].map((item, i) => (
+                      <div key={i} className="group flex items-center space-x-4 p-4 rounded-2xl bg-white border border-slate-100 hover:border-teal-200 hover:shadow-lg hover:shadow-teal-900/5 transition-all duration-500">
+                        <div className={`${item.bg} p-3 rounded-xl transition-transform duration-500 group-hover:scale-110`}>
+                          <item.icon className={`h-5 w-5 ${item.color}`} />
+                        </div>
+                        <div>
+                          <h4 className="font-poppins font-bold text-slate-800 text-sm leading-none">{item.title}</h4>
+                          <p className="text-slate-400 text-[11px] mt-1.5 font-medium">{item.text}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="p-6 bg-slate-900 rounded-[2rem] text-white overflow-hidden relative group">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/20 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-700"></div>
+                  <p className="text-xs font-black uppercase tracking-[0.2em] text-teal-400 mb-2">Conseil</p>
+                  <p className="text-sm text-slate-300 font-medium relative z-10"> Précisez votre instrument ou votre niveau pour une réponse plus personnalisée !</p>
+                </div>
+              </div>
+
+              {/* Formulaire de Contact Premium */}
+              <div className="lg:col-span-8">
+                <div className="h-full bg-white rounded-[2.5rem] p-10 lg:p-14 shadow-[0_40px_80px_-15px_rgba(15,23,42,0.08)] border border-slate-100 relative group overflow-hidden">
+                  {/* Glass shimmer effect */}
+                  <div className="absolute -top-[100%] -left-[100%] w-[300%] h-[300%] bg-[conic-gradient(from_0deg,transparent,rgba(20,184,166,0.03),transparent)] animate-[spin_20s_linear_infinite] pointer-events-none"></div>
+                  
+                  <form onSubmit={handleSubmit} className="relative z-10 space-y-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <div className="space-y-3 group/field">
+                        <label className="text-[11px] font-bold uppercase tracking-widest text-slate-400 ml-1 transition-colors group-focus-within/field:text-teal-600">Nom Complet</label>
+                        <div className="relative">
+                          <input
+                            type="text"
+                            name="name"
+                            value={formData.name}
+                            onChange={handleInputChange}
+                            required
+                            className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 focus:bg-white transition-all duration-300 text-slate-800 font-semibold placeholder:text-slate-300"
+                            placeholder="Jean Dupont"
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-3 group/field">
+                        <label className="text-[11px] font-bold uppercase tracking-widest text-slate-400 ml-1 transition-colors group-focus-within/field:text-teal-600">Email Professionnel</label>
+                        <div className="relative">
+                          <input
+                            type="email"
+                            name="email"
+                            value={formData.email}
+                            onChange={handleInputChange}
+                            required
+                            className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 focus:bg-white transition-all duration-300 text-slate-800 font-semibold placeholder:text-slate-300"
+                            placeholder="jean@exemple.com"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <div className="space-y-3 group/field">
+                        <label className="text-[11px] font-bold uppercase tracking-widest text-slate-400 ml-1 transition-colors group-focus-within/field:text-teal-600">Téléphone</label>
+                        <div className="relative">
+                          <input
+                            type="tel"
+                            name="phone"
+                            value={formData.phone}
+                            onChange={handleInputChange}
+                            className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 focus:bg-white transition-all duration-300 text-slate-800 font-semibold placeholder:text-slate-300"
+                            placeholder="06 00 00 00 00"
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-3 group/field">
+                        <label className="text-[11px] font-bold uppercase tracking-widest text-slate-400 ml-1 transition-colors group-focus-within/field:text-teal-600">Objet de la demande</label>
+                        <div className="relative">
+                          <select
+                            name="subject"
+                            value={formData.subject}
+                            onChange={handleInputChange}
+                            required
+                            className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 focus:bg-white transition-all duration-300 text-slate-800 font-semibold appearance-none cursor-pointer"
+                          >
+                            <option value="">Choisissez une option</option>
+                            {subjectOptions.map((option, index) => (
+                              <option key={index} value={option}>{option}</option>
+                            ))}
+                          </select>
+                          <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-slate-300 group-focus-within/field:text-teal-500 transition-colors">
+                            <ChevronDown className="h-5 w-5" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3 group/field">
+                      <label className="text-[11px] font-bold uppercase tracking-widest text-slate-400 ml-1 transition-colors group-focus-within/field:text-teal-600">Votre Message</label>
+                      <textarea
+                        name="message"
+                        value={formData.message}
+                        onChange={handleInputChange}
+                        required
+                        rows={6}
+                        className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 focus:bg-white transition-all duration-300 text-slate-800 font-semibold resize-none placeholder:text-slate-300"
+                        placeholder="Dites-nous tout..."
+                      />
+                    </div>
+
+                    <div className="pt-4">
+                      {formStatus.type !== 'idle' && (
+                        <div className={`mb-8 p-5 rounded-2xl animate-in fade-in zoom-in duration-500 border flex items-center space-x-4 ${
+                          formStatus.type === 'success' ? 'bg-emerald-50 border-emerald-100 text-emerald-800' : 
+                          formStatus.type === 'error' ? 'bg-rose-50 border-rose-100 text-rose-800' : 
+                          'bg-slate-50 border-slate-100 text-slate-600'
+                        }`}>
+                          <div className={`p-2 rounded-full ${formStatus.type === 'success' ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white'}`}>
+                            {formStatus.type === 'success' ? <CheckCircle className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
+                          </div>
+                          <span className="text-sm font-bold tracking-tight">{formStatus.message}</span>
+                        </div>
+                      )}
+
+                      <button
+                        type="submit"
+                        disabled={formStatus.type === 'loading'}
+                        className="w-full group relative overflow-hidden bg-slate-900 text-white font-black uppercase tracking-[0.3em] text-[10px] md:text-xs py-6 rounded-2xl transition-all duration-500 hover:shadow-[0_20px_40px_-10px_rgba(15,23,42,0.3)] disabled:opacity-50"
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-r from-teal-500 to-cyan-500 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
+                        <div className="relative flex items-center justify-center space-x-4">
+                          {formStatus.type === 'loading' ? (
+                            <div className="animate-spin rounded-full h-5 w-5 border-2 border-white/30 border-t-white"></div>
+                          ) : (
+                            <>
+                              <span className="group-hover:translate-x-1 transition-transform duration-500">Envoyer le message</span>
+                              <Send className="h-4 w-4 transform group-hover:translate-x-2 group-hover:-translate-y-2 transition-all duration-500 opacity-60 group-hover:opacity-100" />
+                            </>
+                          )}
+                        </div>
+                      </button>
+                    </div>
+                  </form>
                 </div>
               </div>
             </div>

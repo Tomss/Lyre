@@ -100,8 +100,8 @@ const Header = () => {
       path: '/contact',
       label: 'Contact',
       dropdown: [
-        { label: 'Nous écrire', path: '/contact#formulaire' },
-        { label: 'Où nous trouver ?', path: '/contact#localisation' }
+        { label: 'Où nous trouver ?', path: '/contact#localisation' },
+        { label: 'Nous écrire', path: '/contact#formulaire' }
       ]
     },
   ];
