@@ -1,4 +1,4 @@
-﻿import { Router } from 'express';
+import { Router } from 'express';
 import { authenticateToken } from '../middleware/auth';
 import pool from '../db';
 import crypto from 'crypto';
@@ -59,7 +59,16 @@ router.post('/', async (req, res) => {
         );
 
         if (files && files.length > 0) {
-            const fileValues = files.map((file: any) => [crypto.randomUUID(), newItemId, file.fileName, file.filePath, file.fileType, file.fileSize, file.altText, file.sortOrder]);
+            const fileValues = files.map((file: any) => [
+                crypto.randomUUID(), 
+                newItemId, 
+                file.fileName || file.file_name, 
+                file.filePath || file.file_path, 
+                file.fileType || file.file_type, 
+                file.fileSize || file.file_size, 
+                file.altText || file.alt_text, 
+                file.sortOrder ?? file.sort_order ?? 0
+            ]);
             await connection.query('INSERT INTO media_files (id, media_item_id, file_name, file_path, file_type, file_size, alt_text, sort_order) VALUES ?', [fileValues]);
         }
 
@@ -95,7 +104,16 @@ router.put('/:id', async (req, res) => {
 
         await connection.query('DELETE FROM media_files WHERE media_item_id = ?', [id]);
         if (files && files.length > 0) {
-            const fileValues = files.map((file: any) => [crypto.randomUUID(), id, file.fileName, file.filePath, file.fileType, file.fileSize, file.altText, file.sortOrder]);
+            const fileValues = files.map((file: any) => [
+                crypto.randomUUID(), 
+                id, 
+                file.fileName || file.file_name, 
+                file.filePath || file.file_path, 
+                file.fileType || file.file_type, 
+                file.fileSize || file.file_size, 
+                file.altText || file.alt_text, 
+                file.sortOrder ?? file.sort_order ?? 0
+            ]);
             await connection.query('INSERT INTO media_files (id, media_item_id, file_name, file_path, file_type, file_size, alt_text, sort_order) VALUES ?', [fileValues]);
         }
 
