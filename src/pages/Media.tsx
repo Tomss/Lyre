@@ -541,6 +541,11 @@ const Media = () => {
         </div>
       </div>
     </section>
+    
+    {/* Séparation visuelle (Style Accueil) */}
+    <div className="bg-white relative py-4">
+      <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-px bg-gradient-to-r from-transparent via-teal-400 to-transparent opacity-50"></div>
+    </div>
 
       {/* Section d'appel à contribution */}
       <section id="contribute" className="scroll-mt-20 py-20 bg-white relative overflow-hidden">

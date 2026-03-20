@@ -87,7 +87,14 @@ const Header = () => {
       label: 'Orchestres',
       dropdown: orchestraLinks.length > 0 ? orchestraLinks : undefined
     },
-    { path: '/media', label: 'Médias' },
+    {
+      path: '/media',
+      label: 'Médias',
+      dropdown: [
+        { label: 'Notre Médiathèque', path: '/media#library' },
+        { label: 'Partagez vos souvenirs', path: '/media#contribute' }
+      ]
+    },
     { path: '/contact', label: 'Contact' },
   ];
 
@@ -179,6 +186,11 @@ const Header = () => {
                               window.history.pushState({}, '', subItem.path);
                               handleScrollToSection(targetId);
                             } else if (location.pathname === '/school' && subItem.path.startsWith('/school#')) {
+                              e.preventDefault();
+                              const targetId = subItem.path.split('#')[1];
+                              window.history.pushState({}, '', subItem.path);
+                              handleScrollToSection(targetId);
+                            } else if (location.pathname === '/media' && subItem.path.startsWith('/media#')) {
                               e.preventDefault();
                               const targetId = subItem.path.split('#')[1];
                               window.history.pushState({}, '', subItem.path);
