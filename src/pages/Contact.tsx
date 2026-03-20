@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useTheme } from '../context/ThemeContext';
-import { MapPin, Mail, Clock, Send, MessageSquare, CheckCircle, AlertCircle } from 'lucide-react';
+import { MapPin, Mail, Clock, Send, MessageSquare, CheckCircle, AlertCircle, Heart } from 'lucide-react';
 import PageHero from '../components/PageHero';
+import { BASE_URL } from '../config';
 
 interface FormData {
   name: string;
@@ -17,7 +18,7 @@ interface FormStatus {
 }
 
 const Contact = () => {
-  const { pageHeaders } = useTheme();
+  const { pageHeaders, settings } = useTheme();
   const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',
@@ -80,6 +81,14 @@ const Contact = () => {
       {/* Section Formulaire */}
       <section id="formulaire" className="scroll-mt-20 py-24 bg-white relative">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Section Title */}
+          <div className="max-w-4xl mx-auto text-center mb-16">
+            <h2 className="font-poppins font-bold text-3xl md:text-5xl text-slate-900 mb-6 relative inline-block">
+              Nous Écrire
+              <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-16 h-1 bg-teal-500 rounded-full"></div>
+            </h2>
+          </div>
+
           <div className="max-w-5xl mx-auto">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
               
@@ -91,7 +100,7 @@ const Contact = () => {
                     <span className="text-teal-600">passion musicale</span>
                   </h2>
                   <p className="text-slate-600 text-lg leading-relaxed max-w-md">
-                    Que ce soit pour une inscription, une demande de partenariat ou simplement pour saluer l'orchestre, notre équipe est à votre écoute.
+                    Que ce soit pour une inscription, une demande de partenariat ou pour tout autre renseignement, notre équipe est à votre écoute.
                   </p>
                 </div>
 
@@ -99,7 +108,7 @@ const Contact = () => {
                   {[
                     { icon: CheckCircle, title: "Inscriptions ouvertes", text: "Toute l'année pour tous les niveaux", color: "text-teal-500", bg: "bg-teal-50" },
                     { icon: Clock, title: "Réponse rapide", text: "Nous traitons vos messages sous 48h", color: "text-cyan-500", bg: "bg-cyan-50" },
-                    { icon: MessageSquare, title: "Cours d'essai", text: "Gratuit et sans engagement", color: "text-emerald-500", bg: "bg-emerald-50" }
+                    { icon: Heart, title: "Venez nous rencontrer", text: "À l'occasion de nos portes ouvertes ou répétitions", color: "text-emerald-500", bg: "bg-emerald-50" }
                   ].map((item, i) => (
                     <div key={i} className="flex items-start space-x-4 p-4 rounded-2xl bg-slate-50 border border-slate-100/50 hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300">
                       <div className={`${item.bg} p-3 rounded-xl shadow-inner`}>
@@ -233,6 +242,14 @@ const Contact = () => {
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, black 1px, transparent 0)', backgroundSize: '32px 32px' }}></div>
         
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Section Title */}
+          <div className="max-w-4xl mx-auto text-center mb-16">
+            <h2 className="font-poppins font-bold text-3xl md:text-5xl text-slate-900 mb-6 relative inline-block">
+              Où nous trouver ?
+              <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-16 h-1 bg-cyan-500 rounded-full"></div>
+            </h2>
+          </div>
+
           <div className="max-w-6xl mx-auto">
             <div className="bg-white rounded-[3rem] shadow-2xl overflow-hidden border border-slate-100">
               <div className="grid grid-cols-1 lg:grid-cols-2">
@@ -242,12 +259,23 @@ const Contact = () => {
                   <div className="space-y-4">
                     <div className="inline-flex items-center space-x-2 px-4 py-2 bg-rose-50 rounded-full border border-rose-100 text-rose-600">
                       <MapPin className="h-4 w-4" />
-                      <span className="text-[10px] font-black uppercase tracking-widest">Où nous trouver ?</span>
+                      <span className="text-[10px] font-black uppercase tracking-widest">Localisation</span>
                     </div>
-                    <h3 className="font-poppins font-bold text-3xl text-slate-900">
-                      La Lyre Cheminote <br /> 
-                      <span className="text-slate-500">& Municipale</span>
-                    </h3>
+                    
+                    <div className="py-2">
+                      {(settings?.header_logo_url || settings?.site_logo_url) ? (
+                        <img 
+                          src={settings.header_logo_url?.startsWith('http') ? settings.header_logo_url : (settings.header_logo_url ? `${BASE_URL}${settings.header_logo_url}` : (settings.site_logo_url?.startsWith('http') ? settings.site_logo_url : `${BASE_URL}${settings.site_logo_url}`))} 
+                          alt="La Lyre" 
+                          className="h-12 lg:h-16 w-auto object-contain" 
+                        />
+                      ) : (
+                        <h3 className="font-poppins font-bold text-3xl text-teal-800">
+                          La Lyre <br /> 
+                          <span className="text-slate-500">& Municipale</span>
+                        </h3>
+                      )}
+                    </div>
                   </div>
 
                   <div className="space-y-6">
@@ -267,7 +295,7 @@ const Contact = () => {
                       </div>
                       <div>
                         <p className="font-poppins font-bold text-slate-800">Email direct</p>
-                        <p className="text-slate-600">contact@lyre-chalindrey.fr</p>
+                        <p className="text-slate-600 text-teal-600 font-medium">contact@lalyre.fr</p>
                       </div>
                     </div>
                   </div>
