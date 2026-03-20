@@ -69,8 +69,7 @@ const Header = () => {
         { label: 'Qui sommes-nous ?', path: '/#la-lyre' },
         { label: 'Nos Actualités', path: '/#actualites' },
         { label: 'Agenda', path: '/#agenda' },
-        { label: 'Nos Partenaires', path: '/#partenaires' },
-        { label: 'Rejoignez-nous', path: '/#rejoignez-nous' }
+        { label: 'Nos Partenaires', path: '/#partenaires' }
       ]
     },
     {
