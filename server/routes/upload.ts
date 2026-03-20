@@ -19,6 +19,7 @@ const useCloudinary = !!process.env.CLOUDINARY_CLOUD_NAME;
 const cloudinaryStorage = useCloudinary ? new CloudinaryStorage({
     cloudinary: cloudinary,
     params: async (req: any, file: any) => {
+        console.log(`[Upload DEBUG] Nom: ${file.originalname}, Type: ${file.mimetype}`);
         const uniqueId = Date.now() + '-' + Math.round(Math.random() * 1e9);
         const isPdf = file.mimetype === 'application/pdf' || file.originalname.toLowerCase().endsWith('.pdf');
         const isAudio = file.mimetype.startsWith('audio/');
@@ -26,7 +27,8 @@ const cloudinaryStorage = useCloudinary ? new CloudinaryStorage({
         
         let resourceType: 'auto' | 'image' | 'video' | 'raw' = 'auto';
         if (isPdf) {
-            resourceType = 'image'; // PDF as image allows transformations and higher size limits
+            resourceType = 'image';
+            console.log(`[Upload DEBUG] PDF détecté, forçage resource_type: image`);
         } else if (isAudio || isVideo) {
             resourceType = 'video';
         }
@@ -61,17 +63,18 @@ const upload = multer({
 router.post('/', authenticateToken, upload.single('file'), (req, res) => {
     try {
         if (!req.file) {
+            console.warn('[Upload DEBUG] Aucun fichier reçu dans req.file');
             return res.status(400).json({ message: 'Aucun fichier n\'a été uploadé.' });
         }
 
         let filePath = '';
 
         if (useCloudinary) {
-            // Cloudinary met l'URL dans req.file.path
             filePath = req.file.path;
+            console.log(`[Upload DEBUG] Cloudinary URL: ${filePath}`);
         } else {
-            // Stockage local
             filePath = `/uploads/${req.file.filename}`;
+            console.log(`[Upload DEBUG] Local Path: ${filePath}`);
         }
 
         res.status(200).json({
@@ -79,7 +82,10 @@ router.post('/', authenticateToken, upload.single('file'), (req, res) => {
             filePath: filePath
         });
     } catch (error) {
-        console.error('Erreur lors de l\'upload:', error);
+        console.error('[Upload DEBUG] Erreur fatale dans la route:', error);
+        if (error instanceof Error && (error as any).code === 'LIMIT_FILE_SIZE') {
+            return res.status(413).json({ message: 'Le fichier est trop volumineux (max 50MB).' });
+        }
         res.status(500).json({ message: 'Erreur lors de l\'upload du fichier.' });
     }
 });

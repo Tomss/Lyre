@@ -58,8 +58,6 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Serve static files from the 'uploads' directory
-// Note: __dirname is not available in ES modules by default. 
-// A simple relative path is more robust here if the server is started from the project root.
 app.use('/uploads', express.static('uploads'));
 
 // API Routes
@@ -101,9 +99,11 @@ app.get('/api/test-db', async (req, res) => {
 
 // Global error handler
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error('Global error handler:', err);
+  console.error(`[Global Error Handler] ${req.method} ${req.url}:`, err);
   res.status(err.status || 500).json({
-    message: err.message || 'Une erreur interne est survenue.'
+    message: err.message || 'Une erreur interne est survenue.',
+    error: err.toString(),
+    stack: process.env.NODE_ENV !== 'production' ? err.stack : undefined
   });
 });
 
