@@ -1,227 +1,140 @@
 import React from 'react';
 import { Play, FileText, Music, Image as ImageIcon } from 'lucide-react';
-import { BASE_URL } from '../config';
 
 interface MediaFile {
   id: string;
   file_name: string;
   file_path: string;
-  file_type: 'image' | 'video' | 'audio' | 'pdf';
+  file_type: 'image' | 'audio' | 'pdf' | 'video';
   alt_text: string | null;
-  sort_order: number;
 }
 
 interface MediaPreviewProps {
   files: MediaFile[];
   mediaType: 'album' | 'enregistrement' | 'journal' | 'lyrissimot';
-  className?: string;
   onClick?: () => void;
+  className?: string;
 }
 
-const MediaPreview: React.FC<MediaPreviewProps> = ({ files, mediaType, className = '', onClick }) => {
-  const firstImage = files.find(file => file.file_type === 'image');
-  const firstAudio = files.find(file => file.file_type === 'audio');
-  const firstPdf = files.find(file => file.file_type === 'pdf');
-  const imageCount = files.filter(file => file.file_type === 'image').length;
-  const audioCount = files.filter(file => file.file_type === 'audio').length;
+const MediaPreview: React.FC<MediaPreviewProps> = ({ files, mediaType, onClick, className = '' }) => {
+  const imageFiles = files.filter(file => file.file_type === 'image');
+  const audioFiles = files.filter(file => file.file_type === 'audio');
+  const pdfFiles = files.filter(file => file.file_type === 'pdf');
 
-  // Fonction pour construire l'URL complète du fichier
-  const getFileUrl = (filePath: string) => {
-    // Si le chemin commence par /uploads/ ou est un chemin relatif, on utilise le serveur backend
-    if (filePath && (filePath.startsWith('/uploads/') || (!filePath.startsWith('http') && !filePath.startsWith('https')))) {
-      const normalizedPath = filePath.startsWith('/') ? filePath : `/${filePath}`;
-      return `${BASE_URL}${normalizedPath}`;
-    }
-    // Sinon on retourne le chemin tel quel (ex: Cloudinary)
-    return filePath;
-  };
+  const firstImage = imageFiles[0];
+  const firstAudio = audioFiles[0];
+  const firstPdf = pdfFiles[0];
+
+  const imageCount = imageFiles.length;
+  const audioCount = audioFiles.length;
 
   // Albums : photos et vidéos
   if (mediaType === 'album' && firstImage) {
     return (
       <div 
-        className={`relative group cursor-pointer ${className}`}
+        className={`aspect-square w-full relative overflow-hidden group cursor-pointer ${className}`}
         onClick={onClick}
       >
-        <div className="aspect-[4/3] bg-gray-100 rounded-lg overflow-hidden">
-          <img
-            src={getFileUrl(firstImage.file_path)}
-            alt={firstImage.alt_text || 'Aperçu album'}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            onError={(e) => {
-              console.error('Erreur de chargement image:', firstImage.file_path);
-              e.currentTarget.style.display = 'none';
-            }}
-          />
-          {/* Overlay avec nombre de photos */}
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
-            <div className="bg-black/70 text-white px-3 py-1 rounded-full text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              {imageCount} photo{imageCount > 1 ? 's' : ''}
-            </div>
-          </div>
-          {/* Icône play pour indiquer que c'est cliquable */}
-          <div className="absolute top-2 right-2 bg-black/50 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <ImageIcon className="h-4 w-4" />
+        <img 
+          src={firstImage.file_path} 
+          alt={firstImage.alt_text || 'Album cover'} 
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+        />
+        <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors duration-300 flex items-center justify-center">
+          <div className="bg-white/20 backdrop-blur-md p-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <ImageIcon className="h-8 w-8 text-white" />
           </div>
         </div>
+        {imageCount > 1 && (
+          <div className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-md text-white text-xs font-medium px-2 py-1 rounded-lg">
+            +{imageCount - 1} photo{imageCount > 2 ? 's' : ''}
+          </div>
+        )}
       </div>
     );
   }
 
-  // Enregistrements : fichiers audio
+  // Enregistrements : Lecteur audio
   if (mediaType === 'enregistrement' && firstAudio) {
     return (
       <div 
-        className={`relative group cursor-pointer ${className}`}
+        className={`aspect-square w-full relative overflow-hidden group cursor-pointer bg-gradient-to-br from-sky-400 to-blue-600 ${className}`}
         onClick={onClick}
       >
-        <div className="aspect-[4/3] bg-gradient-to-br from-green-100 to-green-200 rounded-lg flex items-center justify-center">
-          <div className="text-center">
-            <div className="bg-green-600/20 p-4 rounded-full mb-3 mx-auto w-fit group-hover:bg-green-600/30 transition-colors duration-300">
-              <Play className="h-8 w-8 text-green-600" />
-            </div>
-            <p className="text-sm text-green-700 font-medium">
-              {audioCount} audio{audioCount > 1 ? 's' : ''}
-            </p>
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-white p-6">
+          <div className="bg-white/20 backdrop-blur-md p-4 rounded-full mb-4 group-hover:scale-110 transition-transform duration-300">
+            <Music className="h-10 w-10 text-white" />
           </div>
-          {/* Icône play pour indiquer que c'est cliquable */}
-          <div className="absolute top-2 right-2 bg-black/50 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <Play className="h-4 w-4" />
+          <span className="font-poppins font-semibold text-center line-clamp-2">
+            {firstAudio.file_name}
+          </span>
+        </div>
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
+          <div className="bg-white/90 p-3 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-4 group-hover:translate-y-0">
+            <Play className="h-6 w-6 text-blue-600 fill-blue-600" />
           </div>
         </div>
+        {audioCount > 1 && (
+          <div className="absolute bottom-4 right-4 bg-black/40 backdrop-blur-md text-white text-xs font-medium px-2 py-1 rounded-lg">
+            {audioCount} pistes
+          </div>
+        )}
       </div>
     );
   }
 
-  // Journaux : image ou PDF d'article
-  if (mediaType === 'journal') {
-    if (firstImage) {
-      return (
-        <div 
-          className={`relative group cursor-pointer ${className}`}
-          onClick={onClick}
-        >
-          <div className="aspect-[4/3] bg-gray-100 rounded-lg overflow-hidden">
-            <img
-              src={getFileUrl(firstImage.file_path)}
-              alt={firstImage.alt_text || 'Article de journal'}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            />
-            <div className="absolute top-2 right-2 bg-black/50 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <FileText className="h-4 w-4" />
-            </div>
-          </div>
-        </div>
-      );
-    } else if (firstPdf) {
-      return (
-        <div 
-          className={`relative group cursor-pointer ${className}`}
-          onClick={onClick}
-        >
-          <div className="aspect-[4/3] bg-gradient-to-br from-yellow-100 to-yellow-200 rounded-lg flex items-center justify-center">
-            <div className="text-center">
-              <div className="bg-yellow-600/20 p-4 rounded-full mb-3 mx-auto w-fit group-hover:bg-yellow-600/30 transition-colors duration-300">
-                <FileText className="h-8 w-8 text-yellow-600" />
-              </div>
-              <p className="text-sm text-yellow-700 font-medium">Article PDF</p>
-            </div>
-            <div className="absolute top-2 right-2 bg-black/50 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <FileText className="h-4 w-4" />
-            </div>
-          </div>
-        </div>
-      );
-    }
-  }
-
-  // Lyrissimots : PDF uniquement
-  if (mediaType === 'lyrissimot' && firstPdf) {
+  // Journaux & Lyrissimots : PDF
+  if ((mediaType === 'journal' || mediaType === 'lyrissimot') && firstPdf) {
     return (
       <div 
-        className={`relative group cursor-pointer ${className}`}
+        className={`aspect-square w-full relative overflow-hidden group cursor-pointer bg-slate-50 border border-slate-100 ${className}`}
         onClick={onClick}
       >
-        <div className="aspect-[4/3] bg-gradient-to-br from-slate-400 via-slate-500 to-gray-600 rounded-lg flex items-center justify-center relative overflow-hidden">
-          {/* Pattern de fond décoratif */}
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-2 left-2 w-8 h-8 border-2 border-white rounded-full"></div>
-            <div className="absolute top-6 right-4 w-4 h-4 border border-white rounded-full"></div>
-            <div className="absolute bottom-4 left-6 w-6 h-6 border border-white rounded-full"></div>
-            <div className="absolute bottom-2 right-2 w-3 h-3 bg-white rounded-full"></div>
+        <div className="absolute inset-0 flex flex-col items-center justify-center p-6">
+          <div className="bg-rose-50 p-4 rounded-2xl mb-4 group-hover:bg-rose-100 transition-colors duration-300">
+            <FileText className="h-12 w-12 text-rose-500" />
           </div>
-          <div className="text-center">
-            <div className="bg-white/20 backdrop-blur-sm p-4 rounded-full mb-3 mx-auto w-fit group-hover:bg-white/30 transition-all duration-300 border border-white/30">
-              <Music className="h-10 w-10 text-white drop-shadow-lg" />
-            </div>
-            <div className="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full">
-              <p className="text-sm text-slate-800 font-bold">Lyrissimot</p>
-            </div>
-          </div>
-          <div className="absolute top-2 right-2 bg-white/20 backdrop-blur-sm text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 border border-white/30">
-            <Music className="h-4 w-4" />
+          <span className="font-poppins font-medium text-slate-700 text-center line-clamp-2 text-sm">
+            {firstPdf.file_name}
+          </span>
+          <span className="mt-2 px-2 py-1 bg-rose-500 text-white text-[10px] font-bold rounded-md uppercase tracking-wider">
+            PDF
+          </span>
+        </div>
+        <div className="absolute inset-0 bg-rose-500/0 group-hover:bg-rose-500/5 transition-colors duration-300"></div>
+      </div>
+    );
+  }
+
+  // Fallback / Journal avec Image
+  if (firstImage) {
+    return (
+      <div 
+        className={`aspect-square w-full relative overflow-hidden group cursor-pointer ${className}`}
+        onClick={onClick}
+      >
+        <img 
+          src={firstImage.file_path} 
+          alt={firstImage.alt_text || 'Media preview'} 
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+        />
+        <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors duration-300 flex items-center justify-center">
+          <div className="bg-white/20 backdrop-blur-md p-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <FileText className="h-8 w-8 text-white" />
           </div>
         </div>
       </div>
     );
   }
-  // Pour les autres types de médias
-  const getPreviewContent = () => {
-    switch (mediaType) {
-      case 'enregistrement':
-        return (
-          <div className="aspect-[4/3] bg-gradient-to-br from-green-100 to-green-200 rounded-lg flex items-center justify-center">
-            <div className="text-center">
-              <Music className="h-12 w-12 text-green-600 mx-auto mb-2" />
-              <p className="text-sm text-green-700 font-medium">
-                Aucun audio
-              </p>
-            </div>
-          </div>
-        );
-      case 'journal':
-        return (
-          <div className="aspect-[4/3] bg-gradient-to-br from-yellow-100 to-yellow-200 rounded-lg flex items-center justify-center">
-            <div className="text-center">
-              <FileText className="h-12 w-12 text-yellow-600 mx-auto mb-2" />
-              <p className="text-sm text-yellow-700 font-medium">Aucun fichier</p>
-            </div>
-          </div>
-        );
-      case 'lyrissimot':
-        return (
-          <div className="aspect-[4/3] bg-gradient-to-br from-slate-400 via-slate-500 to-gray-600 rounded-lg flex items-center justify-center relative overflow-hidden">
-            {/* Pattern de fond décoratif */}
-            <div className="absolute inset-0 opacity-10">
-              <div className="absolute top-2 left-2 w-8 h-8 border-2 border-white rounded-full"></div>
-              <div className="absolute top-6 right-4 w-4 h-4 border border-white rounded-full"></div>
-              <div className="absolute bottom-4 left-6 w-6 h-6 border border-white rounded-full"></div>
-              <div className="absolute bottom-2 right-2 w-3 h-3 bg-white rounded-full"></div>
-            </div>
-            <div className="text-center">
-              <div className="bg-white/20 backdrop-blur-sm p-4 rounded-full mb-3 mx-auto w-fit border border-white/30">
-                <Music className="h-10 w-10 text-white drop-shadow-lg" />
-              </div>
-              <div className="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full">
-                <p className="text-sm text-slate-800 font-bold">
-                  Aucun PDF
-                </p>
-              </div>
-            </div>
-          </div>
-        );
-      default:
-        return (
-          <div className="aspect-[4/3] bg-gray-100 rounded-lg flex items-center justify-center">
-            <ImageIcon className="h-12 w-12 text-gray-400" />
-          </div>
-        );
-    }
-  };
 
+  // Default empty state
   return (
-    <div className={`${className}`} onClick={onClick}>
-      {getPreviewContent()}
+    <div 
+      className={`aspect-square w-full bg-slate-100 flex flex-col items-center justify-center text-slate-300 ${className}`}
+      onClick={onClick}
+    >
+      <ImageIcon className="h-12 w-12 mb-2" />
+      <span className="text-xs font-medium uppercase tracking-widest">Aucun média</span>
     </div>
   );
 };

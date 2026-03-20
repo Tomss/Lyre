@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTheme } from '../context/ThemeContext';
-import { BASE_URL, API_URL } from '../config';
+import { API_URL } from '../config';
 import { Link } from 'react-router-dom';
 import { Image, Camera, Music, FileText, File, Filter, Search, X, ChevronRight, Star } from 'lucide-react';
 import MediaGallery from '../components/MediaGallery';
@@ -146,19 +146,11 @@ const Media = () => {
     }
   };
 
-  const getFileUrl = (filePath: string) => {
-    if (filePath && (filePath.startsWith('/uploads/') || (!filePath.startsWith('http') && !filePath.startsWith('https')))) {
-      const normalizedPath = filePath.startsWith('/') ? filePath : `/${filePath}`;
-      return `${BASE_URL}${normalizedPath}`;
-    }
-    return filePath;
-  };
-
   const openAudioPlayer = (media: MediaItem) => {
     // Créer un lecteur audio simple
     const audioFile = media.media_files.find(f => f.file_type === 'audio');
     if (audioFile) {
-      const audioUrl = getFileUrl(audioFile.file_path);
+      const audioUrl = audioFile.file_path;
       const audio = new Audio(audioUrl);
       audio.play().catch(err => {
         console.error('Erreur lecture audio:', err);
@@ -170,13 +162,14 @@ const Media = () => {
 
   const openPdfViewer = (pdfFile: MediaFile) => {
     // Ouvrir le PDF dans un nouvel onglet
-    window.open(getFileUrl(pdfFile.file_path), '_blank');
+    window.open(pdfFile.file_path, '_blank');
   };
 
   const closeGallery = () => {
     setIsGalleryOpen(false);
     setSelectedMedia(null);
   };
+
   return (
     <div className="font-inter">
       {/* Galerie modale */}
@@ -488,7 +481,7 @@ const Media = () => {
               <h2 className="font-poppins font-semibold text-2xl text-slate-700 mb-4">
                 Nos médias arrivent bientôt !
               </h2>
-              <p className="font-inter text-slate-500 max-w-md mx-auto">
+              <p className="font-inter text-slate-500 max-md mx-auto">
                 Notre équipe travaille actuellement sur la mise en ligne de nos albums, enregistrements et actualités.
                 Revenez bientôt pour les découvrir !
               </p>

@@ -20,13 +20,21 @@ const cloudinaryStorage = useCloudinary ? new CloudinaryStorage({
     cloudinary: cloudinary,
     params: async (req: any, file: any) => {
         const uniqueId = Date.now() + '-' + Math.round(Math.random() * 1e9);
+        const isPdf = file.mimetype === 'application/pdf' || file.originalname.toLowerCase().endsWith('.pdf');
         const isAudio = file.mimetype.startsWith('audio/');
         const isVideo = file.mimetype.startsWith('video/');
         
+        let resourceType: 'auto' | 'image' | 'video' | 'raw' = 'auto';
+        if (isPdf) {
+            resourceType = 'image'; // PDF as image allows transformations and higher size limits
+        } else if (isAudio || isVideo) {
+            resourceType = 'video';
+        }
+
         return {
             folder: 'lyre-uploads',
             public_id: uniqueId,
-            resource_type: (isAudio || isVideo) ? 'video' : 'auto',
+            resource_type: resourceType,
             type: 'upload',
             flags: 'attachment:false'
         };
@@ -44,22 +52,8 @@ const localStorage = multer.diskStorage({
     }
 });
 
-// Dynamic storage: use local for PDFs (to avoid Cloudinary 401) or if Cloudinary is disabled
-const storage = {
-    _handleFile(req: any, file: any, cb: any) {
-        const isPdf = file.mimetype === 'application/pdf' || file.originalname.toLowerCase().endsWith('.pdf');
-        const selectedStorage: any = (isPdf || !cloudinaryStorage) ? localStorage : cloudinaryStorage;
-        selectedStorage._handleFile(req, file, cb);
-    },
-    _removeFile(req: any, file: any, cb: any) {
-        const isPdf = file.mimetype === 'application/pdf' || file.originalname.toLowerCase().endsWith('.pdf');
-        const selectedStorage: any = (isPdf || !cloudinaryStorage) ? localStorage : cloudinaryStorage;
-        selectedStorage._removeFile(req, file, cb);
-    }
-} as any;
-
 const upload = multer({
-    storage: storage,
+    storage: (useCloudinary ? cloudinaryStorage : localStorage) as any,
     limits: { fileSize: 50 * 1024 * 1024 } // 50MB
 });
 
