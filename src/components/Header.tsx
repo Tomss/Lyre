@@ -250,7 +250,7 @@ const Header = () => {
                 </Link>
                 <button
                   onClick={() => logout()}
-                  className="font-inter font-medium px-4 py-2 rounded-full transition-all duration-300 hover:scale-105 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200"
+                  className="font-inter font-medium px-4 py-2 rounded-full transition-all duration-300 hover:scale-105 text-sm bg-slate-900 hover:bg-teal-600 text-white shadow-md shadow-slate-900/10"
                 >
                   Déconnexion
                 </button>
@@ -347,7 +347,7 @@ const Header = () => {
                         logout();
                         setIsMobileMenuOpen(false);
                       }}
-                      className="w-full text-left bg-transparent hover:bg-rose-500/10 text-rose-400 font-inter font-medium px-4 py-3 rounded-xl border border-rose-500/20 transition-all duration-300"
+                      className="w-full text-left bg-slate-900 hover:bg-teal-600 text-white font-inter font-medium px-4 py-3 rounded-xl transition-all duration-300 shadow-lg shadow-slate-900/20"
                     >
                       Déconnexion
                     </button>

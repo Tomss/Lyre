@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, Navigate } from 'react-router-dom';
-import { Settings, LogOut, Users, Music, Music2, Calendar, Image, FileText, Download, ChevronRight, ChevronDown, User, MapPin, Info, Clock, Palette, Building2, Newspaper } from 'lucide-react';
+import { LogOut, Users, Music, Music2, Calendar, Image, FileText, Download, ChevronRight, ChevronDown, User, MapPin, Info, Clock, Palette, Building2, Newspaper } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 import { API_URL } from '../config';
@@ -212,8 +212,8 @@ const Dashboard = () => {
               </div>
               <div className="mt-6 md:mt-0 md:ml-6 flex-shrink-0">
                 <button
-                  onClick={logout}
-                  className="inline-flex items-center space-x-2 bg-white hover:bg-gray-100 text-gray-700 font-medium px-6 py-3 rounded-xl transition-all duration-300 hover:shadow-lg border border-gray-200 shadow-sm"
+                  onClick={() => logout()}
+                  className="inline-flex items-center space-x-2 bg-slate-900 hover:bg-teal-600 text-white font-medium px-6 py-3 rounded-xl transition-all duration-300 hover:shadow-lg shadow-md shadow-slate-900/20"
                 >
                   <LogOut className="h-5 w-5" />
                   <span>Se déconnecter</span>
