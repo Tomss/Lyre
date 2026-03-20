@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTheme } from '../context/ThemeContext';
-import { API_URL } from '../config';
+import { BASE_URL, API_URL } from '../config';
 import { Link } from 'react-router-dom';
 import { Image, Camera, Music, FileText, File, Filter, Search, X, ChevronRight, Star } from 'lucide-react';
 import MediaGallery from '../components/MediaGallery';
@@ -146,22 +146,31 @@ const Media = () => {
     }
   };
 
+  const getFileUrl = (filePath: string) => {
+    if (filePath && (filePath.startsWith('/uploads/') || (!filePath.startsWith('http') && !filePath.startsWith('https')))) {
+      const normalizedPath = filePath.startsWith('/') ? filePath : `/${filePath}`;
+      return `${BASE_URL}${normalizedPath}`;
+    }
+    return filePath;
+  };
+
   const openAudioPlayer = (media: MediaItem) => {
     // Créer un lecteur audio simple
     const audioFile = media.media_files.find(f => f.file_type === 'audio');
     if (audioFile) {
-      const audio = new Audio(audioFile.file_path);
+      const audioUrl = getFileUrl(audioFile.file_path);
+      const audio = new Audio(audioUrl);
       audio.play().catch(err => {
         console.error('Erreur lecture audio:', err);
         // Fallback : ouvrir dans un nouvel onglet
-        window.open(audioFile.file_path, '_blank');
+        window.open(audioUrl, '_blank');
       });
     }
   };
 
   const openPdfViewer = (pdfFile: MediaFile) => {
     // Ouvrir le PDF dans un nouvel onglet
-    window.open(pdfFile.file_path, '_blank');
+    window.open(getFileUrl(pdfFile.file_path), '_blank');
   };
 
   const closeGallery = () => {
@@ -495,7 +504,6 @@ const Media = () => {
         </div>
       </section>
 
-      {/* Section d'appel à contribution */}
       {/* Section d'appel à contribution */}
       <section id="contribute" className="scroll-mt-20 py-20 bg-white relative overflow-hidden">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">

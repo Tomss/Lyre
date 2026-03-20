@@ -1,5 +1,6 @@
 import React from 'react';
-import { Play, FileText, Music, Image as ImageIcon, File } from 'lucide-react';
+import { Play, FileText, Music, Image as ImageIcon } from 'lucide-react';
+import { BASE_URL } from '../config';
 
 interface MediaFile {
   id: string;
@@ -26,11 +27,12 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({ files, mediaType, className
 
   // Fonction pour construire l'URL complète du fichier
   const getFileUrl = (filePath: string) => {
-    // Si le chemin commence par /uploads/, on utilise l'URL du serveur local
-    if (filePath.startsWith('/uploads/')) {
-      return `http://localhost:5173${filePath}`;
+    // Si le chemin commence par /uploads/ ou est un chemin relatif, on utilise le serveur backend
+    if (filePath && (filePath.startsWith('/uploads/') || (!filePath.startsWith('http') && !filePath.startsWith('https')))) {
+      const normalizedPath = filePath.startsWith('/') ? filePath : `/${filePath}`;
+      return `${BASE_URL}${normalizedPath}`;
     }
-    // Sinon on retourne le chemin tel quel
+    // Sinon on retourne le chemin tel quel (ex: Cloudinary)
     return filePath;
   };
 

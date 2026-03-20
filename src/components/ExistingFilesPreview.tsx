@@ -1,5 +1,6 @@
 import React from 'react';
-import { X, Image as ImageIcon, Music, FileText, File } from 'lucide-react';
+import { X, Image as ImageIcon, Music, FileText, File as FileIcon } from 'lucide-react';
+import { BASE_URL } from '../config';
 
 interface MediaFile {
   id: string;
@@ -17,12 +18,20 @@ interface ExistingFilesPreviewProps {
 }
 
 const ExistingFilesPreview: React.FC<ExistingFilesPreviewProps> = ({ files, onRemove, className = '' }) => {
+  const getFileUrl = (filePath: string) => {
+    if (filePath && (filePath.startsWith('/uploads/') || (!filePath.startsWith('http') && !filePath.startsWith('https')))) {
+      const normalizedPath = filePath.startsWith('/') ? filePath : `/${filePath}`;
+      return `${BASE_URL}${normalizedPath}`;
+    }
+    return filePath;
+  };
+
   const getFileIcon = (fileType: string) => {
     switch (fileType) {
       case 'image': return ImageIcon;
       case 'audio': return Music;
       case 'pdf': return FileText;
-      default: return File;
+      default: return FileIcon;
     }
   };
 
@@ -32,10 +41,10 @@ const ExistingFilesPreview: React.FC<ExistingFilesPreviewProps> = ({ files, onRe
         <div key={file.id} className="relative group">
           <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
             <img
-              src={file.file_path}
+              src={getFileUrl(file.file_path)}
               alt={file.alt_text || file.file_name}
               className="w-full h-full object-cover"
-              onError={(e) => {
+              onError={() => {
                 console.error('Erreur de chargement image existante:', file.file_path);
               }}
             />
