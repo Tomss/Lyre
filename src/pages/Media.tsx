@@ -166,7 +166,6 @@ const Media = () => {
         subtitle="Revivez les moments forts de La Lyre : albums, enregistrements et souvenirs."
         backgroundImage={pageHeaders['media'] || "https://images.pexels.com/photos/164743/pexels-photo-164743.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop"}
         anchors={[
-          { label: "À la Une", targetId: "a-la-une", icon: Star, color: "amber" },
           { label: "Médiathèque", targetId: "mediatheque", icon: Image, color: "teal" },
           { label: "Contribuer", targetId: "contribuer", icon: Camera, color: "rose" }
         ]}
