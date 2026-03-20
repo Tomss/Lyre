@@ -129,7 +129,7 @@ const AdminMedia = () => {
         return {
           fileName: file.name,
           filePath: result.filePath,
-          fileType: file.type.startsWith('image') ? 'image' : file.type.startsWith('video') ? 'video' : file.type.startsWith('audio') ? 'audio' : 'document',
+          fileType: file.type === 'application/pdf' ? 'pdf' : file.type.startsWith('image') ? 'image' : file.type.startsWith('video') ? 'video' : file.type.startsWith('audio') ? 'audio' : 'document',
           fileSize: file.size,
           altText: null,
           sortOrder: index,
@@ -157,8 +157,19 @@ const AdminMedia = () => {
       const url = isUpdating ? `${API_URL}/media/${editingMedia.id}` : `${API_URL}/media`;
       const method = isUpdating ? 'PUT' : 'POST';
 
-      const existingFiles = editingMedia?.files.filter(f => !filesToRemove.includes(f.id)).map((f, index) => ({ ...f, sortOrder: index })) || [];
-      const finalFiles = [...existingFiles, ...uploadedFilesData].map((f, index) => ({ ...f, sortOrder: index }));
+      // Normalize all files to camelCase for the backend
+      const normalizedExistingFiles = editingMedia?.files
+        .filter(f => !filesToRemove.includes(f.id))
+        .map(f => ({
+          fileName: f.file_name,
+          filePath: f.file_path,
+          fileType: f.file_type,
+          fileSize: f.file_size,
+          altText: f.alt_text,
+          sortOrder: f.sort_order
+        })) || [];
+
+      const finalFiles = [...normalizedExistingFiles, ...uploadedFilesData].map((f, index) => ({ ...f, sortOrder: index }));
 
       const response = await fetch(url, {
         method,
