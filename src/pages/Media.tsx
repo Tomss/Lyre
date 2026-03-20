@@ -441,22 +441,17 @@ const Media = () => {
                         </div>
 
                         <div className={`p-5 flex flex-col items-center text-center relative transition-colors duration-500 ${
-                          media.media_type === 'album' ? 'bg-teal-50/80' : 
-                          media.media_type === 'enregistrement' ? 'bg-sky-50/80' : 
-                          media.media_type === 'journal' ? 'bg-slate-50/80' : 
-                          'bg-indigo-50/80'
+                          media.media_type === 'album' ? 'bg-teal-600' : 
+                          media.media_type === 'enregistrement' ? 'bg-sky-600' : 
+                          media.media_type === 'journal' ? 'bg-slate-600' : 
+                          'bg-indigo-600'
                         }`}>
-                          <h3 className="font-poppins font-bold text-base text-slate-900 line-clamp-1 mb-2 group-hover:text-teal-600 transition-colors relative z-10">
+                          <h3 className="font-poppins font-bold text-base text-white line-clamp-1 mb-2 group-hover:text-white/90 transition-colors relative z-10">
                             {media.title}
                           </h3>
 
-                          <div className="flex items-center space-x-2 text-[10px] font-black uppercase tracking-widest text-slate-500 relative z-10">
-                            <div className={`w-1.5 h-1.5 rounded-full ${
-                              media.media_type === 'album' ? 'bg-teal-500' : 
-                              media.media_type === 'enregistrement' ? 'bg-sky-500' : 
-                              media.media_type === 'journal' ? 'bg-slate-500' : 
-                              'bg-indigo-500'
-                            }`}></div>
+                          <div className="flex items-center space-x-2 text-[10px] font-black uppercase tracking-widest text-white/80 relative z-10">
+                            <div className="w-1.5 h-1.5 rounded-full bg-white/40"></div>
                             <span>{media.media_files.length} {media.media_files.length > 1 ? 'FICHIERS' : 'FICHIER'}</span>
                             <span>•</span>
                             <span>
