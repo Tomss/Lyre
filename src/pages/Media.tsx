@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { API_URL } from '../config';
 import { Link } from 'react-router-dom';
-import { Image, Camera, Music, FileText, File, Filter, Search, X, ChevronRight, Star, Calendar, Sparkles, Type } from 'lucide-react';
+import { Image, Camera, Music, FileText, Filter, Search, X, ChevronRight, Star, Calendar, Sparkles, Type } from 'lucide-react';
 import MediaGallery from '../components/MediaGallery';
 import MediaPreview from '../components/MediaPreview';
 import PageHero from '../components/PageHero';
@@ -30,13 +30,19 @@ interface MediaItem {
 
 const Media = () => {
   const { pageHeaders } = useTheme();
-  const [mediaItems, setMediaItems] = React.useState<MediaItem[]>([]);
-  const [loading, setLoading] = React.useState(true);
-  const [searchTerm, setSearchTerm] = React.useState('');
-  const [selectedType, setSelectedType] = React.useState('all');
-  const [selectedPeriod, setSelectedPeriod] = React.useState<'all' | '6m' | '1y'>('all'); // Nouveau filtre temporel
-  const [selectedMedia, setSelectedMedia] = React.useState<MediaItem | null>(null);
-  const [isGalleryOpen, setIsGalleryOpen] = React.useState(false);
+  const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedType, setSelectedType] = useState('all');
+  const [selectedPeriod, setSelectedPeriod] = useState<'all' | '6m' | '1y'>('all');
+  const [selectedMedia, setSelectedMedia] = useState<MediaItem | null>(null);
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(20);
+
+  // Reset visible count when filters change
+  useEffect(() => {
+    setVisibleCount(20);
+  }, [searchTerm, selectedType, selectedPeriod]);
 
   // Récupérer tous les médias publiés
   const fetchMedia = async () => {
@@ -456,7 +462,7 @@ const Media = () => {
               )}
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 relative z-10">
-                {regularMedia.map((media) => {
+                {regularMedia.slice(0, visibleCount).map((media) => {
                   const TypeIcon = getTypeIcon(media.media_type);
                   return (
                     <div key={media.id} className="group relative bg-white rounded-[2rem] border border-slate-200 overflow-hidden hover:-translate-y-2 transition-all duration-500 hover:shadow-2xl shadow-lg animate-fade-in group">
@@ -516,6 +522,25 @@ const Media = () => {
                   );
                 })}
               </div>
+
+              {/* Bouton Voir Plus */}
+              {visibleCount < regularMedia.length && (
+                <div className="mt-16 text-center animate-fade-in relative z-10">
+                  <button
+                    onClick={() => setVisibleCount((prev: number) => prev + 20)}
+                    className="group relative inline-flex items-center space-x-3 bg-white border-2 border-slate-200 text-slate-700 font-bold px-10 py-4 rounded-2xl transition-all duration-500 hover:border-teal-400 hover:text-teal-600 hover:shadow-xl hover:shadow-teal-900/5 overflow-hidden"
+                  >
+                    <div className="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-teal-500 to-sky-500 scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
+                    <span className="text-lg">Voir plus de médias</span>
+                    <div className="bg-slate-100 p-1.5 rounded-full group-hover:bg-teal-50 transition-colors duration-500">
+                      <ChevronRight className="h-5 w-5 transform group-hover:rotate-90 transition-transform duration-500" />
+                    </div>
+                  </button>
+                  <p className="mt-4 text-xs font-bold text-slate-400 uppercase tracking-widest">
+                    Affichage de {Math.min(visibleCount, regularMedia.length)} sur {regularMedia.length} médias
+                  </p>
+                </div>
+              )}
             </>
           ) : mediaItems.length === 0 ? (
             <div className="text-center animate-fade-in relative z-10">
