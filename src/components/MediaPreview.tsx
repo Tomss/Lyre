@@ -1,5 +1,5 @@
 import React from 'react';
-import { Play, FileText, Music, Image as ImageIcon } from 'lucide-react';
+import { FileText, Music, Image as ImageIcon } from 'lucide-react';
 
 interface MediaFile {
   id: string;
@@ -40,11 +40,7 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({ files, mediaType, onClick, 
           alt={firstImage.alt_text || 'Album cover'} 
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
         />
-        <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors duration-300 flex items-center justify-center">
-          <div className="bg-white/20 backdrop-blur-md p-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <ImageIcon className="h-8 w-8 text-white" />
-          </div>
-        </div>
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"></div>
         {imageCount > 1 && (
           <div className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-md text-white text-xs font-medium px-2 py-1 rounded-lg">
             +{imageCount - 1} photo{imageCount > 2 ? 's' : ''}
@@ -69,11 +65,7 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({ files, mediaType, onClick, 
             {firstAudio.file_name}
           </span>
         </div>
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
-          <div className="bg-white/90 p-3 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-4 group-hover:translate-y-0">
-            <Play className="h-6 w-6 text-blue-600 fill-blue-600" />
-          </div>
-        </div>
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"></div>
         {audioCount > 1 && (
           <div className="absolute bottom-4 right-4 bg-black/40 backdrop-blur-md text-white text-xs font-medium px-2 py-1 rounded-lg">
             {audioCount} pistes
@@ -118,11 +110,7 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({ files, mediaType, onClick, 
           alt={firstImage.alt_text || 'Media preview'} 
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
         />
-        <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors duration-300 flex items-center justify-center">
-          <div className="bg-white/20 backdrop-blur-md p-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <FileText className="h-8 w-8 text-white" />
-          </div>
-        </div>
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"></div>
       </div>
     );
   }
