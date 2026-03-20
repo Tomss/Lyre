@@ -378,9 +378,6 @@ const Dashboard = () => {
           <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 p-6 h-full">
             <div className="flex justify-between items-center mb-6">
               <h2 className="font-poppins font-bold text-2xl text-dark">Prochains Événements</h2>
-              <Link to="/user/events" className="text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors">
-                Voir tout
-              </Link>
             </div>
             {loading ? (
               <p>Chargement...</p>
