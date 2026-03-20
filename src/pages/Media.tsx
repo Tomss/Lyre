@@ -6,6 +6,7 @@ import { Image, Camera, Music, FileText, Filter, Search, X, ChevronRight, Star, 
 import MediaGallery from '../components/MediaGallery';
 import MediaPreview from '../components/MediaPreview';
 import PageHero from '../components/PageHero';
+import Footer from '../components/Footer';
 
 interface MediaFile {
   id: string;
@@ -65,7 +66,7 @@ const Media = () => {
     setLoading(false);
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     fetchMedia();
   }, []);
 
@@ -84,7 +85,7 @@ const Media = () => {
       case 'album': return Camera;
       case 'enregistrement': return Music;
       case 'journal': return FileText;
-      case 'lyrissimot': return FileText;
+      case 'lyrissimot': return Type;
       default: return Image;
     }
   };
@@ -139,54 +140,9 @@ const Media = () => {
 
   const openGallery = (media: MediaItem) => {
     if (media.media_files && media.media_files.length > 0) {
-      // Pour les albums : ouvrir la galerie d'images
-      if (media.media_type === 'album' && media.media_files.some(f => f.file_type === 'image')) {
-        setSelectedMedia(media);
-        setIsGalleryOpen(true);
-      }
-      // Pour les enregistrements : ouvrir le lecteur audio
-      else if (media.media_type === 'enregistrement' && media.media_files.some(f => f.file_type === 'audio')) {
-        openAudioPlayer(media);
-      }
-      // Pour les journaux : ouvrir l'image ou le PDF
-      else if (media.media_type === 'journal') {
-        const imageFile = media.media_files.find(f => f.file_type === 'image');
-        const pdfFile = media.media_files.find(f => f.file_type === 'pdf');
-
-        if (imageFile) {
-          setSelectedMedia(media);
-          setIsGalleryOpen(true);
-        } else if (pdfFile) {
-          openPdfViewer(pdfFile);
-        }
-      }
-      // Pour les lyrissimots : ouvrir le PDF
-      else if (media.media_type === 'lyrissimot') {
-        const pdfFile = media.media_files.find(f => f.file_type === 'pdf');
-        if (pdfFile) {
-          openPdfViewer(pdfFile);
-        }
-      }
+      setSelectedMedia(media);
+      setIsGalleryOpen(true);
     }
-  };
-
-  const openAudioPlayer = (media: MediaItem) => {
-    // Créer un lecteur audio simple
-    const audioFile = media.media_files.find(f => f.file_type === 'audio');
-    if (audioFile) {
-      const audioUrl = audioFile.file_path;
-      const audio = new Audio(audioUrl);
-      audio.play().catch(err => {
-        console.error('Erreur lecture audio:', err);
-        // Fallback : ouvrir dans un nouvel onglet
-        window.open(audioUrl, '_blank');
-      });
-    }
-  };
-
-  const openPdfViewer = (pdfFile: MediaFile) => {
-    // Ouvrir le PDF dans un nouvel onglet
-    window.open(pdfFile.file_path, '_blank');
   };
 
   const closeGallery = () => {
@@ -283,7 +239,7 @@ const Media = () => {
         </section>
       )}
 
-      {/* Section Médiathèque - Tout sur Fond Blanc */}
+      {/* Section Médiathèque */}
       <section id="library" className="scroll-mt-20 py-20 bg-white relative">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center mb-16">
@@ -293,7 +249,7 @@ const Media = () => {
             </h2>
           </div>
 
-          {/* Barre de filtres et recherche - Style Light Premium & Largeur Standard */}
+          {/* Barre de filtres et recherche */}
           {mediaItems.length > 0 && (
             <div className="mb-16 relative z-10">
               <div className="w-full">
@@ -327,8 +283,11 @@ const Media = () => {
                             key={key}
                             onClick={() => selectType(key)}
                             className={`flex items-center space-x-2 px-5 py-2.5 rounded-2xl text-sm font-semibold transition-all duration-500 group ${selectedType === key
-                              ? `bg-${color}-500 text-white shadow-lg shadow-${color}-500/20 scale-105`
-                              : `bg-slate-50 text-slate-600 border border-slate-100 hover:border-${color}-400 hover:bg-white`
+                              ? key === 'album' ? 'bg-teal-500 text-white shadow-lg shadow-teal-500/20 scale-105' :
+                                key === 'enregistrement' ? 'bg-sky-500 text-white shadow-lg shadow-sky-500/20 scale-105' :
+                                key === 'journal' ? 'bg-slate-500 text-white shadow-lg shadow-slate-500/20 scale-105' :
+                                'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20 scale-105'
+                              : 'bg-slate-50 text-slate-600 border border-slate-100 hover:border-teal-400 hover:bg-white'
                               }`}
                           >
                             <Icon className={`h-4 w-4 ${selectedType === key ? 'text-white' : `text-${color}-500 group-hover:scale-110 transition-transform`}`} />
@@ -436,206 +395,208 @@ const Media = () => {
           )}
 
           <div className="w-full relative z-10">
-
-          {loading ? (
-            <div className="text-center animate-fade-in relative z-10">
-              <div className="animate-spin rounded-full h-12 w-12 border-4 border-teal-200 border-t-teal-500 mx-auto mb-4"></div>
-              <p className="text-slate-500">Chargement de nos médias...</p>
-            </div>
-          ) : filteredMedia.length === 0 && searchTerm ? (
-            <div className="text-center animate-fade-in relative z-10">
-              <div className="bg-slate-100 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6 shadow-sm">
-                <Search className="h-12 w-12 text-slate-300" />
+            {loading ? (
+              <div className="text-center py-20">
+                <div className="animate-spin rounded-full h-12 w-12 border-4 border-teal-200 border-t-teal-500 mx-auto mb-4"></div>
+                <p className="text-slate-500">Chargement de nos médias...</p>
               </div>
-              <p className="text-slate-600 mb-4 text-lg">Aucun média trouvé pour "{searchTerm}"</p>
-              <button onClick={() => setSearchTerm('')} className="text-teal-600 hover:text-teal-700 font-medium bg-teal-50 px-6 py-3 rounded-2xl border border-teal-100 hover:bg-teal-100 transition-all duration-300">Effacer la recherche</button>
-            </div>
-          ) : regularMedia.length > 0 ? (
-            <>
-              {featuredMedia.length > 0 && (
-                <div className="max-w-4xl mx-auto text-center mb-16 relative z-10">
-                  <h2 className="font-poppins font-bold text-3xl md:text-5xl text-slate-900 mb-6 relative inline-block">
-                    Tous nos médias
-                    <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-16 h-1 bg-teal-500 rounded-full"></div>
-                  </h2>
+            ) : filteredMedia.length === 0 && searchTerm ? (
+              <div className="text-center py-20 bg-slate-50 rounded-[3rem] border border-slate-100">
+                <div className="bg-white rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6 shadow-sm">
+                  <Search className="h-12 w-12 text-slate-300" />
                 </div>
-              )}
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 relative z-10">
-                {regularMedia.slice(0, visibleCount).map((media) => {
-                  const TypeIcon = getTypeIcon(media.media_type);
-                  return (
-                    <div key={media.id} className="group relative bg-white rounded-[2rem] border border-slate-200 overflow-hidden hover:-translate-y-2 transition-all duration-500 hover:shadow-2xl shadow-lg animate-fade-in group">
-                      {/* Barre d'accentuation haute */}
-                      <div className={`h-1.5 w-full transition-all duration-500 group-hover:h-3 ${media.media_type === 'album' ? 'bg-teal-500' : media.media_type === 'enregistrement' ? 'bg-sky-500' : media.media_type === 'journal' ? 'bg-slate-500' : media.media_type === 'lyrissimot' ? 'bg-indigo-500' : 'bg-gray-500'}`}></div>
-                      
-                      {/* Section Image / Preview avec Badge Overlay */}
-                      <div className="relative aspect-square overflow-hidden bg-slate-50">
-                        <MediaPreview
-                          files={media.media_files}
-                          mediaType={media.media_type}
-                          onClick={() => openGallery(media)}
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                        />
+                <p className="text-slate-600 mb-4 text-lg">Aucun média trouvé pour "{searchTerm}"</p>
+                <button onClick={() => setSearchTerm('')} className="text-teal-600 hover:text-teal-700 font-bold bg-teal-50 px-8 py-4 rounded-2xl border border-teal-100 hover:bg-teal-100 transition-all duration-300">Effacer la recherche</button>
+              </div>
+            ) : regularMedia.length > 0 ? (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+                  {regularMedia.slice(0, visibleCount).map((media) => {
+                    const TypeIcon = getTypeIcon(media.media_type);
+                    return (
+                      <div key={media.id} className="group relative bg-white rounded-[2rem] border border-slate-200 overflow-hidden hover:-translate-y-2 transition-all duration-500 hover:shadow-2xl shadow-lg animate-fade-in group">
+                        {/* Barre d'accentuation haute */}
+                        <div className={`h-1.5 w-full transition-all duration-500 group-hover:h-3 ${media.media_type === 'album' ? 'bg-teal-500' : media.media_type === 'enregistrement' ? 'bg-sky-500' : media.media_type === 'journal' ? 'bg-slate-500' : media.media_type === 'lyrissimot' ? 'bg-indigo-500' : 'bg-gray-500'}`}></div>
                         
-                        {/* Badge de Type en Overlay */}
-                        <div className="absolute top-3 left-3 z-20">
-                          <span className={`inline-flex items-center px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-[0.1em] ${media.media_type === 'album' ? 'bg-teal-500 text-white' : media.media_type === 'enregistrement' ? 'bg-sky-500 text-white' : media.media_type === 'journal' ? 'bg-slate-500 text-white' : 'bg-indigo-500 text-white'} shadow-lg backdrop-blur-xl`}>
-                            <TypeIcon className="h-3.5 w-3.5 mr-1.5" />
-                            {getTypeLabel(media.media_type)}
-                          </span>
-                        </div>
-
-                        {!!media.is_featured && (
-                          <div className="absolute top-3 right-3 bg-amber-400 text-white p-2 rounded-full shadow-lg z-20 animate-pulse border-2 border-white">
-                            <Star className="h-3 w-3 fill-current" />
+                        {/* Section Image / Preview */}
+                        <div className="relative aspect-square overflow-hidden bg-slate-50">
+                          <MediaPreview
+                            files={media.media_files}
+                            mediaType={media.media_type}
+                            onClick={() => openGallery(media)}
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                          />
+                          
+                          {/* Badge de Type */}
+                          <div className="absolute top-3 left-3 z-20">
+                            <span className={`inline-flex items-center px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-[0.1em] ${media.media_type === 'album' ? 'bg-teal-500 text-white' : media.media_type === 'enregistrement' ? 'bg-sky-500 text-white' : media.media_type === 'journal' ? 'bg-slate-500 text-white' : 'bg-indigo-500 text-white'} shadow-lg backdrop-blur-xl`}>
+                              <TypeIcon className="h-3.5 w-3.5 mr-1.5" />
+                              {getTypeLabel(media.media_type)}
+                            </span>
                           </div>
-                        )}
-                        
-                        {/* Overlay au survol */}
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-500 pointer-events-none"></div>
-                      </div>
 
-                      <div className="p-4 flex flex-col items-center text-center relative bg-white">
-                        {/* Filigrane discret pour le fond */}
-                        <div className="absolute -right-2 -bottom-2 opacity-[0.05] rotate-[15deg] pointer-events-none text-slate-900">
-                          <TypeIcon className="h-20 w-20" />
+                          {!!media.is_featured && (
+                            <div className="absolute top-3 right-3 bg-amber-400 text-white p-2 rounded-full shadow-lg z-20 animate-pulse border-2 border-white">
+                              <Star className="h-3 w-3 fill-current" />
+                            </div>
+                          )}
                         </div>
 
-                        <h3 className="font-poppins font-bold text-base text-slate-800 line-clamp-1 mb-2 group-hover:text-teal-600 transition-colors relative z-10">
-                          {media.title}
-                        </h3>
+                        <div className="p-4 flex flex-col items-center text-center relative bg-white">
+                          <h3 className="font-poppins font-bold text-base text-slate-800 line-clamp-1 mb-2 group-hover:text-teal-600 transition-colors relative z-10">
+                            {media.title}
+                          </h3>
 
-                        <div className="flex items-center space-x-2 text-[10px] font-black uppercase tracking-widest text-slate-400 relative z-10">
-                          <div className={`w-1.5 h-1.5 rounded-full ${media.media_type === 'album' ? 'bg-teal-400' : media.media_type === 'enregistrement' ? 'bg-sky-400' : media.media_type === 'journal' ? 'bg-slate-400' : media.media_type === 'lyrissimot' ? 'bg-indigo-400' : 'bg-gray-400'}`}></div>
-                          <span>{media.media_files.length} {media.media_files.length > 1 ? 'FICHIERS' : 'FICHIER'}</span>
-                          <span>•</span>
-                          <span>
-                            {media.media_date
-                              ? new Date(media.media_date).toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' })
-                              : new Date(media.created_at).toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' })
-                            }
-                          </span>
+                          <div className="flex items-center space-x-2 text-[10px] font-black uppercase tracking-widest text-slate-400 relative z-10">
+                            <div className={`w-1.5 h-1.5 rounded-full ${media.media_type === 'album' ? 'bg-teal-400' : media.media_type === 'enregistrement' ? 'bg-sky-400' : media.media_type === 'journal' ? 'bg-slate-400' : media.media_type === 'lyrissimot' ? 'bg-indigo-400' : 'bg-gray-400'}`}></div>
+                            <span>{media.media_files.length} {media.media_files.length > 1 ? 'FICHIERS' : 'FICHIER'}</span>
+                            <span>•</span>
+                            <span>
+                              {media.media_date
+                                ? new Date(media.media_date).toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' })
+                                : new Date(media.created_at).toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' })
+                              }
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Bouton Voir Plus */}
-              {visibleCount < regularMedia.length && (
-                <div className="mt-16 text-center animate-fade-in relative z-10">
-                  <button
-                    onClick={() => setVisibleCount((prev: number) => prev + 20)}
-                    className="group relative inline-flex items-center space-x-3 bg-white border-2 border-slate-200 text-slate-700 font-bold px-10 py-4 rounded-2xl transition-all duration-500 hover:border-teal-400 hover:text-teal-600 hover:shadow-xl hover:shadow-teal-900/5 overflow-hidden"
-                  >
-                    <div className="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-teal-500 to-sky-500 scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
-                    <span className="text-lg">Voir plus de médias</span>
-                    <div className="bg-slate-100 p-1.5 rounded-full group-hover:bg-teal-50 transition-colors duration-500">
-                      <ChevronRight className="h-5 w-5 transform group-hover:rotate-90 transition-transform duration-500" />
-                    </div>
-                  </button>
-                  <p className="mt-4 text-xs font-bold text-slate-400 uppercase tracking-widest">
-                    Affichage de {Math.min(visibleCount, regularMedia.length)} sur {regularMedia.length} médias
-                  </p>
+                    );
+                  })}
                 </div>
-              )}
-            </>
-          ) : mediaItems.length === 0 ? (
-            <div className="text-center animate-fade-in relative z-10">
-              <div className="bg-slate-100 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
-                <Image className="h-12 w-12 text-slate-400" />
+
+                {/* Bouton Voir Plus */}
+                {visibleCount < regularMedia.length && (
+                  <div className="mt-16 text-center">
+                    <button
+                      onClick={() => setVisibleCount((prev: number) => prev + 20)}
+                      className="group relative inline-flex items-center space-x-3 bg-white border-2 border-slate-200 text-slate-700 font-bold px-10 py-4 rounded-2xl transition-all duration-500 hover:border-teal-400 hover:text-teal-600 hover:shadow-xl hover:shadow-teal-900/5 overflow-hidden"
+                    >
+                      <div className="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-teal-500 to-sky-500 scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
+                      <span className="text-lg">Voir plus de médias</span>
+                      <div className="bg-slate-100 p-1.5 rounded-full group-hover:bg-teal-50 transition-colors duration-500">
+                        <ChevronRight className="h-5 w-5 transform group-hover:rotate-90 transition-transform duration-500" />
+                      </div>
+                    </button>
+                    <p className="mt-4 text-xs font-bold text-slate-400 uppercase tracking-widest">
+                      Affichage de {Math.min(visibleCount, regularMedia.length)} sur {regularMedia.length} médias
+                    </p>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="text-center py-20">
+                <div className="bg-slate-100 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
+                  <Filter className="h-12 w-12 text-slate-400" />
+                </div>
+                <p className="text-slate-500 text-lg font-medium">Aucun média ne correspond aux filtres sélectionnés</p>
               </div>
-              <h2 className="font-poppins font-semibold text-2xl text-slate-700 mb-4">
-                Nos médias arrivent bientôt !
-              </h2>
-              <p className="font-inter text-slate-500 max-md mx-auto">
-                Notre équipe travaille actuellement sur la mise en ligne de nos albums, enregistrements et actualités.
-                Revenez bientôt pour les découvrir !
-              </p>
-            </div>
-          ) : (
-            <div className="text-center animate-fade-in relative z-10">
-              <div className="bg-slate-100 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
-                <Filter className="h-12 w-12 text-slate-400" />
-              </div>
-              <p className="text-slate-500 text-lg">Aucun média ne correspond aux filtres sélectionnés</p>
-            </div>
-          )}
+            )}
+          </div>
         </div>
+      </section>
+      
+      {/* Séparation visuelle */}
+      <div className="bg-white relative py-4">
+        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-px bg-gradient-to-r from-transparent via-teal-400 to-transparent opacity-50"></div>
       </div>
-    </section>
-    
-    {/* Séparation visuelle (Style Accueil) */}
-    <div className="bg-white relative py-4">
-      <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-px bg-gradient-to-r from-transparent via-teal-400 to-transparent opacity-50"></div>
-    </div>
 
-      {/* Section d'appel à contribution */}
-      <section id="contribute" className="scroll-mt-20 py-20 bg-white relative overflow-hidden">
+      {/* Section d'appel à contribution - Redesign Premium Dark */}
+      <section id="contribute" className="scroll-mt-20 py-32 bg-slate-950 relative overflow-hidden">
+        {/* Mesh Gradient Background Layer */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-[20%] -left-[10%] w-[60%] h-[70%] bg-teal-500/10 rounded-full blur-[120px] animate-pulse"></div>
+          <div className="absolute -bottom-[20%] -right-[10%] w-[60%] h-[70%] bg-indigo-500/10 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }}></div>
+          <div className="absolute top-[20%] right-[20%] w-[30%] h-[40%] bg-sky-500/5 rounded-full blur-[80px]"></div>
+          {/* Subtle Grid Pattern Overlay */}
+          <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '40px 40px' }}></div>
+        </div>
+
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="max-w-4xl mx-auto">
-            <div className="max-w-4xl mx-auto text-center mb-16 animate-fade-in text-center">
-              <h2 className="font-poppins font-bold text-3xl md:text-5xl text-slate-900 mb-6 relative inline-block">
-                Partagez vos souvenirs !
-                <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-16 h-1 bg-teal-500 rounded-full"></div>
+          <div className="max-w-5xl mx-auto">
+            <div className="text-center mb-20 animate-fade-in">
+              <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-400 text-xs font-bold uppercase tracking-widest mb-6">
+                <Sparkles className="h-4 w-4" />
+                <span>Contribuez à l'histoire</span>
+              </div>
+              <h2 className="font-poppins font-bold text-4xl md:text-6xl text-white mb-6 tracking-tight">
+                Partagez vos <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-sky-400">souvenirs !</span>
               </h2>
+              <div className="h-1.5 w-32 bg-gradient-to-r from-teal-500 to-sky-500 rounded-full mx-auto"></div>
             </div>
 
-            <div className="bg-slate-50 rounded-3xl p-8 md:p-12 shadow-xl border border-slate-100 animate-fade-in group hover:shadow-2xl transition-all duration-500 relative overflow-hidden">
-              <div className="relative z-10">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
-                  <div className="text-center group/item">
-                    <div className="bg-teal-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm group-hover/item:scale-110 transition-transform duration-300">
-                      <Camera className="h-10 w-10 text-teal-600" />
+            <div className="relative group">
+              {/* Card glowing border effect */}
+              <div className="absolute -inset-1 bg-gradient-to-r from-teal-500 to-indigo-500 rounded-[3rem] blur opacity-20 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
+              
+              <div className="relative bg-slate-900/40 backdrop-blur-3xl rounded-[3rem] p-10 md:p-16 border border-white/10 shadow-2xl overflow-hidden">
+                {/* Internal Card Decor */}
+                <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
+                  <Star className="h-32 w-32 text-teal-500" />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-16 relative z-10">
+                  <div className="text-center group/item hover:scale-105 transition-transform duration-300">
+                    <div className="relative inline-block mb-6">
+                      <div className="absolute inset-0 bg-teal-400 blur-2xl opacity-0 group-hover/item:opacity-20 transition-opacity"></div>
+                      <div className="bg-gradient-to-br from-teal-400/20 to-teal-600/20 w-24 h-24 rounded-3xl flex items-center justify-center border border-teal-400/30 shadow-inner">
+                        <Camera className="h-12 w-12 text-teal-400" />
+                      </div>
                     </div>
-                    <h3 className="font-poppins font-semibold text-lg text-slate-800 mb-2">Photos & Vidéos</h3>
-                    <p className="text-sm text-slate-500">Concerts, répétitions, moments de convivialité</p>
+                    <h3 className="font-poppins font-bold text-xl text-white mb-3">Photos & Vidéos</h3>
+                    <p className="text-sm text-slate-400 leading-relaxed font-medium">Concerts, répétitions, moments de convivialité capturés.</p>
                   </div>
 
-                  <div className="text-center group/item">
-                    <div className="bg-indigo-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm group-hover/item:scale-110 transition-transform duration-300">
-                      <Music className="h-10 w-10 text-indigo-600" />
+                  <div className="text-center group/item hover:scale-105 transition-transform duration-300">
+                    <div className="relative inline-block mb-6">
+                      <div className="absolute inset-0 bg-indigo-400 blur-2xl opacity-0 group-hover/item:opacity-20 transition-opacity"></div>
+                      <div className="bg-gradient-to-br from-indigo-400/20 to-indigo-600/20 w-24 h-24 rounded-3xl flex items-center justify-center border border-indigo-400/30 shadow-inner">
+                        <Music className="h-12 w-12 text-indigo-400" />
+                      </div>
                     </div>
-                    <h3 className="font-poppins font-semibold text-lg text-slate-800 mb-2">Enregistrements</h3>
-                    <p className="text-sm text-slate-500">Captations audio de nos performances</p>
+                    <h3 className="font-poppins font-bold text-xl text-white mb-3">Enregistrements</h3>
+                    <p className="text-sm text-slate-400 leading-relaxed font-medium">Captations audio de vos performances sur scène.</p>
                   </div>
 
-                  <div className="text-center group/item">
-                    <div className="bg-slate-200 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm group-hover/item:scale-110 transition-transform duration-300">
-                      <FileText className="h-10 w-10 text-slate-600" />
+                  <div className="text-center group/item hover:scale-105 transition-transform duration-300">
+                    <div className="relative inline-block mb-6">
+                      <div className="absolute inset-0 bg-sky-400 blur-2xl opacity-0 group-hover/item:opacity-20 transition-opacity"></div>
+                      <div className="bg-gradient-to-br from-sky-400/20 to-sky-600/20 w-24 h-24 rounded-3xl flex items-center justify-center border border-sky-400/30 shadow-inner">
+                        <FileText className="h-12 w-12 text-sky-400" />
+                      </div>
                     </div>
-                    <h3 className="font-poppins font-semibold text-lg text-slate-800 mb-2">Articles de Presse</h3>
-                    <p className="text-sm text-slate-500">Coupures de journaux, interviews</p>
+                    <h3 className="font-poppins font-bold text-xl text-white mb-3">Articles de Presse</h3>
+                    <p className="text-sm text-slate-400 leading-relaxed font-medium">Coupures de journaux et interviews mémorables.</p>
                   </div>
                 </div>
 
-                <div className="text-center">
-                  <p className="text-slate-600 mb-8 text-xl leading-relaxed">
-                    Chaque souvenir compte ! Vos contributions nous aident à préserver et partager
-                    l'histoire musicale de notre école.
+                <div className="max-w-2xl mx-auto text-center relative z-10 border-t border-white/5 pt-12">
+                  <p className="font-medium text-lg md:text-xl text-slate-200 leading-relaxed mb-10 italic">
+                    "Chaque souvenir compte ! Vos contributions nous aident à préserver et partager l'histoire musicale de notre école."
                   </p>
-
-                  <Link
-                    to="/contact"
-                    className="inline-flex items-center space-x-3 bg-teal-600 hover:bg-teal-700 text-white font-bold px-8 py-4 rounded-2xl transition-all duration-300 hover:-translate-y-1 hover:shadow-lg shadow-md group/btn"
-                  >
-                    <span className="text-xl">Nous contacter</span>
-                    <div className="bg-white/20 p-2 rounded-full group-hover/btn:bg-white/30 transition-colors duration-300">
-                      <ChevronRight className="h-5 w-5 group-hover/btn:translate-x-1 transition-transform duration-300" />
-                    </div>
-                  </Link>
-
-                  <p className="text-sm text-slate-400 mt-4">
-                    💌 Envoyez-nous vos médias par email ou contactez-nous pour plus d'informations
-                  </p>
+                  
+                  <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+                    <Link
+                      to="/contact"
+                      className="group relative inline-flex items-center space-x-3 bg-gradient-to-r from-teal-500 to-teal-600 text-white font-black px-12 py-5 rounded-2xl transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_rgba(20,184,166,0.4)]"
+                    >
+                      <span className="text-lg uppercase tracking-wider">Nous contacter</span>
+                      <ChevronRight className="h-6 w-6 transform group-hover:translate-x-1 transition-transform" />
+                    </Link>
+                  </div>
+                  
+                  <div className="mt-8 flex items-center justify-center space-x-2 text-slate-500 text-sm font-bold uppercase tracking-widest">
+                    <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
+                    <span>Envoyez-nous vos fichiers par email ou via ce formulaire</span>
+                    <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </section>
+
+      <Footer />
     </div>
   );
 };
