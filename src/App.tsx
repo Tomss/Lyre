@@ -15,7 +15,6 @@ import AdminUsers from './pages/AdminUsers'; // Importer la page d'administratio
 import AdminInstruments from './pages/AdminInstruments'; // Importer la page d'administration des instruments
 import AdminOrchestras from './pages/AdminOrchestras'; // Importer la page d'administration des orchestres
 import AdminEvents from './pages/AdminEvents'; // Importer la page d'administration des événements
-import UserEvents from './pages/UserEvents'; // Importer la page des événements utilisateur
 import AdminMedia from './pages/AdminMedia'; // Importer la import AdminCarousel from './pages/AdminCarousel';
 import AdminTheme from './pages/AdminTheme';
 import AdminPartners from './pages/AdminPartners'; // Importer la page d'administration du thème
@@ -49,7 +48,6 @@ function App() {
             <Route path="/admin/instruments" element={<AdminInstruments />} />
             <Route path="/admin/orchestras" element={<AdminOrchestras />} />
             <Route path="/admin/events" element={<AdminEvents />} />
-            <Route path="/user/events" element={<UserEvents />} />
             <Route path="/admin/media" element={<AdminMedia />} />
             <Route path="/admin/theme" element={<AdminTheme />} />
             <Route path="/admin/partners" element={<AdminPartners />} />
