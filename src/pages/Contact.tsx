@@ -189,9 +189,6 @@ const Contact = () => {
               Nous écrire
               <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-16 h-1 bg-teal-500 rounded-full"></div>
             </h2>
-            <p className="text-slate-500 mt-8 max-w-2xl mx-auto text-lg">
-              Une question précise ou un projet musical ? Utilisez notre formulaire premium pour une mise en relation immédiate.
-            </p>
           </div>
 
           <div className="max-w-6xl mx-auto">
@@ -202,8 +199,8 @@ const Contact = () => {
                 <div className="flex-1 space-y-8">
                   <div className="space-y-4">
                     <h3 className="font-poppins font-bold text-3xl text-slate-900 leading-tight">
-                      Votre futur <br />
-                      <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-cyan-600">commence ici</span>
+                      Parlons de votre <br />
+                      <span className="text-teal-600">passion musicale</span>
                     </h3>
                     <p className="text-slate-600 text-base leading-relaxed">
                       Que ce soit pour une inscription, une demande de partenariat ou pour tout autre renseignement, notre équipe est à votre écoute.
@@ -227,12 +224,6 @@ const Contact = () => {
                       </div>
                     ))}
                   </div>
-                </div>
-
-                <div className="p-6 bg-slate-900 rounded-[2rem] text-white overflow-hidden relative group">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/20 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-700"></div>
-                  <p className="text-xs font-black uppercase tracking-[0.2em] text-teal-400 mb-2">Conseil</p>
-                  <p className="text-sm text-slate-300 font-medium relative z-10"> Précisez votre instrument ou votre niveau pour une réponse plus personnalisée !</p>
                 </div>
               </div>
 
@@ -340,19 +331,16 @@ const Contact = () => {
                       <button
                         type="submit"
                         disabled={formStatus.type === 'loading'}
-                        className="w-full group relative overflow-hidden bg-slate-900 text-white font-black uppercase tracking-[0.3em] text-[10px] md:text-xs py-6 rounded-2xl transition-all duration-500 hover:shadow-[0_20px_40px_-10px_rgba(15,23,42,0.3)] disabled:opacity-50"
+                        className="w-full inline-flex items-center justify-center space-x-3 bg-slate-900 text-white font-bold py-5 px-8 rounded-2xl hover:bg-teal-600 transition-all duration-300 hover:shadow-xl hover:shadow-teal-900/20 disabled:opacity-50"
                       >
-                        <div className="absolute inset-0 bg-gradient-to-r from-teal-500 to-cyan-500 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
-                        <div className="relative flex items-center justify-center space-x-4">
-                          {formStatus.type === 'loading' ? (
-                            <div className="animate-spin rounded-full h-5 w-5 border-2 border-white/30 border-t-white"></div>
-                          ) : (
-                            <>
-                              <span className="group-hover:translate-x-1 transition-transform duration-500">Envoyer le message</span>
-                              <Send className="h-4 w-4 transform group-hover:translate-x-2 group-hover:-translate-y-2 transition-all duration-500 opacity-60 group-hover:opacity-100" />
-                            </>
-                          )}
-                        </div>
+                        {formStatus.type === 'loading' ? (
+                          <div className="animate-spin rounded-full h-5 w-5 border-2 border-white/30 border-t-white"></div>
+                        ) : (
+                          <>
+                            <span>Envoyer le message</span>
+                            <Send className="h-4 w-4 transform group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                          </>
+                        )}
                       </button>
                     </div>
                   </form>
