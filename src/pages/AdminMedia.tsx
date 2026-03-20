@@ -124,7 +124,10 @@ const AdminMedia = () => {
           headers: { 'Authorization': `Bearer ${token}` },
           body: fileFormData,
         });
-        if (!response.ok) throw new Error(`Echec de l'upload pour ${file.name}`);
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || `Echec de l'upload pour ${file.name}`);
+        }
         const result = await response.json();
         return {
           fileName: file.name,
@@ -134,8 +137,8 @@ const AdminMedia = () => {
           altText: null,
           sortOrder: index,
         };
-      } catch (error) {
-        showNotification(`Erreur d'upload pour ${file.name}`, 'error');
+      } catch (error: any) {
+        showNotification(error.message || `Erreur d'upload pour ${file.name}`, 'error');
         return null;
       }
     }));

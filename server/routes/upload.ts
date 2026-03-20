@@ -29,14 +29,19 @@ if (useCloudinary) {
     // 2. Configuration de Multer pour envoyer directement sur Cloudinary
     storage = new CloudinaryStorage({
         cloudinary: cloudinary,
-        params: {
-            folder: 'lyre-uploads', // Le dossier qui sera créé sur ton espace Cloudinary
-            allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif', 'svg'],
-            format: (req: any, file: any) => {
-                if (file.mimetype === 'image/svg+xml') return 'svg';
-                return undefined;
-            }
-        } as any
+        params: async (req: any, file: any) => {
+            const extension = path.extname(file.originalname).toLowerCase().replace('.', '');
+            const isAudio = file.mimetype.startsWith('audio/');
+            const isVideo = file.mimetype.startsWith('video/');
+            const isPdf = file.mimetype === 'application/pdf' || extension === 'pdf';
+            
+            return {
+                folder: 'lyre-uploads',
+                allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif', 'svg', 'pdf', 'mp3', 'wav', 'mp4', 'mov'],
+                resource_type: (isAudio || isVideo) ? 'video' : 'auto',
+                format: isPdf ? 'pdf' : undefined
+            };
+        }
     });
 } else {
     // 3. Fallback: Stockage local
