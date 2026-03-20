@@ -23,7 +23,7 @@ const Footer = () => {
           {/* Column 1: School Info */}
           <div className="space-y-6">
             <Link to="/" className="inline-block transition-transform hover:scale-105">
-              <span className="font-poppins font-bold text-2xl text-white tracking-tight">
+              <span className="font-poppins font-semibold text-lg text-white">
                 École de Musique La Lyre
               </span>
             </Link>
