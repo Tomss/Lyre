@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { API_URL, BASE_URL } from '../config';
 import { ExternalLink, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -108,10 +108,10 @@ const PartnersSection = () => {
                     </p>
                     <Link 
                         to="/contact" 
-                        className="inline-flex items-center text-teal-600 font-bold hover:text-teal-500 transition-colors"
+                        className="inline-flex items-center justify-center space-x-3 bg-slate-900 text-white font-bold py-4 px-8 rounded-2xl hover:bg-teal-600 transition-all duration-300 hover:shadow-xl hover:shadow-teal-900/20 group"
                     >
-                        Contactez-nous
-                        <ArrowRight className="ml-1 h-4 w-4" />
+                        <span>Contactez-nous</span>
+                        <ArrowRight className="h-4 w-4 transform group-hover:translate-x-1 transition-transform" />
                     </Link>
                 </div>
             </div>
