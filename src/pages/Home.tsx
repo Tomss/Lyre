@@ -155,28 +155,28 @@ const Home = () => {
 
                {/* Content - Clean & Balanced */}
                <div className="lg:w-2/3 text-center lg:text-left space-y-10 order-1 lg:order-2">
-                  <p className="text-lg md:text-xl text-slate-600 leading-relaxed font-poppins font-light">
+                  <p className="text-base md:text-lg text-slate-600 leading-relaxed font-poppins font-light">
                      Association musicale fondée en 1886, La Lyre, de croches en noires, de répétitions en répétitions, de concerts en concerts, de voyages en rivages, motive jeunes et moins jeunes, sages et exubérants, à vivre et partager ce langage aux mille et une harmoniques...
                   </p>
 
                   <div className="space-y-6">
                     <div className="flex flex-col lg:flex-row lg:items-center gap-4 group">
                       <div className="h-px w-8 bg-blue-500/40 group-hover:w-12 group-hover:bg-blue-500 transition-all duration-500 rounded-full hidden lg:block"></div>
-                      <p className="text-xl md:text-2xl text-slate-800 font-poppins font-medium">
+                      <p className="text-lg md:text-xl text-slate-800 font-poppins font-medium">
                         L’association La Lyre, c'est un <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 font-bold">Orchestre d'Harmonie</span>.
                       </p>
                     </div>
                     
                     <div className="flex flex-col lg:flex-row lg:items-center gap-4 group">
                       <div className="h-px w-8 bg-indigo-500/40 group-hover:w-12 group-hover:bg-indigo-500 transition-all duration-500 rounded-full hidden lg:block"></div>
-                      <p className="text-xl md:text-2xl text-slate-800 font-poppins font-medium">
+                      <p className="text-lg md:text-xl text-slate-800 font-poppins font-medium">
                         Et c'est aussi une <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-600 font-extrabold">Ecole</span> fixant les bases musicales indispensables.
                       </p>
                     </div>
                   </div>
 
                   <div className="pt-6 border-t border-slate-50 inline-block">
-                    <p className="italic text-teal-700/80 text-lg font-medium">
+                    <p className="italic text-teal-700/80 text-base font-medium">
                       Spectateurs à l'ouïe fine, futur(e)s virtuoses ou simples curieux(se)s, prenez le temps de parcourir notre site..
                     </p>
                   </div>
