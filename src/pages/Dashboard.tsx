@@ -287,7 +287,7 @@ const Dashboard = () => {
                   <div className="w-16 h-16 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300 shadow-sm">
                     <Users className="h-8 w-8" />
                   </div>
-                  <span className="font-bold text-slate-700 group-hover:text-slate-900 transition-colors">Musiciens</span>
+                  <span className="font-bold text-slate-700 group-hover:text-slate-900 transition-colors">Utilisateurs</span>
                 </Link>
               )}
               
