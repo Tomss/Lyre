@@ -2,7 +2,7 @@ import React from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { API_URL } from '../config';
 import { Link } from 'react-router-dom';
-import { Image, Camera, Music, FileText, File, Filter, Search, X, ChevronRight, Star, Calendar, Sparkles, Type } from 'lucide-react';
+import { Image, Camera, Music, FileText, File, Filter, Search, X, ChevronRight, Star } from 'lucide-react';
 import MediaGallery from '../components/MediaGallery';
 import MediaPreview from '../components/MediaPreview';
 import PageHero from '../components/PageHero';
@@ -33,15 +33,21 @@ const Media = () => {
   const [mediaItems, setMediaItems] = React.useState<MediaItem[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [searchTerm, setSearchTerm] = React.useState('');
-  const [selectedType, setSelectedType] = React.useState('all');
-  const [selectedPeriod, setSelectedPeriod] = React.useState<'all' | '6m' | '1y'>('all');
+  const [selectedType, setSelectedType] = React.useState('album'); // Présélectionner Albums par défaut
   const [selectedMedia, setSelectedMedia] = React.useState<MediaItem | null>(null);
   const [isGalleryOpen, setIsGalleryOpen] = React.useState(false);
 
+  // Récupérer tous les médias publiés
   const fetchMedia = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_URL}/public-media`);
+      const response = await fetch(`${API_URL}/public-media`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
       if (response.ok) {
         const data = await response.json();
         setMediaItems(data || []);
@@ -58,11 +64,11 @@ const Media = () => {
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case 'album': return 'bg-teal-500/10 text-teal-400 border-teal-500/30';
-      case 'enregistrement': return 'bg-sky-500/10 text-sky-400 border-sky-500/30';
-      case 'journal': return 'bg-slate-500/10 text-slate-400 border-slate-500/30';
-      case 'lyrissimot': return 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30';
-      default: return 'bg-gray-500/10 text-gray-400 border-gray-500/30';
+      case 'album': return 'bg-teal-100 text-teal-800';
+      case 'enregistrement': return 'bg-sky-100 text-sky-800';
+      case 'journal': return 'bg-slate-100 text-slate-800';
+      case 'lyrissimot': return 'bg-indigo-100 text-indigo-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -71,204 +77,188 @@ const Media = () => {
       case 'album': return Camera;
       case 'enregistrement': return Music;
       case 'journal': return FileText;
-      case 'lyrissimot': return Type;
+      case 'lyrissimot': return Music;
       default: return Image;
     }
   };
 
   const getTypeLabel = (type: string) => {
     switch (type) {
-      case 'album': return 'Albums';
-      case 'enregistrement': return 'Audios';
-      case 'journal': return 'Presse';
-      case 'lyrissimot': return 'Mots';
+      case 'album': return 'Album';
+      case 'enregistrement': return 'Enregistrement';
+      case 'journal': return 'Journal';
+      case 'lyrissimot': return 'Lyrissimot';
       default: return type;
     }
   };
 
-  const isWithinPeriod = (dateStr: string | undefined, createdAt: string) => {
-    if (selectedPeriod === 'all') return true;
-    const date = new Date(dateStr || createdAt);
-    const now = new Date();
-    const diffMonths = (now.getFullYear() - date.getFullYear()) * 12 + (now.getMonth() - date.getMonth());
-    if (selectedPeriod === '6m') return diffMonths <= 6;
-    if (selectedPeriod === '1y') return diffMonths <= 12;
-    return true;
+  const selectType = (type: string) => {
+    setSelectedType(type);
   };
 
+  // Filtrer les médias
   const filteredMedia = mediaItems.filter(media => {
     const searchLower = searchTerm.toLowerCase();
-    const matchesSearch = media.title.toLowerCase().includes(searchLower) || (media.description && media.description.toLowerCase().includes(searchLower));
+    const matchesSearch = (
+      media.title.toLowerCase().includes(searchLower) ||
+      (media.description && media.description.toLowerCase().includes(searchLower))
+    );
+
     const matchesType = selectedType === 'all' || media.media_type === selectedType;
-    const matchesPeriod = isWithinPeriod(media.media_date, media.created_at);
-    return matchesSearch && matchesType && matchesPeriod;
+
+    return matchesSearch && matchesType;
   });
 
+  // Séparer les médias mis en avant
   const featuredMedia = filteredMedia.filter(media => media.is_featured);
   const regularMedia = filteredMedia.filter(media => !media.is_featured);
 
   const openGallery = (media: MediaItem) => {
     if (media.media_files && media.media_files.length > 0) {
-      if (media.media_type === 'album' || (media.media_type === 'journal' && media.media_files.some(f => f.file_type === 'image'))) {
+      // Pour les albums : ouvrir la galerie d'images
+      if (media.media_type === 'album' && media.media_files.some(f => f.file_type === 'image')) {
         setSelectedMedia(media);
         setIsGalleryOpen(true);
-      } else if (media.media_type === 'enregistrement') {
-        const audioFile = media.media_files.find(f => f.file_type === 'audio');
-        if (audioFile) window.open(audioFile.file_path, '_blank');
-      } else {
+      }
+      // Pour les enregistrements : ouvrir le lecteur audio
+      else if (media.media_type === 'enregistrement' && media.media_files.some(f => f.file_type === 'audio')) {
+        openAudioPlayer(media);
+      }
+      // Pour les journaux : ouvrir l'image ou le PDF
+      else if (media.media_type === 'journal') {
+        const imageFile = media.media_files.find(f => f.file_type === 'image');
         const pdfFile = media.media_files.find(f => f.file_type === 'pdf');
-        if (pdfFile) window.open(pdfFile.file_path, '_blank');
+
+        if (imageFile) {
+          setSelectedMedia(media);
+          setIsGalleryOpen(true);
+        } else if (pdfFile) {
+          openPdfViewer(pdfFile);
+        }
+      }
+      // Pour les lyrissimots : ouvrir le PDF
+      else if (media.media_type === 'lyrissimot') {
+        const pdfFile = media.media_files.find(f => f.file_type === 'pdf');
+        if (pdfFile) {
+          openPdfViewer(pdfFile);
+        }
       }
     }
   };
 
+  const openAudioPlayer = (media: MediaItem) => {
+    // Créer un lecteur audio simple
+    const audioFile = media.media_files.find(f => f.file_type === 'audio');
+    if (audioFile) {
+      const audioUrl = audioFile.file_path;
+      const audio = new Audio(audioUrl);
+      audio.play().catch(err => {
+        console.error('Erreur lecture audio:', err);
+        // Fallback : ouvrir dans un nouvel onglet
+        window.open(audioUrl, '_blank');
+      });
+    }
+  };
+
+  const openPdfViewer = (pdfFile: MediaFile) => {
+    // Ouvrir le PDF dans un nouvel onglet
+    window.open(pdfFile.file_path, '_blank');
+  };
+
+  const closeGallery = () => {
+    setIsGalleryOpen(false);
+    setSelectedMedia(null);
+  };
+
   return (
-    <div className="min-h-screen bg-slate-950 relative overflow-hidden font-inter text-slate-100">
-      {/* Background Blobs */}
-      <div className="absolute top-0 -left-20 w-96 h-96 bg-teal-500/10 rounded-full blur-[120px] animate-pulse pointer-events-none"></div>
-      <div className="absolute top-1/2 -right-20 w-[500px] h-[500px] bg-indigo-500/10 rounded-full blur-[150px] animate-float pointer-events-none"></div>
-      
+    <div className="min-h-screen bg-white font-inter">
+      {/* Galerie modale */}
       {selectedMedia && (
-        <MediaGallery media={selectedMedia} isOpen={isGalleryOpen} onClose={() => setIsGalleryOpen(false)} />
+        <MediaGallery
+          media={selectedMedia}
+          isOpen={isGalleryOpen}
+          onClose={closeGallery}
+        />
       )}
 
+      {/* Header Section */}
       <PageHero
-        title={<span>Notre <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-sky-400 to-indigo-500">Médiathèque</span></span>}
+        title={<span>Notre <span className="text-teal-600">Médiathèque</span></span>}
         subtitle="Explorez l'histoire et les moments forts de La Lyre à travers nos archives."
         backgroundImage={pageHeaders['media'] || "https://images.pexels.com/photos/164821/pexels-photo-164821.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop"}
+        anchors={[
+          { label: "À la Une", targetId: "featured", icon: Star, color: "amber" },
+          { label: "Médiathèque", targetId: "library", icon: Image, color: "teal" },
+          { label: "Contribuer", targetId: "contribute", icon: Camera, color: "rose" }
+        ]}
       />
 
-      <section className="py-12 md:py-20 relative z-10">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          
-          {/* Header & Filter Bar */}
-          <div className="max-w-6xl mx-auto mb-16 space-y-12">
-            <div className="text-center">
-              <div className="inline-flex items-center space-x-3 mb-6 bg-slate-900/50 px-6 py-2 rounded-full border border-white/10 backdrop-blur-md">
-                <Sparkles className="h-5 w-5 text-teal-400 animate-pulse" />
-                <span className="text-sm font-black uppercase tracking-[0.2em] text-slate-300">Collection Officielle</span>
+      {/* Médias mis en avant */}
+      {featuredMedia.length > 0 && (
+        <section id="featured" className="scroll-mt-20 py-20 bg-gradient-to-br from-slate-50 via-gray-50 to-teal-50 relative overflow-hidden">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16 relative z-10">
+              <div className="inline-block mb-6">
+                <div className="flex items-center justify-center space-x-4 mb-4">
+                  <div className="w-12 h-0.5 bg-gradient-to-r from-transparent to-teal-400"></div>
+                  <div className="bg-gradient-to-br from-teal-400 to-cyan-500 p-2 rounded-full shadow-lg">
+                    <Star className="h-6 w-6 text-white animate-pulse" />
+                  </div>
+                  <div className="w-12 h-0.5 bg-gradient-to-l from-transparent to-teal-400"></div>
+                </div>
               </div>
-              <h2 className="font-poppins font-bold text-4xl md:text-6xl text-white mb-6 tracking-tight">
-                Explorez nos <span className="text-teal-400">Archives</span>
+              <h2 className="font-poppins font-bold text-4xl md:text-5xl text-slate-800 mb-6">
+                Médias mis en avant
               </h2>
-              <p className="text-slate-400 text-lg md:text-xl font-light max-w-2xl mx-auto leading-relaxed">
-                Plongez dans l'univers musical de La Lyre à travers nos albums photos, enregistrements audios et coupures de presse.
+              <p className="font-inter text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
+                Découvrez notre sélection de contenus exceptionnels
               </p>
             </div>
 
-            <div className="bg-slate-900/40 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] p-4 md:p-6 shadow-2xl relative overflow-hidden">
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-                <div className="lg:col-span-12 xl:col-span-5 relative group">
-                  <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-teal-400 transition-colors" />
-                  <input
-                    type="text"
-                    placeholder="Chercher un titre, une date..."
-                    className="w-full bg-slate-950/50 border border-white/10 text-white placeholder-slate-500 rounded-2xl py-4 pl-14 pr-6 focus:outline-none focus:ring-2 focus:ring-teal-500/50 transition-all duration-300 backdrop-blur-md"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                </div>
-
-                <div className="lg:col-span-6 xl:col-span-4 flex items-center bg-slate-950/30 p-1.5 rounded-2xl border border-white/5">
-                  {(['all', '6m', '1y'] as const).map((p) => (
-                    <button
-                      key={p}
-                      onClick={() => setSelectedPeriod(p)}
-                      className={`flex-1 py-2.5 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-500 ${
-                        selectedPeriod === p ? 'bg-gradient-to-r from-teal-500 to-sky-500 text-white shadow-lg shadow-teal-500/20' : 'text-slate-400 hover:text-white hover:bg-white/5'
-                      }`}
-                    >
-                      {p === 'all' ? 'Toujours' : p === '6m' ? '6 mois' : '1 an'}
-                    </button>
-                  ))}
-                </div>
-
-                <div className="lg:col-span-6 xl:col-span-3 flex justify-around items-center">
-                  {[
-                    { id: 'all', icon: Sparkles, color: 'teal' },
-                    { id: 'album', icon: Image, color: 'teal' },
-                    { id: 'enregistrement', icon: Music, color: 'sky' },
-                    { id: 'journal', icon: FileText, color: 'slate' },
-                    { id: 'lyrissimot', icon: Type, color: 'indigo' }
-                  ].map((t) => {
-                    const Icon = t.icon;
-                    const isActive = selectedType === t.id;
-                    return (
-                      <button
-                        key={t.id}
-                        onClick={() => setSelectedType(t.id)}
-                        className={`relative w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-500 ${
-                          isActive ? `bg-${t.color}-500 text-white shadow-lg shadow-${t.color}-500/30` : 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10'
-                        }`}
-                      >
-                        <Icon className="h-5 w-5" />
-                        {isActive && <span className="absolute -bottom-1.5 w-1.5 h-1.5 bg-white rounded-full"></span>}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {loading ? (
-             <div className="flex flex-col items-center justify-center py-32 space-y-6">
-                <div className="animate-spin rounded-full h-12 w-12 border-4 border-teal-500 border-t-transparent shadow-lg shadow-teal-500/20"></div>
-                <p className="text-slate-400 animate-pulse font-medium">Harmonisation de la collection...</p>
-             </div>
-          ) : filteredMedia.length === 0 ? (
-            <div className="text-center py-20 animate-fade-in group">
-              <div className="bg-slate-900/50 backdrop-blur-xl rounded-[3rem] p-12 border border-white/10 max-w-lg mx-auto overflow-hidden relative">
-                <div className="absolute -top-10 -right-10 w-40 h-40 bg-teal-500/5 rounded-full blur-3xl"></div>
-                <div className="bg-slate-950 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-8 border border-white/5">
-                  <Search className="h-10 w-10 text-slate-700" />
-                </div>
-                <h3 className="text-white text-2xl font-poppins font-bold mb-4">Aucun trésor trouvé</h3>
-                <p className="text-slate-400 mb-10 leading-relaxed font-light">Nous n'avons trouvé aucun média correspondant à vos critères de recherche.</p>
-                <button 
-                  onClick={() => { setSearchTerm(''); setSelectedType('all'); setSelectedPeriod('all'); }} 
-                  className="w-full bg-gradient-to-r from-teal-500 to-sky-500 text-white font-black uppercase tracking-widest px-8 py-5 rounded-2xl hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-teal-500/20"
-                >
-                  Tout réinitialiser
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-8">
-              {filteredMedia.map((media) => {
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 relative z-10">
+              {featuredMedia.map((media) => {
                 const TypeIcon = getTypeIcon(media.media_type);
-                const colorClass = getTypeColor(media.media_type);
-                const accentColor = media.media_type === 'album' ? 'teal' : media.media_type === 'enregistrement' ? 'sky' : media.media_type === 'journal' ? 'slate' : 'indigo';
-                
                 return (
-                  <div key={media.id} className="group relative bg-slate-900/40 backdrop-blur-md rounded-[2.5rem] border border-white/10 overflow-hidden hover:-translate-y-3 transition-all duration-700 hover:bg-slate-800/60 hover:border-white/20 shadow-2xl animate-fade-in">
-                    <div className={`h-1.5 w-full bg-${accentColor}-500 group-hover:h-3 transition-all duration-700`}></div>
-                    <div className="relative aspect-square overflow-hidden bg-slate-950">
-                      <MediaPreview files={media.media_files} mediaType={media.media_type} onClick={() => openGallery(media)} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" />
-                      <div className="absolute top-4 left-4 z-20">
-                        <span className={`inline-flex items-center px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-[0.15em] ${colorClass} border border-white/20 shadow-2xl backdrop-blur-xl bg-slate-900/60`}>
-                          <TypeIcon className="h-3.5 w-3.5 mr-2" />
+                  <div key={media.id} className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/60 overflow-hidden hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 animate-fade-in group relative">
+                    {/* Effet de brillance au survol */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 z-10"></div>
+
+                    {/* Prévisualisation visuelle */}
+                    <MediaPreview
+                      files={media.media_files}
+                      mediaType={media.media_type}
+                      onClick={() => openGallery(media)}
+                      className="cursor-pointer"
+                    />
+
+                    <div className="p-6 relative z-10">
+                      <div className="flex items-center space-x-3 mb-4">
+                        <div className="bg-gradient-to-br from-teal-400 to-cyan-500 p-2 rounded-lg shadow-md">
+                          <TypeIcon className="h-6 w-6 text-white" />
+                        </div>
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getTypeColor(media.media_type)}`}>
+                          <TypeIcon className="h-3 w-3 mr-1" />
                           {getTypeLabel(media.media_type)}
                         </span>
                       </div>
-                      {media.is_featured && (
-                        <div className="absolute top-4 right-4 bg-amber-400 text-white p-2.5 rounded-full shadow-2xl z-20 animate-pulse border-2 border-white/50">
-                          <Star className="h-3.5 w-3.5 fill-current" />
-                        </div>
+
+                      <h3 className="font-poppins font-semibold text-xl text-slate-800 mb-3">
+                        {media.title}
+                      </h3>
+
+                      {media.description && (
+                        <p className="font-inter text-slate-600 mb-4 text-sm leading-relaxed">
+                          {media.description}
+                        </p>
                       )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
-                    </div>
-                    <div className="p-6 relative text-center">
-                      <div className="absolute -right-4 -bottom-4 opacity-[0.05] rotate-[15deg] group-hover:scale-125 group-hover:rotate-[25deg] transition-all duration-1000 text-white">
-                        <TypeIcon className="h-24 w-24" />
-                      </div>
-                      <h3 className="font-poppins font-bold text-white text-base line-clamp-1 mb-3 group-hover:text-teal-400 transition-colors duration-500 relative z-10">{media.title}</h3>
-                      <div className="flex items-center justify-center space-x-3 text-[10px] font-black uppercase tracking-widest text-slate-500 relative z-10">
-                        <div className={`w-2 h-2 rounded-full bg-${accentColor}-400 shadow-lg shadow-${accentColor}-500/40`}></div>
-                        <span>{media.media_files.length} {media.media_files.length > 1 ? 'FICHIERS' : 'FICHIER'}</span>
-                        <span className="opacity-30">•</span>
-                        <span className="bg-white/5 px-2 py-1 rounded-lg">
-                          {media.media_date ? new Date(media.media_date).toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' }) : new Date(media.created_at).toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' })}
+
+                      <div className="flex items-center justify-between text-sm text-slate-500">
+                        <span>{media.media_files.length} fichier{media.media_files.length > 1 ? 's' : ''}</span>
+                        <span>
+                          {media.media_date
+                            ? new Date(media.media_date).toLocaleDateString('fr-FR')
+                            : new Date(media.created_at).toLocaleDateString('fr-FR')
+                          }
                         </span>
                       </div>
                     </div>
@@ -276,33 +266,310 @@ const Media = () => {
                 );
               })}
             </div>
+          </div>
+        </section>
+      )}
+
+      {/* Tous les médias */}
+      <section id="library" className="scroll-mt-20 py-20 bg-slate-50 relative overflow-hidden">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Filtres et recherche intégrés */}
+          {mediaItems.length > 0 && (
+            <div className="mb-16 relative z-10">
+              <div className="max-w-6xl mx-auto">
+                {/* Header avec titre et filtres/recherche */}
+                <div className="text-center mb-12">
+                  <div className="inline-block mb-8">
+                    <div className="flex items-center justify-center space-x-4 mb-6">
+                      <div className="w-16 h-0.5 bg-gradient-to-r from-transparent via-teal-400 to-teal-400"></div>
+                      <Image className="h-8 w-8 text-teal-400 animate-pulse" />
+                      <div className="w-16 h-0.5 bg-gradient-to-l from-transparent via-teal-400 to-teal-400"></div>
+                    </div>
+                  </div>
+                  <h2 className="font-poppins font-bold text-5xl md:text-6xl text-slate-800 mb-6">
+                    Notre Médiathèque
+                  </h2>
+                  <p className="text-xl text-slate-500 max-w-3xl mx-auto leading-relaxed mb-12">
+                    Explorez notre collection de souvenirs musicaux et découvertes artistiques
+                  </p>
+                </div>
+
+                {/* Barre de filtres et recherche */}
+                <div className="bg-white rounded-3xl p-8 shadow-xl border border-slate-100">
+                  <div className="flex flex-col lg:flex-row items-center justify-between space-y-6 lg:space-y-0 lg:space-x-8">
+                    {/* Filtres à gauche */}
+                    <div className="flex items-center space-x-3">
+                      <div className="flex items-center space-x-2 text-slate-600 mr-4">
+                        <Filter className="h-5 w-5" />
+                        <span className="font-medium text-sm">Filtrer :</span>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <button
+                          onClick={() => selectType('all')}
+                          className={`inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 border ${selectedType === 'all'
+                            ? 'bg-teal-600 text-white border-teal-500 shadow-lg shadow-teal-500/25'
+                            : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                            }`}
+                        >
+                          <span>Tout</span>
+                        </button>
+                        {[{ key: 'album', label: 'Albums', icon: Camera },
+                        { key: 'enregistrement', label: 'Audio', icon: Music },
+                        { key: 'journal', label: 'Presse', icon: FileText },
+                        { key: 'lyrissimot', label: 'Lyrissimots', icon: File }].map(({ key, label, icon: Icon }) => (
+                          <button
+                            key={key}
+                            onClick={() => selectType(key)}
+                            className={`inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 border ${selectedType === key
+                              ? 'bg-teal-600 text-white border-teal-500 shadow-lg shadow-teal-500/25'
+                              : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                              }`}
+                          >
+                            <Icon className="h-4 w-4" />
+                            <span className="hidden sm:inline">{label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Recherche à droite */}
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <Search className="h-5 w-5 text-slate-400" />
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="Rechercher..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-12 pr-12 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-400 w-64 text-slate-800 placeholder-slate-400 transition-all duration-300"
+                      />
+                      {searchTerm && (
+                        <button
+                          onClick={() => setSearchTerm('')}
+                          className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Informations et actions */}
+                  <div className="flex flex-col sm:flex-row items-center justify-between mt-6 pt-6 border-t border-slate-100">
+                    <div className="flex items-center space-x-4 text-sm text-slate-500 mb-4 sm:mb-0">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-2 h-2 bg-teal-500 rounded-full animate-pulse"></div>
+                        <span>{filteredMedia.length} résultat{filteredMedia.length > 1 ? 's' : ''}</span>
+                      </div>
+                      {(selectedType !== 'all' || searchTerm) && (
+                        <div className="flex items-center space-x-2">
+                          <div className="w-1 h-4 bg-slate-300 rounded-full"></div>
+                          <span className="text-teal-600">
+                            {selectedType !== 'all' && `Filtré par ${selectedType === 'album' ? 'Albums' : selectedType === 'enregistrement' ? 'Audio' : selectedType === 'journal' ? 'Presse' : selectedType === 'lyrissimot' ? 'Lyrissimots' : ''}`}
+                            {selectedType !== 'all' && searchTerm && ' • '}
+                            {searchTerm && `"${searchTerm}"`}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {(selectedType !== 'all' || searchTerm) && (
+                      <button
+                        onClick={() => {
+                          setSelectedType('all');
+                          setSearchTerm('');
+                        }}
+                        className="inline-flex items-center space-x-2 text-sm text-slate-500 hover:text-slate-700 font-medium transition-colors bg-slate-100 px-4 py-2 rounded-xl border border-slate-200 hover:bg-slate-200"
+                      >
+                        <X className="h-3 w-3" />
+                        <span>Réinitialiser</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {loading ? (
+            <div className="text-center animate-fade-in relative z-10">
+              <div className="animate-spin rounded-full h-12 w-12 border-4 border-teal-200 border-t-teal-500 mx-auto mb-4"></div>
+              <p className="text-slate-500">Chargement de nos médias...</p>
+            </div>
+          ) : filteredMedia.length === 0 && searchTerm ? (
+            <div className="text-center animate-fade-in relative z-10">
+              <div className="bg-slate-100 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6 shadow-sm">
+                <Search className="h-12 w-12 text-slate-300" />
+              </div>
+              <p className="text-slate-600 mb-4 text-lg">Aucun média trouvé pour "{searchTerm}"</p>
+              <button onClick={() => setSearchTerm('')} className="text-teal-600 hover:text-teal-700 font-medium bg-teal-50 px-6 py-3 rounded-2xl border border-teal-100 hover:bg-teal-100 transition-all duration-300">Effacer la recherche</button>
+            </div>
+          ) : regularMedia.length > 0 ? (
+            <>
+              {featuredMedia.length > 0 && (
+                <div className="text-center mb-16 relative z-10">
+                  <h2 className="font-poppins font-bold text-4xl md:text-5xl text-slate-800 mb-6">
+                    Tous nos médias
+                  </h2>
+                  <p className="text-slate-500 text-xl">
+                    Découvrez l'ensemble de notre collection
+                  </p>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 relative z-10">
+                {regularMedia.map((media) => {
+                  const TypeIcon = getTypeIcon(media.media_type);
+                  return (
+                    <div key={media.id} className={`rounded-2xl shadow-sm border overflow-hidden hover:shadow-xl hover:-translate-y-2 transition-all duration-500 animate-fade-in group relative ${media.media_type === 'album' ? 'bg-white border-teal-100' : media.media_type === 'enregistrement' ? 'bg-white border-sky-100' : media.media_type === 'journal' ? 'bg-white border-slate-200' : media.media_type === 'lyrissimot' ? 'bg-white border-indigo-100' : 'bg-white border-gray-200'}`}>
+                      {/* Effet de brillance au survol */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 z-10"></div>
+
+                      {/* Prévisualisation visuelle */}
+                      <MediaPreview
+                        files={media.media_files}
+                        mediaType={media.media_type}
+                        onClick={() => openGallery(media)}
+                        className="cursor-pointer"
+                      />
+
+                      <div className="p-4 relative z-10">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="bg-slate-50 p-1.5 rounded-lg">
+                            <TypeIcon className="h-4 w-4 text-slate-600" />
+                          </div>
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getTypeColor(media.media_type)}`}>
+                            <TypeIcon className="h-3 w-3 mr-1" />
+                            {getTypeLabel(media.media_type)}
+                          </span>
+                          {media.is_featured && (
+                            <span className="text-amber-400">⭐</span>
+                          )}
+                        </div>
+
+                        <h3 className="font-poppins font-semibold text-lg text-slate-800 mb-2">
+                          {media.title}
+                        </h3>
+
+                        {media.description && (
+                          <p className="font-inter text-slate-500 mb-3 text-sm leading-relaxed line-clamp-3">
+                            {media.description}
+                          </p>
+                        )}
+
+                        <div className="flex items-center justify-between text-sm text-slate-400">
+                          <span>{media.media_files.length} fichier{media.media_files.length > 1 ? 's' : ''}</span>
+                          <span>
+                            {media.media_date
+                              ? new Date(media.media_date).toLocaleDateString('fr-FR')
+                              : new Date(media.created_at).toLocaleDateString('fr-FR')
+                            }
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          ) : mediaItems.length === 0 ? (
+            <div className="text-center animate-fade-in relative z-10">
+              <div className="bg-slate-100 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
+                <Image className="h-12 w-12 text-slate-400" />
+              </div>
+              <h2 className="font-poppins font-semibold text-2xl text-slate-700 mb-4">
+                Nos médias arrivent bientôt !
+              </h2>
+              <p className="font-inter text-slate-500 max-md mx-auto">
+                Notre équipe travaille actuellement sur la mise en ligne de nos albums, enregistrements et actualités.
+                Revenez bientôt pour les découvrir !
+              </p>
+            </div>
+          ) : (
+            <div className="text-center animate-fade-in relative z-10">
+              <div className="bg-slate-100 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
+                <Filter className="h-12 w-12 text-slate-400" />
+              </div>
+              <p className="text-slate-500 text-lg">Aucun média ne correspond aux filtres sélectionnés</p>
+            </div>
           )}
         </div>
       </section>
 
-      {/* Contribution Section */}
-      <section id="contribute" className="py-24 relative overflow-hidden bg-slate-950 border-t border-white/5">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-teal-500/5 rounded-full blur-[200px] pointer-events-none"></div>
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="max-w-4xl mx-auto rounded-[3.5rem] bg-slate-900/50 backdrop-blur-2xl border border-white/10 p-12 text-center shadow-2xl relative group overflow-hidden">
-             <div className="relative z-10">
-                <div className="flex items-center justify-center space-x-6 mb-12">
-                  <div className="w-16 h-px bg-gradient-to-r from-transparent to-teal-500"></div>
-                  <div className="bg-gradient-to-br from-teal-500 to-indigo-600 p-6 rounded-3xl shadow-2xl shadow-teal-500/30 transform group-hover:rotate-12 transition-transform duration-700">
-                    <Camera className="h-10 w-10 text-white" />
+      {/* Section d'appel à contribution */}
+      <section id="contribute" className="scroll-mt-20 py-20 bg-white relative overflow-hidden">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-12 animate-fade-in">
+              <div className="inline-block mb-8">
+                <div className="flex items-center justify-center space-x-4 mb-6">
+                  <div className="w-16 h-0.5 bg-gradient-to-r from-transparent via-teal-500 to-teal-500"></div>
+                  <div className="bg-gradient-to-br from-teal-500 to-cyan-600 p-3 rounded-full shadow-lg">
+                    <Camera className="h-8 w-8 text-white animate-pulse" />
                   </div>
-                  <div className="w-16 h-px bg-gradient-to-l from-transparent to-teal-500"></div>
+                  <div className="w-16 h-0.5 bg-gradient-to-l from-transparent via-teal-500 to-teal-500"></div>
                 </div>
-                <h2 className="font-poppins font-bold text-4xl md:text-5xl text-white mb-8 tracking-tight">Partagez vos <span className="text-teal-400">Souvenirs</span></h2>
-                <p className="text-slate-400 text-xl leading-relaxed mb-12 max-w-2xl mx-auto font-light">Aidez-nous à immortaliser l'histoire de notre harmonie en partageant vos archives, photos ou enregistrements.</p>
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-                  <a href="mailto:contact@la-lyre.fr" className="w-full sm:w-auto bg-white text-slate-950 font-black uppercase tracking-[0.2em] px-12 py-5 rounded-2xl hover:bg-teal-50 transition-all duration-300 shadow-xl flex items-center justify-center space-x-3 group/btn">
-                    <span>Nous écrire</span>
-                    <ChevronRight className="h-5 w-5 group-hover/btn:translate-x-1 transition-transform" />
-                  </a>
-                  <Link to="/contact" className="w-full sm:w-auto bg-slate-800 text-white font-black uppercase tracking-[0.2em] px-12 py-5 rounded-2xl hover:bg-slate-700 transition-all duration-300 border border-white/10">Page Contact</Link>
+              </div>
+              <h2 className="font-poppins font-bold text-3xl md:text-4xl text-slate-800 mb-6">
+                Partagez vos souvenirs !
+              </h2>
+              <p className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed mb-8">
+                Vous avez des photos, vidéos ou enregistrements de nos concerts et événements ?
+                Aidez-nous à enrichir notre médiathèque en partageant vos précieux souvenirs !
+              </p>
+            </div>
+
+            <div className="bg-slate-50 rounded-3xl p-8 md:p-12 shadow-xl border border-slate-100 animate-fade-in group hover:shadow-2xl transition-all duration-500 relative overflow-hidden">
+              <div className="relative z-10">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
+                  <div className="text-center group/item">
+                    <div className="bg-teal-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm group-hover/item:scale-110 transition-transform duration-300">
+                      <Camera className="h-10 w-10 text-teal-600" />
+                    </div>
+                    <h3 className="font-poppins font-semibold text-lg text-slate-800 mb-2">Photos & Vidéos</h3>
+                    <p className="text-sm text-slate-500">Concerts, répétitions, moments de convivialité</p>
+                  </div>
+
+                  <div className="text-center group/item">
+                    <div className="bg-indigo-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm group-hover/item:scale-110 transition-transform duration-300">
+                      <Music className="h-10 w-10 text-indigo-600" />
+                    </div>
+                    <h3 className="font-poppins font-semibold text-lg text-slate-800 mb-2">Enregistrements</h3>
+                    <p className="text-sm text-slate-500">Captations audio de nos performances</p>
+                  </div>
+
+                  <div className="text-center group/item">
+                    <div className="bg-slate-200 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm group-hover/item:scale-110 transition-transform duration-300">
+                      <FileText className="h-10 w-10 text-slate-600" />
+                    </div>
+                    <h3 className="font-poppins font-semibold text-lg text-slate-800 mb-2">Articles de Presse</h3>
+                    <p className="text-sm text-slate-500">Coupures de journaux, interviews</p>
+                  </div>
                 </div>
-             </div>
+
+                <div className="text-center">
+                  <p className="text-slate-600 mb-8 text-xl leading-relaxed">
+                    Chaque souvenir compte ! Vos contributions nous aident à préserver et partager
+                    l'histoire musicale de notre école.
+                  </p>
+
+                  <Link
+                    to="/contact"
+                    className="inline-flex items-center space-x-3 bg-teal-600 hover:bg-teal-700 text-white font-bold px-8 py-4 rounded-2xl transition-all duration-300 hover:-translate-y-1 hover:shadow-lg shadow-md group/btn"
+                  >
+                    <span className="text-xl">Nous contacter</span>
+                    <div className="bg-white/20 p-2 rounded-full group-hover/btn:bg-white/30 transition-colors duration-300">
+                      <ChevronRight className="h-5 w-5 group-hover/btn:translate-x-1 transition-transform duration-300" />
+                    </div>
+                  </Link>
+
+                  <p className="text-sm text-slate-400 mt-4">
+                    💌 Envoyez-nous vos médias par email ou contactez-nous pour plus d'informations
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
