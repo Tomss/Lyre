@@ -481,50 +481,56 @@ const Media = () => {
                   const TypeIcon = getTypeIcon(media.media_type);
                   const colorClass = getTypeColor(media.media_type);
                   return (
-                    <div key={media.id} className={`rounded-3xl shadow-sm border overflow-hidden hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 animate-fade-in group relative bg-white ${media.media_type === 'album' ? 'border-teal-100' : media.media_type === 'enregistrement' ? 'border-sky-100' : media.media_type === 'journal' ? 'border-slate-200' : media.media_type === 'lyrissimot' ? 'border-indigo-100' : 'border-gray-200'}`}>
-                      {/* Barre d'accentuation de couleur */}
-                      <div className={`h-1.5 w-full ${media.media_type === 'album' ? 'bg-teal-500' : media.media_type === 'enregistrement' ? 'bg-sky-500' : media.media_type === 'journal' ? 'bg-slate-500' : media.media_type === 'lyrissimot' ? 'bg-indigo-500' : 'bg-gray-500'}`}></div>
+                    <div key={media.id} className={`rounded-[2rem] shadow-sm border-2 overflow-hidden hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 animate-fade-in group relative bg-white ${media.media_type === 'album' ? 'border-teal-50 hover:border-teal-200' : media.media_type === 'enregistrement' ? 'border-sky-50 hover:border-sky-200' : media.media_type === 'journal' ? 'border-slate-100 hover:border-slate-300' : media.media_type === 'lyrissimot' ? 'border-indigo-50 hover:border-indigo-200' : 'border-gray-50'}`}>
+                      {/* Barre d'accentuation colorée plus épaisse */}
+                      <div className={`h-2 w-full transition-all duration-500 group-hover:h-3 ${media.media_type === 'album' ? 'bg-teal-500' : media.media_type === 'enregistrement' ? 'bg-sky-500' : media.media_type === 'journal' ? 'bg-slate-500' : media.media_type === 'lyrissimot' ? 'bg-indigo-500' : 'bg-gray-500'}`}></div>
                       
-                      {/* Effet de brillance au survol */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 z-10"></div>
-
-                      {/* Prévisualisation visuelle */}
-                      <MediaPreview
-                        files={media.media_files}
-                        mediaType={media.media_type}
-                        onClick={() => openGallery(media)}
-                        className="cursor-pointer"
-                      />
-
-                      <div className="p-4 relative z-10">
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="bg-slate-50 p-1.5 rounded-lg">
-                            <TypeIcon className="h-4 w-4 text-slate-600" />
+                      {/* Section Image / Preview avec Star si mis en avant */}
+                      <div className="relative overflow-hidden">
+                        <MediaPreview
+                          files={media.media_files}
+                          mediaType={media.media_type}
+                          onClick={() => openGallery(media)}
+                          className="cursor-pointer transition-transform duration-700 group-hover:scale-105"
+                        />
+                        {!!media.is_featured && (
+                          <div className="absolute top-3 right-3 bg-amber-400 text-white p-2 rounded-full shadow-lg z-20 animate-pulse border-2 border-white">
+                            <Star className="h-3 w-3 fill-current" />
                           </div>
-                          <span className={`inline-flex items-center px-3 py-1 rounded-xl text-[10px] font-bold uppercase tracking-wider ${colorClass} border shadow-sm`}>
-                            <TypeIcon className="h-3 w-3 mr-1.5" />
-                            {getTypeLabel(media.media_type)}
-                          </span>
-                          {media.is_featured && (
-                            <span className="text-amber-400">⭐</span>
-                          )}
+                        )}
+                        {/* Overlay au survol */}
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-500 pointer-events-none"></div>
+                      </div>
+
+                      <div className="p-5 relative min-h-[160px] flex flex-col">
+                        {/* Filigrane Icône pour différenciation immédiate */}
+                        <div className="absolute -right-6 -bottom-6 opacity-5 rotate-[15deg] group-hover:rotate-[25deg] group-hover:scale-110 transition-all duration-700 pointer-events-none text-slate-900">
+                          <TypeIcon className="h-32 w-32" />
                         </div>
 
-                        <h3 className="font-poppins font-semibold text-lg text-slate-800 mb-2">
+                        <div className="flex items-center justify-between mb-4 relative z-10">
+                          <span className={`inline-flex items-center px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] ${colorClass} border-2 shadow-sm transition-transform duration-500 group-hover:scale-110`}>
+                            <TypeIcon className="h-3 w-3 mr-2" />
+                            {getTypeLabel(media.media_type)}
+                          </span>
+                        </div>
+
+                        <h3 className="font-poppins font-bold text-lg text-slate-800 mb-2 line-clamp-1 group-hover:text-teal-600 transition-colors duration-300 relative z-10">
                           {media.title}
                         </h3>
 
                         {media.description && (
-                          <p className="font-inter text-slate-500 mb-3 text-sm leading-relaxed line-clamp-3">
+                          <p className="font-inter text-slate-500 mb-4 text-xs leading-relaxed line-clamp-2 italic relative z-10">
                             {media.description}
                           </p>
                         )}
 
-                        <div className="flex items-center justify-between mt-auto pt-3 border-t border-slate-50 text-[10px] uppercase font-bold tracking-wider">
-                          <span className="text-slate-400">
-                             {media.media_files.length} {media.media_files.length > 1 ? 'fichiers' : 'fichier'}
-                          </span>
-                          <span className="text-slate-400">
+                        <div className="flex items-center justify-between mt-auto pt-4 border-t border-slate-50 text-[10px] uppercase font-black tracking-widest relative z-10">
+                          <div className="flex items-center space-x-2 text-slate-400">
+                            <div className={`w-1.5 h-1.5 rounded-full ${media.media_type === 'album' ? 'bg-teal-400' : media.media_type === 'enregistrement' ? 'bg-sky-400' : media.media_type === 'journal' ? 'bg-slate-400' : media.media_type === 'lyrissimot' ? 'bg-indigo-400' : 'bg-gray-400'}`}></div>
+                            <span>{media.media_files.length} {media.media_files.length > 1 ? 'FICHIERS' : 'FICHIER'}</span>
+                          </div>
+                          <span className="text-slate-400 bg-slate-50 px-2 py-1 rounded-lg">
                             {media.media_date
                               ? new Date(media.media_date).toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' })
                               : new Date(media.created_at).toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' })
