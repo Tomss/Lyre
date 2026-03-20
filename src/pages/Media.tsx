@@ -166,15 +166,15 @@ const Media = () => {
         subtitle="Revivez les moments forts de La Lyre : albums, enregistrements et souvenirs."
         backgroundImage={pageHeaders['media'] || "https://images.pexels.com/photos/164743/pexels-photo-164743.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop"}
         anchors={[
-          { label: "À la Une", targetId: "featured", icon: Star, color: "amber" },
-          { label: "Médiathèque", targetId: "library", icon: Image, color: "teal" },
-          { label: "Contribuer", targetId: "contribute", icon: Camera, color: "rose" }
+          { label: "À la Une", targetId: "a-la-une", icon: Star, color: "amber" },
+          { label: "Médiathèque", targetId: "mediatheque", icon: Image, color: "teal" },
+          { label: "Contribuer", targetId: "contribuer", icon: Camera, color: "rose" }
         ]}
       />
 
       {/* Médias mis en avant */}
       {featuredMedia.length > 0 && (
-        <section id="featured" className="scroll-mt-20 py-20 bg-gradient-to-br from-slate-50 via-gray-50 to-teal-50 relative overflow-hidden">
+        <section id="a-la-une" className="scroll-mt-20 py-20 bg-gradient-to-br from-slate-50 via-gray-50 to-teal-50 relative overflow-hidden">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto text-center mb-16">
               <h2 className="font-poppins font-bold text-3xl md:text-5xl text-slate-900 mb-6 relative inline-block">
@@ -239,7 +239,7 @@ const Media = () => {
       )}
 
       {/* Section Médiathèque */}
-      <section id="library" className="scroll-mt-20 py-20 bg-white relative">
+      <section id="mediatheque" className="scroll-mt-20 py-20 bg-white relative">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center mb-16">
             <h2 className="font-poppins font-bold text-3xl md:text-5xl text-slate-900 mb-6 relative inline-block">
@@ -500,7 +500,7 @@ const Media = () => {
       </div>
 
       {/* Section d'appel à contribution - Carte Dark sur fond blanc */}
-      <section id="contribute" className="scroll-mt-20 py-24 bg-white relative overflow-hidden">
+      <section id="contribuer" className="scroll-mt-20 py-24 bg-white relative overflow-hidden">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="max-w-5xl mx-auto">
             {/* Titre Standard (Style Thème) */}
