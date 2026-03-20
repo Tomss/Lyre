@@ -78,7 +78,7 @@ const Media = () => {
       case 'album': return Camera;
       case 'enregistrement': return Music;
       case 'journal': return FileText;
-      case 'lyrissimot': return Music;
+      case 'lyrissimot': return FileText;
       default: return Image;
     }
   };
@@ -476,11 +476,15 @@ const Media = () => {
                 </div>
               )}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 relative z-10">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 relative z-10">
                 {regularMedia.map((media) => {
                   const TypeIcon = getTypeIcon(media.media_type);
+                  const colorClass = getTypeColor(media.media_type);
                   return (
-                    <div key={media.id} className={`rounded-2xl shadow-sm border overflow-hidden hover:shadow-xl hover:-translate-y-2 transition-all duration-500 animate-fade-in group relative ${media.media_type === 'album' ? 'bg-white border-teal-100' : media.media_type === 'enregistrement' ? 'bg-white border-sky-100' : media.media_type === 'journal' ? 'bg-white border-slate-200' : media.media_type === 'lyrissimot' ? 'bg-white border-indigo-100' : 'bg-white border-gray-200'}`}>
+                    <div key={media.id} className={`rounded-3xl shadow-sm border overflow-hidden hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 animate-fade-in group relative bg-white ${media.media_type === 'album' ? 'border-teal-100' : media.media_type === 'enregistrement' ? 'border-sky-100' : media.media_type === 'journal' ? 'border-slate-200' : media.media_type === 'lyrissimot' ? 'border-indigo-100' : 'border-gray-200'}`}>
+                      {/* Barre d'accentuation de couleur */}
+                      <div className={`h-1.5 w-full ${media.media_type === 'album' ? 'bg-teal-500' : media.media_type === 'enregistrement' ? 'bg-sky-500' : media.media_type === 'journal' ? 'bg-slate-500' : media.media_type === 'lyrissimot' ? 'bg-indigo-500' : 'bg-gray-500'}`}></div>
+                      
                       {/* Effet de brillance au survol */}
                       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 z-10"></div>
 
@@ -497,8 +501,8 @@ const Media = () => {
                           <div className="bg-slate-50 p-1.5 rounded-lg">
                             <TypeIcon className="h-4 w-4 text-slate-600" />
                           </div>
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getTypeColor(media.media_type)}`}>
-                            <TypeIcon className="h-3 w-3 mr-1" />
+                          <span className={`inline-flex items-center px-3 py-1 rounded-xl text-[10px] font-bold uppercase tracking-wider ${colorClass} border shadow-sm`}>
+                            <TypeIcon className="h-3 w-3 mr-1.5" />
                             {getTypeLabel(media.media_type)}
                           </span>
                           {media.is_featured && (
@@ -516,12 +520,14 @@ const Media = () => {
                           </p>
                         )}
 
-                        <div className="flex items-center justify-between text-sm text-slate-400">
-                          <span>{media.media_files.length} fichier{media.media_files.length > 1 ? 's' : ''}</span>
-                          <span>
+                        <div className="flex items-center justify-between mt-auto pt-3 border-t border-slate-50 text-[10px] uppercase font-bold tracking-wider">
+                          <span className="text-slate-400">
+                             {media.media_files.length} {media.media_files.length > 1 ? 'fichiers' : 'fichier'}
+                          </span>
+                          <span className="text-slate-400">
                             {media.media_date
-                              ? new Date(media.media_date).toLocaleDateString('fr-FR')
-                              : new Date(media.created_at).toLocaleDateString('fr-FR')
+                              ? new Date(media.media_date).toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' })
+                              : new Date(media.created_at).toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' })
                             }
                           </span>
                         </div>
