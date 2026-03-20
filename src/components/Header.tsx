@@ -67,7 +67,7 @@ const Header = () => {
       label: 'Accueil',
       dropdown: [
         { label: 'Qui sommes-nous ?', path: '/#la-lyre' },
-        { label: 'Nos Actualités', path: '/#news' },
+        { label: 'Nos Actualités', path: '/#actualites' },
         { label: 'Agenda', path: '/#agenda' },
         { label: 'Nos Partenaires', path: '/#partenaires' },
         { label: 'Rejoignez-nous', path: '/#rejoignez-nous' }
@@ -92,8 +92,8 @@ const Header = () => {
       path: '/media',
       label: 'Médias',
       dropdown: [
-        { label: 'Notre Médiathèque', path: '/media#library' },
-        { label: 'Partagez vos souvenirs', path: '/media#contribute' }
+        { label: 'Notre Médiathèque', path: '/media#mediatheque' },
+        { label: 'Partagez vos souvenirs', path: '/media#contribuer' }
       ]
     },
     { path: '/contact', label: 'Contact' },
