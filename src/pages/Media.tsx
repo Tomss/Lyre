@@ -278,7 +278,7 @@ const Media = () => {
       )}
 
       {/* Section Médiathèque - En-tête & Filtres (Fond Blanc) */}
-      <section className="scroll-mt-20 py-20 bg-white relative">
+      <section className="scroll-mt-20 pt-20 pb-16 bg-white relative">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center mb-16">
             <h2 className="font-poppins font-bold text-3xl md:text-5xl text-slate-900 mb-6 relative inline-block">
@@ -287,15 +287,15 @@ const Media = () => {
             </h2>
           </div>
 
-          {/* Barre de filtres et recherche - Style Light Modernisé */}
+          {/* Barre de filtres et recherche - Style Sombre & Compact */}
           {mediaItems.length > 0 && (
-            <div className="max-w-6xl mx-auto">
-              <div className="bg-slate-50/80 backdrop-blur-md rounded-[2.5rem] p-4 lg:p-6 shadow-xl border border-slate-100 space-y-6">
+            <div className="max-w-4xl mx-auto">
+              <div className="bg-slate-900/95 backdrop-blur-2xl rounded-[2.5rem] p-4 lg:p-6 shadow-2xl border border-white/10 space-y-6">
                 <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-6">
                   
                   {/* Filtres par Type */}
                   <div className="flex-1">
-                    <div className="flex items-center space-x-2 text-slate-500 mb-3 ml-2">
+                    <div className="flex items-center space-x-2 text-slate-300 mb-3 ml-2">
                       <Filter className="h-4 w-4" />
                       <span className="text-xs font-bold uppercase tracking-wider">Type de média</span>
                     </div>
@@ -303,11 +303,11 @@ const Media = () => {
                       <button
                         onClick={() => selectType('all')}
                         className={`flex items-center space-x-2 px-5 py-2.5 rounded-2xl text-sm font-semibold transition-all duration-500 ${selectedType === 'all'
-                          ? 'bg-slate-800 text-white shadow-lg shadow-slate-800/20 scale-105'
-                          : 'bg-white text-slate-600 border border-slate-200 hover:border-teal-400 hover:bg-teal-50/50'
+                          ? 'bg-teal-500 text-white shadow-lg shadow-teal-500/30 scale-105'
+                          : 'bg-white/5 text-slate-300 border border-white/10 hover:border-teal-400 hover:bg-white/10'
                           }`}
                       >
-                        <Sparkles className={`h-4 w-4 ${selectedType === 'all' ? 'text-white' : 'text-teal-500'}`} />
+                        <Sparkles className={`h-4 w-4 ${selectedType === 'all' ? 'text-white' : 'text-teal-400'}`} />
                         <span>Tout</span>
                       </button>
                       {[
@@ -321,10 +321,10 @@ const Media = () => {
                           onClick={() => selectType(key)}
                           className={`flex items-center space-x-2 px-5 py-2.5 rounded-2xl text-sm font-semibold transition-all duration-500 group ${selectedType === key
                             ? `bg-${color}-500 text-white shadow-lg shadow-${color}-500/20 scale-105`
-                            : `bg-white text-slate-600 border border-slate-200 hover:border-${color}-400 hover:bg-${color}-50/50`
+                            : `bg-white/5 text-slate-300 border border-white/10 hover:border-${color}-400 hover:bg-white/10`
                             }`}
                         >
-                          <Icon className={`h-4 w-4 ${selectedType === key ? 'text-white' : `text-${color}-500 group-hover:scale-110 transition-transform`}`} />
+                          <Icon className={`h-4 w-4 ${selectedType === key ? 'text-white' : `text-${color}-400 group-hover:scale-110 transition-transform`}`} />
                           <span>{label}</span>
                         </button>
                       ))}
@@ -333,11 +333,11 @@ const Media = () => {
 
                   {/* Filtres par Période */}
                   <div className="lg:w-auto">
-                    <div className="flex items-center space-x-2 text-slate-500 mb-3 ml-2">
+                    <div className="flex items-center space-x-2 text-slate-300 mb-3 ml-2">
                       <Calendar className="h-4 w-4" />
                       <span className="text-xs font-bold uppercase tracking-wider">Période</span>
                     </div>
-                    <div className="inline-flex p-1.5 bg-slate-100/50 rounded-2xl border border-slate-200">
+                    <div className="inline-flex p-1.5 bg-slate-950/50 rounded-2xl border border-white/5">
                       {[
                         { key: 'all', label: 'Tout' },
                         { key: '6m', label: '6 mois' },
@@ -347,8 +347,8 @@ const Media = () => {
                           key={key}
                           onClick={() => setSelectedPeriod(key as any)}
                           className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300 ${selectedPeriod === key
-                            ? 'bg-white text-teal-600 shadow-sm'
-                            : 'text-slate-500 hover:text-slate-800'
+                            ? 'bg-gradient-to-r from-teal-500 to-sky-500 text-white shadow-sm'
+                            : 'text-slate-400 hover:text-white'
                             }`}
                         >
                           {label}
@@ -359,7 +359,7 @@ const Media = () => {
 
                   {/* Recherche */}
                   <div className="lg:w-72">
-                    <div className="flex items-center space-x-2 text-slate-500 mb-3 ml-2">
+                    <div className="flex items-center space-x-2 text-slate-300 mb-3 ml-2">
                       <Search className="h-4 w-4" />
                       <span className="text-xs font-bold uppercase tracking-wider">Recherche</span>
                     </div>
@@ -369,18 +369,18 @@ const Media = () => {
                         placeholder="Un titre, un souvenir..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-5 pr-12 py-3 bg-white border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-teal-400 transition-all duration-500 placeholder-slate-400 text-slate-800 text-sm"
+                        className="w-full pl-5 pr-12 py-3 bg-slate-950/50 border border-white/10 rounded-2xl focus:outline-none focus:ring-2 focus:ring-teal-400 focus:bg-slate-950 transition-all duration-500 placeholder-slate-500 text-white text-sm"
                       />
                       {searchTerm ? (
                         <button
                           onClick={() => setSearchTerm('')}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-slate-300 hover:text-rose-500 transition-colors"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-slate-500 hover:text-rose-500 transition-colors"
                         >
                           <X className="h-4 w-4" />
                         </button>
                       ) : (
                         <div className="absolute right-5 top-1/2 -translate-y-1/2 group-focus-within:scale-110 transition-transform">
-                          <Search className="h-4 w-4 text-slate-300" />
+                          <Search className="h-4 w-4 text-slate-600" />
                         </div>
                       )}
                     </div>
@@ -389,22 +389,22 @@ const Media = () => {
 
                 {/* Résumé des filtres actifs */}
                 {(selectedType !== 'all' || searchTerm || selectedPeriod !== 'all') && (
-                  <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-slate-100">
+                  <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-white/5">
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Filtres actifs :</span>
-                      <div className="flex wrap gap-2">
+                      <span className="text-[10px] font-black uppercase text-slate-500 tracking-[0.2em]">Filtres actifs :</span>
+                      <div className="flex flex-wrap gap-2">
                         {selectedType !== 'all' && (
-                          <span className="inline-flex items-center px-3 py-1 rounded-full bg-teal-50 text-teal-600 text-[10px] font-bold border border-teal-100">
+                          <span className="inline-flex items-center px-3 py-1 rounded-full bg-teal-500/10 text-teal-400 text-[10px] font-bold border border-teal-500/20">
                             {getTypeLabel(selectedType)}
                           </span>
                         )}
                         {selectedPeriod !== 'all' && (
-                          <span className="inline-flex items-center px-3 py-1 rounded-full bg-amber-50 text-amber-600 text-[10px] font-bold border border-amber-100">
+                          <span className="inline-flex items-center px-3 py-1 rounded-full bg-amber-500/10 text-amber-400 text-[10px] font-bold border border-amber-500/20">
                             {selectedPeriod === '6m' ? '6 derniers mois' : 'Dernière année'}
                           </span>
                         )}
                         {searchTerm && (
-                          <span className="inline-flex items-center px-3 py-1 rounded-full bg-slate-50 text-slate-600 text-[10px] font-bold italic border border-slate-200">
+                          <span className="inline-flex items-center px-3 py-1 rounded-full bg-white/5 text-slate-300 text-[10px] font-bold italic border border-white/10">
                             "{searchTerm}"
                           </span>
                         )}
@@ -416,7 +416,7 @@ const Media = () => {
                         setSearchTerm('');
                         setSelectedPeriod('all');
                       }}
-                      className="text-[10px] font-black uppercase text-rose-400 hover:text-rose-600 transition-colors tracking-[0.2em] flex items-center space-x-1"
+                      className="text-[10px] font-black uppercase text-rose-400 hover:text-rose-500 transition-colors tracking-[0.2em] flex items-center space-x-1"
                     >
                       <X className="h-3 w-3" />
                       <span>Réinitialiser tout</span>
