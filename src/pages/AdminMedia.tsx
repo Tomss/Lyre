@@ -128,17 +128,17 @@ const AdminMedia = () => {
         if (!response.ok) {
           let errorMessage = `Echec de l'upload pour ${file.name}`;
           try {
-            const errorData = await response.json();
-            errorMessage = errorData.message || errorMessage;
-          } catch (e) {
-            try {
-              const errorText = await response.text();
-              errorMessage = errorText || errorMessage;
-            } catch (textError) {
-              errorMessage = `Erreur serveur (${response.status})`;
-            }
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorData.message || errorMessage;
+        } catch (e) {
+          try {
+            const errorText = await response.text();
+            errorMessage = errorText || errorMessage;
+          } catch (textError) {
+            errorMessage = `Erreur serveur (${response.status})`;
           }
-          throw new Error(errorMessage);
+        }
+        throw new Error(errorMessage);
         }
 
         const result = await response.json();
