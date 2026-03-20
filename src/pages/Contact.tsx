@@ -84,7 +84,7 @@ const Contact = () => {
           {/* Section Title */}
           <div className="max-w-4xl mx-auto text-center mb-16">
             <h2 className="font-poppins font-bold text-3xl md:text-5xl text-slate-900 mb-6 relative inline-block">
-              Nous Écrire
+              Nous écrire
               <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-16 h-1 bg-teal-500 rounded-full"></div>
             </h2>
           </div>
@@ -108,7 +108,7 @@ const Contact = () => {
                   {[
                     { icon: CheckCircle, title: "Inscriptions ouvertes", text: "Toute l'année pour tous les niveaux", color: "text-teal-500", bg: "bg-teal-50" },
                     { icon: Clock, title: "Réponse rapide", text: "Nous traitons vos messages sous 48h", color: "text-cyan-500", bg: "bg-cyan-50" },
-                    { icon: Heart, title: "Venez nous rencontrer", text: "À l'occasion de nos portes ouvertes ou répétitions", color: "text-emerald-500", bg: "bg-emerald-50" }
+                    { icon: Heart, title: "Venez nous rencontrer", text: "À l'occasion de nos portes ouvertes ou manifestations", color: "text-emerald-500", bg: "bg-emerald-50" }
                   ].map((item, i) => (
                     <div key={i} className="flex items-start space-x-4 p-4 rounded-2xl bg-slate-50 border border-slate-100/50 hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300">
                       <div className={`${item.bg} p-3 rounded-xl shadow-inner`}>
@@ -316,7 +316,7 @@ const Contact = () => {
                 {/* Carte interactive */}
                 <div className="h-[500px] lg:h-auto relative bg-slate-100">
                    <iframe
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2679.123!2d5.3456!3d47.8901!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47f1e1234567890a%3A0x1234567890abcdef!2s1%20bis%20Rue%20Jean%20Jaur%C3%A8s%2C%2052600%20Chalindrey%2C%20France!5e0!3m2!1sfr!2sfr!4v1234567890!5m2!1sfr!2sfr"
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2679.1303867055723!2d5.437683976865664!3d47.80558897453488!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47ed2fe83730b387%3A0x880981517cf0a7cd!2sLyre%20Cheminote%20et%20Municipale!5e0!3m2!1sfr!2sfr!4v1711230000000!5m2!1sfr!2sfr"
                     width="100%"
                     height="100%"
                     style={{ border: 0 }}
