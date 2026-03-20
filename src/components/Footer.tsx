@@ -1,12 +1,14 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import { Music, Facebook, Instagram, Youtube } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
+import { BASE_URL } from '../config';
 
 const Footer = () => {
+  const { settings } = useTheme();
   const quickLinks = [
     { path: '/', label: 'Accueil' },
     { path: '/school', label: 'L\'école' },
-    { path: '/events', label: 'Événements' },
+    { path: '/orchestres', label: 'Orchestres' },
     { path: '/media', label: 'Médias' },
     { path: '/contact', label: 'Contact' },
   ];
@@ -22,17 +24,29 @@ const Footer = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Column 1: School Info */}
-          <div className="space-y-4">
-            <div className="flex items-center space-x-2">
-              <Music className="h-8 w-8 text-accent" />
-              <span className="font-poppins font-bold text-xl">La Lyre</span>
+          <div className="space-y-6">
+            <Link to="/" className="flex items-center space-x-2">
+              {(settings?.header_logo_url || settings?.site_logo_url) ? (
+                <img 
+                  src={settings.header_logo_url?.startsWith('http') ? settings.header_logo_url : (settings.header_logo_url ? `${BASE_URL}${settings.header_logo_url}` : (settings.site_logo_url?.startsWith('http') ? settings.site_logo_url : `${BASE_URL}${settings.site_logo_url}`))} 
+                  alt="La Lyre" 
+                  className="h-12 w-auto object-contain" 
+                />
+              ) : (
+                <>
+                  <Music className="h-8 w-8 text-teal-400" />
+                  <span className="font-poppins font-bold text-xl text-white">La Lyre</span>
+                </>
+              )}
+            </Link>
+            <div className="space-y-2">
+              <p className="font-inter text-gray-300 font-medium">
+                École de Musique La Lyre
+              </p>
+              <p className="font-inter text-sm text-gray-400 italic">
+                Exprimez la musique qui est en vous
+              </p>
             </div>
-            <p className="font-inter text-gray-300 leading-relaxed">
-              École de Musique La Lyre
-            </p>
-            <p className="font-inter text-sm text-gray-400">
-              Exprimez la musique qui est en vous
-            </p>
           </div>
 
           {/* Column 2: Quick Links */}
