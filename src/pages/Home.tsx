@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react';
-import { Users, Calendar, Music2 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
 import PartnersSection from '../components/PartnersSection';
@@ -194,46 +193,6 @@ const Home = () => {
       {/* Partners Section */}
       <PartnersSection />
 
-      {/* Section Rejoignez-nous */}
-      <section id="rejoignez-nous" className="scroll-mt-20 py-20 bg-white relative overflow-hidden">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="max-w-4xl mx-auto text-center relative z-10">
-            <div className="bg-gradient-to-br from-teal-500 to-cyan-600 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-8 shadow-xl shadow-teal-500/20">
-              <Music2 className="h-10 w-10 text-white" />
-            </div>
-            <h2 className="font-poppins font-bold text-3xl text-slate-800 mb-6">Rejoignez-nous</h2>
-            <p className="font-inter text-slate-600 leading-relaxed mb-6">
-              Chaque concert est une nouvelle page de notre histoire musicale. Venez partager ces moments d'émotion et de partage avec La Lyre Cheminote et Municipale de Chalindrey.
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-              <div className="text-center group">
-                <div className="bg-white border border-slate-100 rounded-3xl p-8 mb-4 transition-all duration-500 group-hover:-translate-y-3 group-hover:shadow-2xl group-hover:border-teal-200 relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-br from-teal-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                  <Calendar className="h-10 w-10 text-slate-400 mx-auto mb-4 group-hover:text-teal-500 group-hover:scale-110 transition-all duration-500" />
-                  <h3 className="font-bold text-slate-800 text-lg mb-2">Concerts réguliers</h3>
-                  <p className="text-slate-500 text-sm">Plusieurs représentations par an</p>
-                </div>
-              </div>
-              <div className="text-center group">
-                <div className="bg-white border border-slate-100 rounded-3xl p-8 mb-4 transition-all duration-500 group-hover:-translate-y-3 group-hover:shadow-2xl group-hover:border-indigo-200 relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                  <Users className="h-10 w-10 text-slate-400 mx-auto mb-4 group-hover:text-indigo-500 group-hover:scale-110 transition-all duration-500" />
-                  <h3 className="font-bold text-slate-800 text-lg mb-2">Tous niveaux</h3>
-                  <p className="text-slate-500 text-sm">De l'éveil au niveau supérieur</p>
-                </div>
-              </div>
-              <div className="text-center group">
-                <div className="bg-white border border-slate-100 rounded-3xl p-8 mb-4 transition-all duration-500 group-hover:-translate-y-3 group-hover:shadow-2xl group-hover:border-cyan-200 relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-br from-cyan-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                  <Music2 className="h-10 w-10 text-slate-400 mx-auto mb-4 group-hover:text-cyan-500 group-hover:scale-110 transition-all duration-500" />
-                  <h3 className="font-bold text-slate-800 text-lg mb-2">Répertoire varié</h3>
-                  <p className="text-slate-500 text-sm">Classique, moderne, populaire</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section >
     </div >
   );
 };
