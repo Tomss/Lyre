@@ -111,7 +111,7 @@ const School = () => {
 
                {/* Content - Clean & Balanced */}
                <div className="lg:w-2/3 text-center lg:text-left space-y-10 order-1 lg:order-2">
-                  <p className="text-lg md:text-xl text-slate-600 leading-relaxed font-poppins font-light">
+                  <p className="text-base md:text-lg text-slate-600 leading-relaxed font-poppins font-light">
                     L'école propose une formation musicale du <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 font-bold">niveau Eveil</span> au <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-600 font-bold">niveau fin de 2nd cycle</span>.
                     L’enseignement est dispensé par des professeurs titulaires d’un D.E. ou d’un D.N.S.P.M., diplômés de Conservatoires à Rayonnement Régional ou Supérieur, passionnés par la musique et la pédagogie.
                   </p>
@@ -119,21 +119,21 @@ const School = () => {
                   <div className="space-y-6">
                     <div className="flex flex-col lg:flex-row lg:items-center gap-4 group">
                       <div className="h-px w-8 bg-blue-500/40 group-hover:w-12 group-hover:bg-blue-500 transition-all duration-500 rounded-full hidden lg:block"></div>
-                      <p className="text-xl md:text-2xl text-slate-800 font-poppins font-medium leading-relaxed">
+                      <p className="text-lg md:text-xl text-slate-800 font-poppins font-medium leading-relaxed">
                         Les cours suivent le rythme scolaire : un cours de solfège, une demi-heure d’instrument et une activité orchestrale par semaine.
                       </p>
                     </div>
                     
                     <div className="flex flex-col lg:flex-row lg:items-center gap-4 group">
                       <div className="h-px w-8 bg-teal-500/40 group-hover:w-12 group-hover:bg-teal-500 transition-all duration-500 rounded-full hidden lg:block"></div>
-                      <p className="text-xl md:text-2xl text-slate-800 font-poppins font-medium leading-relaxed">
+                      <p className="text-lg md:text-xl text-slate-800 font-poppins font-medium leading-relaxed">
                         Aux activités d’éveil ludiques, succède l’intégration progressive dans les orchestres d’élèves, jusqu’à l’accession aux rangs du <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-emerald-600 font-extrabold uppercase tracking-wide">Grand Orchestre d’Harmonie</span>.
                       </p>
                     </div>
                   </div>
 
                   <div className="pt-6 border-t border-slate-50 inline-block">
-                    <p className="italic text-teal-700/80 text-lg md:text-xl font-medium">
+                    <p className="italic text-teal-700/80 text-base md:text-lg font-medium">
                       Envie de faire de la musique, de nous rencontrer ? Marie-Christine et les professeurs sont présents pour vous accueillir !
                     </p>
                   </div>
