@@ -96,7 +96,14 @@ const Header = () => {
         { label: 'Partagez vos souvenirs', path: '/media#contribuer' }
       ]
     },
-    { path: '/contact', label: 'Contact' },
+    {
+      path: '/contact',
+      label: 'Contact',
+      dropdown: [
+        { label: 'Nous écrire', path: '/contact#formulaire' },
+        { label: 'Où nous trouver ?', path: '/contact#localisation' }
+      ]
+    },
   ];
 
   // Enhanced precise smooth scroll handler
@@ -203,6 +210,11 @@ const Header = () => {
                               const targetId = subItem.path.split('#')[1];
                               window.history.pushState({}, '', subItem.path);
                               handleScrollToSection(targetId);
+                            } else if (location.pathname === '/contact' && subItem.path.startsWith('/contact#')) {
+                              e.preventDefault();
+                              const targetId = subItem.path.split('#')[1];
+                              window.history.pushState({}, '', subItem.path);
+                              handleScrollToSection(targetId);
                             }
                           }}
                           className="relative flex items-center px-4 py-3 mx-1 my-1 text-sm font-medium text-slate-300 rounded-xl transition-all duration-300 hover:text-white group/item overflow-hidden"
@@ -298,6 +310,11 @@ const Header = () => {
                               window.history.pushState({}, '', subItem.path);
                               handleScrollToSection(targetId);
                             } else if (location.pathname === '/school' && subItem.path.startsWith('/school#')) {
+                              e.preventDefault();
+                              const targetId = subItem.path.split('#')[1];
+                              window.history.pushState({}, '', subItem.path);
+                              handleScrollToSection(targetId);
+                            } else if (location.pathname === '/contact' && subItem.path.startsWith('/contact#')) {
                               e.preventDefault();
                               const targetId = subItem.path.split('#')[1];
                               window.history.pushState({}, '', subItem.path);
