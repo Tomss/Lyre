@@ -115,19 +115,21 @@ const AdminMedia = () => {
   const removeExistingFile = (fileId: string) => setFilesToRemove(prev => [...prev, fileId]);
 
   const uploadFiles = async (files: File[]): Promise<any[]> => {
-    const uploadedFiles = await Promise.all(files.map(async (file, index) => {
-      try {
+    const uploadedFiles = await Promise.all(
+      files.map(async (file, index) => {
         const fileFormData = new FormData();
         fileFormData.append('file', file);
         const response = await fetch(`${API_URL}/upload`, {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}` },
+          headers: { Authorization: `Bearer ${token}` },
           body: fileFormData,
         });
+
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.message || `Echec de l'upload pour ${file.name}`);
         }
+
         const result = await response.json();
         return {
           fileName: file.name,
@@ -137,12 +139,9 @@ const AdminMedia = () => {
           altText: null,
           sortOrder: index,
         };
-      } catch (error: any) {
-        showNotification(error.message || `Erreur d'upload pour ${file.name}`, 'error');
-        return null;
-      }
-    }));
-    return uploadedFiles.filter(f => f !== null);
+      })
+    );
+    return uploadedFiles;
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -617,7 +616,7 @@ const AdminMedia = () => {
 
         {/* Notification */}
         {notification.show && (
-          <div className={`fixed top-5 right-5 p-4 rounded-lg shadow-lg text-white ${notification.type === 'success' ? 'bg-green-500' : 'bg-red-500'}`}>
+          <div className={`fixed top-5 right-5 p-4 rounded-lg shadow-lg text-white z-[100] animate-in fade-in slide-in-from-right-5 ${notification.type === 'success' ? 'bg-green-500' : 'bg-red-500'}`}>
             {notification.message}
           </div>
         )}
