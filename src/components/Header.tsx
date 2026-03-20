@@ -9,6 +9,7 @@ const Header = () => {
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const location = useLocation();
   const { currentUser, logout } = useAuth();
   const { settings } = useTheme();
@@ -147,7 +148,12 @@ const Header = () => {
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-8">
             {navLinks.map((link) => (
-              <div key={link.path} className="relative group">
+              <div
+                key={link.path}
+                className="relative group"
+                onMouseEnter={() => link.dropdown && setActiveDropdown(link.label)}
+                onMouseLeave={() => setActiveDropdown(null)}
+              >
                 <Link
                   to={link.path}
                   onClick={() => {
@@ -169,7 +175,8 @@ const Header = () => {
 
                 {/* Dropdown Menu */}
                 {link.dropdown && (
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 pt-6 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform origin-top translate-y-4 group-hover:translate-y-0">
+                  <div className={`absolute top-full left-1/2 -translate-x-1/2 pt-6 transition-all duration-300 transform origin-top ${activeDropdown === link.label ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible translate-y-4'
+                    }`}>
                     <div className="relative bg-slate-950/80 backdrop-blur-xl rounded-2xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.7)] border border-teal-500/20 p-3 w-[260px] overflow-hidden">
                       {/* Glowing orb effect in background */}
                       <div className="absolute -top-10 -right-10 w-32 h-32 bg-teal-500/10 rounded-full blur-2xl pointer-events-none"></div>
@@ -179,6 +186,7 @@ const Header = () => {
                           key={subItem.path}
                           to={subItem.path}
                           onClick={(e) => {
+                            setActiveDropdown(null); // Force close dropdown
                             if (location.pathname === '/' && subItem.path.startsWith('/#')) {
                               e.preventDefault();
                               const targetId = subItem.path.substring(2);
