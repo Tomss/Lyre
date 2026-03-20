@@ -277,8 +277,8 @@ const Media = () => {
         </section>
       )}
 
-      {/* Section Médiathèque - En-tête & Filtres (Fond Blanc) */}
-      <section className="scroll-mt-20 pt-20 pb-16 bg-white relative">
+      {/* Section Médiathèque - Tout sur Fond Blanc */}
+      <section id="library" className="scroll-mt-20 py-20 bg-white relative">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center mb-16">
             <h2 className="font-poppins font-bold text-3xl md:text-5xl text-slate-900 mb-6 relative inline-block">
@@ -287,156 +287,149 @@ const Media = () => {
             </h2>
           </div>
 
-          {/* Barre de filtres et recherche - Style Sombre & Compact */}
+          {/* Barre de filtres et recherche - Style Sombre & Largeur Standard (Alignée Cards) */}
           {mediaItems.length > 0 && (
-            <div className="max-w-4xl mx-auto">
-              <div className="bg-slate-900/95 backdrop-blur-2xl rounded-[2.5rem] p-4 lg:p-6 shadow-2xl border border-white/10 space-y-6">
-                <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-6">
-                  
-                  {/* Filtres par Type */}
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-2 text-slate-300 mb-3 ml-2">
-                      <Filter className="h-4 w-4" />
-                      <span className="text-xs font-bold uppercase tracking-wider">Type de média</span>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <button
-                        onClick={() => selectType('all')}
-                        className={`flex items-center space-x-2 px-5 py-2.5 rounded-2xl text-sm font-semibold transition-all duration-500 ${selectedType === 'all'
-                          ? 'bg-teal-500 text-white shadow-lg shadow-teal-500/30 scale-105'
-                          : 'bg-white/5 text-slate-300 border border-white/10 hover:border-teal-400 hover:bg-white/10'
-                          }`}
-                      >
-                        <Sparkles className={`h-4 w-4 ${selectedType === 'all' ? 'text-white' : 'text-teal-400'}`} />
-                        <span>Tout</span>
-                      </button>
-                      {[
-                        { key: 'album', label: 'Albums', icon: Camera, color: 'teal' },
-                        { key: 'enregistrement', label: 'Audios', icon: Music, color: 'sky' },
-                        { key: 'journal', label: 'Presse', icon: FileText, color: 'slate' },
-                        { key: 'lyrissimot', label: 'Lyrissimots', icon: Type, color: 'indigo' }
-                      ].map(({ key, label, icon: Icon, color }) => (
+            <div className="mb-16 relative z-10">
+              <div className="w-full">
+                <div className="bg-slate-900/95 backdrop-blur-2xl rounded-[2.5rem] p-4 lg:p-6 shadow-2xl border border-white/10 space-y-6">
+                  <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-6">
+                    
+                    {/* Filtres par Type */}
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-2 text-slate-300 mb-3 ml-2">
+                        <Filter className="h-4 w-4" />
+                        <span className="text-xs font-bold uppercase tracking-wider">Type de média</span>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2">
                         <button
-                          key={key}
-                          onClick={() => selectType(key)}
-                          className={`flex items-center space-x-2 px-5 py-2.5 rounded-2xl text-sm font-semibold transition-all duration-500 group ${selectedType === key
-                            ? `bg-${color}-500 text-white shadow-lg shadow-${color}-500/20 scale-105`
-                            : `bg-white/5 text-slate-300 border border-white/10 hover:border-${color}-400 hover:bg-white/10`
+                          onClick={() => selectType('all')}
+                          className={`flex items-center space-x-2 px-5 py-2.5 rounded-2xl text-sm font-semibold transition-all duration-500 ${selectedType === 'all'
+                            ? 'bg-teal-500 text-white shadow-lg shadow-teal-500/30 scale-105'
+                            : 'bg-white/5 text-slate-300 border border-white/10 hover:border-teal-400 hover:bg-white/10'
                             }`}
                         >
-                          <Icon className={`h-4 w-4 ${selectedType === key ? 'text-white' : `text-${color}-400 group-hover:scale-110 transition-transform`}`} />
-                          <span>{label}</span>
+                          <Sparkles className={`h-4 w-4 ${selectedType === 'all' ? 'text-white' : 'text-teal-400'}`} />
+                          <span>Tout</span>
                         </button>
-                      ))}
+                        {[
+                          { key: 'album', label: 'Albums', icon: Camera, color: 'teal' },
+                          { key: 'enregistrement', label: 'Audios', icon: Music, color: 'sky' },
+                          { key: 'journal', label: 'Presse', icon: FileText, color: 'slate' },
+                          { key: 'lyrissimot', label: 'Lyrissimots', icon: Type, color: 'indigo' }
+                        ].map(({ key, label, icon: Icon, color }) => (
+                          <button
+                            key={key}
+                            onClick={() => selectType(key)}
+                            className={`flex items-center space-x-2 px-5 py-2.5 rounded-2xl text-sm font-semibold transition-all duration-500 group ${selectedType === key
+                              ? `bg-${color}-500 text-white shadow-lg shadow-${color}-500/20 scale-105`
+                              : `bg-white/5 text-slate-300 border border-white/10 hover:border-${color}-400 hover:bg-white/10`
+                              }`}
+                          >
+                            <Icon className={`h-4 w-4 ${selectedType === key ? 'text-white' : `text-${color}-400 group-hover:scale-110 transition-transform`}`} />
+                            <span>{label}</span>
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Filtres par Période */}
-                  <div className="lg:w-auto">
-                    <div className="flex items-center space-x-2 text-slate-300 mb-3 ml-2">
-                      <Calendar className="h-4 w-4" />
-                      <span className="text-xs font-bold uppercase tracking-wider">Période</span>
+                    {/* Filtres par Période */}
+                    <div className="lg:w-auto">
+                      <div className="flex items-center space-x-2 text-slate-300 mb-3 ml-2">
+                        <Calendar className="h-4 w-4" />
+                        <span className="text-xs font-bold uppercase tracking-wider">Période</span>
+                      </div>
+                      <div className="inline-flex p-1.5 bg-slate-950/50 rounded-2xl border border-white/5">
+                        {[
+                          { key: 'all', label: 'Tout' },
+                          { key: '6m', label: '6 mois' },
+                          { key: '1y', label: '1 an' }
+                        ].map(({ key, label }) => (
+                          <button
+                            key={key}
+                            onClick={() => setSelectedPeriod(key as any)}
+                            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300 ${selectedPeriod === key
+                              ? 'bg-gradient-to-r from-teal-500 to-sky-500 text-white shadow-sm'
+                              : 'text-slate-400 hover:text-white'
+                              }`}
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                    <div className="inline-flex p-1.5 bg-slate-950/50 rounded-2xl border border-white/5">
-                      {[
-                        { key: 'all', label: 'Tout' },
-                        { key: '6m', label: '6 mois' },
-                        { key: '1y', label: '1 an' }
-                      ].map(({ key, label }) => (
-                        <button
-                          key={key}
-                          onClick={() => setSelectedPeriod(key as any)}
-                          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300 ${selectedPeriod === key
-                            ? 'bg-gradient-to-r from-teal-500 to-sky-500 text-white shadow-sm'
-                            : 'text-slate-400 hover:text-white'
-                            }`}
-                        >
-                          {label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
 
-                  {/* Recherche */}
-                  <div className="lg:w-72">
-                    <div className="flex items-center space-x-2 text-slate-300 mb-3 ml-2">
-                      <Search className="h-4 w-4" />
-                      <span className="text-xs font-bold uppercase tracking-wider">Recherche</span>
-                    </div>
-                    <div className="relative group">
-                      <input
-                        type="text"
-                        placeholder="Un titre, un souvenir..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-5 pr-12 py-3 bg-slate-950/50 border border-white/10 rounded-2xl focus:outline-none focus:ring-2 focus:ring-teal-400 focus:bg-slate-950 transition-all duration-500 placeholder-slate-500 text-white text-sm"
-                      />
-                      {searchTerm ? (
-                        <button
-                          onClick={() => setSearchTerm('')}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-slate-500 hover:text-rose-500 transition-colors"
-                        >
-                          <X className="h-4 w-4" />
-                        </button>
-                      ) : (
-                        <div className="absolute right-5 top-1/2 -translate-y-1/2 group-focus-within:scale-110 transition-transform">
-                          <Search className="h-4 w-4 text-slate-600" />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Résumé des filtres actifs */}
-                {(selectedType !== 'all' || searchTerm || selectedPeriod !== 'all') && (
-                  <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-white/5">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-black uppercase text-slate-500 tracking-[0.2em]">Filtres actifs :</span>
-                      <div className="flex flex-wrap gap-2">
-                        {selectedType !== 'all' && (
-                          <span className="inline-flex items-center px-3 py-1 rounded-full bg-teal-500/10 text-teal-400 text-[10px] font-bold border border-teal-500/20">
-                            {getTypeLabel(selectedType)}
-                          </span>
-                        )}
-                        {selectedPeriod !== 'all' && (
-                          <span className="inline-flex items-center px-3 py-1 rounded-full bg-amber-500/10 text-amber-400 text-[10px] font-bold border border-amber-500/20">
-                            {selectedPeriod === '6m' ? '6 derniers mois' : 'Dernière année'}
-                          </span>
-                        )}
-                        {searchTerm && (
-                          <span className="inline-flex items-center px-3 py-1 rounded-full bg-white/5 text-slate-300 text-[10px] font-bold italic border border-white/10">
-                            "{searchTerm}"
-                          </span>
+                    {/* Recherche */}
+                    <div className="lg:w-72">
+                      <div className="flex items-center space-x-2 text-slate-300 mb-3 ml-2">
+                        <Search className="h-4 w-4" />
+                        <span className="text-xs font-bold uppercase tracking-wider">Recherche</span>
+                      </div>
+                      <div className="relative group">
+                        <input
+                          type="text"
+                          placeholder="Un titre, un souvenir..."
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          className="w-full pl-5 pr-12 py-3 bg-slate-950/50 border border-white/10 rounded-2xl focus:outline-none focus:ring-2 focus:ring-teal-400 focus:bg-slate-950 transition-all duration-500 placeholder-slate-500 text-white text-sm"
+                        />
+                        {searchTerm ? (
+                          <button
+                            onClick={() => setSearchTerm('')}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-slate-500 hover:text-rose-500 transition-colors"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        ) : (
+                          <div className="absolute right-5 top-1/2 -translate-y-1/2 group-focus-within:scale-110 transition-transform">
+                            <Search className="h-4 w-4 text-slate-600" />
+                          </div>
                         )}
                       </div>
                     </div>
-                    <button
-                      onClick={() => {
-                        setSelectedType('all');
-                        setSearchTerm('');
-                        setSelectedPeriod('all');
-                      }}
-                      className="text-[10px] font-black uppercase text-rose-400 hover:text-rose-500 transition-colors tracking-[0.2em] flex items-center space-x-1"
-                    >
-                      <X className="h-3 w-3" />
-                      <span>Réinitialiser tout</span>
-                    </button>
                   </div>
-                )}
+
+                  {/* Résumé des filtres actifs */}
+                  {(selectedType !== 'all' || searchTerm || selectedPeriod !== 'all') && (
+                    <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-white/5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-black uppercase text-slate-500 tracking-[0.2em]">Filtres actifs :</span>
+                        <div className="flex flex-wrap gap-2">
+                          {selectedType !== 'all' && (
+                            <span className="inline-flex items-center px-3 py-1 rounded-full bg-teal-500/10 text-teal-400 text-[10px] font-bold border border-teal-500/20">
+                              {getTypeLabel(selectedType)}
+                            </span>
+                          )}
+                          {selectedPeriod !== 'all' && (
+                            <span className="inline-flex items-center px-3 py-1 rounded-full bg-amber-500/10 text-amber-400 text-[10px] font-bold border border-amber-500/20">
+                              {selectedPeriod === '6m' ? '6 derniers mois' : 'Dernière année'}
+                            </span>
+                          )}
+                          {searchTerm && (
+                            <span className="inline-flex items-center px-3 py-1 rounded-full bg-white/5 text-slate-300 text-[10px] font-bold italic border border-white/10">
+                              "{searchTerm}"
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setSelectedType('all');
+                          setSearchTerm('');
+                          setSelectedPeriod('all');
+                        }}
+                        className="text-[10px] font-black uppercase text-rose-400 hover:text-rose-500 transition-colors tracking-[0.2em] flex items-center space-x-1"
+                      >
+                        <X className="h-3 w-3" />
+                        <span>Réinitialiser tout</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}
-        </div>
-      </section>
 
-      {/* Zone Grille de Médias - Fond Sombre Premium */}
-      <section id="library" className="scroll-mt-20 py-24 bg-slate-900 relative overflow-hidden">
-        {/* Motif Cubes Discret comme dans School.tsx */}
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
-        {/* Ligne de séparation dégradée teal en haut */}
-        <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-teal-500/50 to-transparent"></div>
-
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="w-full relative z-10">
 
           {loading ? (
             <div className="text-center animate-fade-in relative z-10">
@@ -455,9 +448,9 @@ const Media = () => {
             <>
               {featuredMedia.length > 0 && (
                 <div className="max-w-4xl mx-auto text-center mb-16 relative z-10">
-                  <h2 className="font-poppins font-bold text-3xl md:text-5xl text-white mb-6 relative inline-block">
+                  <h2 className="font-poppins font-bold text-3xl md:text-5xl text-slate-900 mb-6 relative inline-block">
                     Tous nos médias
-                    <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-16 h-1 bg-teal-500 rounded-full shadow-[0_0_15px_rgba(20,184,166,0.5)]"></div>
+                    <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-16 h-1 bg-teal-500 rounded-full"></div>
                   </h2>
                 </div>
               )}
@@ -466,12 +459,12 @@ const Media = () => {
                 {regularMedia.map((media) => {
                   const TypeIcon = getTypeIcon(media.media_type);
                   return (
-                    <div key={media.id} className="group relative bg-white/5 backdrop-blur-md rounded-[2rem] border border-white/10 overflow-hidden hover:-translate-y-2 transition-all duration-500 hover:bg-white/10 hover:border-white/20 shadow-2xl animate-fade-in">
+                    <div key={media.id} className="group relative bg-white rounded-[2rem] border border-slate-200 overflow-hidden hover:-translate-y-2 transition-all duration-500 hover:shadow-2xl shadow-lg animate-fade-in group">
                       {/* Barre d'accentuation haute */}
                       <div className={`h-1.5 w-full transition-all duration-500 group-hover:h-3 ${media.media_type === 'album' ? 'bg-teal-500' : media.media_type === 'enregistrement' ? 'bg-sky-500' : media.media_type === 'journal' ? 'bg-slate-500' : media.media_type === 'lyrissimot' ? 'bg-indigo-500' : 'bg-gray-500'}`}></div>
                       
                       {/* Section Image / Preview avec Badge Overlay */}
-                      <div className="relative aspect-square overflow-hidden bg-slate-950">
+                      <div className="relative aspect-square overflow-hidden bg-slate-50">
                         <MediaPreview
                           files={media.media_files}
                           mediaType={media.media_type}
@@ -481,7 +474,7 @@ const Media = () => {
                         
                         {/* Badge de Type en Overlay */}
                         <div className="absolute top-3 left-3 z-20">
-                          <span className={`inline-flex items-center px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-[0.1em] ${media.media_type === 'album' ? 'bg-teal-500/20 text-teal-400 border-teal-500/30' : media.media_type === 'enregistrement' ? 'bg-sky-500/20 text-sky-400 border-sky-500/30' : media.media_type === 'journal' ? 'bg-slate-500/20 text-slate-400 border-slate-500/30' : 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30'} border shadow-lg backdrop-blur-xl bg-slate-900/60`}>
+                          <span className={`inline-flex items-center px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-[0.1em] ${media.media_type === 'album' ? 'bg-teal-500 text-white' : media.media_type === 'enregistrement' ? 'bg-sky-500 text-white' : media.media_type === 'journal' ? 'bg-slate-500 text-white' : 'bg-indigo-500 text-white'} shadow-lg backdrop-blur-xl`}>
                             <TypeIcon className="h-3.5 w-3.5 mr-1.5" />
                             {getTypeLabel(media.media_type)}
                           </span>
@@ -494,16 +487,16 @@ const Media = () => {
                         )}
                         
                         {/* Overlay au survol */}
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-500 pointer-events-none"></div>
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-500 pointer-events-none"></div>
                       </div>
 
-                      <div className="p-4 flex flex-col items-center text-center relative">
+                      <div className="p-4 flex flex-col items-center text-center relative bg-white">
                         {/* Filigrane discret pour le fond */}
-                        <div className="absolute -right-2 -bottom-2 opacity-[0.03] rotate-[15deg] pointer-events-none text-white">
+                        <div className="absolute -right-2 -bottom-2 opacity-[0.05] rotate-[15deg] pointer-events-none text-slate-900">
                           <TypeIcon className="h-20 w-20" />
                         </div>
 
-                        <h3 className="font-poppins font-bold text-base text-white line-clamp-1 mb-2 group-hover:text-teal-400 transition-colors relative z-10">
+                        <h3 className="font-poppins font-bold text-base text-slate-800 line-clamp-1 mb-2 group-hover:text-teal-600 transition-colors relative z-10">
                           {media.title}
                         </h3>
 
@@ -546,7 +539,8 @@ const Media = () => {
             </div>
           )}
         </div>
-      </section>
+      </div>
+    </section>
 
       {/* Section d'appel à contribution */}
       <section id="contribute" className="scroll-mt-20 py-20 bg-white relative overflow-hidden">
