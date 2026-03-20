@@ -274,9 +274,11 @@ const Dashboard = () => {
         {/* Section Admin/Gestionnaire */}
         {(currentUser?.role === 'Admin' || currentUser?.role === 'Gestionnaire') && (
           <div className="mb-12">
-            <div className="text-center mb-10 mt-16">
-              <h2 className="text-4xl md:text-5xl font-bold font-poppins text-slate-800 mb-4 tracking-tight">Panneau d'<span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-500 to-cyan-500">Administration</span></h2>
-              <p className="text-slate-500 text-lg max-w-2xl mx-auto">Gérez l'ensemble des contenus, musiciens et événements de l'association depuis cet espace sécurisé.</p>
+            <div className="text-center mb-16 mt-16 animate-on-scroll">
+              <h2 className="font-poppins font-bold text-3xl md:text-5xl text-slate-900 mb-6 relative inline-block">
+                Panneau d'Administration
+                <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-16 h-1 bg-teal-500 rounded-full"></div>
+              </h2>
             </div>
             
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
