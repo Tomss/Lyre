@@ -144,11 +144,11 @@ const Orchestras = () => {
                                 <div className="max-w-7xl mx-auto">
 
                                     {/* Title Section */}
-                                    <div className="mb-16 text-center">
-                                        <h2 className="text-5xl md:text-7xl font-bold text-slate-900 font-poppins leading-tight tracking-tight">
+                                    <div className="mb-16 text-center animate-on-scroll">
+                                        <h2 className="font-poppins font-bold text-3xl md:text-5xl text-slate-900 mb-6 relative inline-block">
                                             {orchestras[0].name}
+                                            <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-16 h-1 bg-teal-500 rounded-full"></div>
                                         </h2>
-                                        <div className="h-2 w-32 bg-teal-500 rounded-full mx-auto mt-6"></div>
                                     </div>
 
                                     {/* Content with Float Layout */}
@@ -238,12 +238,12 @@ const Orchestras = () => {
 
                                                 {/* Text */}
                                                 <div className="w-full md:w-1/2 space-y-8">
-                                                    <div className="space-y-4">
-                                                        <h3 className="text-4xl lg:text-5xl font-bold text-slate-900 font-poppins leading-tight">
-                                                            {orch.name}
-                                                        </h3>
-                                                        <div className={`h-1.5 w-20 ${isEven ? 'bg-indigo-500' : 'bg-blue-500'} rounded-full`}></div>
-                                                    </div>
+                                                <div className="space-y-4">
+                                                    <h2 className="font-poppins font-bold text-3xl md:text-5xl text-slate-900 mb-6 relative inline-block">
+                                                        {orch.name}
+                                                        <div className={`absolute -bottom-4 left-0 w-16 h-1 ${isEven ? 'bg-indigo-500' : 'bg-blue-500'} rounded-full`}></div>
+                                                    </h2>
+                                                </div>
 
                                                     <div className="text-lg text-slate-600 leading-relaxed text-justify">
                                                         {orch.description}
