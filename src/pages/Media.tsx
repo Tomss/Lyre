@@ -215,22 +215,11 @@ const Media = () => {
       {featuredMedia.length > 0 && (
         <section id="featured" className="scroll-mt-20 py-20 bg-gradient-to-br from-slate-50 via-gray-50 to-teal-50 relative overflow-hidden">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16 relative z-10">
-              <div className="inline-block mb-6">
-                <div className="flex items-center justify-center space-x-4 mb-4">
-                  <div className="w-12 h-0.5 bg-gradient-to-r from-transparent to-teal-400"></div>
-                  <div className="bg-gradient-to-br from-teal-400 to-cyan-500 p-2 rounded-full shadow-lg">
-                    <Star className="h-6 w-6 text-white animate-pulse" />
-                  </div>
-                  <div className="w-12 h-0.5 bg-gradient-to-l from-transparent to-teal-400"></div>
-                </div>
-              </div>
-              <h2 className="font-poppins font-bold text-4xl md:text-5xl text-slate-800 mb-6">
+            <div className="max-w-4xl mx-auto text-center mb-16">
+              <h2 className="font-poppins font-bold text-3xl md:text-5xl text-slate-900 mb-6 relative inline-block">
                 Médias mis en avant
+                <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-16 h-1 bg-teal-500 rounded-full"></div>
               </h2>
-              <p className="font-inter text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
-                Découvrez notre sélection de contenus exceptionnels
-              </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 relative z-10">
@@ -296,20 +285,11 @@ const Media = () => {
             <div className="mb-16 relative z-10">
               <div className="w-full">
                 {/* Header avec titre et filtres/recherche */}
-                <div className="text-center mb-12">
-                  <div className="inline-block mb-8">
-                    <div className="flex items-center justify-center space-x-4 mb-6">
-                      <div className="w-16 h-0.5 bg-gradient-to-r from-transparent via-teal-400 to-teal-400"></div>
-                      <Image className="h-8 w-8 text-teal-400 animate-pulse" />
-                      <div className="w-16 h-0.5 bg-gradient-to-l from-transparent via-teal-400 to-teal-400"></div>
-                    </div>
-                  </div>
-                  <h2 className="font-poppins font-bold text-5xl md:text-6xl text-slate-800 mb-6">
+                <div className="max-w-4xl mx-auto text-center mb-16">
+                  <h2 className="font-poppins font-bold text-3xl md:text-5xl text-slate-900 mb-6 relative inline-block">
                     Notre Médiathèque
+                    <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-16 h-1 bg-teal-500 rounded-full"></div>
                   </h2>
-                  <p className="text-xl text-slate-500 max-w-3xl mx-auto leading-relaxed mb-12">
-                    Explorez notre collection de souvenirs musicaux et découvertes artistiques
-                  </p>
                 </div>
 
                 {/* Barre de filtres et recherche modernisée */}
@@ -466,13 +446,11 @@ const Media = () => {
           ) : regularMedia.length > 0 ? (
             <>
               {featuredMedia.length > 0 && (
-                <div className="text-center mb-16 relative z-10">
-                  <h2 className="font-poppins font-bold text-4xl md:text-5xl text-slate-800 mb-6">
+                <div className="max-w-4xl mx-auto text-center mb-16 relative z-10">
+                  <h2 className="font-poppins font-bold text-3xl md:text-5xl text-slate-900 mb-6 relative inline-block">
                     Tous nos médias
+                    <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-16 h-1 bg-teal-500 rounded-full"></div>
                   </h2>
-                  <p className="text-slate-500 text-xl">
-                    Découvrez l'ensemble de notre collection
-                  </p>
                 </div>
               )}
 
@@ -567,23 +545,11 @@ const Media = () => {
       <section id="contribute" className="scroll-mt-20 py-20 bg-white relative overflow-hidden">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-12 animate-fade-in">
-              <div className="inline-block mb-8">
-                <div className="flex items-center justify-center space-x-4 mb-6">
-                  <div className="w-16 h-0.5 bg-gradient-to-r from-transparent via-teal-500 to-teal-500"></div>
-                  <div className="bg-gradient-to-br from-teal-500 to-cyan-600 p-3 rounded-full shadow-lg">
-                    <Camera className="h-8 w-8 text-white animate-pulse" />
-                  </div>
-                  <div className="w-16 h-0.5 bg-gradient-to-l from-transparent via-teal-500 to-teal-500"></div>
-                </div>
-              </div>
-              <h2 className="font-poppins font-bold text-3xl md:text-4xl text-slate-800 mb-6">
+            <div className="max-w-4xl mx-auto text-center mb-16 animate-fade-in text-center">
+              <h2 className="font-poppins font-bold text-3xl md:text-5xl text-slate-900 mb-6 relative inline-block">
                 Partagez vos souvenirs !
+                <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-16 h-1 bg-teal-500 rounded-full"></div>
               </h2>
-              <p className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed mb-8">
-                Vous avez des photos, vidéos ou enregistrements de nos concerts et événements ?
-                Aidez-nous à enrichir notre médiathèque en partageant vos précieux souvenirs !
-              </p>
             </div>
 
             <div className="bg-slate-50 rounded-3xl p-8 md:p-12 shadow-xl border border-slate-100 animate-fade-in group hover:shadow-2xl transition-all duration-500 relative overflow-hidden">
