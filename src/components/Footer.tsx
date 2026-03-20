@@ -1,10 +1,7 @@
 import { Link } from 'react-router-dom';
-import { Music, Facebook, Instagram, Youtube } from 'lucide-react';
-import { useTheme } from '../context/ThemeContext';
-import { BASE_URL } from '../config';
+import { Facebook, Instagram, Youtube } from 'lucide-react';
 
 const Footer = () => {
-  const { settings } = useTheme();
   const quickLinks = [
     { path: '/', label: 'Accueil' },
     { path: '/school', label: 'L\'école' },
@@ -25,28 +22,11 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Column 1: School Info */}
           <div className="space-y-6">
-            <Link to="/" className="flex items-center space-x-2">
-              {(settings?.header_logo_url || settings?.site_logo_url) ? (
-                <img 
-                  src={settings.header_logo_url?.startsWith('http') ? settings.header_logo_url : (settings.header_logo_url ? `${BASE_URL}${settings.header_logo_url}` : (settings.site_logo_url?.startsWith('http') ? settings.site_logo_url : `${BASE_URL}${settings.site_logo_url}`))} 
-                  alt="La Lyre" 
-                  className="h-12 w-auto object-contain" 
-                />
-              ) : (
-                <>
-                  <Music className="h-8 w-8 text-teal-400" />
-                  <span className="font-poppins font-bold text-xl text-white">La Lyre</span>
-                </>
-              )}
-            </Link>
-            <div className="space-y-2">
-              <p className="font-inter text-gray-300 font-medium">
+            <Link to="/" className="inline-block transition-transform hover:scale-105">
+              <span className="font-poppins font-bold text-2xl text-white tracking-tight">
                 École de Musique La Lyre
-              </p>
-              <p className="font-inter text-sm text-gray-400 italic">
-                Exprimez la musique qui est en vous
-              </p>
-            </div>
+              </span>
+            </Link>
           </div>
 
           {/* Column 2: Quick Links */}
