@@ -294,7 +294,7 @@ const Media = () => {
           {/* Filtres et recherche intégrés */}
           {mediaItems.length > 0 && (
             <div className="mb-16 relative z-10">
-              <div className="max-w-6xl mx-auto">
+              <div className="w-full">
                 {/* Header avec titre et filtres/recherche */}
                 <div className="text-center mb-12">
                   <div className="inline-block mb-8">
