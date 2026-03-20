@@ -154,7 +154,7 @@ const Header = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-8">
-            {navLinks.map((link) => (
+            {navLinks.map((link, index) => (
               <div
                 key={link.path}
                 className="relative group"
@@ -182,7 +182,7 @@ const Header = () => {
 
                 {/* Dropdown Menu */}
                 {link.dropdown && (
-                  <div className={`absolute top-full left-1/2 -translate-x-1/2 pt-6 transition-all duration-300 transform origin-top ${activeDropdown === link.label ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible translate-y-4'
+                  <div className={`absolute top-full ${index === navLinks.length - 1 ? 'right-0 origin-top-right' : 'left-0 origin-top-left'} pt-6 transition-all duration-300 transform ${activeDropdown === link.label ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible translate-y-4'
                     }`}>
                     <div className="relative bg-slate-950/80 backdrop-blur-xl rounded-2xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.7)] border border-teal-500/20 p-3 w-[260px] overflow-hidden">
                       {/* Glowing orb effect in background */}
