@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { API_URL } from '../config';
 import { Link } from 'react-router-dom';
-import { Image, Camera, Music, FileText, Filter, Search, X, ChevronRight, Star, Calendar, Sparkles, Type } from 'lucide-react';
+import { Image, Camera, Music, FileText, Filter, Search, X, ArrowRight, Star, Calendar, Sparkles, Type } from 'lucide-react';
 import MediaGallery from '../components/MediaGallery';
 import MediaPreview from '../components/MediaPreview';
 import PageHero from '../components/PageHero';
@@ -474,13 +474,10 @@ const Media = () => {
                   <div className="mt-16 text-center">
                     <button
                       onClick={() => setVisibleCount((prev: number) => prev + 20)}
-                      className="group relative inline-flex items-center space-x-3 bg-white border-2 border-slate-200 text-slate-700 font-bold px-10 py-4 rounded-2xl transition-all duration-500 hover:border-teal-400 hover:text-teal-600 hover:shadow-xl hover:shadow-teal-900/5 overflow-hidden"
+                      className="inline-flex items-center justify-center space-x-3 bg-slate-900 text-white font-bold py-4 px-10 rounded-2xl hover:bg-teal-600 transition-all duration-300 hover:shadow-xl hover:shadow-teal-900/20 group cursor-pointer"
                     >
-                      <div className="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-teal-500 to-sky-500 scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
                       <span className="text-lg">Voir plus de médias</span>
-                      <div className="bg-slate-100 p-1.5 rounded-full group-hover:bg-teal-50 transition-colors duration-500">
-                        <ChevronRight className="h-5 w-5 transform group-hover:rotate-90 transition-transform duration-500" />
-                      </div>
+                      <ArrowRight className="h-5 w-5 transform group-hover:translate-x-1 transition-transform" />
                     </button>
                     <p className="mt-4 text-xs font-bold text-slate-400 uppercase tracking-widest">
                       Affichage de {Math.min(visibleCount, regularMedia.length)} sur {regularMedia.length} médias
@@ -571,7 +568,7 @@ const Media = () => {
                       className="group relative inline-flex items-center space-x-3 bg-teal-600 text-white font-black px-12 py-5 rounded-2xl transition-all duration-300 hover:scale-105 hover:bg-teal-500"
                     >
                       <span className="text-lg uppercase tracking-wider">Nous contacter</span>
-                      <ChevronRight className="h-6 w-6 transform group-hover:translate-x-1 transition-transform" />
+                      <ArrowRight className="h-6 w-6 transform group-hover:translate-x-1 transition-transform" />
                     </Link>
                   </div>
                   

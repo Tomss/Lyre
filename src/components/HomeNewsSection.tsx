@@ -368,10 +368,10 @@ const HomeNewsSection = () => {
             <div className="text-center mt-4">
                 <button 
                     onClick={() => setIsAllNewsModalOpen(true)}
-                    className="inline-flex items-center justify-center px-8 py-3 text-base font-bold text-teal-700 bg-teal-50 rounded-full border border-teal-200 hover:bg-teal-100 hover:scale-105 transition-all duration-300 shadow-sm hover:shadow-teal-100 cursor-pointer"
+                    className="inline-flex items-center justify-center space-x-3 bg-slate-900 text-white font-bold py-4 px-10 rounded-2xl hover:bg-teal-600 transition-all duration-300 hover:shadow-xl hover:shadow-teal-900/20 group cursor-pointer"
                 >
-                    Voir plus d'actualités
-                    <ArrowRight className="ml-2 h-4 w-4" />
+                    <span>Voir plus d'actualités</span>
+                    <ArrowRight className="h-4 w-4 transform group-hover:translate-x-1 transition-transform" />
                 </button>
             </div>
         </section>
