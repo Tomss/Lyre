@@ -38,8 +38,7 @@ if (useCloudinary) {
             return {
                 folder: 'lyre-uploads',
                 allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif', 'svg', 'pdf', 'mp3', 'wav', 'mp4', 'mov'],
-                resource_type: (isAudio || isVideo) ? 'video' : 'auto',
-                format: isPdf ? 'pdf' : undefined
+                resource_type: (isAudio || isVideo) ? 'video' : isPdf ? 'raw' : 'auto'
             };
         }
     });
