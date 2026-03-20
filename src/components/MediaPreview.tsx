@@ -12,11 +12,12 @@ interface MediaFile {
 interface MediaPreviewProps {
   files: MediaFile[];
   mediaType: 'album' | 'enregistrement' | 'journal' | 'lyrissimot';
+  title?: string;
   onClick?: () => void;
   className?: string;
 }
 
-const MediaPreview: React.FC<MediaPreviewProps> = ({ files, mediaType, onClick, className = '' }) => {
+const MediaPreview: React.FC<MediaPreviewProps> = ({ files, mediaType, title, onClick, className = '' }) => {
   const imageFiles = files.filter(file => file.file_type === 'image');
   const audioFiles = files.filter(file => file.file_type === 'audio');
   const pdfFiles = files.filter(file => file.file_type === 'pdf');
@@ -75,25 +76,41 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({ files, mediaType, onClick, 
     );
   }
 
-  // Journaux & Lyrissimots : PDF
+  // Journaux & Lyrissimots : PDF (Design Premium Mockup)
   if ((mediaType === 'journal' || mediaType === 'lyrissimot') && firstPdf) {
     return (
       <div 
-        className={`aspect-square w-full relative overflow-hidden group cursor-pointer bg-slate-50 border border-slate-100 ${className}`}
+        className={`aspect-square w-full relative overflow-hidden group cursor-pointer bg-white ${className}`}
         onClick={onClick}
       >
-        <div className="absolute inset-0 flex flex-col items-center justify-center p-6">
-          <div className="bg-rose-50 p-4 rounded-2xl mb-4 group-hover:bg-rose-100 transition-colors duration-300">
-            <FileText className="h-12 w-12 text-rose-500" />
+        {/* Decorative Background Pattern */}
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, black 1px, transparent 0)', backgroundSize: '16px 16px' }}></div>
+        
+        <div className="absolute inset-0 flex flex-col items-center justify-center p-8">
+          {/* Document Icon Mockup */}
+          <div className="relative mb-6">
+            <div className="absolute -inset-4 bg-rose-50 rounded-[2rem] opacity-0 group-hover:opacity-100 transition-all duration-500 scale-75 group-hover:scale-100"></div>
+            <div className="relative bg-white shadow-xl rounded-2xl p-5 border border-slate-100 transition-transform duration-500 group-hover:-translate-y-2">
+              <FileText className="h-10 w-10 text-rose-500" />
+              <div className="absolute -top-2 -right-2 bg-rose-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded shadow-sm">PDF</div>
+            </div>
+            
+            {/* Page stack effect */}
+            <div className="absolute -bottom-1 -right-1 w-full h-full bg-slate-100 -z-10 rounded-2xl transform translate-x-1 translate-y-1"></div>
+            <div className="absolute -bottom-2 -right-2 w-full h-full bg-slate-50 -z-20 rounded-2xl transform translate-x-2 translate-y-2 opacity-50"></div>
           </div>
-          <span className="font-poppins font-medium text-slate-700 text-center line-clamp-2 text-sm">
-            {firstPdf.file_name}
-          </span>
-          <span className="mt-2 px-2 py-1 bg-rose-500 text-white text-[10px] font-bold rounded-md uppercase tracking-wider">
-            PDF
-          </span>
+
+          <div className="text-center space-y-1">
+             <span className="block font-poppins font-bold text-slate-800 text-sm line-clamp-2 px-2">
+               {title || "Consulter le document"}
+             </span>
+             <span className="inline-flex items-center text-[10px] font-black uppercase tracking-widest text-rose-500 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-2 group-hover:translate-y-0">
+               Cliquer pour lire
+             </span>
+          </div>
         </div>
-        <div className="absolute inset-0 bg-rose-500/0 group-hover:bg-rose-500/5 transition-colors duration-300"></div>
+        
+        <div className="absolute inset-0 bg-gradient-to-t from-rose-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
       </div>
     );
   }
