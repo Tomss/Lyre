@@ -16,52 +16,51 @@ if (!fs.existsSync(localUploadDir)) {
 
 const useCloudinary = !!process.env.CLOUDINARY_CLOUD_NAME;
 
-let storage;
+const cloudinaryStorage = useCloudinary ? new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: async (req: any, file: any) => {
+        const uniqueId = Date.now() + '-' + Math.round(Math.random() * 1e9);
+        const isAudio = file.mimetype.startsWith('audio/');
+        const isVideo = file.mimetype.startsWith('video/');
+        
+        return {
+            folder: 'lyre-uploads',
+            public_id: uniqueId,
+            resource_type: (isAudio || isVideo) ? 'video' : 'auto',
+            type: 'upload',
+            flags: 'attachment:false'
+        };
+    }
+}) : null;
 
-if (useCloudinary) {
-    // 1. Configuration de Cloudinary avec tes futures variables Render
-    cloudinary.config({
-        cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-        api_key: process.env.CLOUDINARY_API_KEY,
-        api_secret: process.env.CLOUDINARY_API_SECRET
-    });
+const localStorage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, localUploadDir);
+    },
+    filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+        const ext = path.extname(file.originalname);
+        cb(null, file.fieldname + '-' + uniqueSuffix + ext);
+    }
+});
 
-    // 2. Configuration de Multer pour envoyer directement sur Cloudinary
-    storage = new CloudinaryStorage({
-        cloudinary: cloudinary,
-        params: async (req: any, file: any) => {
-            const extension = path.extname(file.originalname).toLowerCase().replace('.', '');
-            const isAudio = file.mimetype.startsWith('audio/');
-            const isVideo = file.mimetype.startsWith('video/');
-            const isPdf = file.mimetype === 'application/pdf' || extension === 'pdf';
-            const uniqueId = Date.now() + '-' + Math.round(Math.random() * 1e9);
-            
-            return {
-                folder: 'lyre-uploads',
-                public_id: isPdf ? `${uniqueId}.pdf` : uniqueId,
-                resource_type: (isAudio || isVideo) ? 'video' : 'auto',
-                type: 'upload',
-                flags: 'attachment:false'
-            };
-        }
-    });
-} else {
-    // 3. Fallback: Stockage local
-    storage = multer.diskStorage({
-        destination: (req, file, cb) => {
-            cb(null, localUploadDir);
-        },
-        filename: (req, file, cb) => {
-            const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-            const ext = path.extname(file.originalname);
-            cb(null, file.fieldname + '-' + uniqueSuffix + ext);
-        }
-    });
-}
+// Dynamic storage: use local for PDFs (to avoid Cloudinary 401) or if Cloudinary is disabled
+const storage = {
+    _handleFile(req: any, file: any, cb: any) {
+        const isPdf = file.mimetype === 'application/pdf' || file.originalname.toLowerCase().endsWith('.pdf');
+        const selectedStorage: any = (isPdf || !cloudinaryStorage) ? localStorage : cloudinaryStorage;
+        selectedStorage._handleFile(req, file, cb);
+    },
+    _removeFile(req: any, file: any, cb: any) {
+        const isPdf = file.mimetype === 'application/pdf' || file.originalname.toLowerCase().endsWith('.pdf');
+        const selectedStorage: any = (isPdf || !cloudinaryStorage) ? localStorage : cloudinaryStorage;
+        selectedStorage._removeFile(req, file, cb);
+    }
+} as any;
 
 const upload = multer({
     storage: storage,
-    limits: { fileSize: 50 * 1024 * 1024 } // Limité à 50 Mo (Cloudinary gratuit bloque à 10Mo par défaut)
+    limits: { fileSize: 50 * 1024 * 1024 } // 50MB
 });
 
 // Route POST pour uploader un fichier (protégée)
