@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { API_URL } from '../config';
 import { Link } from 'react-router-dom';
@@ -6,7 +6,6 @@ import { Image, Camera, Music, FileText, Filter, Search, X, ChevronRight, Star, 
 import MediaGallery from '../components/MediaGallery';
 import MediaPreview from '../components/MediaPreview';
 import PageHero from '../components/PageHero';
-import Footer from '../components/Footer';
 
 interface MediaFile {
   id: string;
@@ -580,9 +579,8 @@ const Media = () => {
             </div>
           </div>
         </div>
-      </section>
 
-      <Footer />
+      </section>
     </div>
   );
 };
