@@ -99,6 +99,14 @@ app.get('/api/test-db', async (req, res) => {
   }
 });
 
+// Global error handler
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error('Global error handler:', err);
+  res.status(err.status || 500).json({
+    message: err.message || 'Une erreur interne est survenue.'
+  });
+});
+
 app.listen(port, () => {
   console.log(`Backend server is running on http://localhost:${port}`);
 });
