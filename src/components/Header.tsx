@@ -258,7 +258,7 @@ const Header = () => {
             ) : (
               <Link
                 to="/connexion"
-                className="font-inter font-semibold px-6 py-3 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-lg bg-teal-600 hover:bg-teal-700 text-white shadow-md"
+                className="font-inter font-semibold px-6 py-3 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-lg bg-slate-900 hover:bg-teal-600 text-white shadow-md shadow-slate-900/10"
               >
                 Espace Membre
               </Link>
@@ -355,7 +355,7 @@ const Header = () => {
                 ) : (
                   <Link
                     to="/connexion"
-                    className="block bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-400 hover:to-cyan-500 text-white font-inter font-semibold px-6 py-3 rounded-xl transition-all duration-300 text-center shadow-lg shadow-teal-900/40"
+                    className="block bg-slate-900 hover:bg-teal-600 text-white font-inter font-semibold px-6 py-3 rounded-xl transition-all duration-300 text-center shadow-lg shadow-slate-900/20"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Espace Membre
