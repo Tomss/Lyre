@@ -500,94 +500,80 @@ const Media = () => {
         <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-px bg-gradient-to-r from-transparent via-teal-400 to-transparent opacity-50"></div>
       </div>
 
-      {/* Section d'appel à contribution - Redesign Premium Dark */}
-      <section id="contribute" className="scroll-mt-20 py-32 bg-slate-950 relative overflow-hidden">
-        {/* Mesh Gradient Background Layer */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-[20%] -left-[10%] w-[60%] h-[70%] bg-teal-500/10 rounded-full blur-[120px] animate-pulse"></div>
-          <div className="absolute -bottom-[20%] -right-[10%] w-[60%] h-[70%] bg-indigo-500/10 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }}></div>
-          <div className="absolute top-[20%] right-[20%] w-[30%] h-[40%] bg-sky-500/5 rounded-full blur-[80px]"></div>
-          {/* Subtle Grid Pattern Overlay */}
-          <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '40px 40px' }}></div>
-        </div>
-
+      {/* Section d'appel à contribution - Carte Dark sur fond blanc */}
+      <section id="contribute" className="scroll-mt-20 py-24 bg-white relative overflow-hidden">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-20 animate-fade-in">
-              <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-400 text-xs font-bold uppercase tracking-widest mb-6">
-                <Sparkles className="h-4 w-4" />
-                <span>Contribuez à l'histoire</span>
-              </div>
-              <h2 className="font-poppins font-bold text-4xl md:text-6xl text-white mb-6 tracking-tight">
-                Partagez vos <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-sky-400">souvenirs !</span>
+            {/* Titre Standard (Style Thème) */}
+            <div className="text-center mb-16 animate-fade-in">
+              <h2 className="font-poppins font-bold text-3xl md:text-5xl text-slate-900 mb-6 relative inline-block">
+                Partagez vos souvenirs !
+                <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-16 h-1 bg-teal-500 rounded-full"></div>
               </h2>
-              <div className="h-1.5 w-32 bg-gradient-to-r from-teal-500 to-sky-500 rounded-full mx-auto"></div>
             </div>
 
             <div className="relative group">
-              {/* Card glowing border effect */}
-              <div className="absolute -inset-1 bg-gradient-to-r from-teal-500 to-indigo-500 rounded-[3rem] blur opacity-20 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
+              {/* Card glowing border effect (subtil) */}
+              <div className="absolute -inset-1 bg-gradient-to-r from-teal-500/30 to-indigo-500/30 rounded-[3rem] blur opacity-20 group-hover:opacity-40 transition duration-1000"></div>
               
-              <div className="relative bg-slate-900/40 backdrop-blur-3xl rounded-[3rem] p-10 md:p-16 border border-white/10 shadow-2xl overflow-hidden">
-                {/* Internal Card Decor */}
-                <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
-                  <Star className="h-32 w-32 text-teal-500" />
-                </div>
+              <div className="relative bg-slate-900 rounded-[3rem] p-10 md:p-16 border border-slate-800 shadow-2xl overflow-hidden">
+                {/* Background Decor (discret) */}
+                <div className="absolute inset-0 opacity-[0.05] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '40px 40px' }}></div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-16 relative z-10">
                   <div className="text-center group/item hover:scale-105 transition-transform duration-300">
                     <div className="relative inline-block mb-6">
                       <div className="absolute inset-0 bg-teal-400 blur-2xl opacity-0 group-hover/item:opacity-20 transition-opacity"></div>
-                      <div className="bg-gradient-to-br from-teal-400/20 to-teal-600/20 w-24 h-24 rounded-3xl flex items-center justify-center border border-teal-400/30 shadow-inner">
+                      <div className="bg-slate-800/80 w-24 h-24 rounded-3xl flex items-center justify-center border border-white/10 shadow-inner">
                         <Camera className="h-12 w-12 text-teal-400" />
                       </div>
                     </div>
                     <h3 className="font-poppins font-bold text-xl text-white mb-3">Photos & Vidéos</h3>
-                    <p className="text-sm text-slate-400 leading-relaxed font-medium">Concerts, répétitions, moments de convivialité capturés.</p>
+                    <p className="text-sm text-slate-400 font-medium italic">Concerts, répétitions, moments de convivialité capturés.</p>
                   </div>
 
                   <div className="text-center group/item hover:scale-105 transition-transform duration-300">
                     <div className="relative inline-block mb-6">
                       <div className="absolute inset-0 bg-indigo-400 blur-2xl opacity-0 group-hover/item:opacity-20 transition-opacity"></div>
-                      <div className="bg-gradient-to-br from-indigo-400/20 to-indigo-600/20 w-24 h-24 rounded-3xl flex items-center justify-center border border-indigo-400/30 shadow-inner">
+                      <div className="bg-slate-800/80 w-24 h-24 rounded-3xl flex items-center justify-center border border-white/10 shadow-inner">
                         <Music className="h-12 w-12 text-indigo-400" />
                       </div>
                     </div>
                     <h3 className="font-poppins font-bold text-xl text-white mb-3">Enregistrements</h3>
-                    <p className="text-sm text-slate-400 leading-relaxed font-medium">Captations audio de vos performances sur scène.</p>
+                    <p className="text-sm text-slate-400 font-medium italic">Captations audio de vos performances sur scène.</p>
                   </div>
 
                   <div className="text-center group/item hover:scale-105 transition-transform duration-300">
                     <div className="relative inline-block mb-6">
                       <div className="absolute inset-0 bg-sky-400 blur-2xl opacity-0 group-hover/item:opacity-20 transition-opacity"></div>
-                      <div className="bg-gradient-to-br from-sky-400/20 to-sky-600/20 w-24 h-24 rounded-3xl flex items-center justify-center border border-sky-400/30 shadow-inner">
+                      <div className="bg-slate-800/80 w-24 h-24 rounded-3xl flex items-center justify-center border border-white/10 shadow-inner">
                         <FileText className="h-12 w-12 text-sky-400" />
                       </div>
                     </div>
                     <h3 className="font-poppins font-bold text-xl text-white mb-3">Articles de Presse</h3>
-                    <p className="text-sm text-slate-400 leading-relaxed font-medium">Coupures de journaux et interviews mémorables.</p>
+                    <p className="text-sm text-slate-400 font-medium italic">Coupures de journaux et interviews mémorables.</p>
                   </div>
                 </div>
 
-                <div className="max-w-2xl mx-auto text-center relative z-10 border-t border-white/5 pt-12">
+                <div className="max-w-2xl mx-auto text-center relative z-10 border-t border-white/10 pt-12">
                   <p className="font-medium text-lg md:text-xl text-slate-200 leading-relaxed mb-10 italic">
-                    "Chaque souvenir compte ! Vos contributions nous aident à préserver et partager l'histoire musicale de notre école."
+                    Chaque souvenir compte ! Vos contributions nous aident à préserver et partager l'histoire musicale de notre école.
                   </p>
                   
                   <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
                     <Link
                       to="/contact"
-                      className="group relative inline-flex items-center space-x-3 bg-gradient-to-r from-teal-500 to-teal-600 text-white font-black px-12 py-5 rounded-2xl transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_rgba(20,184,166,0.4)]"
+                      className="group relative inline-flex items-center space-x-3 bg-teal-600 text-white font-black px-12 py-5 rounded-2xl transition-all duration-300 hover:scale-105 hover:bg-teal-500"
                     >
                       <span className="text-lg uppercase tracking-wider">Nous contacter</span>
                       <ChevronRight className="h-6 w-6 transform group-hover:translate-x-1 transition-transform" />
                     </Link>
                   </div>
                   
-                  <div className="mt-8 flex items-center justify-center space-x-2 text-slate-500 text-sm font-bold uppercase tracking-widest">
-                    <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
+                  <div className="mt-8 text-slate-500 text-xs font-bold uppercase tracking-widest flex items-center justify-center space-x-2">
+                    <span className="w-8 h-px bg-white/10"></span>
                     <span>Envoyez-nous vos fichiers par email ou via ce formulaire</span>
-                    <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
+                    <span className="w-8 h-px bg-white/10"></span>
                   </div>
                 </div>
               </div>
