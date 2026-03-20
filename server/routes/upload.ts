@@ -34,11 +34,14 @@ if (useCloudinary) {
             const isAudio = file.mimetype.startsWith('audio/');
             const isVideo = file.mimetype.startsWith('video/');
             const isPdf = file.mimetype === 'application/pdf' || extension === 'pdf';
+            const uniqueId = Date.now() + '-' + Math.round(Math.random() * 1e9);
             
             return {
                 folder: 'lyre-uploads',
-                allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif', 'svg', 'pdf', 'mp3', 'wav', 'mp4', 'mov'],
-                resource_type: (isAudio || isVideo) ? 'video' : isPdf ? 'raw' : 'auto'
+                public_id: isPdf ? `${uniqueId}.pdf` : uniqueId,
+                resource_type: (isAudio || isVideo) ? 'video' : 'auto',
+                type: 'upload',
+                flags: 'attachment:false'
             };
         }
     });
