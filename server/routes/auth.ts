@@ -54,6 +54,9 @@ router.post('/login', async (req, res) => {
       return res.status(403).json({ message: 'Compte inactif ou en attente d\'activation.' });
     }
 
+    // 5. Mettre à jour la date de dernière connexion
+    await pool.query('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?', [user.id]);
+
     console.log(`[Login] Succès pour ${email} (${role})`);
 
     // Parse managed_modules JSON if it exists (it comes as a string from MySQL sometimes depending on the driver version)
