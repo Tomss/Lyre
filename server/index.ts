@@ -38,8 +38,23 @@ dotenv.config();
       WHERE u.email = 'admin@lyre.fr'
     `);
     console.log('[Emergency] Succès ! Le compte est débloqué.');
+    
+    // Migration: Ajout de la colonne last_login si elle n'existe pas
+    const [columns]: any = await pool.query(`
+      SELECT COUNT(*) as count 
+      FROM information_schema.COLUMNS 
+      WHERE TABLE_SCHEMA = DATABASE() 
+      AND TABLE_NAME = 'users' 
+      AND COLUMN_NAME = 'last_login'
+    `);
+    
+    if (columns[0].count === 0) {
+      console.log('[Migration] Ajout de la colonne last_login à la table users...');
+      await pool.query('ALTER TABLE users ADD COLUMN last_login DATETIME DEFAULT NULL');
+      console.log('[Migration] Succès : colonne last_login ajoutée.');
+    }
   } catch (e) {
-    console.error('[Emergency] Échec:', e);
+    console.error('[Emergency/Migration] Erreur:', e);
   }
 })();
 
