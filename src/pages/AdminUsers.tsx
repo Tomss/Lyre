@@ -747,7 +747,7 @@ const AdminUsers = () => {
                   <div className="divide-y divide-gray-200/80">
                     {userList.map(user => (
                       <div key={user.id} className={`p-4 grid grid-cols-1 md:grid-cols-12 gap-4 items-start md:items-center hover:bg-gray-50/50 transition-colors duration-200 border-l-4 ${getRoleColor(user.role).replace('bg', 'border').replace('-100', '-500')}`}>
-                        <div className="md:col-span-5">
+                        <div className="md:col-span-6">
                           <div className="flex items-center mb-2">
                             <p className="font-bold text-lg text-gray-800">{user.last_name.toUpperCase()} {user.first_name}</p>
                             <span className={`ml-3 px-2.5 py-1 text-xs font-semibold rounded-full ${getRoleColor(user.role)}`}>{user.role}</span>
@@ -789,7 +789,7 @@ const AdminUsers = () => {
                           ) : <p className="text-gray-400 italic text-xs">Aucun</p>}
                         </div>
 
-                        <div className="md:col-span-3 text-sm">
+                        <div className="md:col-span-2 text-sm">
                           <h4 className="font-black text-[10px] uppercase tracking-widest text-teal-400/70 mb-2">Instruments</h4>
                           {userInstruments[user.id] && userInstruments[user.id].length > 0 ? (
                             <ul className="space-y-1 text-slate-700">
