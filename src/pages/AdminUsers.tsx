@@ -14,6 +14,7 @@ interface UserData {
   managed_modules?: string[];
   status?: 'Inactive' | 'Invited' | 'Active';
   has_password: boolean;
+  last_login?: string | null;
 }
 
 interface Instrument {
@@ -745,8 +746,8 @@ const AdminUsers = () => {
                 {expandedRoles.has(role) && (
                   <div className="divide-y divide-gray-200/80">
                     {userList.map(user => (
-                      <div key={user.id} className={`p-4 flex flex-col md:flex-row md:items-center md:justify-between hover:bg-gray-50/50 transition-colors duration-200 border-l-4 ${getRoleColor(user.role).replace('bg', 'border').replace('-100', '-500')}`}>
-                        <div className="flex-1 mb-4 md:mb-0">
+                      <div key={user.id} className={`p-4 grid grid-cols-1 md:grid-cols-12 gap-4 items-start md:items-center hover:bg-gray-50/50 transition-colors duration-200 border-l-4 ${getRoleColor(user.role).replace('bg', 'border').replace('-100', '-500')}`}>
+                        <div className="md:col-span-4">
                           <div className="flex items-center mb-2">
                             <p className="font-bold text-lg text-gray-800">{user.last_name.toUpperCase()} {user.first_name}</p>
                             <span className={`ml-3 px-2.5 py-1 text-xs font-semibold rounded-full ${getRoleColor(user.role)}`}>{user.role}</span>
@@ -754,45 +755,64 @@ const AdminUsers = () => {
                               {getStatusBadge(user)}
                             </div>
                           </div>
-                          <div className="flex items-center text-gray-500 text-sm">
-                            <Mail size={14} className="mr-2" /> {user.email}
+                          <div className="flex flex-col space-y-1">
+                            <div className="flex items-center text-gray-500 text-sm">
+                              <Mail size={14} className="mr-2" /> {user.email}
+                            </div>
+                            {user.last_login && (
+                              <div className="flex items-center text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                                <CheckCircle size={10} className="mr-1.5 text-teal-500" />
+                                Connecté le {new Date(user.last_login).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })} à {new Date(user.last_login).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                              </div>
+                            )}
                           </div>
                         </div>
-                        <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm mb-4 md:mb-0">
-                          <div>
-                            <h4 className="font-semibold text-gray-600">Orchestres</h4>
-                            {userOrchestras[user.id] && userOrchestras[user.id].length > 0 ? (
-                              <ul className="list-disc list-inside text-gray-700">
-                                {userOrchestras[user.id].map(orc => <li key={orc.id}>{orc.name}</li>)}
-                              </ul>
-                            ) : <p className="text-gray-400 italic">Aucun</p>}
-                          </div>
-                          <div>
-                            <h4 className="font-semibold text-gray-600">Instruments</h4>
-                            {userInstruments[user.id] && userInstruments[user.id].length > 0 ? (
-                              <ul className="list-disc list-inside text-gray-700">
-                                {userInstruments[user.id].map(inst => <li key={inst.id}>{inst.name}</li>)}
-                              </ul>
-                            ) : <p className="text-gray-400 italic">Aucun</p>}
-                          </div>
+                        
+                        <div className="md:col-span-3 text-sm">
+                          <h4 className="font-black text-[10px] uppercase tracking-widest text-slate-400 mb-2">Orchestres</h4>
+                          {userOrchestras[user.id] && userOrchestras[user.id].length > 0 ? (
+                            <ul className="space-y-1 text-slate-700">
+                              {userOrchestras[user.id].map(orc => (
+                                <li key={orc.id} className="flex items-center">
+                                  <div className="w-1 h-1 rounded-full bg-indigo-400 mr-2"></div>
+                                  {orc.name}
+                                </li>
+                              ))}
+                            </ul>
+                          ) : <p className="text-gray-400 italic text-xs">Aucun</p>}
                         </div>
-                        <div className="flex items-center space-x-3 flex-shrink-0">
+
+                        <div className="md:col-span-3 text-sm">
+                          <h4 className="font-black text-[10px] uppercase tracking-widest text-slate-400 mb-2">Instruments</h4>
+                          {userInstruments[user.id] && userInstruments[user.id].length > 0 ? (
+                            <ul className="space-y-1 text-slate-700">
+                              {userInstruments[user.id].map(inst => (
+                                <li key={inst.id} className="flex items-center">
+                                  <div className="w-1 h-1 rounded-full bg-teal-400 mr-2"></div>
+                                  {inst.name}
+                                </li>
+                              ))}
+                            </ul>
+                          ) : <p className="text-gray-400 italic text-xs">Aucun</p>}
+                        </div>
+
+                        <div className="md:col-span-2 flex items-center justify-end space-x-3">
                           {user.role !== 'Admin' && (
                             <button 
                               onClick={() => handleInvite(user.id)} 
                               title={user.status === 'Active' ? "Envoyer un lien de réinitialisation" : "Envoyer invitation d'activation"} 
-                              className={`p-2 rounded-full transition-colors duration-200 ${
+                              className={`p-2 rounded-xl transition-all duration-300 hover:scale-110 ${
                                 user.status === 'Active' 
-                                  ? 'text-amber-600 bg-amber-100 hover:bg-amber-200' 
-                                  : 'text-indigo-600 bg-indigo-100 hover:bg-indigo-200'
+                                  ? 'text-amber-600 bg-amber-50 hover:bg-amber-100' 
+                                  : 'text-indigo-600 bg-indigo-50 hover:bg-indigo-100'
                               }`}
                             >
                               <Mail size={18} />
                             </button>
                           )}
-                          <button onClick={() => handleEdit(user)} title="Modifier" className="p-2 text-blue-600 bg-blue-100 hover:bg-blue-200 rounded-full transition-colors duration-200"><Edit size={18} /></button>
+                          <button onClick={() => handleEdit(user)} title="Modifier" className="p-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-all duration-300 hover:scale-110"><Edit size={18} /></button>
                           {currentUser?.id !== user.id && (
-                            <button onClick={() => confirmDelete(user)} title="Supprimer" className="p-2 text-red-600 bg-red-100 hover:bg-red-200 rounded-full transition-colors duration-200"><Trash2 size={18} /></button>
+                            <button onClick={() => confirmDelete(user)} title="Supprimer" className="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-all duration-300 hover:scale-110"><Trash2 size={18} /></button>
                           )}
                         </div>
                       </div>

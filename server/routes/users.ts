@@ -20,7 +20,7 @@ router.get('/', async (req, res) => {
 
   try {
     const [users] = await pool.query(`
-      SELECT u.id, u.email, p.first_name, p.last_name, p.role, p.managed_modules, p.status,
+      SELECT u.id, u.email, u.last_login, p.first_name, p.last_name, p.role, p.managed_modules, p.status,
              (u.password_hash IS NOT NULL) AS has_password
       FROM users u
       JOIN profiles p ON u.id = p.id
