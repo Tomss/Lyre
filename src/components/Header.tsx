@@ -19,17 +19,14 @@ const Header = () => {
       const currentScrollY = window.scrollY;
       
       // Smart scrolling logic: hide on scroll down, show on scroll up
-      // Disable auto-hide if mobile menu is open
       if (isMobileMenuOpen) {
         setIsVisible(true);
         return;
       }
 
       if (currentScrollY > lastScrollY && currentScrollY > 100) {
-        // Scrolling down & past header height
         setIsVisible(false);
       } else {
-        // Scrolling up
         setIsVisible(true);
       }
 
@@ -147,7 +144,7 @@ const Header = () => {
       <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2 font-poppins font-bold text-xl transition-colors text-teal-800 hover:text-teal-600">
+          <Link to="/" className="flex-shrink-0 flex items-center space-x-2 font-poppins font-bold text-xl transition-colors text-teal-800 hover:text-teal-600">
             {(settings?.header_logo_url || settings?.site_logo_url) ? (
               <img src={settings.header_logo_url?.startsWith('http') ? settings.header_logo_url : (settings.header_logo_url ? `${BASE_URL}${settings.header_logo_url}` : (settings.site_logo_url?.startsWith('http') ? settings.site_logo_url : `${BASE_URL}${settings.site_logo_url}`))} alt="La Lyre" className="h-10 lg:h-16 w-auto object-contain transition-all duration-300" />
             ) : (
@@ -157,87 +154,88 @@ const Header = () => {
             )}
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-8">
-            <div className="flex items-center space-x-8">
-              {navLinks.map((link, index) => (
-                <div
-                  key={link.path}
-                  className="relative group"
-                  onMouseEnter={() => link.dropdown && setActiveDropdown(link.label)}
-                  onMouseLeave={() => setActiveDropdown(null)}
+          {/* Desktop Navigation - Centered */}
+          <div className="hidden lg:flex flex-1 justify-center items-center space-x-8">
+            {navLinks.map((link, index) => (
+              <div
+                key={link.path}
+                className="relative group"
+                onMouseEnter={() => link.dropdown && setActiveDropdown(link.label)}
+                onMouseLeave={() => setActiveDropdown(null)}
+              >
+                <Link
+                  to={link.path}
+                  onClick={() => {
+                    if (location.pathname === link.path) {
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                  }}
+                  className={`flex items-center gap-1 font-inter font-medium transition-all duration-200 hover:scale-105 ${location.pathname === link.path && !location.hash
+                    ? 'text-teal-600 font-semibold'
+                    : 'text-gray-700 hover:text-teal-600'
+                    }`}
                 >
-                  <Link
-                    to={link.path}
-                    onClick={() => {
-                      if (location.pathname === link.path) {
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                      }
-                    }}
-                    className={`flex items-center gap-1 font-inter font-medium transition-all duration-200 hover:scale-105 ${location.pathname === link.path && !location.hash
-                      ? 'text-teal-600 font-semibold'
-                      : 'text-gray-700 hover:text-teal-600'
-                      }`}
-                  >
-                    {link.label}
-                    {link.dropdown && (
-                      <ChevronDown className="w-4 h-4 transition-transform duration-200 group-hover:rotate-180" />
-                    )}
-                  </Link>
-
+                  {link.label}
                   {link.dropdown && (
-                    <div className={`absolute top-full ${index === navLinks.length - 1 ? 'right-0 origin-top-right' : 'left-0 origin-top-left'} pt-6 transition-all duration-300 transform ${activeDropdown === link.label ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible translate-y-4'
-                      }`}>
-                      <div className="relative bg-slate-950/80 backdrop-blur-xl rounded-2xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.7)] border border-teal-500/20 p-3 w-[260px] overflow-hidden">
-                        <div className="absolute -top-10 -right-10 w-32 h-32 bg-teal-500/10 rounded-full blur-2xl pointer-events-none"></div>
-                        
-                        {link.dropdown.map((subItem) => (
-                          <Link
-                            key={subItem.path}
-                            to={subItem.path}
-                            onClick={(e) => {
-                              setActiveDropdown(null);
-                              if (location.pathname === '/' && subItem.path.startsWith('/#')) {
-                                e.preventDefault();
-                                const targetId = subItem.path.substring(2);
-                                window.history.pushState({}, '', subItem.path);
-                                handleScrollToSection(targetId);
-                              } else if (location.pathname === '/school' && subItem.path.startsWith('/school#')) {
-                                e.preventDefault();
-                                const targetId = subItem.path.split('#')[1];
-                                window.history.pushState({}, '', subItem.path);
-                                handleScrollToSection(targetId);
-                              } else if (location.pathname === '/media' && subItem.path.startsWith('/media#')) {
-                                e.preventDefault();
-                                const targetId = subItem.path.split('#')[1];
-                                window.history.pushState({}, '', subItem.path);
-                                handleScrollToSection(targetId);
-                              } else if (location.pathname === '/contact' && subItem.path.startsWith('/contact#')) {
-                                e.preventDefault();
-                                const targetId = subItem.path.split('#')[1];
-                                window.history.pushState({}, '', subItem.path);
-                                handleScrollToSection(targetId);
-                              }
-                            }}
-                            className="relative flex items-center px-4 py-3 mx-1 my-1 text-sm font-medium text-slate-300 rounded-xl transition-all duration-300 hover:text-white group/item overflow-hidden"
-                          >
-                            <div className="absolute inset-0 bg-gradient-to-r from-teal-500/10 to-cyan-500/10 translate-x-[-100%] group-hover/item:translate-x-0 transition-transform duration-300 z-0"></div>
-                            <div className="absolute left-0 top-0 bottom-0 w-1 bg-teal-400 scale-y-0 group-hover/item:scale-y-100 transition-transform duration-300 origin-center z-10 rounded-l-xl"></div>
-                            
-                            <span className="relative z-10 translate-x-0 group-hover/item:translate-x-2 transition-transform duration-300">
-                              {subItem.label}
-                            </span>
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
+                    <ChevronDown className="w-4 h-4 transition-transform duration-200 group-hover:rotate-180" />
                   )}
-                </div>
-              ))}
-            </div>
+                </Link>
 
-            {/* User Section */}
-            <div className="flex items-center space-x-3 ml-8">
+                {link.dropdown && (
+                  <div className={`absolute top-full ${index === navLinks.length - 1 ? 'right-0 origin-top-right' : 'left-0 origin-top-left'} pt-6 transition-all duration-300 transform ${activeDropdown === link.label ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible translate-y-4'
+                    }`}>
+                    <div className="relative bg-slate-950/80 backdrop-blur-xl rounded-2xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.7)] border border-teal-500/20 p-3 w-[260px] overflow-hidden">
+                      <div className="absolute -top-10 -right-10 w-32 h-32 bg-teal-500/10 rounded-full blur-2xl pointer-events-none"></div>
+                      
+                      {link.dropdown.map((subItem) => (
+                        <Link
+                          key={subItem.path}
+                          to={subItem.path}
+                          onClick={(e) => {
+                            setActiveDropdown(null);
+                            if (location.pathname === '/' && subItem.path.startsWith('/#')) {
+                              e.preventDefault();
+                              const targetId = subItem.path.substring(2);
+                              window.history.pushState({}, '', subItem.path);
+                              handleScrollToSection(targetId);
+                            } else if (location.pathname === '/school' && subItem.path.startsWith('/school#')) {
+                              e.preventDefault();
+                              const targetId = subItem.path.split('#')[1];
+                              window.history.pushState({}, '', subItem.path);
+                              handleScrollToSection(targetId);
+                            } else if (location.pathname === '/media' && subItem.path.startsWith('/media#')) {
+                              e.preventDefault();
+                              const targetId = subItem.path.split('#')[1];
+                              window.history.pushState({}, '', subItem.path);
+                              handleScrollToSection(targetId);
+                            } else if (location.pathname === '/contact' && subItem.path.startsWith('/contact#')) {
+                              e.preventDefault();
+                              const targetId = subItem.path.split('#')[1];
+                              window.history.pushState({}, '', subItem.path);
+                              handleScrollToSection(targetId);
+                            }
+                          }}
+                          className="relative flex items-center px-4 py-3 mx-1 my-1 text-sm font-medium text-slate-300 rounded-xl transition-all duration-300 hover:text-white group/item overflow-hidden"
+                        >
+                          <div className="absolute inset-0 bg-gradient-to-r from-teal-500/10 to-cyan-500/10 translate-x-[-100%] group-hover/item:translate-x-0 transition-transform duration-300 z-0"></div>
+                          <div className="absolute left-0 top-0 bottom-0 w-1 bg-teal-400 scale-y-0 group-hover/item:scale-y-100 transition-transform duration-300 origin-center z-10 rounded-l-xl"></div>
+                          
+                          <span className="relative z-10 translate-x-0 group-hover/item:translate-x-2 transition-transform duration-300">
+                            {subItem.label}
+                          </span>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Right Side Actions (Desktop User + Mobile Toggle) */}
+          <div className="flex items-center space-x-3">
+            {/* Desktop User Section */}
+            <div className="hidden lg:flex items-center space-x-3">
               {currentUser ? (
                 <>
                   <Link
@@ -265,15 +263,15 @@ const Header = () => {
                 </Link>
               )}
             </div>
-          </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            className="lg:hidden p-2 rounded-lg transition-all duration-200 text-gray-700 hover:text-teal-600 hover:bg-teal-50"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          >
-            {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </button>
+            {/* Mobile Menu Button */}
+            <button
+              className="lg:hidden p-2 rounded-lg transition-all duration-200 text-gray-700 hover:text-teal-600 hover:bg-teal-50"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+              {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
+          </div>
         </div>
       </nav>
 
