@@ -277,20 +277,20 @@ const Header = () => {
         </div>
       </nav>
 
-      {/* Mobile Menu - Outside nav to avoid clipping issues */}
+      {/* Mobile Menu - Outside nav with solid theme-matched background */}
       {isMobileMenuOpen && (
         <div 
-          className="lg:hidden fixed left-0 right-0 bottom-0 top-16 z-[100] bg-slate-950/98 backdrop-blur-2xl border-t border-teal-500/20 shadow-2xl overflow-y-auto overscroll-contain"
+          className="lg:hidden fixed left-0 right-0 bottom-0 top-16 z-[100] bg-white border-t border-gray-100 shadow-2xl overflow-y-auto overscroll-contain transition-all duration-300"
           style={{ height: 'calc(100vh - 64px)' }}
         >
-          <div className="px-4 py-10 space-y-2 min-h-full pb-32">
+          <div className="px-4 py-8 space-y-2 min-h-full pb-32">
             {navLinks.map((link) => (
               <div key={link.path}>
                 <Link
                   to={link.path}
                   className={`block font-inter font-medium py-3.5 px-4 rounded-xl transition-all duration-300 ${location.pathname === link.path
-                    ? 'text-white bg-gradient-to-r from-teal-500/20 to-cyan-500/20 border-l-4 border-teal-400 shadow-inner'
-                    : 'text-slate-300 hover:text-teal-300 hover:bg-slate-800/50'
+                    ? 'text-teal-700 bg-teal-50 border-l-4 border-teal-500'
+                    : 'text-gray-700 hover:text-teal-600 hover:bg-gray-50'
                     }`}
                   onClick={() => {
                     setIsMobileMenuOpen(false);
@@ -302,7 +302,7 @@ const Header = () => {
                   {link.label}
                 </Link>
                 {link.dropdown && (
-                  <div className="pl-6 mt-1 space-y-1 mb-4 border-l-2 border-slate-800/80 ml-4">
+                  <div className="pl-6 mt-1 space-y-1 mb-4 border-l-2 border-gray-100 ml-4">
                     {link.dropdown.map((subItem) => (
                       <Link
                         key={subItem.path}
@@ -326,7 +326,7 @@ const Header = () => {
                             handleScrollToSection(targetId);
                           }
                         }}
-                        className="block text-sm font-medium text-slate-400 hover:text-white py-3 px-3 rounded-lg hover:bg-gradient-to-r hover:from-teal-500/10 hover:to-transparent transition-all duration-300 hover:translate-x-1"
+                        className="block text-sm font-medium text-gray-500 hover:text-teal-600 py-3 px-3 rounded-lg hover:bg-teal-50/50 transition-all duration-300 hover:translate-x-1"
                       >
                         {subItem.label}
                       </Link>
@@ -337,15 +337,15 @@ const Header = () => {
             ))}
 
             {/* Mobile User Section */}
-            <div className="pt-10 mt-8 border-t border-slate-800/60 space-y-4">
+            <div className="pt-10 mt-8 border-t border-gray-100 space-y-4">
               {currentUser ? (
                 <>
                   <Link
                     to="/dashboard"
-                    className="flex items-center space-x-3 bg-slate-800/80 hover:bg-slate-700/80 text-teal-400 font-inter font-medium px-4 py-5 rounded-xl border border-slate-700/50 transition-all duration-300 shadow-sm"
+                    className="flex items-center space-x-3 bg-gray-50 hover:bg-teal-50 text-teal-800 font-inter font-medium px-4 py-5 rounded-xl border border-gray-100 transition-all duration-300 shadow-sm"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    <UserCircle className="h-7 w-7" />
+                    <UserCircle className="h-7 w-7 text-teal-600" />
                     <span className="text-lg">{`${currentUser.firstName} ${currentUser.lastName}`}</span>
                   </Link>
                   <button
@@ -353,7 +353,7 @@ const Header = () => {
                       logout();
                       setIsMobileMenuOpen(false);
                     }}
-                    className="w-full text-left bg-slate-900 hover:bg-teal-600 text-white font-inter font-medium px-4 py-5 rounded-xl transition-all duration-300 shadow-lg shadow-slate-900/20 text-lg"
+                    className="w-full text-left bg-slate-900 hover:bg-teal-600 text-white font-inter font-medium px-4 py-5 rounded-xl transition-all duration-300 shadow-lg shadow-slate-900/10 text-lg"
                   >
                     Déconnexion
                   </button>
@@ -361,7 +361,7 @@ const Header = () => {
               ) : (
                 <Link
                   to="/connexion"
-                  className="block bg-slate-900 hover:bg-teal-600 text-white font-inter font-semibold px-6 py-5 rounded-xl transition-all duration-300 text-center shadow-lg shadow-slate-900/20 text-lg"
+                  className="block bg-slate-900 hover:bg-teal-600 text-white font-inter font-semibold px-6 py-5 rounded-xl transition-all duration-300 text-center shadow-lg shadow-slate-900/10 text-lg"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   Espace Membre
