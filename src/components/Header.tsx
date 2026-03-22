@@ -22,6 +22,12 @@ const Header = () => {
       // setIsScrolled(currentScrollY > 20); // Removed unused
 
       // Smart scrolling logic: hide on scroll down, show on scroll up
+      // Disable auto-hide if mobile menu is open
+      if (isMobileMenuOpen) {
+        setIsVisible(true);
+        return;
+      }
+
       if (currentScrollY > lastScrollY && currentScrollY > 100) {
         // Scrolling down & past header height
         setIsVisible(false);
@@ -35,7 +41,19 @@ const Header = () => {
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [lastScrollY]);
+  }, [lastScrollY, isMobileMenuOpen]);
+
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isMobileMenuOpen]);
 
   // Header is now always solid white for consistency
 
@@ -276,7 +294,7 @@ const Header = () => {
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className="lg:hidden bg-slate-950/95 backdrop-blur-xl border-t border-teal-500/20 shadow-[0_30px_60px_rgba(0,0,0,0.8)] relative">
+          <div className="lg:hidden bg-slate-950/95 backdrop-blur-xl border-t border-teal-500/20 shadow-[0_30px_60px_rgba(0,0,0,0.8)] fixed inset-0 top-16 z-40 overflow-y-auto overscroll-contain pb-20">
             <div className="px-4 py-6 space-y-2">
               {navLinks.map((link) => (
                 <div key={link.path}>
