@@ -18,9 +18,6 @@ const Header = () => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
       
-      // Determine if we've scrolled past the top - (isVisible handles actual display)
-      // setIsScrolled(currentScrollY > 20); // Removed unused
-
       // Smart scrolling logic: hide on scroll down, show on scroll up
       // Disable auto-hide if mobile menu is open
       if (isMobileMenuOpen) {
@@ -54,8 +51,6 @@ const Header = () => {
       document.body.style.overflow = 'unset';
     };
   }, [isMobileMenuOpen]);
-
-  // Header is now always solid white for consistency
 
   /* Orchestras Dropdown Logic */
   const [orchestraLinks, setOrchestraLinks] = useState<{ label: string; path: string }[]>([]);
@@ -123,17 +118,11 @@ const Header = () => {
     },
   ];
 
-  // Enhanced precise smooth scroll handler
   const handleScrollToSection = (targetId: string) => {
     const element = document.getElementById(targetId);
     if (element) {
-      // 80px is the height of the lg header (h-20)
       const headerOffset = 80;
       const elementPosition = element.getBoundingClientRect().top + window.scrollY;
-      
-      // Calculate offset based on scroll direction:
-      // If scrolling DOWN, the header hides itself automatically, so we need 0 offset (element goes to very top of screen).
-      // If scrolling UP, the header shows itself automatically, so we need headerOffset to act as padding.
       const isScrollingDown = elementPosition > window.scrollY;
       const offsetPosition = isScrollingDown ? elementPosition : elementPosition - headerOffset;
 
@@ -144,7 +133,6 @@ const Header = () => {
     }
   };
 
-  // Handle hash scrolling on initial load or path change
   useEffect(() => {
     if (location.hash) {
       setTimeout(() => {
@@ -171,116 +159,112 @@ const Header = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-8">
-            {navLinks.map((link, index) => (
-              <div
-                key={link.path}
-                className="relative group"
-                onMouseEnter={() => link.dropdown && setActiveDropdown(link.label)}
-                onMouseLeave={() => setActiveDropdown(null)}
-              >
-                <Link
-                  to={link.path}
-                  onClick={() => {
-                    // Si on clique sur le lien principal, on remonte en haut
-                    if (location.pathname === link.path) {
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }
-                  }}
-                  className={`flex items-center gap-1 font-inter font-medium transition-all duration-200 hover:scale-105 ${location.pathname === link.path && !location.hash
-                    ? 'text-teal-600 font-semibold'
-                    : 'text-gray-700 hover:text-teal-600'
-                    }`}
+            <div className="flex items-center space-x-8">
+              {navLinks.map((link, index) => (
+                <div
+                  key={link.path}
+                  className="relative group"
+                  onMouseEnter={() => link.dropdown && setActiveDropdown(link.label)}
+                  onMouseLeave={() => setActiveDropdown(null)}
                 >
-                  {link.label}
+                  <Link
+                    to={link.path}
+                    onClick={() => {
+                      if (location.pathname === link.path) {
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }
+                    }}
+                    className={`flex items-center gap-1 font-inter font-medium transition-all duration-200 hover:scale-105 ${location.pathname === link.path && !location.hash
+                      ? 'text-teal-600 font-semibold'
+                      : 'text-gray-700 hover:text-teal-600'
+                      }`}
+                  >
+                    {link.label}
+                    {link.dropdown && (
+                      <ChevronDown className="w-4 h-4 transition-transform duration-200 group-hover:rotate-180" />
+                    )}
+                  </Link>
+
                   {link.dropdown && (
-                    <ChevronDown className="w-4 h-4 transition-transform duration-200 group-hover:rotate-180" />
-                  )}
-                </Link>
-
-                {/* Dropdown Menu */}
-                {link.dropdown && (
-                  <div className={`absolute top-full ${index === navLinks.length - 1 ? 'right-0 origin-top-right' : 'left-0 origin-top-left'} pt-6 transition-all duration-300 transform ${activeDropdown === link.label ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible translate-y-4'
-                    }`}>
-                    <div className="relative bg-slate-950/80 backdrop-blur-xl rounded-2xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.7)] border border-teal-500/20 p-3 w-[260px] overflow-hidden">
-                      {/* Glowing orb effect in background */}
-                      <div className="absolute -top-10 -right-10 w-32 h-32 bg-teal-500/10 rounded-full blur-2xl pointer-events-none"></div>
-                      
-                      {link.dropdown.map((subItem) => (
-                        <Link
-                          key={subItem.path}
-                          to={subItem.path}
-                          onClick={(e) => {
-                            setActiveDropdown(null); // Force close dropdown
-                            if (location.pathname === '/' && subItem.path.startsWith('/#')) {
-                              e.preventDefault();
-                              const targetId = subItem.path.substring(2);
-                              // Mettre d'abord à jour l'URL (sans sauter brutalement)
-                              window.history.pushState({}, '', subItem.path);
-                              handleScrollToSection(targetId);
-                            } else if (location.pathname === '/school' && subItem.path.startsWith('/school#')) {
-                              e.preventDefault();
-                              const targetId = subItem.path.split('#')[1];
-                              window.history.pushState({}, '', subItem.path);
-                              handleScrollToSection(targetId);
-                            } else if (location.pathname === '/media' && subItem.path.startsWith('/media#')) {
-                              e.preventDefault();
-                              const targetId = subItem.path.split('#')[1];
-                              window.history.pushState({}, '', subItem.path);
-                              handleScrollToSection(targetId);
-                            } else if (location.pathname === '/contact' && subItem.path.startsWith('/contact#')) {
-                              e.preventDefault();
-                              const targetId = subItem.path.split('#')[1];
-                              window.history.pushState({}, '', subItem.path);
-                              handleScrollToSection(targetId);
-                            }
-                          }}
-                          className="relative flex items-center px-4 py-3 mx-1 my-1 text-sm font-medium text-slate-300 rounded-xl transition-all duration-300 hover:text-white group/item overflow-hidden"
-                        >
-                          {/* Hover background */}
-                          <div className="absolute inset-0 bg-gradient-to-r from-teal-500/10 to-cyan-500/10 translate-x-[-100%] group-hover/item:translate-x-0 transition-transform duration-300 z-0"></div>
-                          {/* Left sliding border */}
-                          <div className="absolute left-0 top-0 bottom-0 w-1 bg-teal-400 scale-y-0 group-hover/item:scale-y-100 transition-transform duration-300 origin-center z-10 rounded-l-xl"></div>
-                          
-                          <span className="relative z-10 translate-x-0 group-hover/item:translate-x-2 transition-transform duration-300">
-                            {subItem.label}
-                          </span>
-                        </Link>
-                      ))}
+                    <div className={`absolute top-full ${index === navLinks.length - 1 ? 'right-0 origin-top-right' : 'left-0 origin-top-left'} pt-6 transition-all duration-300 transform ${activeDropdown === link.label ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible translate-y-4'
+                      }`}>
+                      <div className="relative bg-slate-950/80 backdrop-blur-xl rounded-2xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.7)] border border-teal-500/20 p-3 w-[260px] overflow-hidden">
+                        <div className="absolute -top-10 -right-10 w-32 h-32 bg-teal-500/10 rounded-full blur-2xl pointer-events-none"></div>
+                        
+                        {link.dropdown.map((subItem) => (
+                          <Link
+                            key={subItem.path}
+                            to={subItem.path}
+                            onClick={(e) => {
+                              setActiveDropdown(null);
+                              if (location.pathname === '/' && subItem.path.startsWith('/#')) {
+                                e.preventDefault();
+                                const targetId = subItem.path.substring(2);
+                                window.history.pushState({}, '', subItem.path);
+                                handleScrollToSection(targetId);
+                              } else if (location.pathname === '/school' && subItem.path.startsWith('/school#')) {
+                                e.preventDefault();
+                                const targetId = subItem.path.split('#')[1];
+                                window.history.pushState({}, '', subItem.path);
+                                handleScrollToSection(targetId);
+                              } else if (location.pathname === '/media' && subItem.path.startsWith('/media#')) {
+                                e.preventDefault();
+                                const targetId = subItem.path.split('#')[1];
+                                window.history.pushState({}, '', subItem.path);
+                                handleScrollToSection(targetId);
+                              } else if (location.pathname === '/contact' && subItem.path.startsWith('/contact#')) {
+                                e.preventDefault();
+                                const targetId = subItem.path.split('#')[1];
+                                window.history.pushState({}, '', subItem.path);
+                                handleScrollToSection(targetId);
+                              }
+                            }}
+                            className="relative flex items-center px-4 py-3 mx-1 my-1 text-sm font-medium text-slate-300 rounded-xl transition-all duration-300 hover:text-white group/item overflow-hidden"
+                          >
+                            <div className="absolute inset-0 bg-gradient-to-r from-teal-500/10 to-cyan-500/10 translate-x-[-100%] group-hover/item:translate-x-0 transition-transform duration-300 z-0"></div>
+                            <div className="absolute left-0 top-0 bottom-0 w-1 bg-teal-400 scale-y-0 group-hover/item:scale-y-100 transition-transform duration-300 origin-center z-10 rounded-l-xl"></div>
+                            
+                            <span className="relative z-10 translate-x-0 group-hover/item:translate-x-2 transition-transform duration-300">
+                              {subItem.label}
+                            </span>
+                          </Link>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
+                  )}
+                </div>
+              ))}
+            </div>
 
-          {/* User Section */}
-          <div className="hidden lg:flex items-center space-x-3">
-            {currentUser ? (
-              <>
+            {/* User Section */}
+            <div className="flex items-center space-x-3 ml-8">
+              {currentUser ? (
+                <>
+                  <Link
+                    to="/dashboard"
+                    className="flex items-center space-x-2 font-inter font-medium px-4 py-2 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-lg bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200"
+                  >
+                    <UserCircle className="h-4 w-4" />
+                    <span className="text-sm">
+                      {`${currentUser.firstName} ${currentUser.lastName}`}
+                    </span>
+                  </Link>
+                  <button
+                    onClick={() => logout()}
+                    className="font-inter font-medium px-4 py-2 rounded-full transition-all duration-300 hover:scale-105 text-sm bg-slate-900 hover:bg-teal-600 text-white shadow-md shadow-slate-900/10"
+                  >
+                    Déconnexion
+                  </button>
+                </>
+              ) : (
                 <Link
-                  to="/dashboard"
-                  className="flex items-center space-x-2 font-inter font-medium px-4 py-2 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-lg bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200"
+                  to="/connexion"
+                  className="font-inter font-semibold px-6 py-3 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-lg bg-slate-900 hover:bg-teal-600 text-white shadow-md shadow-slate-900/10"
                 >
-                  <UserCircle className="h-4 w-4" />
-                  <span className="text-sm">
-                    {`${currentUser.firstName} ${currentUser.lastName}`}
-                  </span>
+                  Espace Membre
                 </Link>
-                <button
-                  onClick={() => logout()}
-                  className="font-inter font-medium px-4 py-2 rounded-full transition-all duration-300 hover:scale-105 text-sm bg-slate-900 hover:bg-teal-600 text-white shadow-md shadow-slate-900/10"
-                >
-                  Déconnexion
-                </button>
-              </>
-            ) : (
-              <Link
-                to="/connexion"
-                className="font-inter font-semibold px-6 py-3 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-lg bg-slate-900 hover:bg-teal-600 text-white shadow-md shadow-slate-900/10"
-              >
-                Espace Membre
-              </Link>
-            )}
+              )}
+            </div>
           </div>
 
           {/* Mobile Menu Button */}
@@ -291,99 +275,102 @@ const Header = () => {
             {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
         </div>
+      </nav>
 
-        {/* Mobile Menu */}
-        {isMobileMenuOpen && (
-          <div className="lg:hidden bg-slate-950/95 backdrop-blur-xl border-t border-teal-500/20 shadow-[0_30px_60px_rgba(0,0,0,0.8)] fixed inset-0 top-16 z-40 overflow-y-auto overscroll-contain pb-20">
-            <div className="px-4 py-6 space-y-2">
-              {navLinks.map((link) => (
-                <div key={link.path}>
-                  <Link
-                    to={link.path}
-                    className={`block font-inter font-medium py-3 px-4 rounded-xl transition-all duration-300 ${location.pathname === link.path
-                      ? 'text-white bg-gradient-to-r from-teal-500/20 to-cyan-500/20 border-l-2 border-teal-400 shadow-inner'
-                      : 'text-slate-300 hover:text-teal-300 hover:bg-slate-800/50'
-                      }`}
-                    onClick={() => {
-                      setIsMobileMenuOpen(false);
-                      if (location.pathname === link.path) {
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                      }
-                    }}
-                  >
-                    {link.label}
-                  </Link>
-                  {link.dropdown && (
-                    <div className="pl-6 mt-1 space-y-1 mb-3 border-l-2 border-slate-800/80 ml-4">
-                      {link.dropdown.map((subItem) => (
-                        <Link
-                          key={subItem.path}
-                          to={subItem.path}
-                          onClick={(e) => {
-                            setIsMobileMenuOpen(false);
-                            if (location.pathname === '/' && subItem.path.startsWith('/#')) {
-                              e.preventDefault();
-                              const targetId = subItem.path.substring(2);
-                              window.history.pushState({}, '', subItem.path);
-                              handleScrollToSection(targetId);
-                            } else if (location.pathname === '/school' && subItem.path.startsWith('/school#')) {
-                              e.preventDefault();
-                              const targetId = subItem.path.split('#')[1];
-                              window.history.pushState({}, '', subItem.path);
-                              handleScrollToSection(targetId);
-                            } else if (location.pathname === '/contact' && subItem.path.startsWith('/contact#')) {
-                              e.preventDefault();
-                              const targetId = subItem.path.split('#')[1];
-                              window.history.pushState({}, '', subItem.path);
-                              handleScrollToSection(targetId);
-                            }
-                          }}
-                          className="block text-sm font-medium text-slate-400 hover:text-white py-2.5 px-3 rounded-lg hover:bg-gradient-to-r hover:from-teal-500/10 hover:to-transparent transition-all duration-300 hover:translate-x-1"
-                        >
-                          {subItem.label}
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
-
-              {/* Mobile User Section */}
-              <div className="pt-6 mt-4 border-t border-slate-800/60 space-y-3">
-                {currentUser ? (
-                  <>
-                    <Link
-                      to="/dashboard"
-                      className="flex items-center space-x-2 bg-slate-800/80 hover:bg-slate-700/80 text-teal-400 font-inter font-medium px-4 py-3 rounded-xl border border-slate-700/50 transition-all duration-300 shadow-sm"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      <UserCircle className="h-5 w-5" />
-                      <span>{`${currentUser.firstName} ${currentUser.lastName}`}</span>
-                    </Link>
-                    <button
-                      onClick={() => {
-                        logout();
-                        setIsMobileMenuOpen(false);
-                      }}
-                      className="w-full text-left bg-slate-900 hover:bg-teal-600 text-white font-inter font-medium px-4 py-3 rounded-xl transition-all duration-300 shadow-lg shadow-slate-900/20"
-                    >
-                      Déconnexion
-                    </button>
-                  </>
-                ) : (
-                  <Link
-                    to="/connexion"
-                    className="block bg-slate-900 hover:bg-teal-600 text-white font-inter font-semibold px-6 py-3 rounded-xl transition-all duration-300 text-center shadow-lg shadow-slate-900/20"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Espace Membre
-                  </Link>
+      {/* Mobile Menu - Outside nav to avoid clipping issues */}
+      {isMobileMenuOpen && (
+        <div 
+          className="lg:hidden fixed left-0 right-0 bottom-0 top-16 z-[100] bg-slate-950/98 backdrop-blur-2xl border-t border-teal-500/20 shadow-2xl overflow-y-auto overscroll-contain"
+          style={{ height: 'calc(100vh - 64px)' }}
+        >
+          <div className="px-4 py-10 space-y-2 min-h-full pb-32">
+            {navLinks.map((link) => (
+              <div key={link.path}>
+                <Link
+                  to={link.path}
+                  className={`block font-inter font-medium py-3.5 px-4 rounded-xl transition-all duration-300 ${location.pathname === link.path
+                    ? 'text-white bg-gradient-to-r from-teal-500/20 to-cyan-500/20 border-l-4 border-teal-400 shadow-inner'
+                    : 'text-slate-300 hover:text-teal-300 hover:bg-slate-800/50'
+                    }`}
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    if (location.pathname === link.path) {
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                  }}
+                >
+                  {link.label}
+                </Link>
+                {link.dropdown && (
+                  <div className="pl-6 mt-1 space-y-1 mb-4 border-l-2 border-slate-800/80 ml-4">
+                    {link.dropdown.map((subItem) => (
+                      <Link
+                        key={subItem.path}
+                        to={subItem.path}
+                        onClick={(e) => {
+                          setIsMobileMenuOpen(false);
+                          if (location.pathname === '/' && subItem.path.startsWith('/#')) {
+                            e.preventDefault();
+                            const targetId = subItem.path.substring(2);
+                            window.history.pushState({}, '', subItem.path);
+                            handleScrollToSection(targetId);
+                          } else if (location.pathname === '/school' && subItem.path.startsWith('/school#')) {
+                            e.preventDefault();
+                            const targetId = subItem.path.split('#')[1];
+                            window.history.pushState({}, '', subItem.path);
+                            handleScrollToSection(targetId);
+                          } else if (location.pathname === '/contact' && subItem.path.startsWith('/contact#')) {
+                            e.preventDefault();
+                            const targetId = subItem.path.split('#')[1];
+                            window.history.pushState({}, '', subItem.path);
+                            handleScrollToSection(targetId);
+                          }
+                        }}
+                        className="block text-sm font-medium text-slate-400 hover:text-white py-3 px-3 rounded-lg hover:bg-gradient-to-r hover:from-teal-500/10 hover:to-transparent transition-all duration-300 hover:translate-x-1"
+                      >
+                        {subItem.label}
+                      </Link>
+                    ))}
+                  </div>
                 )}
               </div>
+            ))}
+
+            {/* Mobile User Section */}
+            <div className="pt-10 mt-8 border-t border-slate-800/60 space-y-4">
+              {currentUser ? (
+                <>
+                  <Link
+                    to="/dashboard"
+                    className="flex items-center space-x-3 bg-slate-800/80 hover:bg-slate-700/80 text-teal-400 font-inter font-medium px-4 py-5 rounded-xl border border-slate-700/50 transition-all duration-300 shadow-sm"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <UserCircle className="h-7 w-7" />
+                    <span className="text-lg">{`${currentUser.firstName} ${currentUser.lastName}`}</span>
+                  </Link>
+                  <button
+                    onClick={() => {
+                      logout();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="w-full text-left bg-slate-900 hover:bg-teal-600 text-white font-inter font-medium px-4 py-5 rounded-xl transition-all duration-300 shadow-lg shadow-slate-900/20 text-lg"
+                  >
+                    Déconnexion
+                  </button>
+                </>
+              ) : (
+                <Link
+                  to="/connexion"
+                  className="block bg-slate-900 hover:bg-teal-600 text-white font-inter font-semibold px-6 py-5 rounded-xl transition-all duration-300 text-center shadow-lg shadow-slate-900/20 text-lg"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Espace Membre
+                </Link>
+              )}
             </div>
           </div>
-        )}
-      </nav>
+        </div>
+      )}
     </header>
   );
 };
