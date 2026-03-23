@@ -227,11 +227,19 @@ const AdminMedia = () => {
 
   const handleEdit = (media: MediaItem) => {
     setEditingMedia(media);
+    
+    let localDateStr = '';
+    if (media.media_date) {
+        const d = new Date(media.media_date);
+        const tzOffsetMs = d.getTimezoneOffset() * 60000;
+        localDateStr = new Date(d.getTime() - tzOffsetMs).toISOString().split('T')[0];
+    }
+
     setFormData({
       title: media.title,
       description: media.description || '',
       media_type: media.media_type,
-      media_date: media.media_date ? new Date(media.media_date).toISOString().split('T')[0] : '',
+      media_date: localDateStr,
       published: media.published,
       is_featured: media.is_featured,
     });
