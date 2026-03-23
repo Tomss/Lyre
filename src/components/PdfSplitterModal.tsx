@@ -64,6 +64,16 @@ export const PdfSplitterModal: React.FC<PdfSplitterModalProps> = ({
     setNumPages(numPages);
   };
 
+  const getPageRangeStr = (startIndex: number) => {
+    if (!numPages) return '';
+    const sortedIndices = Object.keys(splits).map(Number).sort((a,b) => a - b);
+    const nextIndex = sortedIndices.find(idx => idx > startIndex);
+    const endPage = nextIndex ? nextIndex : numPages;
+    const pageCount = endPage - startIndex;
+    if (pageCount === 1) return `Page ${startIndex + 1} (1 page)`;
+    return `Pages ${startIndex + 1} à ${endPage} (${pageCount} pages)`;
+  };
+
   const handleInstrumentSelect = (pageIndex: number, instrumentId: string, customName: string) => {
     setSplits(prev => {
       const next = { ...prev };
@@ -291,12 +301,14 @@ export const PdfSplitterModal: React.FC<PdfSplitterModalProps> = ({
                           )}
                         </div>
                         {splitInfo?.instrument_id === '_IGNORE_' ? (
-                          <div className="text-xs font-bold text-red-700 bg-red-50 px-2.5 py-1.5 rounded-lg truncate border border-red-100 flex items-center">
-                            <span className="mr-1.5">🚫</span> {splitInfo.custom_name}
+                          <div className="text-xs font-bold text-red-700 bg-red-50 px-2.5 py-1.5 rounded-lg border border-red-100 flex flex-col gap-0.5">
+                            <div className="flex items-center"><span className="mr-1.5">🚫</span> {splitInfo.custom_name}</div>
+                            <div className="text-[10px] text-red-500 font-medium">Ne sera pas généré ({getPageRangeStr(index)})</div>
                           </div>
                         ) : splitInfo && (
-                          <div className="text-xs font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1.5 rounded-lg truncate border border-emerald-100 flex items-center">
-                            <span className="mr-1.5">✂️</span> {splitInfo.custom_name}
+                          <div className="text-xs font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1.5 rounded-lg border border-emerald-100 flex flex-col gap-0.5">
+                            <div className="flex items-center"><span className="mr-1.5">✂️</span> {splitInfo.custom_name}</div>
+                            <div className="text-[10px] text-emerald-600 font-medium">{getPageRangeStr(index)}</div>
                           </div>
                         )}
                       </div>
