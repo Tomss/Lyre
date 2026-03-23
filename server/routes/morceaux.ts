@@ -53,8 +53,8 @@ router.post('/', async (req, res) => {
     );
     for (const orchestra_id of orchestra_ids) {
       await connection.query(
-        'INSERT INTO morceau_orchestras (morceau_id, orchestra_id) VALUES (?, ?)',
-        [newMorceauId, orchestra_id]
+        'INSERT INTO morceau_orchestras (id, morceau_id, orchestra_id) VALUES (?, ?, ?)',
+        [crypto.randomUUID(), newMorceauId, orchestra_id]
       );
     }
     await connection.commit();
@@ -90,8 +90,8 @@ router.put('/:id', async (req, res) => {
     await connection.query('DELETE FROM morceau_orchestras WHERE morceau_id = ?', [id]);
     for (const orchestra_id of orchestra_ids) {
       await connection.query(
-        'INSERT INTO morceau_orchestras (morceau_id, orchestra_id) VALUES (?, ?)',
-        [id, orchestra_id]
+        'INSERT INTO morceau_orchestras (id, morceau_id, orchestra_id) VALUES (?, ?, ?)',
+        [crypto.randomUUID(), id, orchestra_id]
       );
     }
     await connection.commit();
