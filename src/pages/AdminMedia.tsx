@@ -393,7 +393,7 @@ const AdminMedia = () => {
                 {expandedTypes.has(type) && (
                   <div className="divide-y divide-slate-100">
                     {items.map(item => (
-                      <div key={item.id} className={`p-4 flex flex-col md:flex-row md:items-center md:justify-between hover:bg-slate-50/80 transition-colors duration-200 border-l-4 ${color.border}`}>
+                      <div key={item.id} className={`p-4 flex flex-col md:flex-row md:items-center md:justify-between hover:bg-slate-50/80 transition-colors duration-200`}>
                         <div className="flex items-center flex-1 mb-4 md:mb-0">
                           <div className="w-40 h-24 bg-slate-100 rounded-xl mr-6 flex-shrink-0 flex items-center justify-center overflow-hidden border border-slate-200 shadow-inner group relative">
                             <MediaPreview files={item.files} mediaType={item.media_type} />
