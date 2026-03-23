@@ -422,7 +422,7 @@ const AdminEvents = () => {
               const color = getTypeColor(type);
               return (
               <div key={type} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                <div onClick={() => toggleTypeExpansion(type)} className={`p-5 flex justify-between items-center cursor-pointer border-l-4 ${color.border} ${color.bg} hover:brightness-95 transition-all`}>
+                <div onClick={() => toggleTypeExpansion(type)} className={`p-5 flex justify-between items-center cursor-pointer ${color.bg} hover:brightness-95 transition-all`}>
                   <div className="flex items-center">
                     <div className="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center mr-4">
                       {React.createElement(getTypeIcon(type), { className: color.icon, size: 24 })}
