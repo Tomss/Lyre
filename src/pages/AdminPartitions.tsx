@@ -523,7 +523,7 @@ const AdminPartitions = () => {
                onClick={() => setShowSplitterModal(true)}
                className="flex justify-center items-center bg-indigo-600 text-white px-6 py-3 rounded-xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-200 font-bold hover:shadow-xl hover:-translate-y-0.5 duration-300 w-full sm:w-auto text-sm sm:text-base"
             >
-              <FileText size={20} className="mr-2" />
+              <Plus size={20} className="mr-2" />
               Ajouter un bloc
             </button>
             <button
