@@ -263,12 +263,12 @@ const AdminMorceaux = () => {
 
   const getOrchestraColor = (index: number) => {
     const colors = [
-      'bg-blue-100 text-blue-800',
-      'bg-green-100 text-green-800',
-      'bg-yellow-100 text-yellow-800',
-      'bg-purple-100 text-purple-800',
-      'bg-pink-100 text-pink-800',
-      'bg-indigo-100 text-indigo-800',
+      { bg: 'bg-indigo-50', text: 'text-indigo-800', icon: 'text-indigo-600', border: 'border-l-indigo-500' },
+      { bg: 'bg-emerald-50', text: 'text-emerald-800', icon: 'text-emerald-600', border: 'border-l-emerald-500' },
+      { bg: 'bg-amber-50', text: 'text-amber-800', icon: 'text-amber-600', border: 'border-l-amber-500' },
+      { bg: 'bg-rose-50', text: 'text-rose-800', icon: 'text-rose-600', border: 'border-l-rose-500' },
+      { bg: 'bg-sky-50', text: 'text-sky-800', icon: 'text-sky-600', border: 'border-l-sky-500' },
+      { bg: 'bg-purple-50', text: 'text-purple-800', icon: 'text-purple-600', border: 'border-l-purple-500' },
     ];
     return colors[index % colors.length];
   };
@@ -347,35 +347,47 @@ const AdminMorceaux = () => {
           <div className="space-y-8">
             {sortedOrchestras
               .filter(({ orchestra }) => orchestraFilter.length === 0 || orchestraFilter.includes(orchestra.id))
-              .map(({ orchestra, morceaux: orchestraMorceaux }, index) => (
-                <div key={orchestra.id} className="bg-white rounded-xl shadow-lg border border-gray-200/80 overflow-hidden">
-                  <div onClick={() => toggleOrchestraExpansion(orchestra.id)} className={`p-5 flex justify-between items-center cursor-pointer border-b border-gray-200/80 transition-colors ${getOrchestraColor(index).replace('text-', 'bg-').replace('-800', '-200')} hover:bg-gray-100/50`}>
+              .map(({ orchestra, morceaux: orchestraMorceaux }, index) => {
+                const color = getOrchestraColor(index);
+                return (
+                <div key={orchestra.id} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                  <div onClick={() => toggleOrchestraExpansion(orchestra.id)} className={`p-5 flex justify-between items-center cursor-pointer border-l-4 ${color.border} ${color.bg} hover:brightness-95 transition-all`}>
                     <div className="flex items-center">
-                      <Users size={28} className={`mr-4 ${getOrchestraColor(index).replace('bg-', 'text-').replace('-100', '-600')}`} />
+                      <div className="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center mr-4">
+                        <Users size={24} className={color.icon} />
+                      </div>
                       <div>
-                        <h2 className={`text-2xl font-bold ${getOrchestraColor(index).replace('bg-', 'text-').replace('-100', '-800')}`}>{orchestra.name} <span className="text-lg font-normal">({orchestraMorceaux.length})</span></h2>
+                        <h2 className={`text-xl font-bold ${color.text}`}>{orchestra.name} 
+                          <span className="ml-2 px-2.5 py-0.5 rounded-full bg-white/60 text-sm font-semibold">{orchestraMorceaux.length} morceau{orchestraMorceaux.length > 1 ? 'x' : ''}</span>
+                        </h2>
                       </div>
                     </div>
-                    <ChevronRight className={`transform transition-transform duration-300 ${expandedOrchestras.has(orchestra.id) ? 'rotate-90' : ''}`} />
+                    <div className="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center">
+                      <ChevronRight className={`transform transition-transform duration-300 text-slate-500 ${expandedOrchestras.has(orchestra.id) ? 'rotate-90' : ''}`} />
+                    </div>
                   </div>
                   {expandedOrchestras.has(orchestra.id) && (
-                    <div className="divide-y divide-gray-200/80">
+                    <div className="divide-y divide-slate-100">
                       {orchestraMorceaux.map(morceau => (
-                        <div key={morceau.id} className="p-4 flex flex-col md:flex-row md:items-center md:justify-between hover:bg-gray-50/50 transition-colors duration-200">
+                        <div key={morceau.id} className="p-4 flex flex-col md:flex-row md:items-center md:justify-between hover:bg-slate-50/80 transition-colors duration-200">
                           <div className="flex-1 mb-4 md:mb-0">
-                            <p className="font-bold text-lg text-gray-800">{morceau.nom}</p>
-                            <p className="text-sm text-gray-500">{morceau.compositeur}{morceau.arrangement && ` - Arr. ${morceau.arrangement}`}</p>
+                            <p className="font-semibold text-slate-800">{morceau.nom}</p>
+                            <p className="text-sm text-slate-500 flex items-center mt-1">
+                              <Music className="w-3 h-3 mr-1.5 opacity-50" />
+                              {morceau.compositeur || 'Compositeur inconnu'}
+                              {morceau.arrangement && <span className="ml-2 text-slate-400">• Arr. {morceau.arrangement}</span>}
+                            </p>
                           </div>
                           <div className="flex items-center space-x-2 flex-shrink-0">
-                            <button onClick={() => handleEdit(morceau)} className="p-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-all duration-300 hover:scale-110" title="Modifier"><Edit size={18} /></button>
-                            <button onClick={() => confirmDelete(morceau)} className="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-all duration-300 hover:scale-110" title="Supprimer"><Trash2 size={18} /></button>
+                            <button onClick={() => handleEdit(morceau)} className="p-2 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition-all duration-300 hover:scale-110 shadow-sm" title="Modifier"><Edit size={16} /></button>
+                            <button onClick={() => confirmDelete(morceau)} className="p-2 text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl transition-all duration-300 hover:scale-110 shadow-sm" title="Supprimer"><Trash2 size={16} /></button>
                           </div>
                         </div>
                       ))}
                     </div>
                   )}
                 </div>
-              ))}
+              )})}
           </div>
         )}
 
