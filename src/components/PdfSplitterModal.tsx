@@ -92,33 +92,19 @@ export const PdfSplitterModal: React.FC<PdfSplitterModalProps> = ({
         }))
         .sort((a, b) => a.start_page - b.start_page);
 
-      // 1. Upload the PDF file first
-      const uploadFormData = new FormData();
-      uploadFormData.append('file', selectedFile);
+      // Send the split command WITH the file directly in FormData
+      const splitFormData = new FormData();
+      splitFormData.append('file', selectedFile);
+      splitFormData.append('morceau_id', selectedMorceauId);
+      splitFormData.append('original_name', selectedFile.name);
+      splitFormData.append('splits', JSON.stringify(sortedSplits));
 
-      const uploadRes = await fetch(`${API_URL}/upload`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` },
-        body: uploadFormData,
-      });
-
-      if (!uploadRes.ok) throw new Error('Erreur lors du téléchargement du PDF.');
-      const uploadData = await uploadRes.json();
-      const filePath = uploadData.filePath;
-
-      // 2. Send the split command
       const response = await fetch(`${API_URL}/partitions/batch-split`, {
         method: 'POST',
         headers: { 
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({
-          morceau_id: selectedMorceauId,
-          file_path: filePath,
-          original_name: selectedFile.name,
-          splits: sortedSplits
-        }),
+        body: splitFormData,
       });
 
       if (!response.ok) {
