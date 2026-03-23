@@ -25,6 +25,11 @@ interface PdfSplitterModalProps {
   token: string | null;
 }
 
+interface SplitInfo {
+  instrument_id: string;
+  custom_name: string;
+}
+
 export const PdfSplitterModal: React.FC<PdfSplitterModalProps> = ({
   isOpen,
   onClose,
@@ -37,7 +42,7 @@ export const PdfSplitterModal: React.FC<PdfSplitterModalProps> = ({
   const [selectedMorceauId, setSelectedMorceauId] = useState<string>('');
   const [numPages, setNumPages] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [splits, setSplits] = useState<Record<number, string>>({});
+  const [splits, setSplits] = useState<Record<number, SplitInfo>>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -59,13 +64,13 @@ export const PdfSplitterModal: React.FC<PdfSplitterModalProps> = ({
     setNumPages(numPages);
   };
 
-  const handleInstrumentSelect = (pageIndex: number, instrumentId: string) => {
+  const handleInstrumentSelect = (pageIndex: number, instrumentId: string, customName: string) => {
     setSplits(prev => {
       const next = { ...prev };
       if (!instrumentId) {
         delete next[pageIndex];
       } else {
-        next[pageIndex] = instrumentId;
+        next[pageIndex] = { instrument_id: instrumentId, custom_name: customName };
       }
       return next;
     });
@@ -80,9 +85,10 @@ export const PdfSplitterModal: React.FC<PdfSplitterModalProps> = ({
     try {
       // Sort splits by page index
       const sortedSplits = Object.entries(splits)
-        .map(([page, instrument_id]) => ({
+        .map(([page, info]) => ({
           start_page: parseInt(page) + 1, // 1-indexed for backend
-          instrument_id
+          instrument_id: info.instrument_id,
+          custom_name: info.custom_name
         }))
         .sort((a, b) => a.start_page - b.start_page);
 
@@ -186,10 +192,9 @@ export const PdfSplitterModal: React.FC<PdfSplitterModalProps> = ({
 
           {selectedFile && (
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm flex-1 flex flex-col md:flex-row overflow-hidden min-h-[500px]">
-              {/* Left Column: Large Preview */}
-              <div className="flex-1 bg-slate-100 flex flex-col p-4 relative">
-                <h3 className="text-sm font-semibold text-slate-700 mb-4 flex-shrink-0">3. Aperçu de la page {currentPage} sur {numPages}</h3>
-                <div className="flex-1 overflow-auto flex items-start justify-center pb-4 rounded-xl">
+              {/* Left Column: Large Preview & Controls */}
+              <div className="flex-1 bg-slate-100 flex flex-col relative overflow-hidden">
+                <div className="flex-1 overflow-auto flex items-start justify-center p-4">
                   <Document
                     file={selectedFile}
                     onLoadSuccess={onDocumentLoadSuccess}
@@ -206,70 +211,96 @@ export const PdfSplitterModal: React.FC<PdfSplitterModalProps> = ({
                     )}
                   </Document>
                 </div>
-                {/* Navigation Buttons */}
-                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center bg-white shadow-xl border border-slate-200 rounded-full px-2 py-1">
+                
+                {/* Navigation Buttons overlapping preview */}
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-2 opacity-50 hover:opacity-100 transition">
                   <button 
                     onClick={() => setCurrentPage(p => Math.max(1, p - 1))} 
                     disabled={currentPage === 1}
-                    className="p-2 hover:bg-slate-100 rounded-full disabled:opacity-30 transition"
+                    className="p-3 bg-white text-slate-700 shadow-xl border border-slate-200 rounded-full disabled:opacity-30 transition hover:bg-slate-50"
                   >
-                    Précédent
+                    ↑
                   </button>
-                  <span className="px-4 font-bold text-slate-700">{currentPage} / {numPages}</span>
                   <button 
                     onClick={() => setCurrentPage(p => Math.min(numPages || 1, p + 1))} 
                     disabled={currentPage === numPages}
-                    className="p-2 hover:bg-slate-100 rounded-full disabled:opacity-30 transition"
+                    className="p-3 bg-white text-slate-700 shadow-xl border border-slate-200 rounded-full disabled:opacity-30 transition hover:bg-slate-50"
                   >
-                    Suivant
+                    ↓
                   </button>
+                </div>
+
+                {/* Bottom Panel: Instrument Selection Buttons for CURRENT page */}
+                <div className="bg-white border-t border-slate-200 p-5 shadow-[0_-10px_30px_rgba(0,0,0,0.05)] flex-shrink-0 z-10 w-full">
+                  <h4 className="text-sm font-bold text-slate-800 mb-3">Sélectionner l'instrument qui commence à la page {currentPage} :</h4>
+                  <div className="flex flex-wrap gap-2 mb-4 max-h-[140px] overflow-y-auto p-1">
+                    <button 
+                      onClick={() => handleInstrumentSelect(currentPage - 1, '', '')} 
+                      className={`px-3 py-2 rounded-xl text-xs font-bold transition flex-shrink-0 ${!splits[currentPage - 1] ? 'bg-slate-800 text-white shadow-md' : 'bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700'}`}
+                    >
+                      Aucun instrument ne commence ici
+                    </button>
+                    {instruments.map(inst => {
+                      const isSelected = splits[currentPage - 1]?.instrument_id === inst.id;
+                      return (
+                        <button 
+                          key={inst.id} 
+                          onClick={() => handleInstrumentSelect(currentPage - 1, inst.id, inst.name)} 
+                          className={`px-3 py-2 rounded-xl text-xs font-bold transition border flex-shrink-0 ${isSelected ? 'bg-indigo-600 border-indigo-700 text-white shadow-md ring-2 ring-indigo-200' : 'bg-white border-slate-200 text-slate-600 hover:border-indigo-300 hover:bg-indigo-50/50'}`}
+                        >
+                          {inst.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  
+                  {splits[currentPage - 1] && (
+                    <div className="flex flex-col md:flex-row md:items-center gap-3 bg-indigo-50/50 p-4 rounded-xl border border-indigo-100 animate-in slide-in-from-bottom-2">
+                      <label className="text-sm font-semibold text-indigo-900 whitespace-nowrap">Nom de la partition générée :</label>
+                      <input 
+                        type="text" 
+                        value={splits[currentPage - 1].custom_name}
+                        onChange={(e) => handleInstrumentSelect(currentPage - 1, splits[currentPage - 1].instrument_id, e.target.value)}
+                        className="flex-1 px-4 py-2 text-sm rounded-xl border border-indigo-200 outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white shadow-sm font-medium"
+                        placeholder="Ex: Flûte 1"
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
 
-              {/* Right Column: Scrollable list of pages to assign instruments */}
-              <div className="w-full md:w-[350px] border-l border-slate-200 bg-white flex flex-col flex-shrink-0">
-                <div className="p-4 border-b border-slate-100 bg-slate-50">
-                  <h3 className="text-sm font-semibold text-slate-700">4. Associer les instruments</h3>
-                  <p className="text-xs text-slate-500 mt-1">Sélectionnez l'instrument correpondant sous la page où il commence (le système découpera jusqu'à l'instrument suivant peu importe le nombre de pages).</p>
+              {/* Right Column: Scrollable list of pages overview */}
+              <div className="w-full md:w-[280px] border-l border-slate-200 bg-slate-50 flex flex-col flex-shrink-0">
+                <div className="p-4 border-b border-slate-200 bg-white shadow-sm z-10">
+                  <h3 className="text-sm font-bold text-slate-800">Vue d'ensemble</h3>
+                  <p className="text-xs text-slate-500 mt-1">{Object.keys(splits).length} partition(s) prêtes à découper</p>
                 </div>
                 
-                <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                <div className="flex-1 overflow-y-auto p-4 space-y-2 relative">
                   {numPages && Array.from(new Array(numPages), (_, index) => {
                     const pageNum = index + 1;
                     const isSelected = currentPage === pageNum;
-                    const assignedInstrumentId = splits[index];
+                    const splitInfo = splits[index];
                     
                     return (
                       <div 
                         key={`page_list_${pageNum}`} 
                         onClick={() => setCurrentPage(pageNum)}
-                        className={`p-3 rounded-xl border transition-all cursor-pointer ${
-                          isSelected ? 'border-indigo-500 bg-indigo-50 shadow-sm ring-1 ring-indigo-500' : 'border-slate-200 hover:border-indigo-300'
+                        className={`p-3 rounded-xl border transition-all cursor-pointer flex flex-col gap-1.5 ${
+                          isSelected ? 'border-indigo-500 bg-white shadow-md ring-1 ring-indigo-500 scale-[1.02]' : 'border-slate-200 bg-white hover:border-indigo-300 hover:shadow-sm'
                         }`}
                       >
-                        <div className="flex justify-between items-center mb-2">
-                          <span className={`font-bold text-sm ${isSelected ? 'text-indigo-700' : 'text-slate-700'}`}>Page {pageNum}</span>
-                          {assignedInstrumentId && (
-                            <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center">
-                              <CheckCircle size={10} className="mr-1" />
-                              Instrument assigné
-                            </span>
+                        <div className="flex justify-between items-center">
+                          <span className={`font-bold text-sm ${isSelected ? 'text-indigo-700' : 'text-slate-600'}`}>Page {pageNum}</span>
+                          {splitInfo && (
+                            <CheckCircle size={16} className="text-emerald-500 drop-shadow-sm" />
                           )}
                         </div>
-                        
-                        <select
-                          value={splits[index] || ''}
-                          onClick={(e) => e.stopPropagation()}
-                          onChange={(e) => handleInstrumentSelect(index, e.target.value)}
-                          className={`w-full text-xs p-2.5 rounded-lg border outline-none font-medium transition cursor-pointer ${
-                            splits[index] ? 'border-emerald-400 bg-emerald-50 text-emerald-800' : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
-                          }`}
-                        >
-                          <option value="">-- Aucun début d'instrument ici --</option>
-                          {instruments.map(inst => (
-                            <option key={inst.id} value={inst.id}>{inst.name}</option>
-                          ))}
-                        </select>
+                        {splitInfo && (
+                          <div className="text-xs font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1.5 rounded-lg truncate border border-emerald-100 flex items-center">
+                            <span className="mr-1.5">✂️</span> {splitInfo.custom_name}
+                          </div>
+                        )}
                       </div>
                     );
                   })}
