@@ -238,7 +238,13 @@ export const PdfSplitterModal: React.FC<PdfSplitterModalProps> = ({
                       onClick={() => handleInstrumentSelect(currentPage - 1, '', '')} 
                       className={`px-3 py-2 rounded-xl text-xs font-bold transition flex-shrink-0 ${!splits[currentPage - 1] ? 'bg-slate-800 text-white shadow-md' : 'bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700'}`}
                     >
-                      Aucun instrument ne commence ici
+                      Aucun changement de page ici
+                    </button>
+                    <button 
+                      onClick={() => handleInstrumentSelect(currentPage - 1, '_IGNORE_', 'Pages ignorées')} 
+                      className={`px-3 py-2 rounded-xl text-xs font-bold transition flex-shrink-0 ${splits[currentPage - 1]?.instrument_id === '_IGNORE_' ? 'bg-red-600 border-red-700 text-white shadow-md ring-2 ring-red-200' : 'bg-white border-slate-200 text-red-600 hover:bg-red-50 border hover:border-red-300'}`}
+                    >
+                      🚫 Ignorer à partir d'ici (Ne rien générer)
                     </button>
                     {instruments.map(inst => {
                       const isSelected = splits[currentPage - 1]?.instrument_id === inst.id;
@@ -254,7 +260,7 @@ export const PdfSplitterModal: React.FC<PdfSplitterModalProps> = ({
                     })}
                   </div>
                   
-                  {splits[currentPage - 1] && (
+                  {splits[currentPage - 1] && splits[currentPage - 1].instrument_id !== '_IGNORE_' && (
                     <div className="flex flex-col md:flex-row md:items-center gap-3 bg-indigo-50/50 p-4 rounded-xl border border-indigo-100 animate-in slide-in-from-bottom-2">
                       <label className="text-sm font-semibold text-indigo-900 whitespace-nowrap">Nom de la partition générée :</label>
                       <input 
@@ -292,11 +298,17 @@ export const PdfSplitterModal: React.FC<PdfSplitterModalProps> = ({
                       >
                         <div className="flex justify-between items-center">
                           <span className={`font-bold text-sm ${isSelected ? 'text-indigo-700' : 'text-slate-600'}`}>Page {pageNum}</span>
-                          {splitInfo && (
+                          {splitInfo?.instrument_id === '_IGNORE_' ? (
+                            <span className="text-[10px] w-5 h-5 bg-red-100 text-red-600 rounded-full flex items-center justify-center font-bold">🚫</span>
+                          ) : splitInfo && (
                             <CheckCircle size={16} className="text-emerald-500 drop-shadow-sm" />
                           )}
                         </div>
-                        {splitInfo && (
+                        {splitInfo?.instrument_id === '_IGNORE_' ? (
+                          <div className="text-xs font-bold text-red-700 bg-red-50 px-2.5 py-1.5 rounded-lg truncate border border-red-100 flex items-center">
+                            <span className="mr-1.5">🚫</span> {splitInfo.custom_name}
+                          </div>
+                        ) : splitInfo && (
                           <div className="text-xs font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1.5 rounded-lg truncate border border-emerald-100 flex items-center">
                             <span className="mr-1.5">✂️</span> {splitInfo.custom_name}
                           </div>
