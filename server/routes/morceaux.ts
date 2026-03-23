@@ -1,4 +1,4 @@
-﻿import { Router } from 'express';
+import { Router } from 'express';
 import { authenticateToken } from '../middleware/auth';
 import pool from '../db';
 import crypto from 'crypto';
@@ -17,8 +17,8 @@ router.get('/', async (req, res) => {
     const [morceaux] = await pool.query(`
       SELECT 
         m.*, 
-        JSON_ARRAYAGG(JSON_OBJECT('id', o.id, 'name', o.name))
-        AS orchestras
+        JSON_ARRAYAGG(JSON_OBJECT('id', o.id, 'name', o.name)) AS orchestras,
+        (SELECT COUNT(*) FROM partitions p WHERE p.morceau_id = m.id) AS partitions_count
       FROM morceaux m
       LEFT JOIN morceau_orchestras mo ON m.id = mo.morceau_id
       LEFT JOIN orchestras o ON mo.orchestra_id = o.id
@@ -115,8 +115,8 @@ router.delete('/:id', async (req, res) => {
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
-    // Supprimer les partitions associÃ©es (si la logique mÃ©tier le demande)
-    // await connection.query('DELETE FROM partitions WHERE morceau_id = ?', [id]);
+    // Supprimer les partitions associées (logique de cascade)
+    await connection.query('DELETE FROM partitions WHERE morceau_id = ?', [id]);
     await connection.query('DELETE FROM morceau_orchestras WHERE morceau_id = ?', [id]);
     const [result] = await connection.query('DELETE FROM morceaux WHERE id = ?', [id]);
     // @ts-ignore
