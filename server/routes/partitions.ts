@@ -4,6 +4,7 @@ import pool from '../db';
 import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
+import multer from 'multer';
 import { PDFDocument } from 'pdf-lib';
 import { fileURLToPath } from 'url';
 
@@ -58,37 +59,37 @@ router.get('/', async (req, res) => {
   }
 });
 
-router.post('/batch-split', async (req, res) => {
+const tempUploadDir = path.join(__dirname, '../../uploads/temp');
+if (!fs.existsSync(tempUploadDir)) {
+    fs.mkdirSync(tempUploadDir, { recursive: true });
+}
+const tempUpload = multer({ 
+    dest: tempUploadDir,
+    limits: { fileSize: 150 * 1024 * 1024 } // 150MB limit 
+});
+
+router.post('/batch-split', tempUpload.single('file'), async (req, res) => {
     // @ts-ignore
     const userRole = (req as any).user.role;
     if (userRole !== 'Admin' && (!(req as any).user.managedModules || !(req as any).user.managedModules.includes('morceaux')) && userRole !== 'Gestionnaire') {
         return res.status(403).json({ message: 'Accès refusé.' });
     }
 
-    const { morceau_id, file_path, original_name, splits } = req.body;
+    const { morceau_id, original_name, splits: splitsString } = req.body;
+    
+    let splits;
+    try {
+        splits = JSON.parse(splitsString);
+    } catch (e) {
+        return res.status(400).json({ message: 'Format des données invalide.' });
+    }
 
-    if (!morceau_id || !file_path || !splits || !Array.isArray(splits) || splits.length === 0) {
-        return res.status(400).json({ message: 'Données manquantes pour le découpage.' });
+    if (!morceau_id || !req.file || !splits || !Array.isArray(splits) || splits.length === 0) {
+        return res.status(400).json({ message: 'Données ou fichier manquants pour le découpage.' });
     }
 
     try {
-        // Resolve the local file path
-        // filePath format is typically "/uploads/file-12345.pdf"
-        const isCloudinary = file_path.startsWith('http');
-        
-        let pdfBytes: Uint8Array;
-        
-        if (isCloudinary) {
-            const response = await fetch(file_path);
-            if (!response.ok) throw new Error('Impossible de télécharger le PDF source.');
-            const arrayBuffer = await response.arrayBuffer();
-            pdfBytes = new Uint8Array(arrayBuffer);
-        } else {
-            // Local filePath
-            const localPath = path.join(__dirname, '../../', file_path.replace(/^\//, ''));
-            if (!fs.existsSync(localPath)) throw new Error('Fichier PDF introuvable sur le disque.');
-            pdfBytes = fs.readFileSync(localPath);
-        }
+        const pdfBytes = fs.readFileSync(req.file.path);
 
         const masterPdf = await PDFDocument.load(pdfBytes);
         const totalPages = masterPdf.getPageCount();
@@ -165,6 +166,13 @@ router.post('/batch-split', async (req, res) => {
             throw dbError;
         } finally {
             connection.release();
+        }
+
+        // Clean up the temporary uploaded master PDF
+        try {
+            fs.unlinkSync(req.file.path);
+        } catch (cleanupErr) {
+            console.error('Failed to clean up temp master PDF:', cleanupErr);
         }
 
     } catch (error) {
