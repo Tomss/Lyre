@@ -1,7 +1,11 @@
-﻿import { Router } from 'express';
+import { Router } from 'express';
 import { authenticateToken } from '../middleware/auth';
 import pool from '../db';
 import crypto from 'crypto';
+import fs from 'fs';
+import path from 'path';
+import { PDFDocument } from 'pdf-lib';
+import { fileURLToPath } from 'url';
 
 const router = Router();
 
@@ -50,8 +54,119 @@ router.get('/', async (req, res) => {
 
   } catch (error) {
     console.error('Error fetching partitions:', error);
-    res.status(500).json({ message: 'Erreur lors de la rÃ©cupÃ©ration des partitions.' });
+    res.status(500).json({ message: 'Erreur lors de la récupération des partitions.' });
   }
+});
+
+router.post('/batch-split', async (req, res) => {
+    // @ts-ignore
+    const userRole = (req as any).user.role;
+    if (userRole !== 'Admin' && (!(req as any).user.managedModules || !(req as any).user.managedModules.includes('morceaux')) && userRole !== 'Gestionnaire') {
+        return res.status(403).json({ message: 'Accès refusé.' });
+    }
+
+    const { morceau_id, file_path, original_name, splits } = req.body;
+
+    if (!morceau_id || !file_path || !splits || !Array.isArray(splits) || splits.length === 0) {
+        return res.status(400).json({ message: 'Données manquantes pour le découpage.' });
+    }
+
+    try {
+        // Resolve the local file path
+        // filePath format is typically "/uploads/file-12345.pdf"
+        const isCloudinary = file_path.startsWith('http');
+        
+        let pdfBytes: Uint8Array;
+        
+        if (isCloudinary) {
+            const response = await fetch(file_path);
+            if (!response.ok) throw new Error('Impossible de télécharger le PDF source.');
+            const arrayBuffer = await response.arrayBuffer();
+            pdfBytes = new Uint8Array(arrayBuffer);
+        } else {
+            // Local filePath
+            const localPath = path.join(__dirname, '../../', file_path.replace(/^\//, ''));
+            if (!fs.existsSync(localPath)) throw new Error('Fichier PDF introuvable sur le disque.');
+            pdfBytes = fs.readFileSync(localPath);
+        }
+
+        const masterPdf = await PDFDocument.load(pdfBytes);
+        const totalPages = masterPdf.getPageCount();
+
+        const connection = await pool.getConnection();
+
+        try {
+            await connection.beginTransaction();
+
+            const createdPartitions = [];
+
+            for (let i = 0; i < splits.length; i++) {
+                const currentSplit = splits[i];
+                const nextSplit = splits[i + 1];
+                
+                // Pages in pdf-lib are 0-indexed, but start_page from frontend is 1-indexed
+                const startIdx = currentSplit.start_page - 1;
+                const endIdx = nextSplit ? (nextSplit.start_page - 2) : (totalPages - 1);
+
+                if (startIdx < 0 || endIdx >= totalPages || startIdx > endIdx) {
+                    console.warn(`Plage de pages invalide pour le split: ${startIdx} à ${endIdx}. Pages totales: ${totalPages}`);
+                    continue; // Skip invalid splits
+                }
+
+                // Create new document for this instrument
+                const newPdf = await PDFDocument.create();
+                const pageIndices = Array.from({ length: endIdx - startIdx + 1 }, (_, k) => startIdx + k);
+                const copiedPages = await newPdf.copyPages(masterPdf, pageIndices);
+                
+                copiedPages.forEach((page) => newPdf.addPage(page));
+
+                const newPdfBytes = await newPdf.save();
+                
+                // Save new PDF to disk (or cloudinary if needed, but we'll use local /uploads for split results by default to be safe and simple)
+                const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+                const newFilename = `split-${uniqueSuffix}.pdf`;
+                const localUploadDir = path.join(__dirname, '../../uploads');
+                if (!fs.existsSync(localUploadDir)) {
+                    fs.mkdirSync(localUploadDir, { recursive: true });
+                }
+                const savePath = path.join(localUploadDir, newFilename);
+                fs.writeFileSync(savePath, newPdfBytes);
+
+                const newFilePath = `/uploads/${newFilename}`;
+                const newPartitionId = crypto.randomUUID();
+
+                await connection.query(
+                    'INSERT INTO partitions (id, nom, morceau_id, instrument_id, file_path, file_name, file_type, file_size, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                    [
+                        newPartitionId, 
+                        original_name ? `Extrait de ${original_name}` : 'Partition découpée', 
+                        morceau_id, 
+                        currentSplit.instrument_id, 
+                        newFilePath, 
+                        newFilename, 
+                        'application/pdf', 
+                        newPdfBytes.length, 
+                        new Date(), 
+                        new Date()
+                    ]
+                );
+
+                createdPartitions.push(newPartitionId);
+            }
+
+            await connection.commit();
+            res.status(200).json({ message: `${createdPartitions.length} partition(s) générée(s) avec succès !` });
+        } catch (dbError) {
+            await connection.rollback();
+            throw dbError;
+        } finally {
+            connection.release();
+        }
+
+    } catch (error) {
+        console.error('Error during batch split:', error);
+        res.status(500).json({ message: 'Erreur interne lors du découpage du PDF.' });
+    }
 });
 
 router.post('/', async (req, res) => {

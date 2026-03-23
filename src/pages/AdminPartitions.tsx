@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { Navigate, Link } from 'react-router-dom';
 
 import { API_URL } from '../config';
+import { PdfSplitterModal } from '../components/PdfSplitterModal';
 
 interface Partition {
   id: string;
@@ -67,6 +68,7 @@ const AdminPartitions = () => {
   const [instrumentFilter, setInstrumentFilter] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [showSplitterModal, setShowSplitterModal] = useState(false);
   const [expandedMorceaux, setExpandedMorceaux] = useState<Set<string>>(new Set());
   const [editingPartition, setEditingPartition] = useState<Partition | null>(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState<DeleteConfirmation>({
@@ -510,16 +512,35 @@ const AdminPartitions = () => {
             <ArrowLeft className="h-4 w-4 mr-1 group-hover:-translate-x-1 transition-transform" />
             Retour au tableau de bord
           </Link>
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-            <h1 className="text-3xl font-bold text-slate-800 font-poppins flex items-center">
-              <FileText className="mr-3 h-8 w-8 text-indigo-600" />
-              Gestion des Partitions
-            </h1>
-            <button onClick={() => { setEditingPartition(null); setShowAddForm(true); }} className="flex items-center px-5 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-200">
-              <Plus className="mr-2 h-5 w-5" />
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+          <div>
+            <h1 className="text-3xl font-black text-slate-800 tracking-tight mb-2">Partitions</h1>
+            <p className="text-slate-500 font-medium">Gérez simplement toutes vos partitions.</p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+            <button
+               onClick={() => setShowSplitterModal(true)}
+               className="flex items-center justify-center px-6 py-3 bg-white text-indigo-600 border-2 border-indigo-100 hover:bg-indigo-50 hover:border-indigo-200 rounded-xl font-bold transition shadow-sm w-full md:w-auto text-sm group"
+            >
+              <FileText size={18} className="mr-2 text-indigo-500 group-hover:text-indigo-600 transition" />
+              Découper un PDF Master
+            </button>
+            <button
+               onClick={() => {
+                 setEditingPartition(null);
+                 setFormData({ nom: '', morceau_id: '', instrument_id: '' });
+                 setSelectedFile(null);
+                 setFilePreview(null);
+                 setShowAddForm(true);
+               }}
+               className="flex justify-center items-center bg-indigo-600 text-white px-6 py-3 rounded-xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-200 font-bold hover:shadow-xl hover:-translate-y-0.5 duration-300 w-full sm:w-auto"
+            >
+              <Plus size={20} className="mr-2" />
               Ajouter une partition
             </button>
           </div>
+        </div>
         </div>
 
         {/* Filters and Search */}
@@ -728,6 +749,18 @@ const AdminPartitions = () => {
             </div>
           </div>
         )}
+
+        <PdfSplitterModal
+          isOpen={showSplitterModal}
+          onClose={() => setShowSplitterModal(false)}
+          morceaux={morceaux}
+          instruments={instruments}
+          onSuccess={() => {
+            showNotification('Partitions générées avec succès !');
+            fetchPartitions();
+          }}
+          token={token}
+        />
 
         {/* Delete Confirmation Modal */}
         {deleteConfirmation.isOpen && (
