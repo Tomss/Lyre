@@ -136,7 +136,7 @@ router.post('/batch-split', tempUpload.single('file'), async (req, res) => {
                 const newPdfBytes = await newPdf.save();
                 
                 const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-                const newFilename = `split-${uniqueSuffix}.pdf`;
+                const newFilename = `${uniqueSuffix}.pdf`;
                 let finalFilePath = '';
                 
                 if (process.env.CLOUDINARY_CLOUD_NAME) {
@@ -147,7 +147,7 @@ router.post('/batch-split', tempUpload.single('file'), async (req, res) => {
                             {
                                 folder: 'lyre-uploads',
                                 resource_type: 'auto',
-                                public_id: `split-${uniqueSuffix}`,
+                                public_id: `${uniqueSuffix}`,
                                 format: 'pdf'
                             },
                             (error, result) => {
