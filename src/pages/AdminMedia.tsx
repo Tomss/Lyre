@@ -253,12 +253,17 @@ const AdminMedia = () => {
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case 'album': return 'bg-indigo-100 text-indigo-800 border-indigo-200';
-      case 'enregistrement': return 'bg-emerald-100 text-emerald-800 border-emerald-200';
-      case 'journal': return 'bg-amber-100 text-amber-800 border-amber-200';
-      case 'lyrissimot': return 'bg-rose-100 text-rose-800 border-rose-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'album': return { bg: 'bg-indigo-50', text: 'text-indigo-800', icon: 'text-indigo-600', border: 'border-l-indigo-500' };
+      case 'enregistrement': return { bg: 'bg-emerald-50', text: 'text-emerald-800', icon: 'text-emerald-600', border: 'border-l-emerald-500' };
+      case 'journal': return { bg: 'bg-amber-50', text: 'text-amber-800', icon: 'text-amber-600', border: 'border-l-amber-500' };
+      case 'lyrissimot': return { bg: 'bg-rose-50', text: 'text-rose-800', icon: 'text-rose-600', border: 'border-l-rose-500' };
+      default: return { bg: 'bg-slate-50', text: 'text-slate-800', icon: 'text-slate-600', border: 'border-l-slate-500' };
     }
+  };
+
+  const clearAllFilters = () => {
+    setTypeFilter(['album', 'enregistrement', 'journal', 'lyrissimot']);
+    setSearchTerm('');
   };
 
   const getTypeIcon = (type: string) => {
@@ -347,10 +352,11 @@ const AdminMedia = () => {
                 <button onClick={() => setTypeFilter(['lyrissimot'])} className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${typeFilter.length === 1 && typeFilter[0] === 'lyrissimot' ? 'bg-rose-500 text-white shadow-md shadow-rose-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>Lyrissimots</button>
               </div>
             </div>
-            <div className="lg:border-l lg:pl-6 border-slate-100 flex items-end lg:ml-auto pt-4 lg:pt-0 pb-0.5">
+            <div className="lg:border-l lg:pl-6 border-slate-100 flex flex-col justify-start gap-2 border-t lg:border-t-0 pt-4 lg:pt-0 min-w-[200px]">
+              <button onClick={clearAllFilters} className="text-sm font-medium text-slate-500 hover:text-indigo-600 transition-colors w-full text-left md:text-center block mb-2">Réinitialiser les filtres</button>
               <div className="flex items-center space-x-2">
-                <button onClick={expandAllTypes} className="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl hover:bg-slate-200 transition text-sm font-medium whitespace-nowrap">Tout déplier</button>
-                <button onClick={collapseAllTypes} className="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl hover:bg-slate-200 transition text-sm font-medium whitespace-nowrap">Tout replier</button>
+                <button onClick={expandAllTypes} className="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl hover:bg-slate-200 transition text-sm font-medium whitespace-nowrap w-full">Tout déplier</button>
+                <button onClick={collapseAllTypes} className="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl hover:bg-slate-200 transition text-sm font-medium whitespace-nowrap w-full">Tout replier</button>
               </div>
             </div>
           </div>
@@ -364,21 +370,30 @@ const AdminMedia = () => {
           </div>
         ) : (
           <div className="space-y-8">
-            {Object.entries(mediaByType).map(([type, items]) => (
-              <div key={type} className="bg-white rounded-xl shadow-lg border border-gray-200/80 overflow-hidden">
-                <div onClick={() => toggleTypeExpansion(type)} className={`p-5 flex justify-between items-center cursor-pointer border-b border-gray-200/80 transition-colors ${getTypeColor(type).replace('text-', 'bg-').replace('-800', '-200')} hover:bg-gray-100/50`}>
+            {Object.entries(mediaByType).map(([type, items]) => {
+              const color = getTypeColor(type);
+              return (
+              <div key={type} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div onClick={() => toggleTypeExpansion(type)} className={`p-5 flex justify-between items-center cursor-pointer border-l-4 ${color.border} ${color.bg} hover:brightness-95 transition-all`}>
                   <div className="flex items-center">
-                    {React.createElement(getTypeIcon(type), { className: `h-8 w-8 mr-4 ${getTypeColor(type).split(' ')[1].replace('-800', '-600')}` })}
-                    <h2 className={`text-2xl font-bold ${getTypeColor(type).split(' ')[1].replace('-800', '-900')}`}>
-                      {type === 'album' ? 'Albums Photos' : type === 'enregistrement' ? 'Enregistrements' : type === 'journal' ? 'Journaux' : 'Lyrissimots'} <span className="text-lg font-normal">({items.length})</span>
-                    </h2>
+                    <div className="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center mr-4">
+                      {React.createElement(getTypeIcon(type), { className: color.icon, size: 24 })}
+                    </div>
+                    <div>
+                      <h2 className={`text-xl font-bold ${color.text}`}>
+                        {type === 'album' ? 'Albums Photos' : type === 'enregistrement' ? 'Enregistrements' : type === 'journal' ? 'Journaux' : 'Lyrissimots'} 
+                        <span className="ml-2 px-2.5 py-0.5 rounded-full bg-white/60 text-sm font-semibold">{items.length} média{items.length > 1 ? 's' : ''}</span>
+                      </h2>
+                    </div>
                   </div>
-                  <ChevronRight className={`transform transition-transform duration-300 ${expandedTypes.has(type) ? 'rotate-90' : ''}`} />
+                  <div className="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center">
+                    <ChevronRight className={`transform transition-transform duration-300 text-slate-500 ${expandedTypes.has(type) ? 'rotate-90' : ''}`} />
+                  </div>
                 </div>
                 {expandedTypes.has(type) && (
-                  <div className="divide-y divide-gray-200/80">
+                  <div className="divide-y divide-slate-100">
                     {items.map(item => (
-                      <div key={item.id} className={`p-4 flex flex-col md:flex-row md:items-center md:justify-between hover:bg-gray-50/50 transition-colors duration-200 border-l-4 ${getTypeColor(item.media_type).replace('bg', 'border').replace('-100', '-500')}`}>
+                      <div key={item.id} className={`p-4 flex flex-col md:flex-row md:items-center md:justify-between hover:bg-slate-50/80 transition-colors duration-200 border-l-4 ${color.border}`}>
                         <div className="flex items-center flex-1 mb-4 md:mb-0">
                           <div className="w-40 h-24 bg-slate-100 rounded-xl mr-6 flex-shrink-0 flex items-center justify-center overflow-hidden border border-slate-200 shadow-inner group relative">
                             <MediaPreview files={item.files} mediaType={item.media_type} />
@@ -410,16 +425,16 @@ const AdminMedia = () => {
                             </div>
                           </div>
                         </div>
-                        <div className="flex items-center space-x-3 flex-shrink-0">
-                          <button onClick={() => handleEdit(item)} title="Modifier" className="p-2 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-full transition-colors duration-200 shadow-sm border border-indigo-100"><Edit size={18} /></button>
-                          <button onClick={() => confirmDelete(item)} title="Supprimer" className="p-2 text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-full transition-colors duration-200 shadow-sm border border-rose-100"><Trash2 size={18} /></button>
+                        <div className="flex items-center space-x-2 flex-shrink-0">
+                          <button onClick={() => handleEdit(item)} title="Modifier" className="p-2 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition-all duration-300 hover:scale-110 shadow-sm border border-indigo-100"><Edit size={16} /></button>
+                          <button onClick={() => confirmDelete(item)} title="Supprimer" className="p-2 text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl transition-all duration-300 hover:scale-110 shadow-sm border border-rose-100"><Trash2 size={16} /></button>
                         </div>
                       </div>
                     ))}
                   </div>
                 )}
               </div>
-            ))}
+            )})}
             {Object.keys(mediaByType).length === 0 && (
                 <div className="bg-white rounded-2xl p-12 text-center border border-dashed border-slate-300">
                     <LayoutGrid size={48} className="mx-auto text-slate-300 mb-4" />
