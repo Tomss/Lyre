@@ -1,5 +1,5 @@
 import React, { useState, useEffect, FormEvent } from 'react';
-import { Edit, Trash2, Plus, FileText, Search, X, ArrowLeft, Download, Music2, ChevronRight } from 'lucide-react';
+import { Edit, Trash2, Plus, FileText, Search, X, ArrowLeft, Download, Music2, ChevronRight, CheckCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Navigate, Link } from 'react-router-dom';
 
@@ -511,48 +511,60 @@ const AdminPartitions = () => {
         </div>
 
         {/* Filters and Search */}
-        <div className="mb-6 bg-white p-4 rounded-lg shadow-sm">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Rechercher</label>
-              <div className="relative">
-                <Search size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Rechercher par nom, morceau..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-            </div>
-            <div>
-              <button onClick={clearAllFilters} className="text-sm text-blue-600 hover:underline mt-7">Réinitialiser les filtres</button>
+        <div className="mb-6 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-6">
+          {/* Row 1: Search Bar */}
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-2">Rechercher</label>
+            <div className="relative">
+              <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Rechercher par nom, morceau..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none"
+              />
             </div>
           </div>
-          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Filtrer par orchestre</label>
-              <div className="flex flex-wrap gap-2">
-                {orchestras.map(o => (
-                  <button key={o.id} onClick={() => toggleOrchestraFilter(o.id)} className={`px-2 py-1 text-xs rounded-full ${orchestraFilter.includes(o.id) ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}>{o.name}</button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Filtrer par instrument</label>
-              <div className="flex flex-wrap gap-2">
-                {instruments.map(i => (
-                  <button key={i.id} onClick={() => toggleInstrumentFilter(i.id)} className={`px-2 py-1 text-xs rounded-full ${instrumentFilter.includes(i.id) ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}>{i.name}</button>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
 
-        <div className="flex justify-end mb-4">
-          <button onClick={expandAllMorceaux} className="text-sm bg-gray-200 px-3 py-1 rounded-md mr-2">Tout déplier</button>
-          <button onClick={collapseAllMorceaux} className="text-sm bg-gray-200 px-3 py-1 rounded-md">Tout replier</button>
+          {/* Row 2: Filters */}
+          <div className="flex flex-col lg:flex-row gap-6 pt-2 border-t border-slate-100">
+            <div className="flex-1">
+              <label className="block text-sm font-semibold text-slate-700 mb-3 flex items-center">
+                <Music2 className="w-4 h-4 mr-2 text-indigo-500" /> Filtrer par orchestre
+              </label>
+              <div className="flex flex-wrap gap-2">
+                <button onClick={() => setOrchestraFilter([])} className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${orchestraFilter.length === 0 ? 'bg-indigo-600 text-white shadow-md shadow-indigo-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>Tous</button>
+                {orchestras.map(o => (
+                  <button key={o.id} onClick={() => toggleOrchestraFilter(o.id)} className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${orchestraFilter.includes(o.id) ? 'bg-indigo-500 text-white shadow-md shadow-indigo-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
+                    {o.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="lg:border-l lg:pl-6 border-slate-100 flex-1 border-t lg:border-t-0 pt-4 lg:pt-0">
+              <label className="block text-sm font-semibold text-slate-700 mb-3 flex items-center">
+                <FileText className="w-4 h-4 mr-2 text-amber-500" /> Filtrer par instrument
+              </label>
+              <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
+                <button onClick={() => setInstrumentFilter([])} className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${instrumentFilter.length === 0 ? 'bg-amber-600 text-white shadow-md shadow-amber-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>Tous</button>
+                {instruments.map(i => (
+                  <button key={i.id} onClick={() => toggleInstrumentFilter(i.id)} className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${instrumentFilter.includes(i.id) ? 'bg-amber-500 text-white shadow-md shadow-amber-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
+                    {i.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="lg:border-l lg:pl-6 border-slate-100 flex flex-col justify-end gap-2 border-t lg:border-t-0 pt-4 lg:pt-0">
+              <button onClick={clearAllFilters} className="text-sm font-medium text-slate-500 hover:text-indigo-600 transition-colors w-full text-left md:text-center block mb-2">Réinitialiser les filtres</button>
+              <div className="flex items-center space-x-2">
+                <button onClick={expandAllMorceaux} className="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl hover:bg-slate-200 transition text-sm font-medium whitespace-nowrap w-full">Tout déplier</button>
+                <button onClick={collapseAllMorceaux} className="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl hover:bg-slate-200 transition text-sm font-medium whitespace-nowrap w-full">Tout replier</button>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Partition List */}
@@ -587,9 +599,9 @@ const AdminPartitions = () => {
                           </div>
                         </div>
                         <div className="flex items-center space-x-2">
-                          {partition.file_path && <a href={partition.file_path} target="_blank" rel="noreferrer" className="p-2 text-green-600 bg-green-100 hover:bg-green-200 rounded-full"><Download size={18} /></a>}
-                          <button onClick={() => handleEdit(partition)} className="p-2 text-blue-600 bg-blue-100 hover:bg-blue-200 rounded-full"><Edit size={18} /></button>
-                          <button onClick={() => confirmDelete(partition)} className="p-2 text-red-600 bg-red-100 hover:bg-red-200 rounded-full"><Trash2 size={18} /></button>
+                          {partition.file_path && <a href={partition.file_path} target="_blank" rel="noreferrer" title="Télécharger" className="p-2 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-xl transition-all duration-300 hover:scale-110"><Download size={18} /></a>}
+                          <button onClick={() => handleEdit(partition)} title="Modifier" className="p-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-all duration-300 hover:scale-110"><Edit size={18} /></button>
+                          <button onClick={() => confirmDelete(partition)} title="Supprimer" className="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-all duration-300 hover:scale-110"><Trash2 size={18} /></button>
                         </div>
                       </div>
                     ))}
@@ -602,36 +614,91 @@ const AdminPartitions = () => {
 
         {/* Add/Edit Form Modal */}
         {showAddForm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 z-40 flex justify-center items-center p-4">
-            <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
-              <div className="flex justify-between items-center p-5 border-b">
-                <h2 className="text-2xl font-bold text-gray-800">{editingPartition ? 'Modifier' : 'Ajouter'} une partition</h2>
-                <button onClick={cancelEdit} className="p-2 rounded-full hover:bg-gray-200"><X size={24} /></button>
-              </div>
-              <form onSubmit={editingPartition ? handleUpdate : handleCreate} className="flex-grow overflow-y-auto p-6 space-y-4">
-                <input type="text" name="nom" value={formData.nom} onChange={handleInputChange} placeholder="Nom de la partition (ex: Clarinette 1, Tutti...)" required className="w-full px-4 py-2 border rounded-lg" />
-                <select name="morceau_id" value={formData.morceau_id} onChange={handleInputChange} required className="w-full px-4 py-2 border rounded-lg bg-white">
-                  <option value="">Sélectionner un morceau</option>
-                  {morceaux.map(m => <option key={m.id} value={m.id}>{m.nom}</option>)}
-                </select>
-                <select name="instrument_id" value={formData.instrument_id} onChange={handleInputChange} required className="w-full px-4 py-2 border rounded-lg bg-white">
-                  <option value="">Sélectionner un instrument</option>
-                  {instruments.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}
-                </select>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Fichier (PDF ou image)</label>
-                  <div className="flex items-center space-x-4">
-                    {filePreview && <img src={filePreview} alt="Aperçu" className="w-24 h-24 object-cover rounded-lg" />}
-                    <input type="file" accept=".pdf,image/*" onChange={handleFileChange} className="hidden" id="file-upload" />
-                    <label htmlFor="file-upload" className="cursor-pointer bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300">Choisir un fichier</label>
-                    {(filePreview || selectedFile) && <button type="button" onClick={removeFile} className="p-2 text-red-500 hover:bg-red-100 rounded-full"><Trash2 /></button>}
-                  </div>
-                  {selectedFile && <p className="text-sm text-gray-500 mt-2">Fichier sélectionné: {selectedFile.name}</p>}
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-40 flex justify-center items-start p-4 pt-24">
+            <div className="bg-slate-50 rounded-3xl shadow-2xl w-full max-w-2xl flex flex-col overflow-hidden border border-white max-h-[calc(100vh-120px)] animate-in fade-in zoom-in duration-300">
+              <div className="flex justify-between items-center p-5 bg-white border-b border-slate-100 flex-shrink-0">
+                <div className="flex items-center">
+                    <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mr-4">
+                        {editingPartition ? <Edit size={20} /> : <Plus size={20} />}
+                    </div>
+                    <h2 className="text-xl font-bold text-slate-800 tracking-tight">
+                        {editingPartition ? 'Modifier la partition' : 'Nouvelle partition'}
+                    </h2>
                 </div>
-                <div className="flex justify-end pt-4 border-t">
-                  <button type="button" onClick={cancelEdit} className="mr-4 px-6 py-2 rounded-lg border hover:bg-gray-100">Annuler</button>
-                  <button type="submit" disabled={loading} className="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition disabled:bg-blue-300">
-                    {loading ? 'Enregistrement...' : (editingPartition ? 'Mettre à jour' : 'Créer')}
+                <button onClick={cancelEdit} className="p-2 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
+                    <X size={20} />
+                </button>
+              </div>
+
+              <form onSubmit={editingPartition ? handleUpdate : handleCreate} className="flex-grow overflow-y-auto p-6 space-y-6 bg-gradient-to-b from-slate-50 to-white">
+                <div className="space-y-4">
+                    <div className="flex items-center space-x-2 text-indigo-600 mb-1">
+                        <FileText className="w-4 h-4" />
+                        <h3 className="text-xs font-bold uppercase tracking-wider">Informations de la partition</h3>
+                    </div>
+                    
+                    <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+                        <div>
+                            <label className="flex items-center text-sm font-semibold text-slate-700 mb-1">
+                                Nom de la partition *
+                            </label>
+                            <input type="text" name="nom" value={formData.nom} onChange={handleInputChange} placeholder="Ex: Clarinette 1, Tutti..." required className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-slate-50/30 focus:bg-white text-sm" />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label className="flex items-center text-sm font-semibold text-slate-700 mb-1">
+                                    Morceau associé *
+                                </label>
+                                <div className="relative">
+                                    <select name="morceau_id" value={formData.morceau_id} onChange={handleInputChange} required className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-slate-50/30 focus:bg-white appearance-none text-sm">
+                                      <option value="">Sélectionner un morceau</option>
+                                      {morceaux.map(m => <option key={m.id} value={m.id}>{m.nom}</option>)}
+                                    </select>
+                                    <ChevronRight className="absolute right-3 top-1/2 -translate-y-1/2 rotate-90 text-slate-400 pointer-events-none" size={14} />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="flex items-center text-sm font-semibold text-slate-700 mb-1">
+                                    Instrument ciblé *
+                                </label>
+                                <div className="relative">
+                                    <select name="instrument_id" value={formData.instrument_id} onChange={handleInputChange} required className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-slate-50/30 focus:bg-white appearance-none text-sm">
+                                      <option value="">Sélectionner un instrument</option>
+                                      {instruments.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}
+                                    </select>
+                                    <ChevronRight className="absolute right-3 top-1/2 -translate-y-1/2 rotate-90 text-slate-400 pointer-events-none" size={14} />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="space-y-4">
+                    <div className="flex items-center space-x-2 text-indigo-600 mb-1">
+                        <Download className="w-4 h-4" />
+                        <h3 className="text-xs font-bold uppercase tracking-wider">Fichier de partition</h3>
+                    </div>
+
+                    <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+                      <div className="flex items-center space-x-4">
+                        {filePreview && <img src={filePreview} alt="Aperçu" className="w-24 h-24 object-cover rounded-xl border shadow-sm" />}
+                        <input type="file" accept=".pdf,image/*" onChange={handleFileChange} className="hidden" id="file-upload" />
+                        <label htmlFor="file-upload" className="cursor-pointer bg-indigo-50 text-indigo-700 font-medium px-4 py-2.5 rounded-xl hover:bg-indigo-100 transition-colors border border-indigo-100">Parcourir...</label>
+                        {(filePreview || selectedFile) && <button type="button" onClick={removeFile} title="Supprimer le fichier" className="p-2 text-red-500 hover:bg-red-50 hover:text-red-600 rounded-xl transition-colors"><Trash2 size={20} /></button>}
+                      </div>
+                      {selectedFile && <p className="text-sm text-slate-500 font-medium mt-2 flex items-center"><CheckCircle className="w-4 h-4 text-emerald-500 mr-1" /> {selectedFile.name}</p>}
+                    </div>
+                </div>
+
+                <div className="flex items-center justify-end pt-2 gap-3">
+                  <button type="button" onClick={cancelEdit} className="px-5 py-2.5 text-slate-500 hover:text-slate-700 font-bold transition hover:bg-slate-50 rounded-xl text-sm">Annuler</button>
+                  <button type="submit" disabled={loading} className="px-8 py-2.5 text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl font-bold transition shadow-lg shadow-indigo-200 flex items-center justify-center text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                    {loading ? (
+                      <>
+                          <div className="animate-spin rounded-full h-3 w-3 border-2 border-white border-t-transparent mr-2"></div>
+                          Validation...
+                      </>
+                    ) : (editingPartition ? 'Mettre à jour' : 'Ajouter la partition')}
                   </button>
                 </div>
               </form>
@@ -641,13 +708,16 @@ const AdminPartitions = () => {
 
         {/* Delete Confirmation Modal */}
         {deleteConfirmation.isOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center">
-            <div className="bg-white rounded-lg shadow-xl p-8 m-4 max-w-md w-full">
-              <h3 className="text-2xl font-bold text-gray-800 mb-4">Confirmer la suppression</h3>
-              <p className="text-gray-600 mb-6">Êtes-vous sûr de vouloir supprimer la partition <span className="font-bold">{deleteConfirmation.partition?.nom}</span> ?</p>
-              <div className="flex justify-end space-x-4">
-                <button onClick={cancelDelete} className="px-6 py-2 rounded-lg border hover:bg-gray-100">Annuler</button>
-                <button onClick={handleDelete} className="bg-red-600 text-white px-6 py-2 rounded-lg shadow hover:bg-red-700">Supprimer</button>
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-center items-center">
+            <div className="bg-white rounded-2xl shadow-xl p-8 m-4 max-w-sm w-full text-center animate-in fade-in zoom-in duration-300">
+              <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Trash2 size={32} />
+              </div>
+              <h3 className="text-xl font-bold text-slate-800 mb-2">Confirmer la suppression</h3>
+              <p className="text-slate-500 mb-6 text-sm">Êtes-vous sûr de vouloir supprimer la partition <span className="font-bold text-slate-700">{deleteConfirmation.partition?.nom}</span> ? Cette action est irréversible.</p>
+              <div className="flex justify-center space-x-3">
+                <button onClick={cancelDelete} className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-medium hover:bg-slate-50 transition-colors">Annuler</button>
+                <button onClick={handleDelete} className="flex-1 bg-red-600 text-white px-4 py-2.5 rounded-xl font-medium shadow-lg shadow-red-200 hover:bg-red-700 transition-colors">Supprimer</button>
               </div>
             </div>
           </div>
@@ -655,8 +725,10 @@ const AdminPartitions = () => {
 
         {/* Notification */}
         {notification.show && (
-          <div className={`fixed top-5 right-5 p-4 rounded-lg shadow-lg text-white ${notification.type === 'success' ? 'bg-green-500' : 'bg-red-500'}`}>
-            {notification.message}
+          <div className={`fixed top-5 right-5 p-4 rounded-xl shadow-2xl text-white z-[100] transition-all duration-300 animate-in fade-in slide-in-from-top-4 ${notification.type === 'success' ? 'bg-emerald-600' : 'bg-red-600'}`}>
+            <div className="flex items-center space-x-3 text-sm font-semibold">
+              <span>{notification.message}</span>
+            </div>
           </div>
         )}
 
