@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Upload, FileText, CheckCircle, AlertTriangle } from 'lucide-react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import { API_URL } from '../config';
@@ -141,7 +141,7 @@ export const PdfSplitterModal: React.FC<PdfSplitterModalProps> = ({
             <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mr-4">
               <FileText size={20} />
             </div>
-            <h2 className="text-xl font-bold text-slate-800 tracking-tight">Découpage de PDF (Mode Rapide)</h2>
+            <h2 className="text-xl font-bold text-slate-800 tracking-tight">Ajouter un bloc de partitions</h2>
           </div>
           <button onClick={onClose} className="p-2 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
             <X size={20} />
@@ -170,12 +170,15 @@ export const PdfSplitterModal: React.FC<PdfSplitterModalProps> = ({
               </select>
             </div>
 
-            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-              <label className="block text-sm font-semibold text-slate-700 mb-2">2. Uploader le PDF du Livret</label>
+            <div className={`bg-white p-5 rounded-2xl border ${!selectedMorceauId ? 'border-slate-100 opacity-60' : 'border-slate-200'} shadow-sm transition-all`}>
+              <label className="block text-sm font-semibold text-slate-700 mb-2 flex items-center justify-between">
+                <span>2. Uploader le fichier</span>
+                {!selectedMorceauId && <span className="text-[10px] text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md font-bold">Sélectionner un morceau d'abord</span>}
+              </label>
               {!selectedFile ? (
-                <label className="flex items-center justify-center w-full h-12 px-4 border-2 border-dashed border-indigo-200 rounded-xl hover:bg-indigo-50 hover:border-indigo-300 transition cursor-pointer text-indigo-600 font-medium text-sm">
+                <label className={`flex items-center justify-center w-full h-12 px-4 border-2 border-dashed ${!selectedMorceauId ? 'border-slate-200 text-slate-400 bg-slate-50 cursor-not-allowed' : 'border-indigo-200 hover:bg-indigo-50 hover:border-indigo-300 text-indigo-600 cursor-pointer'} rounded-xl transition font-medium text-sm`}>
                   <Upload size={18} className="mr-2" /> Parcourir...
-                  <input type="file" accept=".pdf" className="hidden" onChange={e => setSelectedFile(e.target.files?.[0] || null)} />
+                  <input type="file" disabled={!selectedMorceauId} accept=".pdf" className="hidden" onChange={e => setSelectedFile(e.target.files?.[0] || null)} />
                 </label>
               ) : (
                 <div className="flex items-center justify-between w-full h-12 px-4 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl text-sm font-medium">
