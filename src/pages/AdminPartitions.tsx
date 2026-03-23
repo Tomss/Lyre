@@ -484,6 +484,18 @@ const AdminPartitions = () => {
   }, {} as Record<string, { morceau: any; partitions: Partition[] }>);
 
 
+  const getMorceauColor = (index: number) => {
+    const colors = [
+      { bg: 'bg-indigo-50', text: 'text-indigo-800', icon: 'text-indigo-600', border: 'border-l-indigo-500' },
+      { bg: 'bg-emerald-50', text: 'text-emerald-800', icon: 'text-emerald-600', border: 'border-l-emerald-500' },
+      { bg: 'bg-amber-50', text: 'text-amber-800', icon: 'text-amber-600', border: 'border-l-amber-500' },
+      { bg: 'bg-rose-50', text: 'text-rose-800', icon: 'text-rose-600', border: 'border-l-rose-500' },
+      { bg: 'bg-sky-50', text: 'text-sky-800', icon: 'text-sky-600', border: 'border-l-sky-500' },
+      { bg: 'bg-purple-50', text: 'text-purple-800', icon: 'text-purple-600', border: 'border-l-purple-500' },
+    ];
+    return colors[index % colors.length];
+  };
+
   if (currentUser && !['Admin', 'Gestionnaire'].includes(currentUser.role)) {
     return <Navigate to="/dashboard" />;
   }
@@ -575,40 +587,51 @@ const AdminPartitions = () => {
           </div>
         ) : (
           <div className="space-y-8">
-            {Object.values(partitionsByMorceau).map(({ morceau, partitions: morceausPartitions }) => (
-              <div key={morceau.id} className="bg-white rounded-xl shadow-lg border border-gray-200/80 overflow-hidden">
-                <div onClick={() => toggleMorceauExpansion(morceau.id)} className="p-5 flex justify-between items-center cursor-pointer bg-gray-50/80 border-b border-gray-200/80 hover:bg-gray-100/50 transition-colors">
+            {Object.values(partitionsByMorceau).map(({ morceau, partitions: morceausPartitions }, index) => {
+              const color = getMorceauColor(index);
+              return (
+              <div key={morceau.id} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div onClick={() => toggleMorceauExpansion(morceau.id)} className={`p-5 flex justify-between items-center cursor-pointer border-l-4 ${color.border} ${color.bg} hover:brightness-95 transition-all`}>
                   <div className="flex items-center">
-                    <Music2 size={28} className="mr-4 text-blue-600" />
+                    <div className="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center mr-4">
+                      <Music2 size={24} className={color.icon} />
+                    </div>
                     <div>
-                      <h2 className="text-2xl font-bold text-gray-800">{morceau.nom}</h2>
-                      <p className="text-sm text-gray-500">{morceau.compositeur}</p>
+                      <h2 className={`text-xl font-bold ${color.text}`}>{morceau.nom}
+                        <span className="ml-2 px-2.5 py-0.5 rounded-full bg-white/60 text-sm font-semibold text-slate-700">{morceausPartitions.length} partition{morceausPartitions.length > 1 ? 's' : ''}</span>
+                      </h2>
+                      <p className={`text-sm mt-1 opacity-80 ${color.text}`}>{morceau.compositeur || 'Compositeur inconnu'}</p>
                     </div>
                   </div>
-                  <ChevronRight className={`transform transition-transform duration-300 ${expandedMorceaux.has(morceau.id) ? 'rotate-90' : ''}`} />
+                  <div className="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center">
+                    <ChevronRight className={`transform transition-transform duration-300 text-slate-500 ${expandedMorceaux.has(morceau.id) ? 'rotate-90' : ''}`} />
+                  </div>
                 </div>
                 {expandedMorceaux.has(morceau.id) && (
-                  <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-t border-slate-100 bg-slate-50/30">
                     {morceausPartitions.map(partition => (
-                      <div key={partition.id} className="p-4 bg-gray-50/50 rounded-lg border border-gray-200/80 flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          <FileText size={24} className="text-gray-500" />
+                      <div key={partition.id} className="p-5 bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between hover:border-indigo-100 hover:shadow-md transition-all">
+                        <div className="flex items-start space-x-3 mb-4">
+                          <div className="w-10 h-10 rounded-lg bg-slate-50 flex items-center justify-center flex-shrink-0">
+                            <FileText size={20} className="text-slate-400" />
+                          </div>
                           <div>
-                            <p className="font-semibold text-lg">{partition.nom} <span className="font-normal text-gray-600">({partition.instruments.name})</span></p>
-                            {partition.file_name && <p className="text-xs text-gray-500">{partition.file_name} - {((partition.file_size || 0) / 1024).toFixed(2)} KB</p>}
+                            <p className="font-bold text-slate-800 leading-tight mb-1">{partition.nom}</p>
+                            <p className="text-sm font-medium text-indigo-600">{partition.instruments.name}</p>
+                            {partition.file_name && <p className="text-xs text-slate-400 mt-1 truncate max-w-[150px]" title={partition.file_name}>{partition.file_name} - {((partition.file_size || 0) / 1024).toFixed(1)} KB</p>}
                           </div>
                         </div>
-                        <div className="flex items-center space-x-2">
-                          {partition.file_path && <a href={partition.file_path} target="_blank" rel="noreferrer" title="Télécharger" className="p-2 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-xl transition-all duration-300 hover:scale-110"><Download size={18} /></a>}
-                          <button onClick={() => handleEdit(partition)} title="Modifier" className="p-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-all duration-300 hover:scale-110"><Edit size={18} /></button>
-                          <button onClick={() => confirmDelete(partition)} title="Supprimer" className="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-all duration-300 hover:scale-110"><Trash2 size={18} /></button>
+                        <div className="flex items-center justify-end space-x-2 pt-3 border-t border-slate-50">
+                          {partition.file_path && <a href={partition.file_path} target="_blank" rel="noreferrer" title="Télécharger" className="p-2 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-xl transition-all duration-300 hover:scale-110"><Download size={16} /></a>}
+                          <button onClick={() => handleEdit(partition)} title="Modifier" className="p-2 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition-all duration-300 hover:scale-110"><Edit size={16} /></button>
+                          <button onClick={() => confirmDelete(partition)} title="Supprimer" className="p-2 text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl transition-all duration-300 hover:scale-110"><Trash2 size={16} /></button>
                         </div>
                       </div>
                     ))}
                   </div>
                 )}
               </div>
-            ))}
+            )})}
           </div>
         )}
 
