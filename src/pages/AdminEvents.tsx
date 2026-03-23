@@ -207,12 +207,18 @@ const AdminEvents = () => {
 
   const handleEdit = (event: Event) => {
     setEditingEvent(event);
+    
+    // Fix timezone shift for datetime-local input
+    const d = new Date(event.event_date);
+    const tzOffsetMs = d.getTimezoneOffset() * 60000;
+    const localISOTime = new Date(d.getTime() - tzOffsetMs).toISOString().slice(0, 16);
+
     setFormData({
       title: event.title,
       description: event.description || '',
       practical_info: event.practical_info || '',
       event_type: event.event_type,
-      event_date: new Date(event.event_date).toISOString().slice(0, 16),
+      event_date: localISOTime,
       location: event.location || '',
       is_public: event.is_public !== undefined ? event.is_public : (event.event_type === 'concert' || event.event_type === 'divers'),
       orchestra_ids: event.orchestras?.map(o => o.id) || [],
