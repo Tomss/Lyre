@@ -1,5 +1,5 @@
 import React, { useState, useEffect, FormEvent } from 'react';
-import { Edit, Trash2, Plus, Music, X, ArrowLeft, Users, ChevronRight } from 'lucide-react';
+import { Edit, Trash2, Plus, Music, X, ArrowLeft, Users, ChevronRight, Search } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Navigate, Link } from 'react-router-dom';
 
@@ -35,6 +35,7 @@ const AdminMorceaux = () => {
   const [morceaux, setMorceaux] = useState<Morceau[]>([]);
   const [orchestras, setOrchestras] = useState<Orchestra[]>([]);
   const [orchestraFilter, setOrchestraFilter] = useState<string[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const [expandedOrchestras, setExpandedOrchestras] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -191,10 +192,22 @@ const AdminMorceaux = () => {
     setFormData({ nom: '', compositeur: '', arrangement: '', orchestra_ids: [] });
   };
 
+  const clearAllFilters = () => {
+    setOrchestraFilter([]);
+    setSearchTerm('');
+  };
+
   const filteredMorceaux = morceaux.filter(morceau => {
+    const searchLower = searchTerm.toLowerCase();
+    const matchesSearch = (
+      morceau.nom.toLowerCase().includes(searchLower) ||
+      (morceau.compositeur && morceau.compositeur.toLowerCase().includes(searchLower)) ||
+      (morceau.arrangement && morceau.arrangement.toLowerCase().includes(searchLower)) ||
+      morceau.orchestras.some(o => o.name.toLowerCase().includes(searchLower))
+    );
     const matchesOrchestra = orchestraFilter.length === 0 || morceau.orchestras.some(o => orchestraFilter.includes(o.id));
 
-    return matchesOrchestra;
+    return matchesOrchestra && matchesSearch;
   });
 
   const morceauxByOrchestra = filteredMorceaux.reduce((acc, morceau) => {
@@ -283,8 +296,23 @@ const AdminMorceaux = () => {
         </div>
 
         {/* Search and Filters */}
-        <div className="mb-6 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-4">
-          <div className="flex flex-col lg:flex-row gap-6">
+        <div className="mb-6 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-6">
+          {/* Row 1: Search Bar */}
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-2">Rechercher</label>
+            <div className="relative">
+              <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Rechercher par nom, compositeur, orchestre..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none"
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col lg:flex-row gap-6 pt-2 border-t border-slate-100">
             <div className="flex-1">
               <label className="block text-sm font-semibold text-slate-700 mb-3 flex items-center">
                 <Users className="w-4 h-4 mr-2 text-indigo-500" /> Filtrer par orchestre
@@ -299,10 +327,11 @@ const AdminMorceaux = () => {
               </div>
             </div>
             
-            <div className="lg:border-l lg:pl-6 border-slate-100 flex items-end lg:ml-auto pt-4 lg:pt-0 pb-0.5">
+            <div className="lg:border-l lg:pl-6 border-slate-100 flex flex-col justify-start gap-2 border-t lg:border-t-0 pt-4 lg:pt-0 min-w-[200px]">
+              <button onClick={clearAllFilters} className="text-sm font-medium text-slate-500 hover:text-indigo-600 transition-colors w-full text-left md:text-center block mb-2">Réinitialiser les filtres</button>
               <div className="flex items-center space-x-2">
-                <button onClick={expandAllOrchestras} className="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl hover:bg-slate-200 transition text-sm font-medium whitespace-nowrap">Tout déplier</button>
-                <button onClick={collapseAllOrchestras} className="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl hover:bg-slate-200 transition text-sm font-medium whitespace-nowrap">Tout replier</button>
+                <button onClick={expandAllOrchestras} className="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl hover:bg-slate-200 transition text-sm font-medium whitespace-nowrap w-full">Tout déplier</button>
+                <button onClick={collapseAllOrchestras} className="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl hover:bg-slate-200 transition text-sm font-medium whitespace-nowrap w-full">Tout replier</button>
               </div>
             </div>
           </div>
