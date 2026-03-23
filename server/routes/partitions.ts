@@ -113,6 +113,10 @@ router.post('/batch-split', async (req, res) => {
                     continue; // Skip invalid splits
                 }
 
+                if (currentSplit.instrument_id === '_IGNORE_') {
+                    continue; // Do not generate partition for ignored sections
+                }
+
                 // Create new document for this instrument
                 const newPdf = await PDFDocument.create();
                 const pageIndices = Array.from({ length: endIdx - startIdx + 1 }, (_, k) => startIdx + k);
