@@ -352,7 +352,7 @@ const AdminMorceaux = () => {
                 const color = getOrchestraColor(index);
                 return (
                 <div key={orchestra.id} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                  <div onClick={() => toggleOrchestraExpansion(orchestra.id)} className={`p-5 flex justify-between items-center cursor-pointer border-l-4 ${color.border} ${color.bg} hover:brightness-95 transition-all`}>
+                  <div onClick={() => toggleOrchestraExpansion(orchestra.id)} className={`p-5 flex justify-between items-center cursor-pointer ${color.bg} hover:brightness-95 transition-all`}>
                     <div className="flex items-center">
                       <div className="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center mr-4">
                         <Users size={24} className={color.icon} />
