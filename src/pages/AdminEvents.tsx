@@ -435,7 +435,7 @@ const AdminEvents = () => {
                 {expandedTypes.has(type) && (
                   <div className="divide-y divide-slate-100">
                     {eventList.map(event => (
-                      <div key={event.id} className={`p-4 flex flex-col md:flex-row md:items-center md:justify-between hover:bg-slate-50/80 transition-colors duration-200 border-l-4 ${color.border}`}>
+                      <div key={event.id} className={`p-4 flex flex-col md:flex-row md:items-center md:justify-between hover:bg-slate-50/80 transition-colors duration-200`}>
                         <div className="flex-1 mb-4 md:mb-0">
                           <div className="flex items-center mb-1">
                             <p className="font-bold text-lg text-gray-800">{event.title}</p>
