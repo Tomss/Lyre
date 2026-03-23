@@ -283,19 +283,28 @@ const AdminMorceaux = () => {
         </div>
 
         {/* Search and Filters */}
-        <div className="mb-6 flex justify-between items-center">
-          <div className="flex items-center space-x-2">
-            <span className="text-sm font-medium text-gray-700">Filtrer par orchestre:</span>
-            <button onClick={() => setOrchestraFilter([])} className={`px-3 py-1 rounded-full text-sm ${orchestraFilter.length === 0 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}>Tous</button>
-            {orchestras.map(orchestra => (
-              <button key={orchestra.id} onClick={() => toggleOrchestraFilter(orchestra.id)} className={`px-3 py-1 rounded-full text-sm ${orchestraFilter.includes(orchestra.id) ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}>
-                {orchestra.name}
-              </button>
-            ))}
-          </div>
-          <div className="flex items-center space-x-2">
-            <button onClick={expandAllOrchestras} className="text-sm bg-gray-200 px-3 py-1 rounded-md">Tout déplier</button>
-            <button onClick={collapseAllOrchestras} className="text-sm bg-gray-200 px-3 py-1 rounded-md">Tout replier</button>
+        <div className="mb-6 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-4">
+          <div className="flex flex-col lg:flex-row gap-6">
+            <div className="flex-1">
+              <label className="block text-sm font-semibold text-slate-700 mb-3 flex items-center">
+                <Users className="w-4 h-4 mr-2 text-indigo-500" /> Filtrer par orchestre
+              </label>
+              <div className="flex flex-wrap gap-2">
+                <button onClick={() => setOrchestraFilter([])} className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${orchestraFilter.length === 0 ? 'bg-indigo-600 text-white shadow-md shadow-indigo-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>Tous</button>
+                {orchestras.map(orchestra => (
+                  <button key={orchestra.id} onClick={() => toggleOrchestraFilter(orchestra.id)} className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${orchestraFilter.includes(orchestra.id) ? 'bg-indigo-500 text-white shadow-md shadow-indigo-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
+                    {orchestra.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            <div className="lg:border-l lg:pl-6 border-slate-100 flex items-end lg:ml-auto pt-4 lg:pt-0 pb-0.5">
+              <div className="flex items-center space-x-2">
+                <button onClick={expandAllOrchestras} className="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl hover:bg-slate-200 transition text-sm font-medium whitespace-nowrap">Tout déplier</button>
+                <button onClick={collapseAllOrchestras} className="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl hover:bg-slate-200 transition text-sm font-medium whitespace-nowrap">Tout replier</button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -328,9 +337,9 @@ const AdminMorceaux = () => {
                             <p className="font-bold text-lg text-gray-800">{morceau.nom}</p>
                             <p className="text-sm text-gray-500">{morceau.compositeur}{morceau.arrangement && ` - Arr. ${morceau.arrangement}`}</p>
                           </div>
-                          <div className="flex items-center space-x-3 flex-shrink-0">
-                            <button onClick={() => handleEdit(morceau)} className="p-2 text-blue-600 bg-blue-100 hover:bg-blue-200 rounded-full transition-colors duration-200"><Edit size={18} /></button>
-                            <button onClick={() => confirmDelete(morceau)} className="p-2 text-red-600 bg-red-100 hover:bg-red-200 rounded-full transition-colors duration-200"><Trash2 size={18} /></button>
+                          <div className="flex items-center space-x-2 flex-shrink-0">
+                            <button onClick={() => handleEdit(morceau)} className="p-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-all duration-300 hover:scale-110" title="Modifier"><Edit size={18} /></button>
+                            <button onClick={() => confirmDelete(morceau)} className="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-all duration-300 hover:scale-110" title="Supprimer"><Trash2 size={18} /></button>
                           </div>
                         </div>
                       ))}
@@ -343,31 +352,80 @@ const AdminMorceaux = () => {
 
         {/* Add/Edit Form Modal */}
         {showAddForm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 z-40 flex justify-center items-center p-4">
-            <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
-              <div className="flex justify-between items-center p-5 border-b">
-                <h2 className="text-2xl font-bold text-gray-800">{editingMorceau ? 'Modifier' : 'Ajouter'} un morceau</h2>
-                <button onClick={cancelEdit} className="p-2 rounded-full hover:bg-gray-200"><X size={24} /></button>
-              </div>
-              <form onSubmit={handleSubmit} className="flex-grow overflow-y-auto p-6 space-y-4">
-                <input type="text" name="nom" value={formData.nom} onChange={handleInputChange} placeholder="Nom du morceau" required className="w-full px-4 py-2 border rounded-lg" />
-                <input type="text" name="compositeur" value={formData.compositeur} onChange={handleInputChange} placeholder="Compositeur" className="w-full px-4 py-2 border rounded-lg" />
-                <input type="text" name="arrangement" value={formData.arrangement} onChange={handleInputChange} placeholder="Arrangement" className="w-full px-4 py-2 border rounded-lg" />
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Orchestres</label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {orchestras.map(orchestra => (
-                      <label key={orchestra.id} className="flex items-center space-x-2">
-                        <input type="checkbox" checked={formData.orchestra_ids.includes(orchestra.id)} onChange={e => handleOrchestraChange(orchestra.id, e.target.checked)} className="rounded" />
-                        <span>{orchestra.name}</span>
-                      </label>
-                    ))}
-                  </div>
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-40 flex justify-center items-start p-4 pt-24">
+            <div className="bg-slate-50 rounded-3xl shadow-2xl w-full max-w-2xl flex flex-col overflow-hidden border border-white max-h-[calc(100vh-120px)] animate-in fade-in zoom-in duration-300">
+              <div className="flex justify-between items-center p-5 bg-white border-b border-slate-100 flex-shrink-0">
+                <div className="flex items-center">
+                    <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mr-4">
+                        {editingMorceau ? <Edit size={20} /> : <Plus size={20} />}
+                    </div>
+                    <h2 className="text-xl font-bold text-slate-800 tracking-tight">
+                        {editingMorceau ? 'Modifier le morceau' : 'Nouveau morceau'}
+                    </h2>
                 </div>
-                <div className="flex justify-end pt-4 border-t">
-                  <button type="button" onClick={cancelEdit} className="mr-4 px-6 py-2 rounded-lg border hover:bg-gray-100">Annuler</button>
-                  <button type="submit" disabled={loading} className="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition disabled:bg-blue-300">
-                    {loading ? 'Enregistrement...' : (editingMorceau ? 'Mettre à jour' : 'Créer')}
+                <button onClick={cancelEdit} className="p-2 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
+                    <X size={20} />
+                </button>
+              </div>
+
+              <form onSubmit={handleSubmit} className="flex-grow overflow-y-auto p-6 space-y-6 bg-gradient-to-b from-slate-50 to-white">
+                <div className="space-y-4">
+                    <div className="flex items-center space-x-2 text-indigo-600 mb-1">
+                        <Music className="w-4 h-4" />
+                        <h3 className="text-xs font-bold uppercase tracking-wider">Informations du morceau</h3>
+                    </div>
+                    
+                    <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+                        <div>
+                            <label className="flex items-center text-sm font-semibold text-slate-700 mb-1">
+                                Nom du morceau *
+                            </label>
+                            <input type="text" name="nom" value={formData.nom} onChange={handleInputChange} placeholder="Ex: Jupiter" required className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-slate-50/30 focus:bg-white text-sm" />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label className="flex items-center text-sm font-semibold text-slate-700 mb-1">
+                                    Compositeur (Optionnel)
+                                </label>
+                                <input type="text" name="compositeur" value={formData.compositeur} onChange={handleInputChange} placeholder="Ex: Gustav Holst" className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-slate-50/30 focus:bg-white text-sm" />
+                            </div>
+                            <div>
+                                <label className="flex items-center text-sm font-semibold text-slate-700 mb-1">
+                                    Arrangement (Optionnel)
+                                </label>
+                                <input type="text" name="arrangement" value={formData.arrangement} onChange={handleInputChange} placeholder="Ex: A. Waignein" className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-slate-50/30 focus:bg-white text-sm" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="space-y-4">
+                    <div className="flex items-center space-x-2 text-indigo-600 mb-1">
+                        <Users className="w-4 h-4" />
+                        <h3 className="text-xs font-bold uppercase tracking-wider">Orchestres Associés</h3>
+                    </div>
+
+                    <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+                        <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto p-2 bg-slate-50/50 rounded-xl border border-slate-100 shadow-inner">
+                            {orchestras.map(orchestra => (
+                                <label key={orchestra.id} className="flex items-center space-x-2 bg-white px-3 py-1.5 rounded-lg border border-slate-100 shadow-sm cursor-pointer group hover:border-indigo-200 hover:bg-indigo-50/30 transition-all">
+                                    <input type="checkbox" checked={formData.orchestra_ids.includes(orchestra.id)} onChange={e => handleOrchestraChange(orchestra.id, e.target.checked)} className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 accent-indigo-600" />
+                                    <span className="text-xs font-medium text-slate-600 group-hover:text-indigo-700">{orchestra.name}</span>
+                                </label>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                <div className="flex items-center justify-end pt-2 gap-3">
+                  <button type="button" onClick={cancelEdit} className="px-5 py-2.5 text-slate-500 hover:text-slate-700 font-bold transition hover:bg-slate-50 rounded-xl text-sm">Annuler</button>
+                  <button type="submit" disabled={loading} className="px-8 py-2.5 text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl font-bold transition shadow-lg shadow-indigo-200 flex items-center justify-center text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                    {loading ? (
+                      <>
+                          <div className="animate-spin rounded-full h-3 w-3 border-2 border-white border-t-transparent mr-2"></div>
+                          Validation...
+                      </>
+                    ) : (editingMorceau ? 'Mettre à jour' : 'Ajouter le morceau')}
                   </button>
                 </div>
               </form>
@@ -377,13 +435,16 @@ const AdminMorceaux = () => {
 
         {/* Delete Confirmation Modal */}
         {deleteConfirmation.isOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center">
-            <div className="bg-white rounded-lg shadow-xl p-8 m-4 max-w-md w-full">
-              <h3 className="text-2xl font-bold text-gray-800 mb-4">Confirmer la suppression</h3>
-              <p className="text-gray-600 mb-6">Êtes-vous sûr de vouloir supprimer le morceau <span className="font-bold">{deleteConfirmation.morceau?.nom}</span> ?</p>
-              <div className="flex justify-end space-x-4">
-                <button onClick={cancelDelete} className="px-6 py-2 rounded-lg border hover:bg-gray-100">Annuler</button>
-                <button onClick={handleDelete} className="bg-red-600 text-white px-6 py-2 rounded-lg shadow hover:bg-red-700">Supprimer</button>
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-center items-center">
+            <div className="bg-white rounded-2xl shadow-xl p-8 m-4 max-w-sm w-full text-center animate-in fade-in zoom-in duration-300">
+              <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Trash2 size={32} />
+              </div>
+              <h3 className="text-xl font-bold text-slate-800 mb-2">Confirmer la suppression</h3>
+              <p className="text-slate-500 mb-6 text-sm">Êtes-vous sûr de vouloir supprimer le morceau <span className="font-bold text-slate-700">{deleteConfirmation.morceau?.nom}</span> ? Cette action est irréversible.</p>
+              <div className="flex justify-center space-x-3">
+                <button onClick={cancelDelete} className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-medium hover:bg-slate-50 transition-colors">Annuler</button>
+                <button onClick={handleDelete} className="flex-1 bg-red-600 text-white px-4 py-2.5 rounded-xl font-medium shadow-lg shadow-red-200 hover:bg-red-700 transition-colors">Supprimer</button>
               </div>
             </div>
           </div>
@@ -391,8 +452,10 @@ const AdminMorceaux = () => {
 
         {/* Notification */}
         {notification.show && (
-          <div className={`fixed top-5 right-5 p-4 rounded-lg shadow-lg text-white ${notification.type === 'success' ? 'bg-green-500' : 'bg-red-500'}`}>
-            {notification.message}
+          <div className={`fixed top-5 right-5 p-4 rounded-xl shadow-2xl text-white z-[100] transition-all duration-300 animate-in fade-in slide-in-from-top-4 ${notification.type === 'success' ? 'bg-emerald-600' : 'bg-red-600'}`}>
+            <div className="flex items-center space-x-3 text-sm font-semibold">
+              <span>{notification.message}</span>
+            </div>
           </div>
         )}
 
