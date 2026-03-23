@@ -149,7 +149,7 @@ router.post('/batch-split', tempUpload.single('file'), async (req, res) => {
                         currentSplit.instrument_id, 
                         newFilePath, 
                         newFilename, 
-                        'application/pdf', 
+                        'pdf', 
                         newPdfBytes.length, 
                         new Date(), 
                         new Date()
