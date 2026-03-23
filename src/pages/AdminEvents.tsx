@@ -235,12 +235,18 @@ const AdminEvents = () => {
     });
   };
 
+  const clearAllFilters = () => {
+    setTypeFilter(['concert', 'repetition', 'divers']);
+    setTimeFilter('all');
+    setSearchTerm('');
+  };
+
   const getTypeColor = (type: string) => {
     switch (type) {
-      case 'concert': return 'bg-green-100 text-green-800 border-green-200';
-      case 'repetition': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'divers': return 'bg-purple-100 text-purple-800 border-purple-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'concert': return { bg: 'bg-emerald-50', text: 'text-emerald-800', icon: 'text-emerald-600', border: 'border-l-emerald-500' };
+      case 'repetition': return { bg: 'bg-indigo-50', text: 'text-indigo-800', icon: 'text-indigo-600', border: 'border-l-indigo-500' };
+      case 'divers': return { bg: 'bg-purple-50', text: 'text-purple-800', icon: 'text-purple-600', border: 'border-l-purple-500' };
+      default: return { bg: 'bg-slate-50', text: 'text-slate-800', icon: 'text-slate-600', border: 'border-l-slate-500' };
     }
   };
 
@@ -386,10 +392,11 @@ const AdminEvents = () => {
                 <button onClick={() => setTimeFilter('past')} className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${timeFilter === 'past' ? 'bg-slate-500 text-white shadow-md shadow-slate-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>Passés</button>
               </div>
             </div>
-            <div className="lg:border-l lg:pl-6 border-slate-100 flex items-end lg:ml-auto pt-4 lg:pt-0 pb-0.5">
+            <div className="lg:border-l lg:pl-6 border-slate-100 flex flex-col justify-start gap-2 border-t lg:border-t-0 pt-4 lg:pt-0 min-w-[200px]">
+              <button onClick={clearAllFilters} className="text-sm font-medium text-slate-500 hover:text-indigo-600 transition-colors w-full text-left md:text-center block mb-2">Réinitialiser les filtres</button>
               <div className="flex items-center space-x-2">
-                <button onClick={expandAllTypes} className="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl hover:bg-slate-200 transition text-sm font-medium whitespace-nowrap">Tout déplier</button>
-                <button onClick={collapseAllTypes} className="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl hover:bg-slate-200 transition text-sm font-medium whitespace-nowrap">Tout replier</button>
+                <button onClick={expandAllTypes} className="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl hover:bg-slate-200 transition text-sm font-medium whitespace-nowrap w-full">Tout déplier</button>
+                <button onClick={collapseAllTypes} className="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl hover:bg-slate-200 transition text-sm font-medium whitespace-nowrap w-full">Tout replier</button>
               </div>
             </div>
           </div>
@@ -405,25 +412,34 @@ const AdminEvents = () => {
           </div>
         ) : (
           <div className="space-y-8">
-            {Object.entries(eventsByType).map(([type, eventList]) => (
-              <div key={type} className="bg-white rounded-xl shadow-lg border border-gray-200/80 overflow-hidden">
-                <div onClick={() => toggleTypeExpansion(type)} className={`p-5 flex justify-between items-center cursor-pointer border-b border-gray-200/80 transition-colors ${getTypeColor(type).replace('text-', 'bg-').replace('-800', '-200')} hover:bg-gray-100/50`}>
+            {Object.entries(eventsByType).map(([type, eventList]) => {
+              const color = getTypeColor(type);
+              return (
+              <div key={type} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div onClick={() => toggleTypeExpansion(type)} className={`p-5 flex justify-between items-center cursor-pointer border-l-4 ${color.border} ${color.bg} hover:brightness-95 transition-all`}>
                   <div className="flex items-center">
-                    {React.createElement(getTypeIcon(type), { className: `h-8 w-8 mr-4 ${getTypeColor(type).split(' ')[1].replace('-800', '-600')}` })}
-                    <h2 className={`text-2xl font-bold ${getTypeColor(type).split(' ')[1].replace('-800', '-900')}`}>
-                      {type === 'concert' ? 'Concerts' : type === 'divers' ? 'Divers' : 'Répétitions'} <span className="text-lg font-normal">({eventList.length})</span>
-                    </h2>
+                    <div className="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center mr-4">
+                      {React.createElement(getTypeIcon(type), { className: color.icon, size: 24 })}
+                    </div>
+                    <div>
+                      <h2 className={`text-xl font-bold ${color.text}`}>
+                        {type === 'concert' ? 'Concerts' : type === 'divers' ? 'Divers' : 'Répétitions'} 
+                        <span className="ml-2 px-2.5 py-0.5 rounded-full bg-white/60 text-sm font-semibold">{eventList.length} événement{eventList.length > 1 ? 's' : ''}</span>
+                      </h2>
+                    </div>
                   </div>
-                  <ChevronRight className={`transform transition-transform duration-300 ${expandedTypes.has(type) ? 'rotate-90' : ''}`} />
+                  <div className="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center">
+                    <ChevronRight className={`transform transition-transform duration-300 text-slate-500 ${expandedTypes.has(type) ? 'rotate-90' : ''}`} />
+                  </div>
                 </div>
                 {expandedTypes.has(type) && (
-                  <div className="divide-y divide-gray-200/80">
+                  <div className="divide-y divide-slate-100">
                     {eventList.map(event => (
-                      <div key={event.id} className={`p-4 flex flex-col md:flex-row md:items-center md:justify-between hover:bg-gray-50/50 transition-colors duration-200 border-l-4 ${getTypeColor(event.event_type).replace('bg', 'border').replace('-100', '-500')}`}>
+                      <div key={event.id} className={`p-4 flex flex-col md:flex-row md:items-center md:justify-between hover:bg-slate-50/80 transition-colors duration-200 border-l-4 ${color.border}`}>
                         <div className="flex-1 mb-4 md:mb-0">
                           <div className="flex items-center mb-1">
                             <p className="font-bold text-lg text-gray-800">{event.title}</p>
-                            <span className={`ml-3 px-2.5 py-1 text-xs font-semibold rounded-full border ${getTypeColor(event.event_type)}`}>
+                            <span className={`ml-3 px-2.5 py-1 text-xs font-semibold rounded-full border bg-white ${color.text} ${color.border.replace('border-l-','border-')}`}>
                               {event.event_type === 'concert' ? 'Concert' : event.event_type === 'divers' ? 'Divers' : 'Répétition'}
                             </span>
                             <div className="ml-3">
@@ -461,16 +477,16 @@ const AdminEvents = () => {
                             </div>
                           ) : <p className="text-gray-400 text-xs italic">Aucun</p>}
                         </div>
-                        <div className="flex items-center space-x-3 flex-shrink-0">
-                          <button onClick={() => handleEdit(event)} title="Modifier" className="p-2 text-blue-600 bg-blue-100 hover:bg-blue-200 rounded-full transition-colors duration-200"><Edit size={18} /></button>
-                          <button onClick={() => confirmDelete(event)} title="Supprimer" className="p-2 text-red-600 bg-red-100 hover:bg-red-200 rounded-full transition-colors duration-200"><Trash2 size={18} /></button>
+                        <div className="flex items-center space-x-2 flex-shrink-0">
+                          <button onClick={() => handleEdit(event)} title="Modifier" className="p-2 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition-all duration-300 hover:scale-110 shadow-sm"><Edit size={16} /></button>
+                          <button onClick={() => confirmDelete(event)} title="Supprimer" className="p-2 text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl transition-all duration-300 hover:scale-110 shadow-sm"><Trash2 size={16} /></button>
                         </div>
                       </div>
                     ))}
                   </div>
                 )}
               </div>
-            ))}
+            )})}
           </div>
         )}
 
