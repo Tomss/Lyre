@@ -485,6 +485,10 @@ const AdminPartitions = () => {
     return acc;
   }, {} as Record<string, { morceau: any; partitions: Partition[] }>);
 
+  const sortedMorceauxGroups = Object.values(partitionsByMorceau).sort((a, b) => 
+    a.morceau.nom.localeCompare(b.morceau.nom, 'fr', { numeric: true })
+  );
+
 
   const getMorceauColor = (index: number) => {
     const colors = [
@@ -608,8 +612,15 @@ const AdminPartitions = () => {
           </div>
         ) : (
           <div className="space-y-8">
-            {Object.values(partitionsByMorceau).map(({ morceau, partitions: morceausPartitions }, index) => {
+            {sortedMorceauxGroups.map(({ morceau, partitions: morceausPartitions }, index) => {
               const color = getMorceauColor(index);
+              
+              const sortedPartitions = [...morceausPartitions].sort((a, b) => {
+                const nameA = a.instruments?.name || a.nom || '';
+                const nameB = b.instruments?.name || b.nom || '';
+                return nameA.localeCompare(nameB, 'fr', { numeric: true });
+              });
+
               return (
               <div key={morceau.id} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                 <div onClick={() => toggleMorceauExpansion(morceau.id)} className={`p-5 flex justify-between items-center cursor-pointer ${color.bg} hover:brightness-95 transition-all`}>
@@ -630,7 +641,7 @@ const AdminPartitions = () => {
                 </div>
                 {expandedMorceaux.has(morceau.id) && (
                   <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-t border-slate-100 bg-slate-50/30">
-                    {morceausPartitions.map(partition => (
+                    {sortedPartitions.map(partition => (
                       <div key={partition.id} className="p-5 bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between hover:border-indigo-100 hover:shadow-md transition-all">
                         <div className="flex items-start space-x-3 mb-4">
                           <div className="w-10 h-10 rounded-lg bg-slate-50 flex items-center justify-center flex-shrink-0">
