@@ -11,6 +11,7 @@ interface Morceau {
   compositeur: string | null;
   arrangement: string | null;
   created_at: string;
+  partitions_count?: number;
   orchestras: Orchestra[];
 }
 
@@ -483,6 +484,15 @@ const AdminMorceaux = () => {
               </div>
               <h3 className="text-xl font-bold text-slate-800 mb-2">Confirmer la suppression</h3>
               <p className="text-slate-500 mb-6 text-sm">Êtes-vous sûr de vouloir supprimer le morceau <span className="font-bold text-slate-700">{deleteConfirmation.morceau?.nom}</span> ? Cette action est irréversible.</p>
+              
+              {deleteConfirmation.morceau?.partitions_count && deleteConfirmation.morceau.partitions_count > 0 ? (
+                <div className="bg-amber-50 text-amber-700 p-3 rounded-xl text-sm mb-6 border border-amber-200 text-left">
+                  <strong className="block mb-1">Attention !</strong>
+                  Ce morceau possède <span className="font-bold">{deleteConfirmation.morceau.partitions_count} partition(s)</span> associée(s). 
+                  La suppression de ce morceau entraînera la <strong className="font-bold">suppression définitive</strong> de toutes ses partitions.
+                </div>
+              ) : null}
+
               <div className="flex justify-center space-x-3">
                 <button onClick={cancelDelete} className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-medium hover:bg-slate-50 transition-colors">Annuler</button>
                 <button onClick={handleDelete} className="flex-1 bg-red-600 text-white px-4 py-2.5 rounded-xl font-medium shadow-lg shadow-red-200 hover:bg-red-700 transition-colors">Supprimer</button>
