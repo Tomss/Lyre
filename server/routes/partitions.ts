@@ -139,7 +139,7 @@ router.post('/batch-split', async (req, res) => {
                     'INSERT INTO partitions (id, nom, morceau_id, instrument_id, file_path, file_name, file_type, file_size, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
                     [
                         newPartitionId, 
-                        original_name ? `Extrait de ${original_name}` : 'Partition découpée', 
+                        currentSplit.custom_name || (original_name ? `Extrait de ${original_name}` : 'Partition découpée'), 
                         morceau_id, 
                         currentSplit.instrument_id, 
                         newFilePath, 
