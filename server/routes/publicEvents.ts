@@ -9,7 +9,9 @@ router.get('/', async (req, res) => {
     // Cette requête récupère les événements et agrège les orchestres associés dans un champ JSON.
     const query = `
       SELECT 
-        e.id, e.title, e.description, e.event_type, e.event_date, e.location, 
+        e.id, e.title, e.description, e.event_type, 
+        DATE_FORMAT(e.event_date, '%Y-%m-%dT%H:%i:%s') as event_date,
+        e.location, 
         CASE 
           WHEN COUNT(o.id) > 0 THEN 
             JSON_ARRAYAGG(

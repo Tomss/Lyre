@@ -1,4 +1,4 @@
-﻿import { Router } from 'express';
+import { Router } from 'express';
 import { authenticateToken } from '../middleware/auth';
 import pool from '../db';
 import crypto from 'crypto';
@@ -11,8 +11,10 @@ router.use(authenticateToken);
 router.get('/', async (req, res) => {
   try {
     const [events] = await pool.query(`
-      SELECT 
-        e.*, 
+        SELECT 
+        e.id, title, description, event_type, 
+        DATE_FORMAT(event_date, '%Y-%m-%dT%H:%i:%s') as event_date,
+        location, is_public, practical_info,
         JSON_ARRAYAGG(JSON_OBJECT('id', o.id, 'name', o.name))
         AS orchestras
       FROM events e
