@@ -50,6 +50,17 @@ const AdminInstruments = () => {
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
   // Fonction pour afficher une notification
+  useEffect(() => {
+    if (showAddForm || deleteConfirmation.isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [showAddForm, deleteConfirmation.isOpen]);
+
   const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
     setNotification({ show: true, message, type });
     setTimeout(() => {
@@ -363,7 +374,7 @@ const AdminInstruments = () => {
 
         {/* Add/Edit Form Modal */}
         {showAddForm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 z-40 flex justify-center items-center p-4">
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 flex justify-center items-center p-4">
             <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col">
               <div className="flex justify-between items-center p-5 border-b">
                 <h2 className="text-2xl font-bold text-gray-800">{editingInstrument ? 'Modifier' : 'Ajouter'} un instrument</h2>
@@ -395,7 +406,7 @@ const AdminInstruments = () => {
 
         {/* Delete Confirmation Modal */}
         {deleteConfirmation.isOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center">
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-center items-center p-4">
             <div className="bg-white rounded-lg shadow-xl p-8 m-4 max-w-md w-full">
               <h3 className="text-2xl font-bold text-gray-800 mb-4">Confirmer la suppression</h3>
               <p className="text-gray-600 mb-6">Êtes-vous sûr de vouloir supprimer l'instrument <span className="font-bold">{deleteConfirmation.instrument?.name}</span> ?</p>

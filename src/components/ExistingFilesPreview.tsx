@@ -17,6 +17,17 @@ interface ExistingFilesPreviewProps {
 const ExistingFilesPreview: React.FC<ExistingFilesPreviewProps> = ({ files, onRemove }) => {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
+  React.useEffect(() => {
+    if (previewImage) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [previewImage]);
+
   if (!files || files.length === 0) return null;
 
   const getFileIcon = (type: string) => {

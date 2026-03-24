@@ -350,7 +350,7 @@ const AdminNews = () => {
 
                 {/* Add/Edit Form Modal */}
                 {showAddForm && (
-                    <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex justify-center items-center p-4">
+                    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-center items-center p-4">
                         <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col animate-scale-in">
                             <div className="flex justify-between items-center p-6 border-b border-slate-100">
                                 <h2 className="text-2xl font-bold text-slate-800">{editingNews ? 'Modifier' : 'Nouvelle'} Actualité</h2>
@@ -489,7 +489,7 @@ const AdminNews = () => {
 
                 {/* Delete Modal */}
                 {deleteConfirmation.isOpen && (
-                    <div className="fixed inset-0 bg-slate-900/60 z-50 flex justify-center items-center backdrop-blur-sm p-4">
+                    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-center items-center p-4">
                         <div className="bg-white rounded-2xl shadow-xl p-8 max-w-sm w-full animate-scale-in">
                             <h3 className="text-xl font-bold text-slate-800 mb-3">Supprimer l'article ?</h3>
                             <p className="text-slate-500 mb-6">Êtes-vous sûr de vouloir supprimer "{deleteConfirmation.news?.title}" ? Cette action est irréversible.</p>

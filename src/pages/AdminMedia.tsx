@@ -63,7 +63,7 @@ const AdminMedia = () => {
   };
 
   useEffect(() => {
-    if (showAddForm) {
+    if (showAddForm || deleteConfirmation.isOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
@@ -71,7 +71,7 @@ const AdminMedia = () => {
     return () => {
       document.body.style.overflow = 'unset';
     };
-  }, [showAddForm]);
+  }, [showAddForm, deleteConfirmation.isOpen]);
 
   const fetchMedia = async () => {
     if (!token) return;
@@ -636,7 +636,7 @@ const AdminMedia = () => {
 
         {/* Delete Confirmation Modal */}
         {deleteConfirmation.isOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center">
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-center items-center p-4">
             <div className="bg-white rounded-lg shadow-xl p-8 m-4 max-w-md w-full">
               <h3 className="text-2xl font-bold text-gray-800 mb-4">Confirmer la suppression</h3>
               <p className="text-gray-600 mb-6">Êtes-vous sûr de vouloir supprimer l'élément <span className="font-bold">{deleteConfirmation.media?.title}</span> ?</p>

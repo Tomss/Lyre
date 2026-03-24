@@ -89,6 +89,17 @@ const AdminPartitions = () => {
   const [filePreview, setFilePreview] = useState<string | null>(null);
 
 
+  useEffect(() => {
+    if (showAddForm || deleteConfirmation.isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [showAddForm, deleteConfirmation.isOpen]);
+
   const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
     setNotification({ show: true, message, type });
     setTimeout(() => {
@@ -669,7 +680,7 @@ const AdminPartitions = () => {
 
         {/* Add/Edit Form Modal */}
         {showAddForm && (
-          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-40 flex justify-center items-start p-4 pt-24">
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 flex justify-center items-start p-4 pt-24">
             <div className="bg-slate-50 rounded-3xl shadow-2xl w-full max-w-2xl flex flex-col overflow-hidden border border-white max-h-[calc(100vh-120px)] animate-in fade-in zoom-in duration-300">
               <div className="flex justify-between items-center p-5 bg-white border-b border-slate-100 flex-shrink-0">
                 <div className="flex items-center">

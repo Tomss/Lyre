@@ -90,7 +90,7 @@ const AdminEvents = () => {
   };
 
   useEffect(() => {
-    if (showAddForm) {
+    if (showAddForm || deleteConfirmation.isOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
@@ -98,7 +98,7 @@ const AdminEvents = () => {
     return () => {
       document.body.style.overflow = 'unset';
     };
-  }, [showAddForm]);
+  }, [showAddForm, deleteConfirmation.isOpen]);
 
   const fetchOrchestras = async () => {
     if (!token) return;
@@ -497,7 +497,7 @@ const AdminEvents = () => {
 
         {/* Add/Edit Form Modal */}
         {showAddForm && (
-          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-40 flex justify-center items-start p-4 pt-24">
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 flex justify-center items-start p-4 pt-24">
             <div className="bg-slate-50 rounded-3xl shadow-2xl w-full max-w-2xl flex flex-col overflow-hidden border border-white max-h-[calc(100vh-120px)] animate-in fade-in zoom-in duration-300">
               <div className="flex justify-between items-center p-5 bg-white border-b border-slate-100 flex-shrink-0">
                 <div className="flex items-center">
@@ -648,7 +648,7 @@ const AdminEvents = () => {
 
         {/* Delete Confirmation Modal */}
         {deleteConfirmation.isOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center">
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-center items-center p-4">
             <div className="bg-white rounded-lg shadow-xl p-8 m-4 max-w-md w-full">
               <h3 className="text-2xl font-bold text-gray-800 mb-4">Confirmer la suppression</h3>
               <p className="text-gray-600 mb-6">Êtes-vous sûr de vouloir supprimer l'événement <span className="font-bold">{deleteConfirmation.event?.title}</span> ?</p>

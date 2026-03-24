@@ -105,7 +105,7 @@ const AdminTheme = () => {
     const [savingSettings, setSavingSettings] = useState(false);
     const [settingsNotification, setSettingsNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
-    // Dnd Sensors
+
     // Dnd Sensors
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -225,6 +225,17 @@ const AdminTheme = () => {
     };
 
     const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (showCarouselForm || !!deleteConfirmId) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [showCarouselForm, deleteConfirmId]);
 
     const handleCarouselDelete = (id: string) => {
         setDeleteConfirmId(id);
@@ -793,7 +804,7 @@ const AdminTheme = () => {
             {/* Carousel Form Modal */}
             {
                 showCarouselForm && (
-                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+                    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
                         <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
                             <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                                 <h2 className="text-xl font-bold text-slate-800">{editingImage ? 'Modifier l\'image' : 'Nouvelle image'}</h2>
@@ -889,7 +900,7 @@ const AdminTheme = () => {
             {/* Delete Confirmation Modal */}
             {
                 deleteConfirmId && (
-                    <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+                    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
                         <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden animate-fade-in-up">
                             <div className="p-6 text-center">
                                 <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">

@@ -48,6 +48,17 @@ export const PdfSplitterModal: React.FC<PdfSplitterModalProps> = ({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
     if (!isOpen) {
       setSelectedFile(null);
       setSelectedMorceauId('');

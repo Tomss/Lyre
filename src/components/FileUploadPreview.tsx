@@ -88,6 +88,17 @@ const FileUploadPreview: React.FC<FileUploadPreviewProps> = ({ files, onRemove, 
     );
   };
 
+  React.useEffect(() => {
+    if (previewImage) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [previewImage]);
+
   if (files.length === 0) return null;
 
   return (
