@@ -208,10 +208,9 @@ const AdminEvents = () => {
   const handleEdit = (event: Event) => {
     setEditingEvent(event);
     
-    // Fix timezone shift for datetime-local input
-    const d = new Date(event.event_date);
-    const tzOffsetMs = d.getTimezoneOffset() * 60000;
-    const localISOTime = new Date(d.getTime() - tzOffsetMs).toISOString().slice(0, 16);
+    // The backend now returns a local ISO string (YYYY-MM-DDTHH:mm:ss)
+    // We just need to slice it to YYYY-MM-DDTHH:mm for the datetime-local input
+    const localISOTime = event.event_date.slice(0, 16);
 
     setFormData({
       title: event.title,

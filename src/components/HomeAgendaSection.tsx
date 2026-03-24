@@ -61,9 +61,9 @@ const HomeAgendaSection = () => {
                 const response = await fetch(`${API_URL}/public-events`);
                 if (response.ok) {
                     const data = await response.json();
-                    const now = new Date();
+                    // We parse the local ISO string from backend
                     const nextEvents = data
-                        .filter((e: any) => new Date(e.event_date) >= now)
+                        .filter((e: any) => new Date(e.event_date) >= new Date())
                         .sort((a: any, b: any) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime());
 
                     const top10Events = nextEvents.slice(0, 10);
