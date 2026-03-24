@@ -12,9 +12,9 @@ router.get('/', async (req, res) => {
   try {
     const [events] = await pool.query(`
         SELECT 
-        e.id, title, description, event_type, 
-        DATE_FORMAT(event_date, '%Y-%m-%dT%H:%i:%s') as event_date,
-        location, is_public, practical_info,
+        e.id, e.title, e.description, e.event_type, 
+        DATE_FORMAT(e.event_date, '%Y-%m-%dT%H:%i:%s') as event_date,
+        e.location, e.is_public, e.practical_info,
         JSON_ARRAYAGG(JSON_OBJECT('id', o.id, 'name', o.name))
         AS orchestras
       FROM events e
