@@ -1,4 +1,4 @@
-﻿import { Router } from 'express';
+import { Router } from 'express';
 import { authenticateToken } from '../middleware/auth';
 import pool from '../db';
 import { RowDataPacket } from 'mysql2';
@@ -26,7 +26,9 @@ router.get('/', authenticateToken, async (req, res) => {
       pool.query('SELECT o.id, o.name, o.description FROM user_orchestras uo JOIN orchestras o ON uo.orchestra_id = o.id WHERE uo.user_id = ?', [userId]),
       pool.query(`
         SELECT 
-          e.id, e.title, e.event_date, e.location, e.practical_info, e.event_type,
+          e.id, e.title, 
+          DATE_FORMAT(e.event_date, '%Y-%m-%dT%H:%i:%s') as event_date,
+          e.location, e.practical_info, e.event_type,
           JSON_ARRAYAGG(JSON_OBJECT('id', o.id, 'name', o.name)) as orchestras
         FROM events e
         JOIN event_orchestras eo ON e.id = eo.event_id
