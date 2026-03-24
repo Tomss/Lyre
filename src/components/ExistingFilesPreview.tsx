@@ -1,5 +1,5 @@
-import React from 'react';
-import { X, Image as ImageIcon, Music, FileText } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, Image as ImageIcon, Music, FileText, Search } from 'lucide-react';
 
 interface MediaFile {
   id: string;
@@ -15,6 +15,8 @@ interface ExistingFilesPreviewProps {
 }
 
 const ExistingFilesPreview: React.FC<ExistingFilesPreviewProps> = ({ files, onRemove }) => {
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+
   if (!files || files.length === 0) return null;
 
   const getFileIcon = (type: string) => {
@@ -39,17 +41,26 @@ const ExistingFilesPreview: React.FC<ExistingFilesPreviewProps> = ({ files, onRe
           return (
             <div 
               key={file.id} 
-              className="group relative aspect-square bg-slate-50 rounded-xl border border-slate-200 overflow-hidden hover:border-teal-300 transition-all duration-300"
+              className="group relative aspect-square bg-slate-50 rounded-xl border border-slate-200 overflow-hidden hover:border-teal-300 transition-all duration-300 shadow-sm"
             >
               {file.file_type === 'image' ? (
-                <img 
-                  src={file.file_path} 
-                  alt={file.alt_text || file.file_name} 
-                  className="w-full h-full object-cover"
-                  onError={() => {
-                    console.error('Erreur de chargement image existante:', file.file_path);
-                  }}
-                />
+                <div 
+                    className="w-full h-full cursor-zoom-in"
+                    onClick={() => setPreviewImage(file.file_path)}
+                >
+                    <img 
+                    src={file.file_path} 
+                    alt={file.alt_text || file.file_name} 
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    onError={() => {
+                        console.error('Erreur de chargement image existante:', file.file_path);
+                    }}
+                    />
+                    {/* Overlay au survol */}
+                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <Search className="text-white h-5 w-5" />
+                    </div>
+                </div>
               ) : (
                 <div className="w-full h-full flex flex-col items-center justify-center p-2">
                   <div className={`p-2 rounded-lg mb-1 ${
@@ -64,15 +75,18 @@ const ExistingFilesPreview: React.FC<ExistingFilesPreviewProps> = ({ files, onRe
                 </div>
               )}
               
-              {/* Overlay d'actions */}
-              <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/40 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
+              {/* Overlay d'actions (Supprimer) */}
+              <div className="absolute top-2 right-2 flex space-x-1.5 z-10">
                 <button
                   type="button"
-                  onClick={() => onRemove(file.id)}
-                  className="p-2 bg-white/90 hover:bg-white text-rose-500 rounded-full shadow-lg transform scale-90 hover:scale-100 transition-all duration-200"
+                  onClick={(e) => {
+                      e.stopPropagation();
+                      onRemove(file.id);
+                  }}
+                  className="p-1.5 bg-white/90 hover:bg-white text-rose-500 rounded-full shadow-lg transform scale-90 hover:scale-100 transition-all duration-200 opacity-0 group-hover:opacity-100"
                   title="Supprimer ce fichier"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-3.5 w-3.5" />
                 </button>
               </div>
 
@@ -90,6 +104,26 @@ const ExistingFilesPreview: React.FC<ExistingFilesPreviewProps> = ({ files, onRe
           );
         })}
       </div>
+
+      {/* Lightbox Preview */}
+      {previewImage && (
+        <div 
+          className="fixed inset-0 bg-black/95 z-[100] flex items-center justify-center p-4 animate-in fade-in duration-200"
+          onClick={() => setPreviewImage(null)}
+        >
+          <button 
+            className="absolute top-6 right-6 text-white hover:text-gray-300 transition-colors p-2 bg-white/10 rounded-full"
+            onClick={() => setPreviewImage(null)}
+          >
+            <X className="h-8 w-8" />
+          </button>
+          <img 
+            src={previewImage} 
+            className="max-w-full max-h-full object-contain rounded-lg shadow-2xl animate-in zoom-in-95 duration-300" 
+            alt="Preview" 
+          />
+        </div>
+      )}
     </div>
   );
 };
