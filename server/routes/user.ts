@@ -1,4 +1,4 @@
-﻿import { Router } from 'express';
+import { Router } from 'express';
 import { authenticateToken } from '../middleware/auth';
 import pool from '../db';
 
@@ -32,7 +32,9 @@ router.get('/events', async (req, res) => {
     // RÃ©cupÃ¨re les Ã©vÃ©nements associÃ©s Ã  ces orchestres
     const query = `
       SELECT DISTINCT
-        e.*,
+        e.id, e.title, 
+        DATE_FORMAT(e.event_date, '%Y-%m-%dT%H:%i:%s') as event_date,
+        e.location, e.practical_info, e.event_type, e.is_public,
         CASE 
           WHEN COUNT(eo.orchestra_id) > 0 THEN 
             JSON_ARRAYAGG(JSON_OBJECT('id', o.id, 'name', o.name))
