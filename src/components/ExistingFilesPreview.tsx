@@ -53,23 +53,23 @@ const ExistingFilesPreview: React.FC<ExistingFilesPreviewProps> = ({ files, onRe
                           console.error('Erreur de chargement image existante:', file.file_path);
                       }}
                     />
-                    {/* Overlay d'actions au survol */}
-                    <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center gap-3">
+                    {/* Overlay d'actions au survol - Plus subtil et élégant */}
+                    <div className="absolute inset-x-0 bottom-2 flex justify-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0">
                         <button
                             type="button"
                             onClick={() => setPreviewImage(file.file_path)}
-                            className="p-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full shadow-lg transform hover:scale-110 transition-all"
+                            className="p-1.5 bg-white/95 hover:bg-white text-indigo-600 rounded-lg shadow-md hover:scale-105 transition-all border border-slate-200"
                             title="Agrandir"
                         >
-                            <Search className="h-5 w-5" />
+                            <Search className="h-4 w-4" />
                         </button>
                         <button
                             type="button"
                             onClick={() => onRemove(file.id)}
-                            className="p-2.5 bg-red-600 hover:bg-red-700 text-white rounded-full shadow-lg transform hover:scale-110 transition-all"
+                            className="p-1.5 bg-white/95 hover:bg-white text-red-500 rounded-lg shadow-md hover:scale-105 transition-all border border-slate-200"
                             title="Supprimer"
                         >
-                            <Trash2 className="h-5 w-5" />
+                            <Trash2 className="h-4 w-4" />
                         </button>
                     </div>
                 </div>
