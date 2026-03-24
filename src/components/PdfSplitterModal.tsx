@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Upload, FileText, CheckCircle, AlertTriangle } from 'lucide-react';
+import { X, Upload, FileText, CheckCircle, AlertTriangle, ZoomIn, ZoomOut } from 'lucide-react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import { API_URL } from '../config';
 
@@ -43,6 +43,7 @@ export const PdfSplitterModal: React.FC<PdfSplitterModalProps> = ({
   const [numPages, setNumPages] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [splits, setSplits] = useState<Record<number, SplitInfo>>({});
+  const [scale, setScale] = useState<number>(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -52,6 +53,7 @@ export const PdfSplitterModal: React.FC<PdfSplitterModalProps> = ({
       setSelectedMorceauId('');
       setNumPages(null);
       setCurrentPage(1);
+      setScale(1);
       setSplits({});
       setError(null);
       setLoading(false);
@@ -202,7 +204,7 @@ export const PdfSplitterModal: React.FC<PdfSplitterModalProps> = ({
                     {numPages && (
                       <Page 
                         pageNumber={currentPage} 
-                        width={450} 
+                        width={450 * scale} 
                         renderTextLayer={false} 
                         renderAnnotationLayer={false}
                         className="shadow-2xl border border-slate-200"
@@ -210,9 +212,30 @@ export const PdfSplitterModal: React.FC<PdfSplitterModalProps> = ({
                     )}
                   </Document>
                 </div>
+
+                {/* Zoom Controls Overlay */}
+                <div className="absolute left-4 top-4 flex gap-2 opacity-50 hover:opacity-100 transition z-20">
+                  <button 
+                    onClick={() => setScale(s => Math.max(0.5, s - 0.25))}
+                    className="p-2.5 bg-white text-slate-700 shadow-xl border border-slate-200 rounded-xl transition hover:bg-slate-50"
+                    title="Dézoomer"
+                  >
+                    <ZoomOut size={18} />
+                  </button>
+                  <div className="flex items-center justify-center bg-white px-3 shadow-xl border border-slate-200 rounded-xl text-sm font-bold text-slate-600 min-w-[60px]">
+                    {Math.round(scale * 100)}%
+                  </div>
+                  <button 
+                    onClick={() => setScale(s => Math.min(3.0, s + 0.25))}
+                    className="p-2.5 bg-white text-slate-700 shadow-xl border border-slate-200 rounded-xl transition hover:bg-slate-50"
+                    title="Zoomer"
+                  >
+                    <ZoomIn size={18} />
+                  </button>
+                </div>
                 
                 {/* Navigation Buttons overlapping preview */}
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-2 opacity-50 hover:opacity-100 transition">
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-2 opacity-50 hover:opacity-100 transition z-20">
                   <button 
                     onClick={() => setCurrentPage(p => Math.max(1, p - 1))} 
                     disabled={currentPage === 1}
