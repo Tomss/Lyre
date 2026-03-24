@@ -144,26 +144,32 @@ const HomeNewsSection = () => {
                 <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
                     <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto border border-slate-200" onClick={(e) => e.stopPropagation()}>
                         {/* Header/Image */}
-                        <div className="relative h-64 sm:h-80 bg-slate-100 flex-shrink-0">
+                        <div className="relative bg-slate-950 flex flex-col items-center justify-center overflow-hidden min-h-[300px]">
                             {selectedNews.image_url ? (
-                                <img src={selectedNews.image_url.startsWith('http') ? selectedNews.image_url : `${BASE_URL}${selectedNews.image_url}`} alt={selectedNews.title} className="w-full h-full object-cover" />
+                                <img 
+                                    src={selectedNews.image_url.startsWith('http') ? selectedNews.image_url : `${BASE_URL}${selectedNews.image_url}`} 
+                                    alt={selectedNews.title} 
+                                    className="w-full h-auto max-h-[70vh] object-contain relative z-0" 
+                                />
                             ) : (
-                                <div className="w-full h-full flex flex-col items-center justify-center bg-teal-50 text-teal-300">
+                                <div className="w-full h-80 flex flex-col items-center justify-center bg-teal-50 text-teal-300">
                                     <Newspaper className="h-16 w-16 mb-4 opacity-50" />
                                 </div>
                             )}
-                            <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent"></div>
+                            
+                            {/* Overlay Gradient pour la lisibilitÃ© du texte en bas */}
+                            <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent pointer-events-none z-10"></div>
                             
                             {/* Bouton Fermeture */}
                             <button 
                                 onClick={() => setSelectedNews(null)}
-                                className="absolute top-4 right-4 w-10 h-10 bg-black/30 hover:bg-black/50 backdrop-blur-md rounded-full text-white flex items-center justify-center transition-colors border border-white/20"
+                                className="absolute top-4 right-4 w-10 h-10 bg-black/50 hover:bg-black/80 backdrop-blur-md rounded-full text-white flex items-center justify-center transition-all z-20 border border-white/20 hover:scale-110"
                             >
                                 <X className="w-5 h-5" />
                             </button>
                             
-                            {/* Date Superposée */}
-                            <div className="absolute bottom-6 left-6 flex items-center text-white/90 text-sm font-medium">
+                            {/* Date SuperposÃ©e */}
+                            <div className="absolute bottom-6 left-6 flex items-center text-white font-medium z-20 bg-black/20 backdrop-blur-sm px-4 py-2 rounded-full border border-white/10">
                                 <CalendarDays className="w-4 h-4 mr-2 text-teal-400" />
                                 {new Date(selectedNews.published_at).toLocaleDateString('fr-FR', {
                                     weekday: 'long',
