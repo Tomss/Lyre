@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Image as ImageIcon, Music, FileText, File, Search } from 'lucide-react';
+import { X, Image as ImageIcon, Music, FileText, File, Search, Trash2 } from 'lucide-react';
 
 interface FileUploadPreviewProps {
   files: File[];
@@ -22,37 +22,35 @@ const FileUploadPreview: React.FC<FileUploadPreviewProps> = ({ files, onRemove, 
       const imageUrl = URL.createObjectURL(file);
       return (
         <div key={index} className="relative group">
-          <div 
-            className="aspect-square bg-gray-100 rounded-lg overflow-hidden cursor-zoom-in"
-            onClick={() => setPreviewImage(imageUrl)}
-          >
+          <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden relative">
             <img
               src={imageUrl}
               alt={file.name}
               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-              onLoad={() => {
-                // We keep the URL for the preview, but we should be careful about memory.
-                // In a real app we might want to manage this better.
-              }}
             />
-            {/* Overlay au survol */}
-            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <Search className="text-white h-6 w-6" />
+            
+            {/* Overlay d'actions au survol */}
+            <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center gap-3">
+                <button
+                    type="button"
+                    onClick={() => setPreviewImage(imageUrl)}
+                    className="p-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full shadow-lg transform hover:scale-110 transition-all"
+                    title="Agrandir"
+                >
+                    <Search className="h-5 w-5" />
+                </button>
+                <button
+                    type="button"
+                    onClick={() => onRemove(index)}
+                    className="p-2.5 bg-red-600 hover:bg-red-700 text-white rounded-full shadow-lg transform hover:scale-110 transition-all"
+                    title="Supprimer"
+                >
+                    <Trash2 className="h-5 w-5" />
+                </button>
             </div>
           </div>
-          
-          <button
-            onClick={(e) => {
-                e.stopPropagation();
-                onRemove(index);
-            }}
-            className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 shadow-md z-10"
-            title="Supprimer"
-          >
-            <X className="h-4 w-4" />
-          </button>
 
-          <div className="mt-2">
+          <div className="mt-2 text-center sm:text-left">
             <p className="text-xs text-gray-600 truncate" title={file.name}>
               {file.name}
             </p>
