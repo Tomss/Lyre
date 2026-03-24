@@ -4,8 +4,6 @@ import { useAuth } from '../context/AuthContext';
 import { Navigate, Link } from 'react-router-dom';
 
 import { API_URL } from '../config';
-import FileUploadPreview from '../components/FileUploadPreview';
-import ExistingFilesPreview from '../components/ExistingFilesPreview';
 
 interface NewsItem {
     id: string;
@@ -389,37 +387,51 @@ const AdminNews = () => {
                                                     <ImageIcon className="w-4 h-4 mr-1.5 text-slate-400" />
                                                     Image de couverture
                                                 </label>
-                                                <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-4">
-                                                    <div className="border-2 border-dashed border-slate-200 rounded-2xl p-6 text-center hover:border-indigo-400 transition-colors group cursor-pointer relative bg-slate-50/50">
-                                                        <input type="file" accept="image/*" onChange={handleFileChange} className="absolute inset-0 opacity-0 cursor-pointer z-10" />
-                                                        <div className="flex flex-col items-center">
-                                                            <div className="w-10 h-10 bg-indigo-50 text-indigo-500 rounded-full flex items-center justify-center mb-2 group-hover:scale-110 transition-transform shadow-sm">
-                                                                <Plus size={20} />
+                                                <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+                                                    {(selectedFiles.length > 0 || (editingNews && editingNews.image_url && filesToRemove.length === 0)) ? (
+                                                        <div className="space-y-4 animate-in fade-in duration-300">
+                                                            <div className="relative rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 group shadow-inner">
+                                                                <img 
+                                                                    src={selectedFiles.length > 0 ? URL.createObjectURL(selectedFiles[0]) : (editingNews?.image_url || '')} 
+                                                                    alt="Aperçu" 
+                                                                    className="w-full h-auto max-h-64 object-contain mx-auto block" 
+                                                                />
+                                                                <div className="absolute inset-0 bg-slate-900/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
                                                             </div>
-                                                            <p className="text-xs font-semibold text-slate-700">Cliquez ou glissez votre photo ici</p>
-                                                            <p className="text-[10px] text-slate-500 mt-0.5">Format JPG, PNG ou WebP</p>
+                                                            
+                                                            <div className="flex flex-wrap gap-3">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        const url = selectedFiles.length > 0 ? URL.createObjectURL(selectedFiles[0]) : (editingNews?.image_url || '');
+                                                                        window.open(url, '_blank');
+                                                                    }}
+                                                                    className="flex-1 flex items-center justify-center px-4 py-2 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-xl transition-all font-semibold text-sm border border-indigo-100"
+                                                                >
+                                                                    <Search className="w-4 h-4 mr-2" />
+                                                                    Voir en grand
+                                                                </button>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={selectedFiles.length > 0 ? removeFile : removeExistingFile}
+                                                                    className="flex-1 flex items-center justify-center px-4 py-2 bg-red-50 text-red-700 hover:bg-red-100 rounded-xl transition-all font-semibold text-sm border border-red-100"
+                                                                >
+                                                                    <Trash2 className="w-4 h-4 mr-2" />
+                                                                    Supprimer la photo
+                                                                </button>
+                                                            </div>
                                                         </div>
-                                                    </div>
-
-                                                    {selectedFiles.length > 0 && (
-                                                        <div className="pt-2 animate-in fade-in slide-in-from-top-2">
-                                                            <FileUploadPreview files={selectedFiles} onRemove={removeFile} />
-                                                        </div>
-                                                    )}
-
-                                                    {editingNews && editingNews.image_url && filesToRemove.length === 0 && (
-                                                        <div className="pt-2">
-                                                            <ExistingFilesPreview 
-                                                                files={[{
-                                                                    id: editingNews.id,
-                                                                    file_name: "Image actuelle",
-                                                                    file_path: editingNews.image_url,
-                                                                    file_type: 'image',
-                                                                    alt_text: editingNews.title,
-                                                                    sort_order: 0
-                                                                }]} 
-                                                                onRemove={removeExistingFile} 
-                                                            />
+                                                    ) : (
+                                                        <div className="border-2 border-dashed border-slate-200 rounded-2xl p-8 text-center hover:border-indigo-400 transition-colors group cursor-pointer relative bg-slate-50/50">
+                                                            <input type="file" accept="image/*" onChange={handleFileChange} className="absolute inset-0 opacity-0 cursor-pointer z-10" />
+                                                            <div className="flex flex-col items-center">
+                                                                <div className="w-12 h-12 bg-indigo-50 text-indigo-500 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform shadow-sm">
+                                                                    <Plus size={24} />
+                                                                </div>
+                                                                <p className="text-sm font-semibold text-slate-700">Cliquez ou glissez votre photo ici</p>
+                                                                <p className="text-xs text-slate-500 mt-1">Format recommandé : Paysage (16:9)</p>
+                                                                <p className="text-[10px] text-slate-400 mt-1">JPG, PNG ou WebP</p>
+                                                            </div>
                                                         </div>
                                                     )}
                                                 </div>
