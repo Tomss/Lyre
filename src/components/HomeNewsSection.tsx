@@ -142,50 +142,50 @@ const HomeNewsSection = () => {
             {/* Modal Actualité */}
             {selectedNews && (
                 <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
-                    <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto border border-slate-200" onClick={(e) => e.stopPropagation()}>
+                    <div className="bg-white rounded-3xl shadow-2xl max-w-[95vw] sm:max-w-[85vw] lg:max-w-5xl w-fit max-h-[92vh] overflow-y-auto border border-slate-200 relative mb-4 mt-4" onClick={(e) => e.stopPropagation()}>
                         {/* Header/Image */}
-                        <div className="relative bg-slate-950 flex flex-col items-center justify-center overflow-hidden min-h-[300px]">
+                        <div className="relative bg-slate-900 flex flex-col items-center justify-center overflow-hidden">
                             {selectedNews.image_url ? (
                                 <img 
                                     src={selectedNews.image_url.startsWith('http') ? selectedNews.image_url : `${BASE_URL}${selectedNews.image_url}`} 
                                     alt={selectedNews.title} 
-                                    className="w-full h-auto max-h-[70vh] object-contain relative z-0" 
+                                    className="w-auto max-w-full h-auto max-h-[80vh] block relative z-0" 
                                 />
                             ) : (
-                                <div className="w-full h-80 flex flex-col items-center justify-center bg-teal-50 text-teal-300">
+                                <div className="w-full h-64 flex flex-col items-center justify-center bg-teal-50 text-teal-300">
                                     <Newspaper className="h-16 w-16 mb-4 opacity-50" />
                                 </div>
                             )}
                             
                             {/* Overlay Gradient pour la lisibilitÃ© du texte en bas */}
-                            <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent pointer-events-none z-10"></div>
+                            <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-slate-950/60 to-transparent pointer-events-none z-10"></div>
                             
-                            {/* Bouton Fermeture */}
+                            {/* Bouton Fermeture fixÃ© en haut Ã  droite de l'image ou du modal */}
                             <button 
                                 onClick={() => setSelectedNews(null)}
-                                className="absolute top-4 right-4 w-10 h-10 bg-black/50 hover:bg-black/80 backdrop-blur-md rounded-full text-white flex items-center justify-center transition-all z-20 border border-white/20 hover:scale-110"
+                                className="absolute top-4 right-4 w-10 h-10 bg-black/40 hover:bg-black/70 backdrop-blur-md rounded-full text-white flex items-center justify-center transition-all z-20 border border-white/20 hover:scale-110"
                             >
                                 <X className="w-5 h-5" />
                             </button>
                             
-                            {/* Date SuperposÃ©e */}
-                            <div className="absolute bottom-6 left-6 flex items-center text-white font-medium z-20 bg-black/20 backdrop-blur-sm px-4 py-2 rounded-full border border-white/10">
-                                <CalendarDays className="w-4 h-4 mr-2 text-teal-400" />
+                            {/* Date SuperposÃ©e - Plus discrÃ¨te */}
+                            <div className="absolute bottom-4 left-4 flex items-center text-white/90 text-xs font-semibold z-20 bg-black/30 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/10">
+                                <CalendarDays className="w-3.5 h-3.5 mr-2 text-teal-400" />
                                 {new Date(selectedNews.published_at).toLocaleDateString('fr-FR', {
-                                    weekday: 'long',
-                                    year: 'numeric',
+                                    weekday: 'short',
+                                    day: 'numeric',
                                     month: 'long',
-                                    day: 'numeric'
+                                    year: 'numeric'
                                 })}
                             </div>
                         </div>
 
                         {/* Contenu */}
-                        <div className="p-8 sm:p-10">
-                            <h2 className="font-poppins font-bold text-2xl sm:text-3xl text-slate-800 mb-6 leading-tight">
+                        <div className="p-6 sm:p-8">
+                            <h2 className="font-poppins font-bold text-xl sm:text-2xl text-slate-800 mb-4 leading-tight">
                                 {selectedNews.title}
                             </h2>
-                            <div className="prose prose-slate prose-teal max-w-none text-slate-600 leading-relaxed whitespace-pre-wrap">
+                            <div className="prose prose-slate prose-teal max-w-none text-slate-600 text-sm sm:text-base leading-relaxed whitespace-pre-wrap">
                                 {selectedNews.content}
                             </div>
                         </div>
