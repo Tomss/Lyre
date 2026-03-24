@@ -79,6 +79,18 @@ const AdminNews = () => {
         }
     }, [isAuthenticated, currentUser, token]);
 
+    // Bloquer le scroll du body quand une modale est ouverte
+    useEffect(() => {
+        if (showAddForm || deleteConfirmation.isOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [showAddForm, deleteConfirmation.isOpen]);
+
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
