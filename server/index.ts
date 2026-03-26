@@ -121,6 +121,23 @@ dotenv.config();
         console.log('[Migration] Ajout de message à activity_log...');
         await pool.query("ALTER TABLE activity_log ADD COLUMN message text AFTER title");
       }
+
+      // Nettoyage des anciennes colonnes si elles existent (elles bloquent l'insertion car NOT NULL sans default)
+      if (existingColumns.includes('action')) {
+        console.log('[Migration] Suppression de la colonne action...');
+        await pool.query("ALTER TABLE activity_log DROP COLUMN action");
+      }
+      if (existingColumns.includes('entity_id')) {
+        console.log('[Migration] Suppression de la colonne entity_id...');
+        await pool.query("ALTER TABLE activity_log DROP COLUMN entity_id");
+      }
+      if (existingColumns.includes('user_id')) {
+        console.log('[Migration] Suppression des contraintes et de la colonne user_id...');
+        try {
+          await pool.query("ALTER TABLE activity_log DROP FOREIGN KEY activity_log_user_id_fkey");
+        } catch (e) { /* ignore */ }
+        await pool.query("ALTER TABLE activity_log DROP COLUMN user_id");
+      }
       console.log('[Migration] Vérification/Mise à jour de activity_log terminée.');
     }
   } catch (e) {
