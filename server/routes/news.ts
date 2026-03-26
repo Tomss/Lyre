@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { authenticateToken } from '../middleware/auth';
 import pool from '../db';
 import crypto from 'crypto';
+import { logActivity } from '../utils/activity';
 
 
 const router = Router();
@@ -44,7 +45,18 @@ router.post('/', authenticateToken, async (req, res) => {
             [newNews.id, newNews.title, newNews.content, newNews.image_url, newNews.published_at, newNews.created_at]
         );
 
-        res.status(201).json({ message: 'ActualitÃ© crÃ©Ã©e avec succÃ¨s', news: newNews });
+        res.status(201).json({ message: 'Actualité créée avec succès', news: newNews });
+
+        // Log de l'activité
+        logActivity({
+            type: 'news',
+            action_type: 'create',
+            target_id: newNews.id,
+            // @ts-ignore
+            created_by: (req as any).user.id,
+            title: title,
+            message: `Nouvelle actualité publiée : ${title}`
+        });
 
 
     } catch (error) {
@@ -78,7 +90,18 @@ router.put('/:id', authenticateToken, async (req, res) => {
             return res.status(404).json({ message: 'ActualitÃ© non trouvÃ©e.' });
         }
 
-        res.status(200).json({ message: 'ActualitÃ© mise Ã  jour avec succÃ¨s.' });
+        res.status(200).json({ message: 'Actualité mise à jour avec succès.' });
+
+        // Log de l'activité
+        logActivity({
+            type: 'news',
+            action_type: 'update',
+            target_id: String(id),
+            // @ts-ignore
+            created_by: (req as any).user.id,
+            title: title,
+            message: `Actualité mise à jour : ${title}`
+        });
 
 
     } catch (error) {
@@ -107,7 +130,18 @@ router.delete('/:id', authenticateToken, async (req, res) => {
             return res.status(404).json({ message: 'ActualitÃ© non trouvÃ©e.' });
         }
 
-        res.status(200).json({ message: 'ActualitÃ© supprimÃ©e avec succÃ¨s.' });
+        res.status(200).json({ message: 'Actualité supprimée avec succès.' });
+
+        // Log de l'activité
+        logActivity({
+            type: 'news',
+            action_type: 'delete',
+            target_id: String(id),
+            // @ts-ignore
+            created_by: (req as any).user.id,
+            title: newsTitle,
+            message: `L'actualité "${newsTitle}" a été supprimée`
+        });
 
 
     } catch (error) {

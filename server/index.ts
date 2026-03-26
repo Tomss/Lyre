@@ -68,16 +68,60 @@ dotenv.config();
         CREATE TABLE activity_log (
           id varchar(36) NOT NULL,
           type enum('event','partition','news') NOT NULL,
-          action text NOT NULL,
-          entity_id varchar(36) NOT NULL,
-          user_id varchar(36) NOT NULL,
+          action_type enum('create','update','delete') NOT NULL,
+          target_id varchar(36) NOT NULL,
+          orchestra_id varchar(36) DEFAULT NULL,
+          created_by varchar(36) NOT NULL,
+          title text NOT NULL,
+          message text NOT NULL,
           created_at datetime DEFAULT CURRENT_TIMESTAMP,
           PRIMARY KEY (id),
-          KEY activity_log_user_id_fkey (user_id),
-          CONSTRAINT activity_log_user_id_fkey FOREIGN KEY (user_id) REFERENCES profiles (id)
+          KEY activity_log_created_by_fkey (created_by),
+          CONSTRAINT activity_log_created_by_fkey FOREIGN KEY (created_by) REFERENCES profiles (id)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
       `);
       console.log('[Migration] Succès : table activity_log créée.');
+    } else {
+      // Emergency Migration: Ajout des colonnes manquantes si nécessaire
+      const [columns]: any = await pool.query(`
+        SELECT COLUMN_NAME 
+        FROM information_schema.COLUMNS 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = 'activity_log'
+      `);
+      const existingColumns = columns.map((c: any) => c.COLUMN_NAME);
+      
+      if (!existingColumns.includes('action_type')) {
+        console.log('[Migration] Ajout de action_type à activity_log...');
+        await pool.query("ALTER TABLE activity_log ADD COLUMN action_type enum('create','update','delete') DEFAULT 'create' AFTER type");
+      }
+      if (!existingColumns.includes('target_id')) {
+        console.log('[Migration] Ajout de target_id à activity_log...');
+        await pool.query("ALTER TABLE activity_log ADD COLUMN target_id varchar(36) DEFAULT '' AFTER action_type");
+      }
+      if (!existingColumns.includes('orchestra_id')) {
+        console.log('[Migration] Ajout de orchestra_id à activity_log...');
+        await pool.query("ALTER TABLE activity_log ADD COLUMN orchestra_id varchar(36) DEFAULT NULL AFTER target_id");
+      }
+      if (!existingColumns.includes('created_by')) {
+        console.log('[Migration] Ajout de created_by à activity_log...');
+        await pool.query("ALTER TABLE activity_log ADD COLUMN created_by varchar(36) DEFAULT '' AFTER orchestra_id");
+        // Tentative de liaison avec profiles (ignorer si déjà lié ou data incompatible temporairement)
+        try {
+          await pool.query("ALTER TABLE activity_log ADD CONSTRAINT activity_log_created_by_fkey FOREIGN KEY (created_by) REFERENCES profiles (id)");
+        } catch (e) {
+          console.warn('[Migration] Impossible de créer la FK created_by (peut-être déjà existante)');
+        }
+      }
+      if (!existingColumns.includes('title')) {
+        console.log('[Migration] Ajout de title à activity_log...');
+        await pool.query("ALTER TABLE activity_log ADD COLUMN title text AFTER created_by");
+      }
+      if (!existingColumns.includes('message')) {
+        console.log('[Migration] Ajout de message à activity_log...');
+        await pool.query("ALTER TABLE activity_log ADD COLUMN message text AFTER title");
+      }
+      console.log('[Migration] Vérification/Mise à jour de activity_log terminée.');
     }
   } catch (e) {
     console.error('[Emergency/Migration] Erreur:', e);
