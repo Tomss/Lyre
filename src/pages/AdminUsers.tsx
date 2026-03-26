@@ -766,7 +766,7 @@ const AdminUsers = () => {
                 {expandedRoles.has(role) && (
                   <div className="divide-y divide-slate-100">
                     {userList.map(user => (
-                      <div key={user.id} className={`p-4 grid grid-cols-1 md:grid-cols-12 gap-4 items-start md:items-center hover:bg-slate-50/50 transition-colors duration-200 border-l-4 ${style.itemBorder}`}>
+                      <div key={user.id} className={`p-4 grid grid-cols-1 md:grid-cols-12 gap-4 items-start md:items-center hover:bg-slate-50/50 transition-colors duration-200`}>
                         <div className="md:col-span-6">
                           <div className="flex items-center mb-2">
                             <p className="font-bold text-lg text-slate-800 uppercase leading-tight mr-3">{user.last_name} {user.first_name}</p>
