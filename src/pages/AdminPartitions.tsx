@@ -652,21 +652,20 @@ const AdminPartitions = () => {
                 {expandedMorceaux.has(morceau.id) && (
                   <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-t border-slate-100 bg-slate-50/30">
                     {sortedPartitions.map(partition => (
-                      <div key={partition.id} className="p-5 bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between hover:border-indigo-100 hover:shadow-md transition-all">
-                        <div className="flex items-start space-x-3 mb-4">
-                          <div className="w-10 h-10 rounded-lg bg-slate-50 flex items-center justify-center flex-shrink-0">
+                      <div key={partition.id} className="p-3 bg-white rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between hover:border-indigo-100 hover:shadow-md transition-all">
+                        <div className="flex items-center space-x-3 min-w-0 flex-1">
+                          <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center flex-shrink-0">
                             <FileText size={20} className="text-slate-400" />
                           </div>
-                          <div>
-                            <p className="font-bold text-slate-800 leading-tight mb-1">{partition.nom}</p>
-                            <p className="text-sm font-medium text-indigo-600">{partition.instruments.name}</p>
-                            {partition.file_name && <p className="text-xs text-slate-400 mt-1 truncate max-w-[150px]" title={partition.file_name}>{partition.file_name} - {((partition.file_size || 0) / 1024).toFixed(1)} KB</p>}
+                          <div className="min-w-0 flex-1">
+                            <p className="font-bold text-slate-800 leading-none truncate mb-1" title={partition.nom}>{partition.nom}</p>
+                            <p className="text-xs font-semibold text-indigo-500 truncate">{partition.instruments.name}</p>
                           </div>
                         </div>
-                        <div className="flex items-center justify-end space-x-2 pt-3 border-t border-slate-50">
-                          {partition.file_path && <a href={partition.file_path} target="_blank" rel="noreferrer" title="Télécharger" className="p-2 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-xl transition-all duration-300 hover:scale-110"><Download size={16} /></a>}
-                          <button onClick={() => handleEdit(partition)} title="Modifier" className="p-2 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition-all duration-300 hover:scale-110"><Edit size={16} /></button>
-                          <button onClick={() => confirmDelete(partition)} title="Supprimer" className="p-2 text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl transition-all duration-300 hover:scale-110"><Trash2 size={16} /></button>
+                        <div className="flex items-center space-x-1.5 ml-4 flex-shrink-0">
+                          {partition.file_path && <a href={partition.file_path} target="_blank" rel="noreferrer" title="Télécharger" className="p-2 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-xl transition-all duration-300 hover:scale-110 shadow-sm border border-emerald-100"><Download size={14} /></a>}
+                          <button onClick={() => handleEdit(partition)} title="Modifier" className="p-2 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition-all duration-300 hover:scale-110 shadow-sm border border-indigo-100"><Edit size={14} /></button>
+                          <button onClick={() => confirmDelete(partition)} title="Supprimer" className="p-2 text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl transition-all duration-300 hover:scale-110 shadow-sm border border-rose-100"><Trash2 size={14} /></button>
                         </div>
                       </div>
                     ))}
