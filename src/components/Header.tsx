@@ -281,27 +281,29 @@ const Header = () => {
                   </button>
                   
                   {isUserMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-[0_15px_50px_-15px_rgba(0,0,0,0.15)] border border-gray-100 py-2 z-50 animate-in fade-in zoom-in-95 slide-in-from-top-2 duration-300 origin-top-right overflow-hidden">
-                      <div className="px-4 py-3 border-b border-gray-50 mb-1 bg-gray-50/50">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Session active</p>
-                        <p className="text-xs font-bold text-teal-700 truncate">{currentUser.email}</p>
+                    <div className="absolute right-0 pt-2 z-50 animate-in fade-in zoom-in-95 slide-in-from-top-2 duration-300 origin-top-right">
+                      <div className="w-56 bg-white rounded-2xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.2)] border border-gray-100 py-2 overflow-hidden">
+                        <div className="px-4 py-3 border-b border-gray-50 mb-1 bg-gray-50/50">
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Session active</p>
+                          <p className="text-xs font-bold text-teal-700 truncate">{currentUser.email}</p>
+                        </div>
+                        <Link 
+                          to="/dashboard" 
+                          onClick={() => setIsUserMenuOpen(false)}
+                          className="flex items-center space-x-3 px-4 py-3 text-sm text-slate-700 hover:bg-teal-50 hover:text-teal-700 transition-colors font-medium mx-2 rounded-xl"
+                        >
+                          <UserCircle className="h-4 w-4 opacity-70" />
+                          <span>Mes infos / Dashboard</span>
+                        </Link>
+                        <div className="h-px bg-gray-50 mx-2 my-1"></div>
+                        <button 
+                          onClick={() => { logout(); setIsUserMenuOpen(false); }}
+                          className="w-full flex items-center space-x-3 px-4 py-3 text-sm text-rose-600 hover:bg-rose-50 transition-colors font-bold mx-2 rounded-xl text-left"
+                        >
+                          <LogOut className="h-4 w-4 opacity-70" />
+                          <span>Se déconnecter</span>
+                        </button>
                       </div>
-                      <Link 
-                        to="/dashboard" 
-                        onClick={() => setIsUserMenuOpen(false)}
-                        className="flex items-center space-x-3 px-4 py-3 text-sm text-slate-700 hover:bg-teal-50 hover:text-teal-700 transition-colors font-medium mx-2 rounded-xl"
-                      >
-                        <UserCircle className="h-4 w-4 opacity-70" />
-                        <span>Mes infos / Dashboard</span>
-                      </Link>
-                      <div className="h-px bg-gray-50 mx-2 my-1"></div>
-                      <button 
-                        onClick={() => { logout(); setIsUserMenuOpen(false); }}
-                        className="w-full flex items-center space-x-3 px-4 py-3 text-sm text-rose-600 hover:bg-rose-50 transition-colors font-bold mx-2 rounded-xl text-left"
-                      >
-                        <LogOut className="h-4 w-4 opacity-70" />
-                        <span>Se déconnecter</span>
-                      </button>
                     </div>
                   )}
                 </div>
