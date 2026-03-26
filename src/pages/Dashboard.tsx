@@ -38,8 +38,9 @@ const Dashboard = () => {
   };
 
   React.useEffect(() => {
-    // Quand on ferme le menu des notifications, on marque tout comme vu
-    if (!isNotificationsOpen && activityLogs.length > 0) {
+    // On ne marque comme vu QUE si le panneau est ouvert
+    // Cela permet aux nouvelles notifications via SSE de s'accumuler (badge) tant qu'on n'a pas ouvert le menu
+    if (isNotificationsOpen && activityLogs.length > 0) {
       setLastSeenId(activityLogs[0].id);
     }
   }, [isNotificationsOpen, activityLogs]);
