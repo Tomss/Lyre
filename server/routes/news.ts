@@ -1,7 +1,8 @@
-﻿import { Router } from 'express';
+import { Router } from 'express';
 import { authenticateToken } from '../middleware/auth';
 import pool from '../db';
 import crypto from 'crypto';
+
 
 const router = Router();
 
@@ -44,6 +45,8 @@ router.post('/', authenticateToken, async (req, res) => {
         );
 
         res.status(201).json({ message: 'ActualitÃ© crÃ©Ã©e avec succÃ¨s', news: newNews });
+
+
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Erreur lors de la crÃ©ation de l\'actualitÃ©.' });
@@ -76,6 +79,8 @@ router.put('/:id', authenticateToken, async (req, res) => {
         }
 
         res.status(200).json({ message: 'ActualitÃ© mise Ã  jour avec succÃ¨s.' });
+
+
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Erreur lors de la mise Ã  jour de l\'actualitÃ©.' });
@@ -92,6 +97,9 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     const { id } = req.params;
 
     try {
+        const [oldNews] = await pool.query('SELECT title FROM news WHERE id = ?', [id]) as any;
+        const newsTitle = oldNews[0]?.title || 'Actualité';
+
         const [result] = await pool.query('DELETE FROM news WHERE id = ?', [id]);
 
         // @ts-ignore
@@ -100,6 +108,8 @@ router.delete('/:id', authenticateToken, async (req, res) => {
         }
 
         res.status(200).json({ message: 'ActualitÃ© supprimÃ©e avec succÃ¨s.' });
+
+
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Erreur lors de la suppression de l\'actualitÃ©.' });

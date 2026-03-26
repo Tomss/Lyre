@@ -198,7 +198,7 @@ CREATE TABLE `page_headers` (
   UNIQUE KEY `page_slug` (`page_slug`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-CREATE TABLE `partners` (
+CREATE TABLE IF NOT EXISTS `partners` (
   `id` varchar(36) NOT NULL,
   `name` varchar(255) NOT NULL,
   `logo_url` text NOT NULL,
@@ -207,4 +207,16 @@ CREATE TABLE `partners` (
   `display_order` int DEFAULT '0',
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS `activity_log` (
+  `id` varchar(36) NOT NULL,
+  `type` enum('event','partition','news') NOT NULL,
+  `action` text NOT NULL,
+  `entity_id` varchar(36) NOT NULL,
+  `user_id` varchar(36) NOT NULL,
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `activity_log_user_id_fkey` (`user_id`),
+  CONSTRAINT `activity_log_user_id_fkey` FOREIGN KEY (`user_id`) REFERENCES `profiles` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

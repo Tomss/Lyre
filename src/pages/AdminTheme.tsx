@@ -409,7 +409,7 @@ const AdminTheme = () => {
 
     return (
         <div className="font-inter pt-8 lg:pt-12 pb-20 min-h-screen bg-gray-50">
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="w-full px-4 sm:px-10 lg:px-16">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                     <div>
                         <Link to="/dashboard" className="text-slate-400 hover:text-indigo-600 transition flex items-center mb-2 group">

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Music, UserCircle, ChevronDown } from 'lucide-react';
+import { Menu, X, Music, UserCircle, ChevronDown, User, LogOut, Info } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { API_URL, BASE_URL } from '../config';
@@ -138,10 +138,28 @@ const Header = () => {
     }
   }, [location]);
 
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (isUserMenuOpen && !target.closest('.user-menu-container')) {
+        setIsUserMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isUserMenuOpen]);
+
+  const isFullWidthPage = location.pathname === '/dashboard' || location.pathname.startsWith('/admin');
+  const containerClass = isFullWidthPage 
+    ? "w-full px-4 sm:px-10 lg:px-16" 
+    : "container mx-auto px-4 sm:px-6 lg:px-8";
+
   return (
     <header className={`sticky top-0 left-0 right-0 z-50 transition-all duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'
       } bg-white transition-shadow duration-300`}>
-      <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <nav className={containerClass}>
         <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo */}
           <Link to="/" className="flex-shrink-0 flex items-center space-x-2 font-poppins font-bold text-xl transition-colors text-teal-800 hover:text-teal-600">
@@ -234,32 +252,49 @@ const Header = () => {
 
           {/* Right Side Actions (Desktop User + Mobile Toggle) */}
           <div className="flex items-center space-x-3">
-            {/* Desktop User Section */}
-            <div className="hidden lg:flex items-center space-x-3">
+            <div className="hidden lg:flex items-center">
               {currentUser ? (
-                <>
-                  <Link
-                    to="/dashboard"
-                    className="flex items-center space-x-2 font-inter font-medium px-4 py-2 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-lg bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200"
+                <div className="relative user-menu-container">
+                  <button 
+                    onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                    className="flex items-center space-x-3 font-inter font-medium pl-1.5 pr-4 py-1.5 rounded-xl transition-all duration-300 bg-slate-900 hover:bg-teal-600 text-white shadow-lg shadow-slate-900/20 group relative overflow-hidden active:scale-95"
                   >
-                    <UserCircle className="h-4 w-4" />
-                    <span className="text-sm">
-                      {`${currentUser.firstName} ${currentUser.lastName}`}
+                    <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-teal-300 transition-all duration-300 group-hover:bg-white/20 group-hover:scale-110 shadow-sm">
+                      <User className="h-4 w-4" />
+                    </div>
+                    <span className="text-sm font-bold tracking-tight pr-1">
+                      {`${currentUser.firstName} ${currentUser.lastName.toUpperCase()}`}
                     </span>
-                  </Link>
-                  <button
-                    onClick={() => logout()}
-                    className="font-inter font-medium px-4 py-2 rounded-full transition-all duration-300 hover:scale-105 text-sm bg-slate-900 hover:bg-teal-600 text-white shadow-md shadow-slate-900/10"
-                  >
-                    Déconnexion
+                    <ChevronDown className={`h-4 w-4 text-teal-400/80 transition-transform duration-300 ${isUserMenuOpen ? 'rotate-180' : ''}`} />
                   </button>
-                </>
+                  
+                  {isUserMenuOpen && (
+                    <div className="absolute right-0 mt-3 w-56 bg-white rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] border border-gray-100 py-2 z-50 animate-in fade-in zoom-in-95 duration-200 origin-top-right overflow-hidden">
+                      <Link 
+                        to="/dashboard" 
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className="flex items-center space-x-3 px-4 py-3 text-sm text-slate-700 hover:bg-teal-50 hover:text-teal-700 transition-colors font-medium"
+                      >
+                        <UserCircle className="h-4 w-4 opacity-70" />
+                        <span>Mes infos / Dashboard</span>
+                      </Link>
+                      <div className="h-px bg-gray-50 mx-2 my-1"></div>
+                      <button 
+                        onClick={() => { logout(); setIsUserMenuOpen(false); }}
+                        className="w-full flex items-center space-x-3 px-4 py-3 text-sm text-rose-600 hover:bg-rose-50 transition-colors font-semibold"
+                      >
+                        <LogOut className="h-4 w-4 opacity-70" />
+                        <span>Se déconnecter</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
               ) : (
                 <Link
                   to="/connexion"
-                  className="font-inter font-semibold px-6 py-3 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-lg bg-slate-900 hover:bg-teal-600 text-white shadow-md shadow-slate-900/10"
+                  className="font-inter font-semibold px-6 py-3 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg bg-slate-900 hover:bg-teal-600 text-white shadow-md shadow-slate-900/10"
                 >
-                  Espace Membre
+                  Se connecter
                 </Link>
               )}
             </div>
@@ -338,31 +373,38 @@ const Header = () => {
             <div className="pt-10 mt-8 border-t border-gray-100 space-y-4">
               {currentUser ? (
                 <>
+                  <div className="flex items-center space-x-4 p-4 bg-teal-50/50 rounded-2xl border border-teal-100 mb-2">
+                    <div className="w-12 h-12 rounded-full bg-teal-600 flex items-center justify-center text-white shadow-md">
+                      <User className="h-6 w-6" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-teal-900 leading-tight">{`${currentUser.firstName} ${currentUser.lastName.toUpperCase()}`}</p>
+                      <p className="text-xs text-teal-600 font-medium">Membre connecté</p>
+                    </div>
+                  </div>
                   <Link
                     to="/dashboard"
-                    className="flex items-center space-x-3 bg-gray-50 hover:bg-teal-50 text-teal-800 font-inter font-medium px-4 py-5 rounded-xl border border-gray-100 transition-all duration-300 shadow-sm"
+                    className="flex items-center space-x-3 w-full p-4 rounded-xl text-gray-700 hover:bg-gray-50 transition-all active:scale-95"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    <UserCircle className="h-7 w-7 text-teal-600" />
-                    <span className="text-lg">{`${currentUser.firstName} ${currentUser.lastName}`}</span>
+                    <Info className="h-5 w-5 text-gray-400" />
+                    <span className="font-semibold">Mes infos / Dashboard</span>
                   </Link>
                   <button
-                    onClick={() => {
-                      logout();
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className="w-full text-left bg-slate-900 hover:bg-teal-600 text-white font-inter font-medium px-4 py-5 rounded-xl transition-all duration-300 shadow-lg shadow-slate-900/10 text-lg"
+                    onClick={() => { logout(); setIsMobileMenuOpen(false); }}
+                    className="flex items-center space-x-3 w-full p-4 rounded-xl text-rose-600 hover:bg-rose-50 transition-all font-bold active:scale-95"
                   >
-                    Déconnexion
+                    <LogOut className="h-5 w-5 text-rose-400" />
+                    <span>Se déconnecter</span>
                   </button>
                 </>
               ) : (
                 <Link
                   to="/connexion"
-                  className="block bg-slate-900 hover:bg-teal-600 text-white font-inter font-semibold px-6 py-5 rounded-xl transition-all duration-300 text-center shadow-lg shadow-slate-900/10 text-lg"
+                  className="block w-full bg-slate-900 text-white text-center font-bold py-5 rounded-xl hover:bg-teal-600 transition-all active:scale-95 shadow-lg shadow-slate-900/10"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  Espace Membre
+                  Se connecter
                 </Link>
               )}
             </div>

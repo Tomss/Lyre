@@ -1,7 +1,12 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Facebook, Instagram, Youtube } from 'lucide-react';
 
 const Footer = () => {
+  const location = useLocation();
+  const isFullWidthPage = location.pathname === '/dashboard' || location.pathname.startsWith('/admin');
+  const containerClass = isFullWidthPage 
+    ? "w-full px-4 sm:px-10 lg:px-16" 
+    : "container mx-auto px-4 sm:px-6 lg:px-8";
   const quickLinks = [
     { path: '/', label: 'Accueil' },
     { path: '/school', label: 'L\'école' },
@@ -18,7 +23,7 @@ const Footer = () => {
 
   return (
     <footer className="bg-dark text-white">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className={`${containerClass} py-12`}>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Column 1: School Info */}
           <div className="space-y-6">

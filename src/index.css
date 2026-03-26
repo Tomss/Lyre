@@ -93,4 +93,14 @@
     50% { transform: translate(-0.5%, -1.5%); }
     75% { transform: translate(-1%, 0.5%); }
   }
+
+  @keyframes pulse-highlight {
+    0% { background-color: transparent; }
+    30% { background-color: rgb(238 242 255); box-shadow: 0 0 0 4px rgb(224 231 255); }
+    100% { background-color: transparent; }
+  }
+
+  .highlight-event {
+    animation: pulse-highlight 2s ease-in-out;
+  }
 }

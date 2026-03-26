@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { authenticateToken } from '../middleware/auth';
 import pool from '../db';
 import crypto from 'crypto';
+import { logActivity } from '../utils/activity';
 
 const router = Router();
 
@@ -56,7 +57,21 @@ router.post('/', async (req, res) => {
       );
     }
     await connection.commit();
-    res.status(201).json({ message: 'Ã‰vÃ©nement crÃ©Ã© avec succÃ¨s.' });
+
+    // Journaliser l'activité de création
+    const [firstOrchestra] = orchestra_ids;
+    logActivity({
+      type: 'event',
+      action_type: 'create',
+      target_id: String(newEventId),
+      orchestra_id: firstOrchestra || null, // On lie au premier orchestre par simplicité ou null si global
+      // @ts-ignore
+      created_by: (req as any).user.id,
+      title: title,
+      message: `Nouvel événement : ${title}${location ? ` à ${location}` : ''} le ${new Date(event_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}`
+    });
+
+    res.status(201).json({ message: 'Événement créé avec succès.' });
   } catch (error) {
     await connection.rollback();
     console.error(error);
@@ -78,27 +93,72 @@ router.put('/:id', async (req, res) => {
     return res.status(400).json({ message: 'Champs requis manquants.' });
   }
 
-  const connection = await pool.getConnection();
-  try {
-    await connection.beginTransaction();
-    await connection.query(
-      'UPDATE events SET title = ?, description = ?, event_type = ?, event_date = ?, location = ?, practical_info = ?, is_public = ? WHERE id = ?',
-      [title, description, event_type, event_date, location, practical_info, is_public !== undefined ? is_public : true, id]
-    );
-    await connection.query('DELETE FROM event_orchestras WHERE event_id = ?', [id]);
+    const connection = await pool.getConnection();
+    try {
+        await connection.beginTransaction();
 
-    const orchestrasToLink = Array.isArray(orchestra_ids) ? orchestra_ids : [];
-    for (const orchestra_id of orchestrasToLink) {
-      if (orchestra_id) {
+        // 1. Récupérer l'ancien événement pour comparaison
+        const [oldEvents] = await connection.query('SELECT * FROM events WHERE id = ?', [id]) as any;
+        const oldEvent = oldEvents[0];
+
+        if (!oldEvent) {
+            await connection.rollback();
+            return res.status(404).json({ message: 'Événement non trouvé.' });
+        }
+
+        // 2. Mettre à jour l'événement
         await connection.query(
-          'INSERT INTO event_orchestras (id, event_id, orchestra_id) VALUES (?, ?, ?)',
-          [crypto.randomUUID(), id, orchestra_id]
+            'UPDATE events SET title = ?, description = ?, event_type = ?, event_date = ?, location = ?, practical_info = ?, is_public = ? WHERE id = ?',
+            [title, description, event_type, event_date, location, practical_info, is_public !== undefined ? is_public : true, id]
         );
-      }
-    }
-    await connection.commit();
-    res.status(200).json({ message: 'Ã‰vÃ©nement mis Ã  jour avec succÃ¨s.' });
-  } catch (error) {
+        await connection.query('DELETE FROM event_orchestras WHERE event_id = ?', [id]);
+
+        const orchestrasToLink = Array.isArray(orchestra_ids) ? orchestra_ids : [];
+        for (const orchestra_id of orchestrasToLink) {
+            if (orchestra_id) {
+                await connection.query(
+                    'INSERT INTO event_orchestras (id, event_id, orchestra_id) VALUES (?, ?, ?)',
+                    [crypto.randomUUID(), id, orchestra_id]
+                );
+            }
+        }
+
+        // 3. Générer un message de log détaillé
+        let detailMessage = `Événement ${title} mis à jour. `;
+        const changes = [];
+
+        if (oldEvent.title !== title) changes.push(`Nouveau titre : ${title}`);
+        if (new Date(oldEvent.event_date).getTime() !== new Date(event_date).getTime()) {
+            const newDateStr = new Date(event_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
+            changes.push(`Nouvel horaire : ${newDateStr}`);
+        }
+        if (oldEvent.location !== location) changes.push(`Nouveau lieu : ${location || 'Non spécifié'}`);
+        if (oldEvent.practical_info !== practical_info) {
+            const truncatedInfo = practical_info && practical_info.length > 50 
+                ? practical_info.substring(0, 50) + '...' 
+                : (practical_info || 'Supprimées');
+            changes.push(`Infos Pratiques : ${truncatedInfo}`);
+        }
+
+        if (changes.length > 0) {
+            detailMessage = changes.join(' | ');
+        }
+
+        const [firstOrchestra] = orchestrasToLink;
+        logActivity({
+            type: 'event',
+            action_type: 'update',
+            target_id: String(id),
+            orchestra_id: firstOrchestra || null,
+            // @ts-ignore
+            created_by: (req as any).user.id,
+            title: title,
+            message: detailMessage
+        });
+
+        await connection.commit();
+        res.status(200).json({ message: 'Événement mis à jour avec succès.' });
+    } catch (error) {
     await connection.rollback();
     console.error(error);
     res.status(500).json({ message: 'Erreur lors de la mise Ã  jour de l\'Ã©vÃ©nement.' });
@@ -117,6 +177,11 @@ router.delete('/:id', async (req, res) => {
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
+
+    // Récupérer le titre avant suppression pour le log
+    const [oldEvent] = await connection.query('SELECT title FROM events WHERE id = ?', [id]) as any;
+    const eventTitle = oldEvent[0]?.title || 'Événement';
+
     await connection.query('DELETE FROM event_orchestras WHERE event_id = ?', [id]);
     const [result] = await connection.query('DELETE FROM events WHERE id = ?', [id]);
     // @ts-ignore
@@ -124,7 +189,19 @@ router.delete('/:id', async (req, res) => {
       throw new Error('Ã‰vÃ©nement non trouvÃ©.');
     }
     await connection.commit();
-    res.status(200).json({ message: 'Ã‰vÃ©nement supprimÃ© avec succÃ¨s.' });
+
+    // Journaliser l'activité de suppression
+    logActivity({
+      type: 'event',
+      action_type: 'delete',
+      target_id: String(id),
+      // @ts-ignore
+      created_by: (req as any).user.id,
+      title: eventTitle,
+      message: `L'événement ${eventTitle} a été supprimé`
+    });
+
+    res.status(200).json({ message: 'Événement supprimé avec succès.' });
   } catch (error) {
     await connection.rollback();
     console.error(error);

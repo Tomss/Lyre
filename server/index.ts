@@ -53,6 +53,32 @@ dotenv.config();
       await pool.query('ALTER TABLE users ADD COLUMN last_login DATETIME DEFAULT NULL');
       console.log('[Migration] Succès : colonne last_login ajoutée.');
     }
+
+    // Migration: Création de la table activity_log
+    const [tables]: any = await pool.query(`
+      SELECT COUNT(*) as count 
+      FROM information_schema.TABLES 
+      WHERE TABLE_SCHEMA = DATABASE() 
+      AND TABLE_NAME = 'activity_log'
+    `);
+
+    if (tables[0].count === 0) {
+      console.log('[Migration] Création de la table activity_log...');
+      await pool.query(`
+        CREATE TABLE activity_log (
+          id varchar(36) NOT NULL,
+          type enum('event','partition','news') NOT NULL,
+          action text NOT NULL,
+          entity_id varchar(36) NOT NULL,
+          user_id varchar(36) NOT NULL,
+          created_at datetime DEFAULT CURRENT_TIMESTAMP,
+          PRIMARY KEY (id),
+          KEY activity_log_user_id_fkey (user_id),
+          CONSTRAINT activity_log_user_id_fkey FOREIGN KEY (user_id) REFERENCES profiles (id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+      `);
+      console.log('[Migration] Succès : table activity_log créée.');
+    }
   } catch (e) {
     console.error('[Emergency/Migration] Erreur:', e);
   }

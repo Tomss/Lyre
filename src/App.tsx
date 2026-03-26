@@ -1,5 +1,5 @@
 // src/App.tsx
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
@@ -26,10 +26,14 @@ import AdminNews from './pages/AdminNews';
 import NewsArchive from './pages/NewsArchive';
 
 function App() {
+  const location = useLocation();
+  const isFullWidthPage = location.pathname === '/dashboard' || location.pathname.startsWith('/admin');
+  const wrapperClass = isFullWidthPage ? "max-w-none" : "max-w-[2560px]";
+
   return (
     <div className="min-h-screen bg-white">
-      {/* Global Wrapper for Ultra-Wide Resolutions */}
-      <div className="max-w-[2560px] mx-auto bg-white flex flex-col min-h-screen relative">
+      {/* Global Wrapper for Ultra-Wide Resolutions - Conditional Limit */}
+      <div className={`${wrapperClass} mx-auto bg-white flex flex-col min-h-screen relative`}>
         <ScrollToTop />
         <Header />
         <main className="flex-grow">

@@ -15,12 +15,12 @@ router.get('/', authenticateToken, async (req, res) => {
   }
 
   try {
-    // ExÃ©cuter les requÃªtes de base en parallÃ¨le
     const [
       userInstrumentsRes,
       userOrchestrasRes,
       userEventsRes,
-      userPartitionsRes
+      userPartitionsRes,
+      activityLogsRes
     ] = await Promise.all([
       pool.query('SELECT i.id, i.name FROM user_instruments ui JOIN instruments i ON ui.instrument_id = i.id WHERE ui.user_id = ?', [userId]),
       pool.query('SELECT o.id, o.name, o.description FROM user_orchestras uo JOIN orchestras o ON uo.orchestra_id = o.id WHERE uo.user_id = ?', [userId]),
@@ -44,13 +44,25 @@ router.get('/', authenticateToken, async (req, res) => {
       `, [userId]),
       pool.query(`
         SELECT 
-          p.id, p.nom, p.file_path,
-          m.id as morceau_id, m.nom as morceau_nom, m.compositeur, m.arrangement,
+          p.id, p.nom, p.file_path, p.created_at as partition_created_at,
+          m.id as morceau_id, m.nom as morceau_nom, m.compositeur, m.arrangement, m.created_at as morceau_created_at,
           i.id as instrument_id, i.name as instrument_name
         FROM partitions p
         LEFT JOIN morceaux m ON p.morceau_id = m.id
         LEFT JOIN instruments i ON p.instrument_id = i.id
         WHERE p.instrument_id IN (SELECT instrument_id FROM user_instruments WHERE user_id = ?)
+      `, [userId]),
+      pool.query(`
+        SELECT 
+          al.*, 
+          p.first_name, p.last_name
+        FROM activity_log al
+        JOIN profiles p ON al.created_by = p.id
+        WHERE (al.orchestra_id IS NULL 
+           OR al.orchestra_id IN (SELECT orchestra_id FROM user_orchestras WHERE user_id = ?))
+           AND al.created_at >= DATE_SUB(NOW(), INTERVAL 15 DAY)
+        ORDER BY al.created_at DESC
+        LIMIT 50
       `, [userId])
     ]);
 
@@ -90,11 +102,13 @@ router.get('/', authenticateToken, async (req, res) => {
       id: p.id,
       nom: p.nom,
       file_path: p.file_path,
+      created_at: p.partition_created_at,
       morceaux: {
         id: p.morceau_id,
         nom: p.morceau_nom,
         compositeur: p.compositeur,
         arrangement: p.arrangement,
+        created_at: p.morceau_created_at,
         orchestras: orchestrasByMorceauId.get(p.morceau_id) || [],
       },
       instruments: {
@@ -108,6 +122,7 @@ router.get('/', authenticateToken, async (req, res) => {
       userOrchestras,
       userEvents,
       userPartitions,
+      activityLogs: activityLogsRes[0],
     });
 
   } catch (error) {

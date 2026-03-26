@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { authenticateToken } from '../middleware/auth';
 import pool from '../db';
 import crypto from 'crypto';
+
 import fs from 'fs';
 import path from 'path';
 import { v2 as cloudinary } from 'cloudinary';
@@ -189,6 +190,13 @@ router.post('/batch-split', tempUpload.single('file'), async (req, res) => {
             }
 
             await connection.commit();
+
+            // Récupérer le nom du morceau pour le log
+            const [morceau] = await connection.query('SELECT nom FROM morceaux WHERE id = ?', [morceau_id]) as any;
+            const morceauNom = morceau[0]?.nom || 'Inconnu';
+
+
+
             res.status(200).json({ message: `${createdPartitions.length} partition(s) générée(s) avec succès !` });
         } catch (dbError) {
             await connection.rollback();
@@ -244,6 +252,12 @@ router.post('/', async (req, res) => {
 
         res.status(201).json({ message: 'Partition crÃ©Ã©e avec succÃ¨s', partition: newPartition });
 
+        // Log de l'activité
+        const [morceau] = await pool.query('SELECT nom FROM morceaux WHERE id = ?', [morceau_id]) as any;
+        const [instrument] = await pool.query('SELECT name FROM instruments WHERE id = ?', [instrument_id]) as any;
+        
+
+
     } catch (error) {
         console.error('Error creating partition:', error);
         res.status(500).json({ message: 'Erreur lors de la crÃ©ation de la partition.' });
@@ -277,6 +291,8 @@ router.put('/:id', async (req, res) => {
 
         res.status(200).json({ message: 'Partition mise Ã  jour avec succÃ¨s.' });
 
+
+
     } catch (error) {
         console.error(`Error updating partition with id ${id}:`, error);
         res.status(500).json({ message: 'Erreur lors de la mise Ã  jour de la partition.' });
@@ -302,6 +318,8 @@ router.delete('/:id', async (req, res) => {
         }
 
         res.status(200).json({ message: 'Partition supprimÃ©e avec succÃ¨s.' });
+
+
 
     } catch (error) {
         console.error(`Error deleting partition with id ${id}:`, error);
