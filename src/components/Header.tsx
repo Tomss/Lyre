@@ -254,26 +254,42 @@ const Header = () => {
           <div className="flex items-center space-x-3">
             <div className="hidden lg:flex items-center">
               {currentUser ? (
-                <div className="relative user-menu-container">
+                <div 
+                  className="relative user-menu-container group/menu"
+                  onMouseEnter={() => setIsUserMenuOpen(true)}
+                  onMouseLeave={() => setIsUserMenuOpen(false)}
+                >
                   <button 
                     onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                    className="flex items-center space-x-3 font-inter font-medium pl-1.5 pr-4 py-1.5 rounded-xl transition-all duration-300 bg-slate-900 hover:bg-teal-600 text-white shadow-lg shadow-slate-900/20 group relative overflow-hidden active:scale-95"
+                    className={`flex items-center space-x-3 font-inter font-medium pl-1.5 pr-4 py-1.5 rounded-xl transition-all duration-300 border shadow-sm relative overflow-hidden active:scale-95 ${
+                      isUserMenuOpen 
+                        ? 'bg-teal-50 border-teal-200 text-teal-800 shadow-md' 
+                        : 'bg-white border-gray-200 text-slate-700 hover:border-teal-200 hover:bg-slate-50 hover:shadow-md'
+                    }`}
                   >
-                    <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-teal-300 transition-all duration-300 group-hover:bg-white/20 group-hover:scale-110 shadow-sm">
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300 shadow-sm ${
+                      isUserMenuOpen 
+                        ? 'bg-teal-600 text-white scale-110' 
+                        : 'bg-teal-50 text-teal-600 group-hover/menu:bg-teal-600 group-hover/menu:text-white group-hover/menu:scale-110'
+                    }`}>
                       <User className="h-4 w-4" />
                     </div>
                     <span className="text-sm font-bold tracking-tight pr-1">
                       {`${currentUser.firstName} ${currentUser.lastName.toUpperCase()}`}
                     </span>
-                    <ChevronDown className={`h-4 w-4 text-teal-400/80 transition-transform duration-300 ${isUserMenuOpen ? 'rotate-180' : ''}`} />
+                    <ChevronDown className={`h-4 w-4 transition-transform duration-300 ${isUserMenuOpen ? 'rotate-180 text-teal-600' : 'text-slate-400 group-hover/menu:text-teal-500'}`} />
                   </button>
                   
                   {isUserMenuOpen && (
-                    <div className="absolute right-0 mt-3 w-56 bg-white rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] border border-gray-100 py-2 z-50 animate-in fade-in zoom-in-95 duration-200 origin-top-right overflow-hidden">
+                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-[0_15px_50px_-15px_rgba(0,0,0,0.15)] border border-gray-100 py-2 z-50 animate-in fade-in zoom-in-95 slide-in-from-top-2 duration-300 origin-top-right overflow-hidden">
+                      <div className="px-4 py-3 border-b border-gray-50 mb-1 bg-gray-50/50">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Session active</p>
+                        <p className="text-xs font-bold text-teal-700 truncate">{currentUser.email}</p>
+                      </div>
                       <Link 
                         to="/dashboard" 
                         onClick={() => setIsUserMenuOpen(false)}
-                        className="flex items-center space-x-3 px-4 py-3 text-sm text-slate-700 hover:bg-teal-50 hover:text-teal-700 transition-colors font-medium"
+                        className="flex items-center space-x-3 px-4 py-3 text-sm text-slate-700 hover:bg-teal-50 hover:text-teal-700 transition-colors font-medium mx-2 rounded-xl"
                       >
                         <UserCircle className="h-4 w-4 opacity-70" />
                         <span>Mes infos / Dashboard</span>
@@ -281,7 +297,7 @@ const Header = () => {
                       <div className="h-px bg-gray-50 mx-2 my-1"></div>
                       <button 
                         onClick={() => { logout(); setIsUserMenuOpen(false); }}
-                        className="w-full flex items-center space-x-3 px-4 py-3 text-sm text-rose-600 hover:bg-rose-50 transition-colors font-semibold"
+                        className="w-full flex items-center space-x-3 px-4 py-3 text-sm text-rose-600 hover:bg-rose-50 transition-colors font-bold mx-2 rounded-xl text-left"
                       >
                         <LogOut className="h-4 w-4 opacity-70" />
                         <span>Se déconnecter</span>
@@ -292,7 +308,7 @@ const Header = () => {
               ) : (
                 <Link
                   to="/connexion"
-                  className="font-inter font-semibold px-6 py-3 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg bg-slate-900 hover:bg-teal-600 text-white shadow-md shadow-slate-900/10"
+                  className="font-inter font-bold px-7 py-3 rounded-xl transition-all duration-300 border-2 border-teal-600 text-teal-600 hover:bg-teal-600 hover:text-white shadow-sm hover:shadow-teal-500/20 active:scale-95 text-sm"
                 >
                   Se connecter
                 </Link>
