@@ -88,54 +88,80 @@ const Dashboard = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isNotificationsOpen]);
 
-  React.useEffect(() => {
-    const fetchDashboardData = async () => {
-      if (!currentUser || !token) {
-        setLoading(false);
-        setPartitionsLoading(false);
-        return;
-      }
+  const fetchDashboardData = React.useCallback(async (silent = false) => {
+    if (!currentUser || !token) {
+      setLoading(false);
+      setPartitionsLoading(false);
+      return;
+    }
 
+    if (!silent) {
       setLoading(true);
       setPartitionsLoading(true);
+    }
 
-      try {
-        const response = await fetch(`${API_URL}/dashboard`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
+    try {
+      const response = await fetch(`${API_URL}/dashboard`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
 
-        if (!response.ok) {
-          throw new Error('Failed to fetch dashboard data');
-        }
+      if (!response.ok) {
+        throw new Error('Failed to fetch dashboard data');
+      }
 
-        interface DashboardData {
-          userInstruments: any[];
-          userOrchestras: any[];
-          userEvents: any[];
-          userPartitions: any[];
-          activityLogs: Activity[];
-        }
+      interface DashboardData {
+        userInstruments: any[];
+        userOrchestras: any[];
+        userEvents: any[];
+        userPartitions: any[];
+        activityLogs: Activity[];
+      }
 
-        const data: DashboardData = await response.json();
-        setUserInstruments(data.userInstruments || []);
-        setUserOrchestras(data.userOrchestras || []);
-        setUserEvents(data.userEvents || []);
-        setUserPartitions(data.userPartitions || []);
-        setActivityLogs(data.activityLogs || []);
+      const data: DashboardData = await response.json();
+      setUserInstruments(data.userInstruments || []);
+      setUserOrchestras(data.userOrchestras || []);
+      setUserEvents(data.userEvents || []);
+      setUserPartitions(data.userPartitions || []);
+      setActivityLogs(data.activityLogs || []);
 
-      } catch (error) {
-        console.error('Error fetching dashboard data:', error);
-        // Optionnel: afficher un message d'erreur à l'utilisateur
-      } finally {
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      if (!silent) {
         setLoading(false);
         setPartitionsLoading(false);
+      }
+    }
+  }, [currentUser, token]);
+
+  React.useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
+
+  // SSE Listener for real-time updates
+  React.useEffect(() => {
+    if (!token) return;
+
+    const eventSource = new EventSource(`${API_URL}/events-push`);
+
+    eventSource.onmessage = (event) => {
+      if (event.data === 'update') {
+        console.log('[SSE] Mise à jour en temps réel reçue');
+        fetchDashboardData(true); // Mise à jour silencieuse
       }
     };
 
-    fetchDashboardData();
-  }, [currentUser, token]);
+    eventSource.onerror = (err) => {
+      console.error('[SSE] Erreur de connexion:', err);
+      eventSource.close();
+    };
+
+    return () => {
+      eventSource.close();
+    };
+  }, [token, fetchDashboardData]);
 
 
 

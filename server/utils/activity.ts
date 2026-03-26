@@ -25,6 +25,9 @@ export const logActivity = async (params: LogActivityParams) => {
             'INSERT INTO activity_log (id, type, action_type, target_id, orchestra_id, created_by, title, message) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
             [crypto.randomUUID(), type, action_type, target_id, orchestra_id || null, created_by, title, message]
         );
+        
+        // Notification temps réel via SSE
+        import('./sse').then(sse => sse.broadcastUpdate());
     } catch (error) {
         console.error('Failed to log activity:', error);
         // On ne bloque pas l'action principale si le log échoue

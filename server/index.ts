@@ -137,6 +137,18 @@ app.get('/api/test-db', async (req, res) => {
   }
 });
 
+import { addSseClient } from './utils/sse';
+
+// SSE Endpoint for real-time updates
+app.get('/api/events-push', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders();
+  
+  addSseClient(res);
+});
+
 // Global error handler
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error(`[Global Error Handler] ${req.method} ${req.url}:`, err);
