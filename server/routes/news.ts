@@ -2,7 +2,6 @@ import { Router } from 'express';
 import { authenticateToken } from '../middleware/auth';
 import pool from '../db';
 import crypto from 'crypto';
-import { logActivity } from '../utils/activity';
 
 
 const router = Router();
@@ -47,17 +46,6 @@ router.post('/', authenticateToken, async (req, res) => {
 
         res.status(201).json({ message: 'Actualité créée avec succès', news: newNews });
 
-        // Log de l'activité
-        logActivity({
-            type: 'news',
-            action_type: 'create',
-            target_id: newNews.id,
-            // @ts-ignore
-            created_by: (req as any).user.id,
-            title: title,
-            message: `Nouvelle actualité publiée : ${title}`
-        });
-
 
     } catch (error) {
         console.error(error);
@@ -92,17 +80,6 @@ router.put('/:id', authenticateToken, async (req, res) => {
 
         res.status(200).json({ message: 'Actualité mise à jour avec succès.' });
 
-        // Log de l'activité
-        logActivity({
-            type: 'news',
-            action_type: 'update',
-            target_id: String(id),
-            // @ts-ignore
-            created_by: (req as any).user.id,
-            title: title,
-            message: `Actualité mise à jour : ${title}`
-        });
-
 
     } catch (error) {
         console.error(error);
@@ -131,17 +108,6 @@ router.delete('/:id', authenticateToken, async (req, res) => {
         }
 
         res.status(200).json({ message: 'Actualité supprimée avec succès.' });
-
-        // Log de l'activité
-        logActivity({
-            type: 'news',
-            action_type: 'delete',
-            target_id: String(id),
-            // @ts-ignore
-            created_by: (req as any).user.id,
-            title: newsTitle,
-            message: `L'actualité "${newsTitle}" a été supprimée`
-        });
 
 
     } catch (error) {

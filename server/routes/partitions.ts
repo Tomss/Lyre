@@ -2,7 +2,6 @@ import { Router } from 'express';
 import { authenticateToken } from '../middleware/auth';
 import pool from '../db';
 import crypto from 'crypto';
-import { logActivity } from '../utils/activity';
 
 import fs from 'fs';
 import path from 'path';
@@ -199,17 +198,6 @@ router.post('/batch-split', tempUpload.single('file'), async (req, res) => {
 
 
             res.status(200).json({ message: `${createdPartitions.length} partition(s) générée(s) avec succès !` });
-
-            // Log de l'activité (Batch Upload)
-            logActivity({
-                type: 'partition',
-                action_type: 'create',
-                target_id: String(morceau_id),
-                // @ts-ignore
-                created_by: (req as any).user.id,
-                title: morceauNom,
-                message: `${createdPartitions.length} nouvelle(s) partition(s) ajoutée(s) pour ${morceauNom}`
-            });
         } catch (dbError) {
             await connection.rollback();
             throw dbError;
@@ -267,18 +255,6 @@ router.post('/', async (req, res) => {
         // Log de l'activité
         const [morceau] = await pool.query('SELECT nom FROM morceaux WHERE id = ?', [morceau_id]) as any;
         const [instrument] = await pool.query('SELECT name FROM instruments WHERE id = ?', [instrument_id]) as any;
-        const morceauNom = morceau[0]?.nom || 'Morceau';
-        const instrumentNom = instrument[0]?.name || 'Instrument';
-
-        logActivity({
-            type: 'partition',
-            action_type: 'create',
-            target_id: String(morceau_id),
-            // @ts-ignore
-            created_by: (req as any).user.id,
-            title: morceauNom,
-            message: `Nouvelle partition "${nom}" disponible pour ${instrumentNom}`
-        });
         
 
 
