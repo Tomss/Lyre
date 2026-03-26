@@ -318,10 +318,14 @@ const AdminInstruments = () => {
             Retour au tableau de bord
           </Link>
           <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-            <h1 className="text-3xl font-bold text-slate-800 font-poppins flex items-center">
-              <Music className="mr-3 h-8 w-8 text-indigo-600" />
-              Gestion des Instruments
-            </h1>
+            <div className="flex items-center">
+              <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center mr-4 shadow-sm border border-indigo-50 flex-shrink-0">
+                <Music size={28} />
+              </div>
+              <h1 className="text-2xl md:text-3xl font-bold text-slate-800 font-poppins">
+                Gestion des Instruments
+              </h1>
+            </div>
             <button onClick={() => { setEditingInstrument(null); setShowAddForm(true); }} className="flex items-center px-5 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-200">
               <Plus className="mr-2 h-5 w-5" />
               Ajouter un instrument

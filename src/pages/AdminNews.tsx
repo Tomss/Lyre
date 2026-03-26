@@ -248,8 +248,10 @@ const AdminNews = () => {
                     </Link>
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between">
                         <div className="flex items-center">
-                            <Newspaper className="mr-3 h-8 w-8 text-indigo-600" />
-                            <h1 className="text-3xl font-bold text-slate-800 font-poppins">
+                            <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center mr-4 shadow-sm border border-indigo-50 flex-shrink-0">
+                                <Newspaper size={28} />
+                            </div>
+                            <h1 className="text-2xl md:text-3xl font-bold text-slate-800 font-poppins">
                                 Gestion des Actualités
                             </h1>
                         </div>

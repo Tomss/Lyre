@@ -416,10 +416,14 @@ const AdminTheme = () => {
                             <ArrowLeft className="h-4 w-4 mr-1 group-hover:-translate-x-1 transition-transform" />
                             Retour au tableau de bord
                         </Link>
-                        <h1 className="text-3xl font-bold text-slate-800 font-poppins flex items-center">
-                            <Palette className="mr-3 h-8 w-8 text-indigo-600" />
-                            Gestion du Thème
-                        </h1>
+                        <div className="flex items-center">
+                            <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center mr-4 shadow-sm border border-indigo-50 flex-shrink-0">
+                                <Palette size={28} />
+                            </div>
+                            <h1 className="text-2xl md:text-3xl font-bold text-slate-800 font-poppins">
+                                Gestion du Thème
+                            </h1>
+                        </div>
                         <p className="text-slate-500 mt-1">Personnalisez le logo, les couleurs et le carrousel.</p>
                     </div>
                 </div>
