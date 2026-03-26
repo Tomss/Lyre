@@ -1,5 +1,5 @@
 import React, { useState, useEffect, FormEvent } from 'react';
-import { Edit, Trash2, Plus, Search, X, CheckCircle, ArrowLeft, Users } from 'lucide-react';
+import { Edit, Trash2, Plus, Search, X, CheckCircle, ArrowLeft, Music2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Navigate, Link } from 'react-router-dom';
 import {
@@ -318,7 +318,7 @@ const AdminOrchestras = () => {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between">
             <div className="flex items-center">
               <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center mr-4 shadow-sm border border-indigo-50 flex-shrink-0">
-                <Users size={28} />
+                <Music2 size={28} />
               </div>
               <h1 className="text-2xl md:text-3xl font-bold text-slate-800 font-poppins">
                 Gestion des Orchestres
