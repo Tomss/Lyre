@@ -37,12 +37,15 @@ const Dashboard = () => {
     return lastSeenIndex === -1 ? activityLogs.length : lastSeenIndex;
   };
 
+  const prevIsNotificationsOpen = React.useRef(isNotificationsOpen);
+
   React.useEffect(() => {
-    // On ne marque comme vu QUE si le panneau est ouvert
-    // Cela permet aux nouvelles notifications via SSE de s'accumuler (badge) tant qu'on n'a pas ouvert le menu
-    if (isNotificationsOpen && activityLogs.length > 0) {
+    // On ne marque comme vu QUE si on vient de FERMER le panneau
+    // Cela permet aux nouvelles notifications de rester "nouvelles" (badge + highlight) pendant la consultation
+    if (prevIsNotificationsOpen.current === true && isNotificationsOpen === false && activityLogs.length > 0) {
       setLastSeenId(activityLogs[0].id);
     }
+    prevIsNotificationsOpen.current = isNotificationsOpen;
   }, [isNotificationsOpen, activityLogs]);
 
   const toggleNotifications = () => {
