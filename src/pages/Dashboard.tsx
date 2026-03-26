@@ -780,9 +780,11 @@ const Dashboard = () => {
                 })}
               </div>
             ) : (
-              <div className="text-center py-10 bg-gray-50 rounded-xl">
-                <Calendar className="h-10 w-10 mx-auto text-gray-400" />
-                <p className="mt-4 text-gray-600">Aucun événement à venir.</p>
+              <div className="text-center py-12 bg-slate-50/50 rounded-2xl border border-slate-100">
+                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm border border-slate-50">
+                  <Calendar className="h-8 w-8 text-slate-300" />
+                </div>
+                <p className="text-slate-500 font-bold text-lg">Aucun événement à venir.</p>
               </div>
             )}
           </div>
@@ -932,12 +934,11 @@ const Dashboard = () => {
                 })}
               </div>
             ) : (
-              <div className="text-center py-20 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200">
-                <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
-                  <Music2 className="h-10 w-10 text-slate-300" />
+              <div className="text-center py-12 bg-slate-50/50 rounded-2xl border border-slate-100">
+                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm border border-slate-50">
+                  <Music2 className="h-8 w-8 text-slate-300" />
                 </div>
-                <h3 className="text-slate-800 font-bold text-xl mb-2">Aucune partition ici</h3>
-                <p className="text-slate-500 max-w-sm mx-auto">Vous retrouverez ici les partitions associées à vos instruments et vos orchestres.</p>
+                <p className="text-slate-500 font-bold text-lg">Aucune partition ici.</p>
               </div>
             )}
           </div>
