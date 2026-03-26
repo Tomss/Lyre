@@ -521,41 +521,39 @@ const AdminPartitions = () => {
     <div className="font-inter pt-8 lg:pt-12 pb-20 min-h-screen bg-gray-100">
       <div className="w-full px-4 sm:px-10 lg:px-16">
 
-        {/* Header */}
         <div className="mb-8">
           <Link to="/dashboard" className="text-slate-400 hover:text-indigo-600 transition flex items-center mb-2 group">
             <ArrowLeft className="h-4 w-4 mr-1 group-hover:-translate-x-1 transition-transform" />
             Retour au tableau de bord
           </Link>
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-          <div>
-            <h1 className="text-3xl font-black text-slate-800 tracking-tight mb-2">Partitions</h1>
-            <p className="text-slate-500 font-medium">Gérez simplement toutes vos partitions.</p>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+            <h1 className="text-3xl font-bold text-slate-800 font-poppins flex items-center">
+              <FileText className="mr-3 h-8 w-8 text-indigo-600" />
+              Gestion des Partitions
+            </h1>
+            <div className="flex flex-col sm:flex-row gap-3 mt-4 md:mt-0">
+              <button
+                 onClick={() => setShowSplitterModal(true)}
+                 className="flex items-center px-5 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-200"
+              >
+                <Plus className="mr-2 h-5 w-5" />
+                Ajouter un bloc
+              </button>
+              <button
+                 onClick={() => {
+                   setEditingPartition(null);
+                   setFormData({ nom: '', morceau_id: '', instrument_id: '' });
+                   setSelectedFile(null);
+                   setFilePreview(null);
+                   setShowAddForm(true);
+                 }}
+                 className="flex items-center px-5 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-200"
+              >
+                <Plus className="mr-2 h-5 w-5" />
+                Ajouter une partition
+              </button>
+            </div>
           </div>
-          <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-            <button
-               onClick={() => setShowSplitterModal(true)}
-               className="flex justify-center items-center bg-indigo-600 text-white px-6 py-3 rounded-xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-200 font-bold hover:shadow-xl hover:-translate-y-0.5 duration-300 w-full sm:w-auto text-sm sm:text-base"
-            >
-              <Plus size={20} className="mr-2" />
-              Ajouter un bloc
-            </button>
-            <button
-               onClick={() => {
-                 setEditingPartition(null);
-                 setFormData({ nom: '', morceau_id: '', instrument_id: '' });
-                 setSelectedFile(null);
-                 setFilePreview(null);
-                 setShowAddForm(true);
-               }}
-               className="flex justify-center items-center bg-indigo-600 text-white px-6 py-3 rounded-xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-200 font-bold hover:shadow-xl hover:-translate-y-0.5 duration-300 w-full sm:w-auto"
-            >
-              <Plus size={20} className="mr-2" />
-              Ajouter une partition
-            </button>
-          </div>
-        </div>
         </div>
 
         {/* Filters and Search */}
