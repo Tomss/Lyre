@@ -473,11 +473,11 @@ const AdminUsers = () => {
     });
   };
 
-  const getRoleColor = (role: string) => {
+  const getRoleStyle = (role: string) => {
     switch (role) {
-      case 'Admin': return 'bg-red-100 text-red-800';
-      case 'Gestionnaire': return 'bg-blue-100 text-blue-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'Admin': return { bg: 'bg-gradient-to-r from-rose-50 to-white', text: 'text-rose-900', icon: 'text-rose-600', iconBg: 'bg-rose-100', badge: 'bg-white/50 border-rose-100 text-rose-600', itemBorder: 'border-l-rose-500', badgeSimple: 'bg-rose-100 text-rose-800' };
+      case 'Gestionnaire': return { bg: 'bg-gradient-to-r from-indigo-50 to-white', text: 'text-indigo-900', icon: 'text-indigo-600', iconBg: 'bg-indigo-100', badge: 'bg-white/50 border-indigo-100 text-indigo-600', itemBorder: 'border-l-indigo-500', badgeSimple: 'bg-indigo-100 text-indigo-800' };
+      default: return { bg: 'bg-gradient-to-r from-slate-50 to-white', text: 'text-slate-900', icon: 'text-slate-600', iconBg: 'bg-slate-100', badge: 'bg-white/50 border-slate-100 text-slate-600', itemBorder: 'border-l-slate-500', badgeSimple: 'bg-slate-100 text-slate-800' };
     }
   };
 
@@ -745,23 +745,32 @@ const AdminUsers = () => {
           </div>
         ) : (
           <div className="space-y-8">
-            {Object.entries(usersByRole).map(([role, userList]) => (
-              <div key={role} className="bg-white rounded-xl shadow-lg border border-gray-200/80 overflow-hidden">
-                <div onClick={() => toggleRoleExpansion(role)} className={`p-5 flex justify-between items-center cursor-pointer border-b border-gray-200/80 transition-colors ${getRoleColor(role).replace('text-', 'bg-').replace('-800', '-200')} hover:bg-gray-100/50`}>
+            {Object.entries(usersByRole).map(([role, userList]) => {
+              const style = getRoleStyle(role);
+              return (
+              <div key={role} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden transition-all duration-300 hover:shadow-md">
+                <div onClick={() => toggleRoleExpansion(role)} className={`p-4 flex justify-between items-center cursor-pointer ${style.bg} hover:opacity-90 transition-all`}>
                   <div className="flex items-center">
-                    {React.createElement(getRoleIcon(role), { className: `h-8 w-8 mr-4 ${getRoleColor(role).replace('bg-', 'text-').replace('-100', '-600')}` })}
-                    <h2 className={`text-2xl font-bold ${getRoleColor(role).replace('bg-', 'text-').replace('-100', '-800')}`}>{role}s <span className="text-lg font-normal">({userList.length})</span></h2>
+                    <div className={`p-2 ${style.iconBg} rounded-xl ${style.icon} mr-4 shadow-sm`}>
+                      {React.createElement(getRoleIcon(role), { size: 20 })}
+                    </div>
+                    <div className="flex items-center">
+                      <h2 className={`text-lg font-bold ${style.text} font-poppins`}>{role}s</h2>
+                      <span className={`ml-3 px-2.5 py-0.5 rounded-full border text-xs font-bold ${style.badge}`}>
+                        {userList.length}
+                      </span>
+                    </div>
                   </div>
-                  <ChevronRight className={`transform transition-transform duration-300 ${expandedRoles.has(role) ? 'rotate-90' : ''}`} />
+                  <ChevronRight className={`transform transition-transform duration-300 text-slate-400 ${expandedRoles.has(role) ? 'rotate-90' : ''}`} />
                 </div>
                 {expandedRoles.has(role) && (
-                  <div className="divide-y divide-gray-200/80">
+                  <div className="divide-y divide-slate-100">
                     {userList.map(user => (
-                      <div key={user.id} className={`p-4 grid grid-cols-1 md:grid-cols-12 gap-4 items-start md:items-center hover:bg-gray-50/50 transition-colors duration-200 border-l-4 ${getRoleColor(user.role).replace('bg', 'border').replace('-100', '-500')}`}>
+                      <div key={user.id} className={`p-4 grid grid-cols-1 md:grid-cols-12 gap-4 items-start md:items-center hover:bg-slate-50/50 transition-colors duration-200 border-l-4 ${style.itemBorder}`}>
                         <div className="md:col-span-6">
                           <div className="flex items-center mb-2">
-                            <p className="font-bold text-lg text-gray-800">{user.last_name.toUpperCase()} {user.first_name}</p>
-                            <span className={`ml-3 px-2.5 py-1 text-xs font-semibold rounded-full ${getRoleColor(user.role)}`}>{user.role}</span>
+                            <p className="font-bold text-lg text-slate-800 uppercase leading-tight mr-3">{user.last_name} {user.first_name}</p>
+                            <span className={`px-2.5 py-1 text-xs font-bold rounded-full ${style.badgeSimple}`}>{user.role}</span>
                             <div className="ml-3">
                               {getStatusBadge(user)}
                             </div>
@@ -837,8 +846,9 @@ const AdminUsers = () => {
                     ))}
                   </div>
                 )}
-              </div>
-            ))}
+                </div>
+              );
+            })}
           </div>
         )}
 
