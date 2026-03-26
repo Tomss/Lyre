@@ -526,11 +526,15 @@ const AdminPartitions = () => {
             <ArrowLeft className="h-4 w-4 mr-1 group-hover:-translate-x-1 transition-transform" />
             Retour au tableau de bord
           </Link>
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-            <h1 className="text-3xl font-bold text-slate-800 font-poppins flex items-center">
-              <FileText className="mr-3 h-8 w-8 text-indigo-600" />
-              Gestion des Partitions
-            </h1>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="flex items-center">
+              <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center mr-4 shadow-sm border border-indigo-50 flex-shrink-0">
+                <FileText size={28} />
+              </div>
+              <h1 className="text-2xl md:text-3xl font-bold text-slate-800 font-poppins">
+                Gestion des Partitions
+              </h1>
+            </div>
             <div className="flex flex-col sm:flex-row gap-3 mt-4 md:mt-0">
               <button
                  onClick={() => setShowSplitterModal(true)}
