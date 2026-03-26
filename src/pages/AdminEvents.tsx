@@ -44,7 +44,7 @@ const AdminEvents = () => {
   const [submitting, setSubmitting] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
-  const [expandedTypes, setExpandedTypes] = useState<Set<string>>(new Set(['concert', 'repetition', 'divers']));
+  const [expandedTypes, setExpandedTypes] = useState<Set<string>>(new Set());
   const [timeFilter, setTimeFilter] = useState<'all' | 'upcoming' | 'past'>('upcoming');
   const [deleteConfirmation, setDeleteConfirmation] = useState<DeleteConfirmation>({
     isOpen: false,
@@ -417,7 +417,12 @@ const AdminEvents = () => {
           </div>
         ) : (
           <div className="space-y-8">
-            {Object.entries(eventsByType).map(([type, eventList]) => {
+            {Object.entries(eventsByType)
+              .sort(([a], [b]) => {
+                const getLabel = (t: string) => t === 'concert' ? 'Concerts' : t === 'divers' ? 'Divers' : 'Répétitions';
+                return getLabel(a).localeCompare(getLabel(b));
+              })
+              .map(([type, eventList]) => {
               const color = getTypeColor(type);
               return (
               <div key={type} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">

@@ -45,7 +45,7 @@ const AdminMedia = () => {
   const [editingMedia, setEditingMedia] = useState<MediaItem | null>(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState<DeleteConfirmation>({ isOpen: false, media: null });
   const [notification, setNotification] = useState<Notification>({ show: false, message: '', type: 'success' });
-  const [expandedTypes, setExpandedTypes] = useState<Set<string>>(new Set(['album', 'enregistrement', 'journal', 'lyrissimot']));
+  const [expandedTypes, setExpandedTypes] = useState<Set<string>>(new Set());
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -378,7 +378,12 @@ const AdminMedia = () => {
           </div>
         ) : (
           <div className="space-y-8">
-            {Object.entries(mediaByType).map(([type, items]) => {
+            {Object.entries(mediaByType)
+              .sort(([a], [b]) => {
+                const getLabel = (t: string) => t === 'album' ? 'Albums Photos' : t === 'enregistrement' ? 'Enregistrements' : t === 'journal' ? 'Journaux' : 'Lyrissimots';
+                return getLabel(a).localeCompare(getLabel(b));
+              })
+              .map(([type, items]) => {
               const color = getTypeColor(type);
               return (
               <div key={type} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
