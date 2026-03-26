@@ -248,10 +248,10 @@ const AdminEvents = () => {
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case 'concert': return { bg: 'bg-emerald-50', text: 'text-emerald-800', icon: 'text-emerald-600', border: 'border-l-emerald-500' };
-      case 'repetition': return { bg: 'bg-indigo-50', text: 'text-indigo-800', icon: 'text-indigo-600', border: 'border-l-indigo-500' };
-      case 'divers': return { bg: 'bg-purple-50', text: 'text-purple-800', icon: 'text-purple-600', border: 'border-l-purple-500' };
-      default: return { bg: 'bg-slate-50', text: 'text-slate-800', icon: 'text-slate-600', border: 'border-l-slate-500' };
+      case 'concert': return { bg: 'bg-gradient-to-r from-indigo-50 to-white', text: 'text-indigo-900', icon: 'text-indigo-600', iconBg: 'bg-indigo-100', badge: 'bg-white/50 border-indigo-100 text-indigo-600', border: 'border-l-indigo-500' };
+      case 'repetition': return { bg: 'bg-gradient-to-r from-emerald-50 to-white', text: 'text-emerald-900', icon: 'text-emerald-600', iconBg: 'bg-emerald-100', badge: 'bg-white/50 border-emerald-100 text-emerald-600', border: 'border-l-emerald-500' };
+      case 'divers': return { bg: 'bg-gradient-to-r from-amber-50 to-white', text: 'text-amber-900', icon: 'text-amber-600', iconBg: 'bg-amber-100', badge: 'bg-white/50 border-amber-100 text-amber-600', border: 'border-l-amber-500' };
+      default: return { bg: 'bg-gradient-to-r from-slate-50 to-white', text: 'text-slate-900', icon: 'text-slate-600', iconBg: 'bg-slate-100', badge: 'bg-white/50 border-slate-100 text-slate-600', border: 'border-l-slate-500' };
     }
   };
 
@@ -425,22 +425,22 @@ const AdminEvents = () => {
               .map(([type, eventList]) => {
               const color = getTypeColor(type);
               return (
-              <div key={type} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                <div onClick={() => toggleTypeExpansion(type)} className={`p-5 flex justify-between items-center cursor-pointer ${color.bg} hover:brightness-95 transition-all`}>
+              <div key={type} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden transition-all duration-300 hover:shadow-md">
+                <div onClick={() => toggleTypeExpansion(type)} className={`p-4 flex justify-between items-center cursor-pointer ${color.bg} hover:opacity-90 transition-all`}>
                   <div className="flex items-center">
-                    <div className="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center mr-4">
-                      {React.createElement(getTypeIcon(type), { className: color.icon, size: 24 })}
+                    <div className={`p-2 ${color.iconBg} rounded-xl ${color.icon} mr-4 shadow-sm`}>
+                      {React.createElement(getTypeIcon(type), { size: 20 })}
                     </div>
-                    <div>
-                      <h2 className={`text-xl font-bold ${color.text}`}>
+                    <div className="flex items-center">
+                      <h2 className={`text-lg font-bold ${color.text} font-poppins`}>
                         {type === 'concert' ? 'Concerts' : type === 'divers' ? 'Divers' : 'Répétitions'} 
-                        <span className="ml-2 px-2.5 py-0.5 rounded-full bg-white/60 text-sm font-semibold">{eventList.length} événement{eventList.length > 1 ? 's' : ''}</span>
                       </h2>
+                      <span className={`ml-3 px-2.5 py-0.5 rounded-full border text-xs font-bold ${color.badge}`}>
+                        {eventList.length}
+                      </span>
                     </div>
                   </div>
-                  <div className="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center">
-                    <ChevronRight className={`transform transition-transform duration-300 text-slate-500 ${expandedTypes.has(type) ? 'rotate-90' : ''}`} />
-                  </div>
+                  <ChevronRight className={`transform transition-transform duration-300 text-slate-400 ${expandedTypes.has(type) ? 'rotate-90' : ''}`} />
                 </div>
                 {expandedTypes.has(type) && (
                   <div className="divide-y divide-slate-100">
