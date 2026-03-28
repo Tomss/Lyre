@@ -118,7 +118,7 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({ media, isOpen, onClose }) =
                <Music className="h-16 w-16 text-white" />
             </div>
             <div className="text-center">
-              <h3 className="text-white font-poppins font-bold text-xl mb-2">{currentFile.file_name}</h3>
+              <h3 className="text-white font-bold text-xl mb-2">{currentFile.file_name}</h3>
               <p className="text-teal-400 text-sm font-black tracking-widest uppercase italic">Audio Session</p>
             </div>
             <audio
@@ -155,7 +155,7 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({ media, isOpen, onClose }) =
       <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/80 to-transparent p-6 z-10">
         <div className="flex items-center justify-between text-white max-w-7xl mx-auto">
           <div>
-            <h2 className="font-poppins font-bold text-2xl tracking-tight">{media.title}</h2>
+            <h2 className="font-bold text-2xl tracking-tight">{media.title}</h2>
             <p className="text-white/60 text-sm font-semibold mt-1">
                Fichier {currentIndex + 1} sur {displayFiles.length}
             </p>

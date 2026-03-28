@@ -62,7 +62,7 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({ files, mediaType, title, on
           <div className="bg-white/20 backdrop-blur-md p-4 rounded-full mb-4 group-hover:scale-110 transition-transform duration-300">
             <Music className="h-10 w-10 text-white" />
           </div>
-          <span className="font-poppins font-semibold text-center line-clamp-2">
+          <span className="font-semibold text-center line-clamp-2">
             {firstAudio.file_name}
           </span>
         </div>
@@ -101,7 +101,7 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({ files, mediaType, title, on
           </div>
 
           <div className="text-center space-y-1">
-             <span className="block font-poppins font-bold text-slate-800 text-sm line-clamp-2 px-2">
+             <span className="block font-bold text-slate-800 text-sm line-clamp-2 px-2">
                {title || "Consulter le document"}
              </span>
              <span className="inline-flex items-center text-[10px] font-black uppercase tracking-widest text-rose-500 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-2 group-hover:translate-y-0">

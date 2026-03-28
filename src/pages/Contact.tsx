@@ -66,7 +66,7 @@ const Contact = () => {
   ];
 
   return (
-    <div className="font-inter bg-white overflow-hidden">
+    <div className="bg-white overflow-hidden">
       {/* Hero Section */}
       <PageHero
         title={<span><span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-emerald-400 to-cyan-500">Contactez</span>-nous</span>}
@@ -85,7 +85,7 @@ const Contact = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           {/* Section Title */}
           <div className="max-w-4xl mx-auto text-center mb-16">
-            <h2 className="font-poppins font-bold text-3xl md:text-5xl text-slate-900 mb-6 relative inline-block">
+            <h2 className="font-bold text-3xl md:text-5xl text-slate-900 mb-6 relative inline-block">
               Où nous trouver ?
               <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-16 h-1 bg-cyan-500 rounded-full"></div>
             </h2>
@@ -111,7 +111,7 @@ const Contact = () => {
                           className="h-12 lg:h-16 w-auto object-contain" 
                         />
                       ) : (
-                        <h3 className="font-poppins font-bold text-3xl text-teal-800">
+                        <h3 className="font-bold text-3xl text-teal-800">
                           La Lyre <br /> 
                           <span className="text-slate-500">& Municipale</span>
                         </h3>
@@ -125,7 +125,7 @@ const Contact = () => {
                         <MapPin className="h-6 w-6 text-teal-600" />
                       </div>
                       <div>
-                        <p className="font-poppins font-bold text-slate-800">Notre adresse</p>
+                        <p className="font-bold text-slate-800">Notre adresse</p>
                         <p className="text-slate-600">1 bis rue Jean Jaurès, <br /> 52600 Chalindrey, France</p>
                       </div>
                     </div>
@@ -135,7 +135,7 @@ const Contact = () => {
                         <Mail className="h-6 w-6 text-cyan-600" />
                       </div>
                       <div>
-                        <p className="font-poppins font-bold text-slate-800">Email direct</p>
+                        <p className="font-bold text-slate-800">Email direct</p>
                         <p className="text-slate-600 text-teal-600 font-medium">contact@lalyre.fr</p>
                       </div>
                     </div>
@@ -185,7 +185,7 @@ const Contact = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           {/* Section Title */}
           <div className="max-w-4xl mx-auto text-center mb-20">
-            <h2 className="font-poppins font-bold text-3xl md:text-5xl text-slate-900 mb-6 relative inline-block">
+            <h2 className="font-bold text-3xl md:text-5xl text-slate-900 mb-6 relative inline-block">
               Nous écrire
               <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-16 h-1 bg-teal-500 rounded-full"></div>
             </h2>
@@ -198,7 +198,7 @@ const Contact = () => {
               <div className="lg:col-span-4 flex flex-col space-y-8">
                 <div className="flex-1 space-y-8">
                   <div className="space-y-4">
-                    <h3 className="font-poppins font-bold text-3xl text-slate-900 leading-tight">
+                    <h3 className="font-bold text-3xl text-slate-900 leading-tight">
                       Parlons de votre <br />
                       <span className="text-teal-600">passion musicale</span>
                     </h3>
@@ -218,7 +218,7 @@ const Contact = () => {
                           <item.icon className={`h-5 w-5 ${item.color}`} />
                         </div>
                         <div>
-                          <h4 className="font-poppins font-bold text-slate-800 text-sm leading-none">{item.title}</h4>
+                          <h4 className="font-bold text-slate-800 text-sm leading-none">{item.title}</h4>
                           <p className="text-slate-400 text-[11px] mt-1.5 font-medium">{item.text}</p>
                         </div>
                       </div>

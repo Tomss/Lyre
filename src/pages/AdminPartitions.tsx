@@ -518,7 +518,7 @@ const AdminPartitions = () => {
   }
 
   return (
-    <div className="font-inter pt-8 lg:pt-12 pb-20 min-h-screen bg-gray-100">
+    <div className="pt-8 lg:pt-12 pb-20 min-h-screen bg-gray-100">
       <div className="w-full px-4 sm:px-10 lg:px-16">
 
         <div className="mb-8">
@@ -531,7 +531,7 @@ const AdminPartitions = () => {
               <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center mr-4 shadow-sm border border-indigo-50 flex-shrink-0">
                 <FileText size={28} />
               </div>
-              <h1 className="text-2xl md:text-3xl font-bold text-slate-800 font-poppins">
+              <h1 className="text-2xl md:text-3xl font-black text-slate-800">
                 Gestion des Partitions
               </h1>
             </div>
@@ -643,7 +643,7 @@ const AdminPartitions = () => {
                     </div>
                     <div className="flex items-center">
                       <div className="flex flex-col">
-                        <h2 className={`text-lg font-bold ${color.text} font-poppins leading-tight`}>{morceau.nom}</h2>
+                        <h2 className={`text-lg font-bold ${color.text} leading-tight`}>{morceau.nom}</h2>
                         <p className={`text-[10px] uppercase font-bold tracking-widest mt-0.5 opacity-70 ${color.text}`}>{morceau.compositeur || 'Compositeur inconnu'}</p>
                       </div>
                       <span className={`ml-3 px-2.5 py-0.5 rounded-full border text-xs font-bold ${color.badge}`}>

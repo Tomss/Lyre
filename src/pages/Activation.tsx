@@ -100,7 +100,7 @@ const Activation = () => {
           <div className="bg-indigo-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-indigo-200">
             <Music className="w-8 h-8 text-white" />
           </div>
-          <h2 className="text-3xl font-bold text-gray-900 font-poppins">Bienvenue !</h2>
+          <h2 className="text-3xl font-bold text-gray-900">Bienvenue !</h2>
           <p className="mt-2 text-gray-600">
             Activez votre espace membre La Lyre en choisissant votre mot de passe privé.
           </p>

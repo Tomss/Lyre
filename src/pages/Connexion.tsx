@@ -31,14 +31,14 @@ const Connexion = () => {
   };
 
   return (
-    <div className="font-inter pt-12 pb-20 bg-gradient-to-br from-orange-50 via-amber-25 to-yellow-25 min-h-screen">
+    <div className="pt-12 pb-20 bg-gradient-to-br from-orange-50 via-amber-25 to-yellow-25 min-h-screen">
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-md relative">
         <div className="text-center mb-8">
-          <h1 className="font-poppins font-bold text-3xl text-dark mb-2">
+          <h1 className="font-bold text-3xl text-dark mb-2">
             Espace Membre
           </h1>
-          <p className="font-inter text-gray-600">
+          <p className="text-gray-600">
             Connectez-vous pour accéder à votre espace personnel
           </p>
         </div>

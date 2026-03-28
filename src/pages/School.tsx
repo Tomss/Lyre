@@ -64,7 +64,7 @@ const School = () => {
   }, []);
 
   return (
-    <div className="font-inter">
+    <div className="">
       {/* Header Section */}
       <PageHero
         title={<span>L'école de <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-emerald-400 to-cyan-500">Musique</span></span>}
@@ -88,7 +88,7 @@ const School = () => {
 
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div className="max-w-4xl mx-auto text-center mb-16 animate-on-scroll">
-              <h2 className="font-poppins font-bold text-3xl md:text-5xl text-slate-900 mb-6 relative inline-block">
+              <h2 className="font-bold text-3xl md:text-5xl text-slate-900 mb-6 relative inline-block">
                 Notre École
                 <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-16 h-1 bg-teal-500 rounded-full"></div>
               </h2>
@@ -111,7 +111,7 @@ const School = () => {
 
                {/* Content - Clean & Balanced */}
                <div className="lg:w-2/3 text-center lg:text-left space-y-10 order-1 lg:order-2">
-                  <p className="text-base md:text-lg text-slate-600 leading-relaxed font-poppins font-light">
+                  <p className="text-base md:text-lg text-slate-600 leading-relaxed font-light">
                     L'école propose une formation musicale du <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 font-bold">niveau Eveil</span> au <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-600 font-bold">niveau fin de 2nd cycle</span>.
                     L’enseignement est dispensé par des professeurs titulaires d’un D.E. ou d’un D.N.S.P.M., diplômés de Conservatoires à Rayonnement Régional ou Supérieur, passionnés par la musique et la pédagogie.
                   </p>
@@ -119,14 +119,14 @@ const School = () => {
                   <div className="space-y-6">
                     <div className="flex flex-col lg:flex-row lg:items-center gap-4 group">
                       <div className="h-px w-8 bg-blue-500/40 group-hover:w-12 group-hover:bg-blue-500 transition-all duration-500 rounded-full hidden lg:block"></div>
-                      <p className="text-lg md:text-xl text-slate-800 font-poppins font-medium leading-relaxed">
+                      <p className="text-lg md:text-xl text-slate-800 font-medium leading-relaxed">
                         Les cours suivent le rythme scolaire : un cours de solfège, une demi-heure d’instrument et une activité orchestrale par semaine.
                       </p>
                     </div>
                     
                     <div className="flex flex-col lg:flex-row lg:items-center gap-4 group">
                       <div className="h-px w-8 bg-teal-500/40 group-hover:w-12 group-hover:bg-teal-500 transition-all duration-500 rounded-full hidden lg:block"></div>
-                      <p className="text-lg md:text-xl text-slate-800 font-poppins font-medium leading-relaxed">
+                      <p className="text-lg md:text-xl text-slate-800 font-medium leading-relaxed">
                         Aux activités d’éveil ludiques, succède l’intégration progressive dans les orchestres d’élèves, jusqu’à l’accession aux rangs du <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-emerald-600 font-extrabold uppercase tracking-wide">Grand Orchestre d’Harmonie</span>.
                       </p>
                     </div>
@@ -149,11 +149,11 @@ const School = () => {
 
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center mb-16">
-            <h2 className="font-poppins font-bold text-4xl md:text-5xl text-white mb-6">
+            <h2 className="font-bold text-4xl md:text-5xl text-white mb-6">
               Nos Classes & Professeurs
             </h2>
             <div className="h-1 w-24 bg-gradient-to-r from-teal-500 to-cyan-500 rounded-full mx-auto shadow-[0_0_15px_rgba(20,184,166,0.5)]"></div>
-            <p className="mt-6 text-teal-200 font-inter text-lg max-w-2xl mx-auto">
+            <p className="mt-6 text-teal-200 text-lg max-w-2xl mx-auto">
               L'excellence pédagogique au service de votre passion. Découvrez nos enseignements et les professeurs qui les dispensent.
             </p>
           </div>
@@ -213,7 +213,7 @@ const School = () => {
                     <div className="p-6 relative z-10 flex flex-col h-full min-h-[220px]">
 
 
-                      <h3 className="font-poppins font-bold text-2xl text-white mb-2 group-hover:text-teal-300 transition-colors drop-shadow-md">
+                      <h3 className="font-bold text-2xl text-white mb-2 group-hover:text-teal-300 transition-colors drop-shadow-md">
                         {inst.name}
                       </h3>
 
@@ -259,7 +259,7 @@ const School = () => {
 
                     {/* Contenu */}
                     <div className="p-8 sm:p-10 text-white">
-                        <h2 className="font-poppins font-bold text-2xl sm:text-3xl text-white mb-6 leading-tight">
+                        <h2 className="font-bold text-2xl sm:text-3xl text-white mb-6 leading-tight">
                             {selectedInstrument.name}
                         </h2>
 
@@ -290,7 +290,7 @@ const School = () => {
       <section id="activites" className="scroll-mt-20 py-20 bg-white relative">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="font-poppins font-bold text-4xl md:text-5xl text-slate-800 mb-6">L'École c'est aussi...</h2>
+            <h2 className="font-bold text-4xl md:text-5xl text-slate-800 mb-6">L'École c'est aussi...</h2>
             <div className="h-1 w-24 bg-teal-500 rounded-full mx-auto"></div>
           </div>
 
@@ -350,8 +350,8 @@ const School = () => {
                   <div className={`w-12 h-12 rounded-xl bg-${item.color}-50 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
                     <item.icon className={`h-6 w-6 text-${item.color}-600`} />
                   </div>
-                  <h3 className="font-poppins font-bold text-lg text-slate-800 mb-2">{item.title}</h3>
-                  <p className="font-inter text-sm text-slate-500 leading-relaxed">{item.desc}</p>
+                  <h3 className="font-bold text-lg text-slate-800 mb-2">{item.title}</h3>
+                  <p className="text-sm text-slate-500 leading-relaxed">{item.desc}</p>
                 </div>
               ))}
             </div>

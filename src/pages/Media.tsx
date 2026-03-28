@@ -150,7 +150,7 @@ const Media = () => {
   };
 
   return (
-    <div className="font-inter">
+    <div className="">
       {/* Galerie modale */}
       {selectedMedia && (
         <MediaGallery
@@ -176,7 +176,7 @@ const Media = () => {
         <section id="a-la-une" className="scroll-mt-20 py-20 bg-gradient-to-br from-slate-50 via-gray-50 to-teal-50 relative overflow-hidden">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto text-center mb-16">
-              <h2 className="font-poppins font-bold text-3xl md:text-5xl text-slate-900 mb-6 relative inline-block">
+              <h2 className="font-bold text-3xl md:text-5xl text-slate-900 mb-6 relative inline-block">
                 Médias mis en avant
                 <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-16 h-1 bg-teal-500 rounded-full"></div>
               </h2>
@@ -210,12 +210,12 @@ const Media = () => {
                         </span>
                       </div>
 
-                      <h3 className="font-poppins font-semibold text-xl text-slate-800 mb-3">
+                      <h3 className="font-semibold text-xl text-slate-800 mb-3">
                         {media.title}
                       </h3>
 
                       {media.description && (
-                        <p className="font-inter text-slate-600 mb-4 text-sm leading-relaxed">
+                        <p className="text-slate-600 mb-4 text-sm leading-relaxed">
                           {media.description}
                         </p>
                       )}
@@ -242,7 +242,7 @@ const Media = () => {
       <section id="mediatheque" className="scroll-mt-20 py-20 bg-white relative">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center mb-16">
-            <h2 className="font-poppins font-bold text-3xl md:text-5xl text-slate-900 mb-6 relative inline-block">
+            <h2 className="font-bold text-3xl md:text-5xl text-slate-900 mb-6 relative inline-block">
               Notre Médiathèque
               <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-16 h-1 bg-teal-500 rounded-full"></div>
             </h2>
@@ -448,7 +448,7 @@ const Media = () => {
                           media.media_type === 'journal' ? 'bg-slate-600' : 
                           'bg-indigo-600'
                         }`}>
-                          <h3 className="font-poppins font-bold text-base text-white line-clamp-1 mb-2 group-hover:text-white/90 transition-colors relative z-10">
+                          <h3 className="font-bold text-base text-white line-clamp-1 mb-2 group-hover:text-white/90 transition-colors relative z-10">
                             {media.title}
                           </h3>
 
@@ -508,7 +508,7 @@ const Media = () => {
           <div className="max-w-5xl mx-auto">
             {/* Titre Standard (Style Thème) */}
             <div className="text-center mb-16 animate-fade-in">
-              <h2 className="font-poppins font-bold text-3xl md:text-5xl text-slate-900 mb-6 relative inline-block">
+              <h2 className="font-bold text-3xl md:text-5xl text-slate-900 mb-6 relative inline-block">
                 Partagez vos souvenirs !
                 <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-16 h-1 bg-teal-500 rounded-full"></div>
               </h2>
@@ -530,7 +530,7 @@ const Media = () => {
                         <Camera className="h-12 w-12 text-teal-400" />
                       </div>
                     </div>
-                    <h3 className="font-poppins font-bold text-xl text-white mb-3">Photos & Vidéos</h3>
+                    <h3 className="font-bold text-xl text-white mb-3">Photos & Vidéos</h3>
                     <p className="text-sm text-slate-400 font-medium italic">Concerts, répétitions, moments de convivialité capturés.</p>
                   </div>
 
@@ -541,7 +541,7 @@ const Media = () => {
                         <Music className="h-12 w-12 text-indigo-400" />
                       </div>
                     </div>
-                    <h3 className="font-poppins font-bold text-xl text-white mb-3">Enregistrements</h3>
+                    <h3 className="font-bold text-xl text-white mb-3">Enregistrements</h3>
                     <p className="text-sm text-slate-400 font-medium italic">Captations audio de vos performances sur scène.</p>
                   </div>
 
@@ -552,7 +552,7 @@ const Media = () => {
                         <FileText className="h-12 w-12 text-sky-400" />
                       </div>
                     </div>
-                    <h3 className="font-poppins font-bold text-xl text-white mb-3">Articles de Presse</h3>
+                    <h3 className="font-bold text-xl text-white mb-3">Articles de Presse</h3>
                     <p className="text-sm text-slate-400 font-medium italic">Coupures de journaux et interviews mémorables.</p>
                   </div>
                 </div>

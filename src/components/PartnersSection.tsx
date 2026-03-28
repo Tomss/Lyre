@@ -43,11 +43,11 @@ const PartnersSection = () => {
 
             <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 <div className="text-center max-w-3xl mx-auto mb-16">
-                    <h2 className="font-poppins font-bold text-3xl md:text-4xl text-slate-800 mb-4 tracking-tight">
+                    <h2 className="font-bold text-3xl md:text-4xl text-slate-800 mb-4 tracking-tight">
                         Nos Partenaires
                     </h2>
                     <div className="h-1 w-20 bg-indigo-500 rounded-full mx-auto shadow-sm"></div>
-                    <p className="mt-6 text-slate-600 font-inter text-lg">
+                    <p className="mt-6 text-slate-600 text-lg">
                         Ils nous soutiennent et contribuent au rayonnement de La Lyre.
                     </p>
                 </div>

@@ -347,7 +347,7 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="font-inter pt-8 lg:pt-12 pb-20 min-h-screen bg-slate-50 relative overflow-hidden">
+    <div className="pt-8 lg:pt-12 pb-20 min-h-screen bg-slate-50 relative overflow-hidden">
       {/* Decorative background elements */}
       <div className="absolute top-0 right-0 -m-32 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl pointer-events-none"></div>
       <div className="absolute bottom-0 left-0 -m-32 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
@@ -362,10 +362,10 @@ const Dashboard = () => {
                         <User className="h-8 w-8 text-white" />
                     </div>
                     <div>
-                        <h1 className="font-poppins font-bold text-2xl md:text-3xl text-slate-800">
+                        <h1 className="font-black text-2xl md:text-3xl text-slate-800">
                             Bonjour, {currentUser.firstName}!
                         </h1>
-                        <p className="font-inter text-slate-500">
+                        <p className="text-slate-500">
                             Ravi de vous revoir.
                         </p>
                     </div>
@@ -426,7 +426,7 @@ const Dashboard = () => {
               <div className="w-12 h-12 rounded-2xl bg-teal-500/10 flex items-center justify-center text-teal-600 border border-teal-500/20 group-hover:scale-110 transition-transform duration-300">
                 <UserCircle className="h-7 w-7" />
               </div>
-              <h2 className="font-poppins font-bold text-xl text-slate-800">Mon Profil</h2>
+              <h2 className="font-bold text-xl text-slate-800">Mon Profil</h2>
             </div>
             
             <div className="space-y-4">
@@ -469,7 +469,7 @@ const Dashboard = () => {
               <div className="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-600 border border-purple-500/20 group-hover:scale-110 transition-transform duration-300">
                 <Music2 className="h-7 w-7" />
               </div>
-              <h2 className="font-poppins font-bold text-xl text-slate-800">Mes Orchestres</h2>
+              <h2 className="font-bold text-xl text-slate-800">Mes Orchestres</h2>
             </div>
 
             <div className="space-y-3">
@@ -500,7 +500,7 @@ const Dashboard = () => {
               <div className="w-12 h-12 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-600 border border-amber-500/20 group-hover:scale-110 transition-transform duration-300">
                 <Music className="h-7 w-7" />
               </div>
-              <h2 className="font-poppins font-bold text-xl text-slate-800">Mes Instruments</h2>
+              <h2 className="font-bold text-xl text-slate-800">Mes Instruments</h2>
             </div>
 
             <div className="space-y-3">
@@ -530,7 +530,7 @@ const Dashboard = () => {
         {(currentUser?.role === 'Admin' || currentUser?.role === 'Gestionnaire') && (
           <div className="mb-12">
             <div className="text-center mb-16 mt-16">
-              <h2 className="font-poppins font-bold text-3xl md:text-5xl text-slate-900 mb-6 relative inline-block">
+              <h2 className="font-bold text-3xl md:text-5xl text-slate-900 mb-6 relative inline-block">
                 Panneau d'Administration
                 <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-16 h-1 bg-teal-500 rounded-full"></div>
               </h2>
@@ -632,7 +632,7 @@ const Dashboard = () => {
           {/* Section Agenda */}
           <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 p-6 h-full">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 text-dark border-b border-gray-100 pb-4">
-              <h2 className="font-poppins font-bold text-2xl flex items-center gap-3">
+              <h2 className="font-bold text-2xl flex items-center gap-3">
                 <Calendar className="h-7 w-7 text-indigo-600" />
                 Mon Agenda
               </h2>
@@ -702,7 +702,7 @@ const Dashboard = () => {
                         onClick={() => toggleEventType(type)} 
                         className={`w-full flex items-center justify-between p-5 bg-gradient-to-r ${styles.lightGradient} hover:opacity-90 transition-all`}
                       >
-                        <h3 className="font-poppins font-bold text-lg text-slate-800 flex items-center group">
+                        <h3 className="font-bold text-lg text-slate-800 flex items-center group">
                           <div className={`p-2 rounded-lg bg-gradient-to-br ${styles.gradient} text-white mr-4 shadow-sm group-hover:scale-110 transition-transform`}>
                             <TypeIcon className="h-5 w-5" />
                           </div>
@@ -822,7 +822,7 @@ const Dashboard = () => {
           {/* Section Partitions */}
           <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 p-6 h-full">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 text-dark border-b border-gray-100 pb-4">
-              <h2 className="font-poppins font-bold text-2xl flex items-center gap-3">
+              <h2 className="font-bold text-2xl flex items-center gap-3">
                 <Music2 className="h-7 w-7 text-purple-600" />
                 Mes Partitions
               </h2>
@@ -883,7 +883,7 @@ const Dashboard = () => {
                         onClick={() => toggleOrchestra(orchestraName)} 
                         className="w-full flex items-center justify-between p-5 bg-gradient-to-r from-purple-50 to-white hover:opacity-90 transition-all"
                       >
-                        <h3 className="font-poppins font-bold text-lg text-slate-800 flex items-center">
+                        <h3 className="font-bold text-lg text-slate-800 flex items-center">
                           <Music2 className="h-5 w-5 mr-3 text-purple-500" />
                           {orchestraName}
                           <span className="ml-3 text-xs font-medium px-2 py-0.5 bg-white/50 rounded-full border border-gray-100 text-slate-500">
@@ -907,7 +907,7 @@ const Dashboard = () => {
                                   className={`w-full text-left flex items-center justify-between p-4 transition-all group/item ${isMorceauExpanded ? 'bg-emerald-50/50' : 'hover:bg-slate-50'}`}
                                 >
                                   <div className="flex flex-col">
-                                    <h4 className="font-poppins font-bold text-lg text-slate-800 flex items-center gap-3">
+                                    <h4 className="font-bold text-lg text-slate-800 flex items-center gap-3">
                                       <div className="p-1.5 bg-emerald-100 rounded-lg text-emerald-600">
                                         <Music className="h-4 w-4" />
                                       </div>

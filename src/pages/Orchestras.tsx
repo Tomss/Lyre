@@ -117,7 +117,7 @@ const Orchestras = () => {
     }, []);
 
     return (
-        <div className="font-inter text-slate-900">
+        <div className="text-slate-900">
             {/* Header Section */}
             <PageHero
                 title={<span>Nos <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-emerald-400 to-cyan-500">Orchestres</span></span>}
@@ -145,14 +145,14 @@ const Orchestras = () => {
 
                                     {/* Title Section */}
                                     <div className="mb-16 text-center animate-on-scroll">
-                                        <h2 className="font-poppins font-bold text-3xl md:text-5xl text-slate-900 mb-6 relative inline-block">
+                                        <h2 className="font-bold text-3xl md:text-5xl text-slate-900 mb-6 relative inline-block">
                                             {orchestras[0].name}
                                             <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-16 h-1 bg-teal-500 rounded-full"></div>
                                         </h2>
                                     </div>
 
                                     {/* Content with Float Layout */}
-                                    <div className="prose prose-lg text-slate-600 font-inter max-w-none clearfix">
+                                    <div className="prose prose-lg text-slate-600 max-w-none clearfix">
                                         {/* Image (Floated Left) */}
                                         <div className="float-none md:float-left w-full md:w-1/2 lg:w-5/12 mr-0 md:mr-16 lg:mr-24 mb-12 lg:mb-16 relative">
                                             <div className="absolute inset-0 bg-teal-500 blur-3xl opacity-20 transform -rotate-12 rounded-full"></div>
@@ -239,7 +239,7 @@ const Orchestras = () => {
                                                 {/* Text */}
                                                 <div className="w-full md:w-1/2 space-y-8">
                                                 <div className="space-y-4">
-                                                    <h2 className="font-poppins font-bold text-3xl md:text-5xl text-slate-900 mb-6 relative inline-block">
+                                                    <h2 className="font-bold text-3xl md:text-5xl text-slate-900 mb-6 relative inline-block">
                                                         {orch.name}
                                                         <div className={`absolute -bottom-4 left-0 w-16 h-1 ${isEven ? 'bg-indigo-500' : 'bg-blue-500'} rounded-full`}></div>
                                                     </h2>

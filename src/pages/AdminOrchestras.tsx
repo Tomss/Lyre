@@ -306,7 +306,7 @@ const AdminOrchestras = () => {
   }
 
   return (
-    <div className="font-inter pt-8 lg:pt-12 pb-20 min-h-screen bg-gray-100">
+    <div className="pt-8 lg:pt-12 pb-20 min-h-screen bg-gray-100">
       <div className="w-full px-4 sm:px-10 lg:px-16">
 
         {/* Header */}
@@ -320,7 +320,7 @@ const AdminOrchestras = () => {
               <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center mr-4 shadow-sm border border-indigo-50 flex-shrink-0">
                 <Music2 size={28} />
               </div>
-              <h1 className="text-2xl md:text-3xl font-bold text-slate-800 font-poppins">
+              <h1 className="text-2xl md:text-3xl font-black text-slate-800">
                 Gestion des Orchestres
               </h1>
             </div>

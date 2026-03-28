@@ -176,7 +176,7 @@ const TimelineCard = ({ item }: { item: HistoryEvent }) => {
             buttonStyle = "text-indigo-600 hover:text-indigo-800 font-semibold";
             break;
         case 'modern':
-            cardStyle = "bg-white/80 backdrop-blur-md border border-white/50 shadow-2xl shadow-teal-500/20 rounded-2xl font-inter text-slate-600";
+            cardStyle = "bg-white/80 backdrop-blur-md border border-white/50 shadow-2xl shadow-teal-500/20 rounded-2xl text-slate-600";
             dateStyle = "text-transparent bg-clip-text bg-gradient-to-r from-teal-500 to-cyan-600 font-bold text-xl mb-2 inline-block";
             buttonStyle = "text-teal-600 hover:text-teal-800 font-medium";
             break;
@@ -187,7 +187,7 @@ const TimelineCard = ({ item }: { item: HistoryEvent }) => {
     return (
         <div className={`p-5 md:p-6 relative ${cardStyle} transition-all duration-300 hover:scale-[1.01]`}>
             <div className={`md:hidden ${dateStyle}`}>{item.year}</div>
-            <h3 className={`text-2xl font-bold mb-4 ${item.era === 'vintage' ? 'font-serif' : 'font-poppins'}`}>
+            <h3 className={`text-2xl font-bold mb-4 ${item.era === 'vintage' ? 'font-serif' : ''}`}>
                 {item.title}
             </h3>
 
@@ -225,7 +225,7 @@ const HistoryTimeline = () => {
         <section className="py-12 bg-white overflow-hidden relative">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center mb-10">
-                    <h2 className="font-poppins font-bold text-3xl md:text-5xl text-slate-800 mb-4">Notre Histoire</h2>
+                    <h2 className="font-bold text-3xl md:text-5xl text-slate-800 mb-4">Notre Histoire</h2>
                     <p className="text-slate-600 max-w-2xl mx-auto">De la "Cécilienne" à La Lyre d'aujourd'hui, voyagez à travers 139 ans de passion musicale.</p>
                 </div>
 

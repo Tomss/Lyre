@@ -162,9 +162,14 @@ const Header = () => {
       <nav className={containerClass}>
         <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo */}
-          <Link to="/" className="flex-shrink-0 flex items-center space-x-2 font-poppins font-bold text-xl transition-colors text-teal-800 hover:text-teal-600">
+          <Link to="/" className="flex-shrink-0 flex items-center space-x-3 group">
             {(settings?.header_logo_url || settings?.site_logo_url) ? (
-              <img src={settings.header_logo_url?.startsWith('http') ? settings.header_logo_url : (settings.header_logo_url ? `${BASE_URL}${settings.header_logo_url}` : (settings.site_logo_url?.startsWith('http') ? settings.site_logo_url : `${BASE_URL}${settings.site_logo_url}`))} alt="La Lyre" className="h-10 lg:h-16 w-auto object-contain transition-all duration-300" />
+              <div className="flex items-center gap-3">
+                <img src={settings.header_logo_url?.startsWith('http') ? settings.header_logo_url : (settings.header_logo_url ? `${BASE_URL}${settings.header_logo_url}` : (settings.site_logo_url?.startsWith('http') ? settings.site_logo_url : `${BASE_URL}${settings.site_logo_url}`))} alt="La Lyre" className="h-10 lg:h-16 w-auto object-contain transition-all duration-300 group-hover:scale-105" />
+                <span className="hidden sm:block font-bold text-xl lg:text-2xl tracking-tight text-slate-900 group-hover:text-teal-700 transition-colors">
+                  La <span className="text-teal-600">Lyre</span>
+                </span>
+              </div>
             ) : (
               <div className="flex items-center space-x-2">
                 <Music className="h-8 w-8 lg:h-10 lg:w-10 text-teal-600" />
@@ -188,7 +193,7 @@ const Header = () => {
                       window.scrollTo({ top: 0, behavior: 'smooth' });
                     }
                   }}
-                  className={`flex items-center gap-1 font-inter font-medium transition-all duration-200 hover:scale-105 ${location.pathname === link.path && !location.hash
+                  className={`flex items-center gap-1 font-medium transition-all duration-200 hover:scale-105 ${location.pathname === link.path && !location.hash
                     ? 'text-teal-600 font-semibold'
                     : 'text-gray-700 hover:text-teal-600'
                     }`}
@@ -261,7 +266,7 @@ const Header = () => {
                 >
                   <button 
                     onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                    className={`flex items-center space-x-3 font-inter font-medium pl-1.5 pr-4 py-1.5 rounded-xl transition-all duration-300 border shadow-sm relative overflow-hidden active:scale-95 ${
+                    className={`flex items-center space-x-3 font-medium pl-1.5 pr-4 py-1.5 rounded-xl transition-all duration-300 border shadow-sm relative overflow-hidden active:scale-95 ${
                       isUserMenuOpen 
                         ? 'bg-teal-50 border-teal-200 text-teal-800 shadow-md' 
                         : 'bg-white border-gray-200 text-slate-700 hover:border-teal-200 hover:bg-slate-50 hover:shadow-md'
@@ -310,7 +315,7 @@ const Header = () => {
               ) : (
                 <Link
                   to="/connexion"
-                  className="font-inter font-bold px-7 py-3 rounded-xl transition-all duration-300 border-2 border-teal-600 text-teal-600 hover:bg-teal-600 hover:text-white shadow-sm hover:shadow-teal-500/20 active:scale-95 text-sm"
+                  className="font-bold px-7 py-3 rounded-xl transition-all duration-300 border-2 border-teal-600 text-teal-600 hover:bg-teal-600 hover:text-white shadow-sm hover:shadow-teal-500/20 active:scale-95 text-sm"
                 >
                   Se connecter
                 </Link>
@@ -339,7 +344,7 @@ const Header = () => {
               <div key={link.path}>
                 <Link
                   to={link.path}
-                  className={`block font-inter font-medium py-3.5 px-4 rounded-xl transition-all duration-300 ${location.pathname === link.path
+                  className={`block font-medium py-3.5 px-4 rounded-xl transition-all duration-300 ${location.pathname === link.path
                     ? 'text-teal-700 bg-teal-50 border-l-4 border-teal-500'
                     : 'text-gray-700 hover:text-teal-600 hover:bg-gray-50'
                     }`}

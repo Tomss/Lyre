@@ -182,7 +182,7 @@ const HomeNewsSection = () => {
 
                         {/* Contenu */}
                         <div className="p-6 sm:p-8">
-                            <h2 className="font-poppins font-bold text-xl sm:text-2xl text-slate-800 mb-4 leading-tight">
+                            <h2 className="font-bold text-xl sm:text-2xl text-slate-800 mb-4 leading-tight">
                                 {selectedNews.title}
                             </h2>
                             <div className="prose prose-slate prose-teal max-w-none text-slate-600 text-sm sm:text-base leading-relaxed whitespace-pre-wrap">
@@ -202,7 +202,7 @@ const HomeNewsSection = () => {
                         {/* Header Modal */}
                         <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-white z-10">
                             <div>
-                                <h2 className="font-poppins font-bold text-2xl text-slate-800">Dernières Actualités</h2>
+                                <h2 className="font-bold text-2xl text-slate-800">Dernières Actualités</h2>
                                 <p className="text-slate-500 text-sm">Les 50 dernières publications</p>
                             </div>
                             <button 
@@ -237,7 +237,7 @@ const HomeNewsSection = () => {
                                                 <CalendarDays className="w-3 h-3 mr-1" />
                                                 {new Date(item.published_at).toLocaleDateString('fr-FR')}
                                             </div>
-                                            <h3 className="font-poppins font-bold text-sm sm:text-base text-slate-800 mb-1 group-hover:text-teal-700 transition-colors truncate">
+                                            <h3 className="font-bold text-sm sm:text-base text-slate-800 mb-1 group-hover:text-teal-700 transition-colors truncate">
                                                 {item.title}
                                             </h3>
                                             <p className="text-slate-500 text-xs line-clamp-2 leading-relaxed hidden sm:block">
@@ -259,7 +259,7 @@ const HomeNewsSection = () => {
 
             <div className="container mx-auto px-4 sm:px-6 lg:px-8 mb-12 relative z-10">
                 <div className="text-center">
-                    <h2 className="font-poppins font-bold text-3xl md:text-5xl text-slate-900 mb-4">
+                    <h2 className="font-bold text-3xl md:text-5xl text-slate-900 mb-4">
                         Nos Actualités
                     </h2>
                     <div className="h-1 w-24 bg-gradient-to-r from-teal-500 to-cyan-500 rounded-full mx-auto shadow-sm shadow-teal-100"></div>
@@ -346,7 +346,7 @@ const HomeNewsSection = () => {
 
                                 {/* Content Section (Transparent background to let gradient show through) */}
                                 <div className="p-8 flex flex-col flex-1 relative bg-transparent">
-                                    <h3 className="font-poppins font-bold text-xl text-slate-800 mb-3 leading-tight group-hover:text-teal-700 transition-colors line-clamp-2">
+                                    <h3 className="font-bold text-xl text-slate-800 mb-3 leading-tight group-hover:text-teal-700 transition-colors line-clamp-2">
                                         {item.title}
                                     </h3>
 

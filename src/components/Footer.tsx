@@ -28,7 +28,7 @@ const Footer = () => {
           {/* Column 1: School Info */}
           <div className="space-y-6">
             <Link to="/" className="inline-block transition-transform hover:scale-105">
-              <span className="font-poppins font-semibold text-lg text-white">
+              <span className="font-semibold text-lg text-white">
                 École de Musique La Lyre
               </span>
             </Link>
@@ -36,13 +36,13 @@ const Footer = () => {
 
           {/* Column 2: Quick Links */}
           <div className="space-y-4">
-            <h3 className="font-poppins font-semibold text-lg">Liens rapides</h3>
+            <h3 className="font-semibold text-lg">Liens rapides</h3>
             <ul className="space-y-2">
               {quickLinks.map((link) => (
                 <li key={link.path}>
                   <Link
                     to={link.path}
-                    className="font-inter text-gray-300 hover:text-accent transition-colors duration-300"
+                    className="text-gray-300 hover:text-accent transition-colors duration-300"
                   >
                     {link.label}
                   </Link>
@@ -53,7 +53,7 @@ const Footer = () => {
 
           {/* Column 3: Social Media */}
           <div className="space-y-4">
-            <h3 className="font-poppins font-semibold text-lg">Suivez-nous</h3>
+            <h3 className="font-semibold text-lg">Suivez-nous</h3>
             <div className="flex space-x-4">
               {socialLinks.map((social) => (
                 <a
@@ -71,7 +71,7 @@ const Footer = () => {
 
         {/* Copyright */}
         <div className="mt-12 pt-8 border-t border-gray-700 text-center">
-          <p className="font-inter text-gray-400 text-sm">
+          <p className="text-gray-400 text-sm">
             © 2025 École de Musique La Lyre. Tous droits réservés.
           </p>
         </div>

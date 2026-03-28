@@ -181,7 +181,7 @@ const HomeAgendaSection = () => {
 
                         {/* Contenu */}
                         <div className="p-8 sm:p-10 text-slate-900">
-                            <h2 className="font-poppins font-bold text-2xl sm:text-3xl text-slate-800 mb-6 leading-tight">
+                            <h2 className="font-bold text-2xl sm:text-3xl text-slate-800 mb-6 leading-tight">
                                 {selectedEvent.title}
                             </h2>
 
@@ -224,7 +224,7 @@ const HomeAgendaSection = () => {
                         {/* Header Modal */}
                         <div className="p-6 border-b border-slate-800 flex items-center justify-between bg-slate-900 z-10">
                             <div>
-                                <h2 className="font-poppins font-bold text-2xl text-white">Agenda Complet</h2>
+                                <h2 className="font-bold text-2xl text-white">Agenda Complet</h2>
                                 <p className="text-teal-400 text-sm">Tous les événements à venir</p>
                             </div>
                             <button 
@@ -258,7 +258,7 @@ const HomeAgendaSection = () => {
                                                 <Calendar className="w-3 h-3 mr-1" />
                                                 {new Date(item.event_date).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })}
                                             </div>
-                                            <h3 className="font-poppins font-bold text-sm sm:text-base text-white mb-1 group-hover:text-teal-300 transition-colors truncate">
+                                            <h3 className="font-bold text-sm sm:text-base text-white mb-1 group-hover:text-teal-300 transition-colors truncate">
                                                 {item.title}
                                             </h3>
                                             <div className="flex items-center space-x-4 text-slate-400 text-xs hidden sm:flex">
@@ -310,7 +310,7 @@ const HomeAgendaSection = () => {
 
             <div className="container mx-auto px-4 sm:px-6 lg:px-8 mb-12 relative z-10">
                 <div className="text-center">
-                    <h2 className="font-poppins font-bold text-3xl md:text-5xl text-white mb-4 drop-shadow-md">
+                    <h2 className="font-bold text-3xl md:text-5xl text-white mb-4 drop-shadow-md">
                         Agenda
                     </h2>
                     <div className="h-1 w-24 bg-gradient-to-r from-teal-500 to-emerald-500 rounded-full mx-auto shadow-[0_0_15px_rgba(20,184,166,0.6)]"></div>
@@ -407,7 +407,7 @@ const HomeAgendaSection = () => {
 
                                     {/* Body */}
                                     <div className="p-8 flex-grow flex flex-col relative z-10">
-                                        <h3 className="font-poppins font-bold text-xl text-white mb-3 group-hover:text-teal-300 transition-colors line-clamp-2 leading-tight">
+                                        <h3 className="font-bold text-xl text-white mb-3 group-hover:text-teal-300 transition-colors line-clamp-2 leading-tight">
                                             {event.title}
                                         </h3>
 

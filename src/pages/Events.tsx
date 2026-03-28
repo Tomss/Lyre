@@ -94,7 +94,7 @@ const Events = () => {
               <button onClick={closeEventModal} className="p-2 text-slate-400 hover:text-slate-600 transition-colors"><X size={24} /></button>
             </div>
             <div className="p-4">
-              <h2 className="font-poppins font-bold text-3xl mb-4 text-slate-800">{selectedEvent.title}</h2>
+              <h2 className="font-bold text-3xl mb-4 text-slate-800">{selectedEvent.title}</h2>
               <div className="flex items-center space-x-4 mb-6 text-sm text-slate-500">
                 <span className="flex items-center"><Calendar className="w-4 h-4 mr-1" /> {formatDate(selectedEvent.event_date).fullDate}</span>
                 {selectedEvent.location && <span className="flex items-center"><MapPin className="w-4 h-4 mr-1" /> {selectedEvent.location}</span>}
@@ -112,7 +112,7 @@ const Events = () => {
         }}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center animate-fade-in relative z-10">
-            <h1 className="font-poppins font-bold text-4xl md:text-5xl text-white mb-6 drop-shadow-2xl tracking-tight">
+            <h1 className="font-black text-4xl md:text-5xl text-white mb-6 drop-shadow-2xl tracking-tight">
               Nos Événements
             </h1>
 
@@ -122,7 +122,7 @@ const Events = () => {
                 <span>Chargement de notre calendrier musical...</span>
               </div>
             ) : (
-              <p className="font-inter text-base text-slate-200 max-w-2xl mx-auto leading-relaxed">
+              <p className="text-base text-slate-200 max-w-2xl mx-auto leading-relaxed">
                 {events.length > 0 ? 'Découvrez notre calendrier d\'événements et rejoignez-nous pour ces moments musicaux exceptionnels' : 'Notre calendrier musical se prépare... Revenez bientôt pour découvrir nos prochaines dates !'}
               </p>
             )}
@@ -138,7 +138,7 @@ const Events = () => {
               <div className="inline-flex items-center space-x-4 bg-white rounded-2xl p-8 shadow-xl border border-slate-100">
                 <div className="animate-spin rounded-full h-12 w-12 border-4 border-teal-100 border-t-teal-500"></div>
                 <div>
-                  <h3 className="font-poppins font-semibold text-xl text-slate-800 mb-2">Préparation du spectacle...</h3>
+                  <h3 className="font-semibold text-xl text-slate-800 mb-2">Préparation du spectacle...</h3>
                   <p className="text-slate-500">Chargement de notre calendrier musical</p>
                 </div>
               </div>
@@ -153,8 +153,8 @@ const Events = () => {
                 <div className="bg-gradient-to-br from-slate-100 to-slate-200 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-8 shadow-inner">
                   <Calendar className="h-12 w-12 text-slate-400" />
                 </div>
-                <h2 className="font-poppins font-bold text-3xl text-slate-800 mb-4">Le rideau se lève bientôt...</h2>
-                <p className="font-inter text-lg text-slate-600 leading-relaxed">
+                <h2 className="font-bold text-3xl text-slate-800 mb-4">Le rideau se lève bientôt...</h2>
+                <p className="text-lg text-slate-600 leading-relaxed">
                   Notre équipe artistique prépare actuellement la programmation de nos prochains événements. Revenez bientôt pour découvrir les dates !
                 </p>
               </div>
@@ -176,10 +176,10 @@ const Events = () => {
                       <div className="w-16 h-0.5 bg-gradient-to-l from-transparent via-teal-500 to-teal-500"></div>
                     </div>
                   </div>
-                  <h2 className="font-poppins font-bold text-5xl md:text-6xl text-slate-800 mb-6">
+                  <h2 className="font-bold text-5xl md:text-6xl text-slate-800 mb-6">
                     Calendrier Musical
                   </h2>
-                  <p className="font-inter text-lg text-slate-600 leading-relaxed">
+                  <p className="text-lg text-slate-600 leading-relaxed">
                     Découvrez notre programmation artistique dans un calendrier interactif élégant
                   </p>
 
@@ -222,7 +222,7 @@ const Events = () => {
                           <Calendar className="h-8 w-8 text-teal-400" />
                         </div>
                         <div>
-                          <h3 className="font-poppins font-bold text-xl mb-1 text-white">Nos Rendez-vous</h3>
+                          <h3 className="font-bold text-xl mb-1 text-white">Nos Rendez-vous</h3>
                           <p className="text-slate-400 text-sm">La musique se vit ensemble</p>
                         </div>
                       </div>
@@ -279,7 +279,7 @@ const Events = () => {
                                 {/* Détails de l'événement */}
                                 <div className="flex-1 min-w-0 text-center sm:text-left">
                                   <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 mb-3">
-                                    <h4 className={`font-poppins font-bold text-xl ${isNext && !isPastEvent ? 'text-slate-900' : 'text-slate-800'
+                                    <h4 className={`font-bold text-xl ${isNext && !isPastEvent ? 'text-slate-900' : 'text-slate-800'
                                       }`}>
                                       {event.title}
                                     </h4>
@@ -353,7 +353,7 @@ const Events = () => {
                         <div className="bg-slate-100 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
                           <Calendar className="h-10 w-10 text-slate-300" />
                         </div>
-                        <h3 className="font-poppins font-bold text-lg text-slate-700 mb-2">Calendrier en préparation</h3>
+                        <h3 className="font-bold text-lg text-slate-700 mb-2">Calendrier en préparation</h3>
                         <p className="text-sm text-slate-500 max-w-sm mx-auto">
                           Revenez bientôt pour découvrir nos dates !
                         </p>

@@ -286,7 +286,7 @@ const AdminMorceaux = () => {
   };
 
   return (
-    <div className="font-inter pt-8 lg:pt-12 pb-20 min-h-screen bg-gray-100">
+    <div className="pt-8 lg:pt-12 pb-20 min-h-screen bg-gray-100">
       <div className="w-full px-4 sm:px-10 lg:px-16">
 
         {/* Header */}
@@ -300,7 +300,7 @@ const AdminMorceaux = () => {
               <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center mr-4 shadow-sm border border-indigo-50 flex-shrink-0">
                 <Music size={28} />
               </div>
-              <h1 className="text-2xl md:text-3xl font-bold text-slate-800 font-poppins">
+              <h1 className="text-2xl md:text-3xl font-black text-slate-800">
                 Gestion des Morceaux
               </h1>
             </div>
@@ -373,7 +373,7 @@ const AdminMorceaux = () => {
                         <Users size={20} />
                       </div>
                       <div className="flex items-center">
-                        <h2 className={`text-lg font-bold ${color.text} font-poppins`}>{orchestra.name}</h2>
+                        <h2 className={`text-lg font-bold ${color.text}`}>{orchestra.name}</h2>
                         <span className={`ml-3 px-2.5 py-0.5 rounded-full border text-xs font-bold ${color.badge}`}>
                           {orchestraMorceaux.length}
                         </span>

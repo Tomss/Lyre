@@ -4,6 +4,7 @@ export default {
   theme: {
     extend: {
       fontFamily: {
+        sans: ['Poppins', 'Inter', 'sans-serif'],
         'poppins': ['Poppins', 'sans-serif'],
         'inter': ['Inter', 'sans-serif'],
       },
@@ -65,6 +66,7 @@ export default {
       animation: {
         'fade-in': 'fadeIn 0.8s ease-in-out',
         'fade-in-up': 'fadeInUp 0.8s ease-in-out',
+        'fade-in-left': 'fadeInLeft 1s ease-out forwards',
       },
       keyframes: {
         fadeIn: {
@@ -74,6 +76,10 @@ export default {
         fadeInUp: {
           '0%': { opacity: '0', transform: 'translateY(20px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        fadeInLeft: {
+          '0%': { opacity: '0', transform: 'translateX(-40px)' },
+          '100%': { opacity: '1', transform: 'translateX(0)' },
         },
         floatNote: {
           '0%': {

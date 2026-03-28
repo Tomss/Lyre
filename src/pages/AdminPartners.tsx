@@ -291,7 +291,7 @@ const AdminPartners = () => {
     );
 
     return (
-        <div className="font-inter pt-8 lg:pt-12 pb-20 min-h-screen bg-gray-50">
+        <div className="pt-8 lg:pt-12 pb-20 min-h-screen bg-gray-50">
             <div className="w-full px-4 sm:px-10 lg:px-16">
 
                 {/* Notification Toast */}
@@ -313,7 +313,7 @@ const AdminPartners = () => {
                             <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center mr-4 shadow-sm border border-indigo-50 flex-shrink-0">
                                 <Building2 size={28} />
                             </div>
-                            <h1 className="text-2xl md:text-3xl font-bold text-slate-800 font-poppins">
+                            <h1 className="text-2xl md:text-3xl font-black text-slate-800">
                                 Gestion des Partenaires
                             </h1>
                         </div>

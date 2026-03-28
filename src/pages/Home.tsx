@@ -1,4 +1,6 @@
 import React, { useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { ArrowRight } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
 import PartnersSection from '../components/PartnersSection';
@@ -79,7 +81,7 @@ const Home = () => {
   }, []);
 
   return (
-    <div className="font-inter">
+    <div className="">
       {/* Hero Section - Optimisé Ultra-Wide (Style Samsung) */}
       <section id="accueil" className="relative h-[calc(100vh-80px)] flex items-center justify-center bg-white overflow-hidden">
         {/* Images de fond avec structure Contenue pour Ultra-Wide */}
@@ -98,16 +100,27 @@ const Home = () => {
           </div>
         ))}
         
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full flex flex-col items-center justify-center text-center">
-            <h1 className="flex flex-col items-center gap-4 font-poppins font-bold text-white mb-8 animate-fade-in-up">
-              <span className="text-7xl md:text-[8rem] tracking-tighter drop-shadow-2xl leading-none">
-                La <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-emerald-400 to-cyan-500">Lyre</span>
+        <div className="w-full max-w-[2560px] mx-auto px-4 sm:px-10 lg:px-20 relative z-10 flex flex-col items-start justify-end pb-32 md:pb-48 h-full">
+            {/* Main Title */}
+            <h1 className="flex flex-col items-start font-black text-white mb-10 animate-fade-in-left">
+              <span className="text-6xl md:text-[8.5rem] leading-[0.85] tracking-tighter drop-shadow-2xl">
+                La Lyre
               </span>
-              <div className="h-1 w-24 md:w-32 bg-gradient-to-r from-transparent via-teal-400 to-transparent my-2 opacity-80"></div>
-              <span className="text-xl md:text-3xl font-light tracking-[0.3em] uppercase text-white/90 drop-shadow-lg text-center">
-                École de Musique de Chalindrey
+              <span className="text-4xl md:text-[5rem] leading-[1] tracking-tighter drop-shadow-2xl font-black mt-2 max-w-5xl">
+                Ecole de musique <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-emerald-400 to-cyan-500">de Chalindrey</span>
               </span>
             </h1>
+
+            {/* CTA Buttons */}
+            <div className="flex flex-wrap gap-4 animate-fade-in-left" style={{ animationDelay: '200ms' }}>
+              <a href="#la-lyre" className="group relative px-8 py-4 bg-teal-600 text-white font-bold rounded-xl overflow-hidden transition-all hover:bg-teal-500 active:scale-95 flex items-center gap-2 shadow-lg shadow-teal-900/20">
+                <span>Découvrir la Lyre</span>
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </a>
+              <Link to="/contact" className="px-8 py-4 bg-transparent border-2 border-white text-white font-bold rounded-xl hover:bg-white hover:text-slate-900 transition-all active:scale-95">
+                Nous contacter
+              </Link>
+            </div>
         </div>
 
         {/* Indicateurs de carousel */}
@@ -131,7 +144,7 @@ const Home = () => {
 
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div className="max-w-4xl mx-auto text-center mb-16 animate-on-scroll">
-              <h2 className="font-poppins font-bold text-3xl md:text-5xl text-slate-900 mb-6 relative inline-block">
+              <h2 className="font-bold text-3xl md:text-5xl text-slate-900 mb-6 relative inline-block">
                 Qui sommes-nous ?
                 <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-16 h-1 bg-teal-500 rounded-full"></div>
               </h2>
@@ -154,21 +167,21 @@ const Home = () => {
 
                {/* Content - Clean & Balanced */}
                <div className="lg:w-2/3 text-center lg:text-left space-y-10 order-1 lg:order-2">
-                  <p className="text-base md:text-lg text-slate-600 leading-relaxed font-poppins font-light">
+                  <p className="text-base md:text-lg text-slate-600 leading-relaxed font-light">
                      Association musicale fondée en 1886, La Lyre, de croches en noires, de répétitions en répétitions, de concerts en concerts, de voyages en rivages, motive jeunes et moins jeunes, sages et exubérants, à vivre et partager ce langage aux mille et une harmoniques...
                   </p>
 
                   <div className="space-y-6">
                     <div className="flex flex-col lg:flex-row lg:items-center gap-4 group">
                       <div className="h-px w-8 bg-blue-500/40 group-hover:w-12 group-hover:bg-blue-500 transition-all duration-500 rounded-full hidden lg:block"></div>
-                      <p className="text-lg md:text-xl text-slate-800 font-poppins font-medium">
+                      <p className="text-lg md:text-xl text-slate-800 font-medium">
                         L’association La Lyre, c'est un <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 font-bold">Orchestre d'Harmonie</span>.
                       </p>
                     </div>
                     
                     <div className="flex flex-col lg:flex-row lg:items-center gap-4 group">
                       <div className="h-px w-8 bg-indigo-500/40 group-hover:w-12 group-hover:bg-indigo-500 transition-all duration-500 rounded-full hidden lg:block"></div>
-                      <p className="text-lg md:text-xl text-slate-800 font-poppins font-medium">
+                      <p className="text-lg md:text-xl text-slate-800 font-medium">
                         Et c'est aussi une <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-600 font-extrabold">Ecole</span> fixant les bases musicales indispensables.
                       </p>
                     </div>

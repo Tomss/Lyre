@@ -37,7 +37,7 @@ const NewsArchive = () => {
     }, []);
 
     return (
-        <div className="font-inter bg-slate-50 min-h-screen">
+        <div className="bg-slate-50 min-h-screen">
             <PageHero
                 title={<span>Toutes les <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-emerald-400 to-cyan-500">Actualités</span></span>}
                 subtitle="Retrouvez l'intégralité des articles et des annonces de La Lyre."
@@ -72,7 +72,7 @@ const NewsArchive = () => {
                                     </div>
                                 </div>
                                 <div className="p-6 flex flex-col flex-grow">
-                                    <h3 className="font-poppins font-bold text-lg text-slate-900 mb-3 group-hover:text-emerald-700 transition-colors">
+                                    <h3 className="font-bold text-lg text-slate-900 mb-3 group-hover:text-emerald-700 transition-colors">
                                         {item.title}
                                     </h3>
                                     <p className="text-sm text-slate-500 line-clamp-3 mb-4 flex-grow">

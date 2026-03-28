@@ -78,13 +78,13 @@ const PageHero: React.FC<PageHeroProps> = ({ title, subtitle, backgroundImage, a
             <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10 pt-20">
 
                 <div className="flex flex-col items-center mb-12 lg:mb-16">
-                    <h1 className="font-poppins font-bold text-5xl md:text-7xl text-white mb-6 drop-shadow-2xl tracking-tight animate-fade-in-up">
+                    <h1 className="font-black text-5xl md:text-7xl text-white mb-6 drop-shadow-2xl tracking-tight animate-fade-in-up">
                         {title}
                     </h1>
                     
                     <div className="h-1 w-24 md:w-32 bg-gradient-to-r from-transparent via-teal-400 to-transparent mb-6 opacity-80 animate-fade-in-up delay-100"></div>
                     
-                    <p className="max-w-3xl mx-auto text-lg md:text-xl text-white/90 animate-fade-in-up delay-200 font-inter font-light tracking-wide leading-relaxed text-center drop-shadow-lg">
+                    <p className="max-w-3xl mx-auto text-lg md:text-xl text-white/90 animate-fade-in-up delay-200 font-light tracking-wide leading-relaxed text-center drop-shadow-lg">
                         {subtitle}
                     </p>
                 </div>
