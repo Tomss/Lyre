@@ -102,11 +102,11 @@ const Home = () => {
         
         <div className="w-full max-w-[2560px] mx-auto px-4 sm:px-10 lg:px-20 relative z-10 flex flex-col items-start justify-end pb-32 md:pb-48 h-full">
             {/* Main Title */}
-            <h1 className="flex flex-col items-start font-black text-white mb-10 animate-fade-in-left">
-              <span className="text-6xl md:text-[8.5rem] leading-[0.85] tracking-tighter drop-shadow-2xl">
+            <h1 className="flex flex-col items-start font-poppins font-black text-white mb-10 animate-fade-in-left">
+              <span className="text-6xl md:text-[8.5rem] leading-[0.95] tracking-tighter drop-shadow-2xl">
                 La Lyre
               </span>
-              <span className="text-4xl md:text-[5rem] leading-[1] tracking-tighter drop-shadow-2xl font-black mt-2 max-w-5xl">
+              <span className="text-4xl md:text-[5rem] leading-[1.1] tracking-tighter drop-shadow-2xl font-black mt-4 max-w-5xl">
                 Ecole de musique <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-emerald-400 to-cyan-500">de Chalindrey</span>
               </span>
             </h1>
