@@ -25,6 +25,7 @@ import carouselRouter from './routes/carousel';
 import settingsRouter from './routes/settings';
 import partnersRouter from './routes/partners';
 import newsRouter from './routes/news';
+import historyRouter from './routes/history';
 
 dotenv.config();
 
@@ -140,6 +141,52 @@ dotenv.config();
       }
       console.log('[Migration] Vérification/Mise à jour de activity_log terminée.');
     }
+
+    // Migration: Création table history_events
+    const [historyTables]: any = await pool.query(`
+      SELECT COUNT(*) as count 
+      FROM information_schema.TABLES 
+      WHERE TABLE_SCHEMA = DATABASE() 
+      AND TABLE_NAME = 'history_events'
+    `);
+
+    if (historyTables[0].count === 0) {
+      console.log('[Migration] Création de la table history_events...');
+      await pool.query(`
+        CREATE TABLE history_events (
+          id varchar(50) NOT NULL,
+          year varchar(50) NOT NULL,
+          title text NOT NULL,
+          content text NOT NULL,
+          era enum('vintage','retro','classic','modern') DEFAULT 'classic',
+          icon varchar(50) DEFAULT 'Music',
+          image_url varchar(255) DEFAULT NULL,
+          sort_order int NOT NULL DEFAULT 0,
+          created_at timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+          updated_at timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+          PRIMARY KEY (id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+      `);
+      console.log('[Migration] Table history_events créée.');
+      
+      console.log('[Migration] Insertion des données initiales history_events...');
+      const cryptoLib = require('crypto');
+      const initialData = [
+          { year: "Introduction", title: "Une vieille dame éternellement jeune", content: "De la Lyre Cheminote et Municipale, on peut dire que c'est « une vielle dame de 139 ans qui a subi un lifting vers 50 ans et possède l'éternelle jeunesse ».", era: 'vintage', icon: "Star", image_url: null },
+          { year: "1886", title: "Le début !", content: "C'est le 2 aout 1886 que le conseil municipal...", era: 'vintage', icon: "Scroll", image_url: null },
+          { year: "1897", title: "La Concorde", content: "En 1897 : les populations du « Vieux Bourg » et du « Quartier de la Gare » se sont rencontrées...", era: 'vintage', icon: "Users", image_url: null }
+      ];
+      // Pour éviter un fichier énorme, insérons les données de base pour que le composant ait un point de départ
+      for (let i = 0; i < initialData.length; i++) {
+          const item = initialData[i];
+          await pool.query(
+            'INSERT INTO history_events (id, year, title, content, era, icon, image_url, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            [cryptoLib.randomUUID(), item.year, item.title, item.content, item.era, item.icon, item.image_url, i]
+          );
+      }
+      console.log('[Migration] Données history_events insérées.');
+    }
+
   } catch (e) {
     console.error('[Emergency/Migration] Erreur:', e);
   }
@@ -182,6 +229,7 @@ app.use('/api/carousel', carouselRouter);
 app.use('/api/settings', settingsRouter);
 app.use('/api/partners', partnersRouter);
 app.use('/api/news', newsRouter);
+app.use('/api/history', historyRouter);
 
 
 app.get('/', (req, res) => {

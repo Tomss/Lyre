@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { Navigate, Link } from 'react-router-dom';
-import { ArrowLeft, Plus, Trash2, Save, Upload, GripVertical, X, Image as ImageIcon, Layout, Palette } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Save, Upload, GripVertical, X, Image as ImageIcon, Layout, Palette, BookOpen, Edit } from 'lucide-react';
 
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
@@ -41,10 +41,21 @@ function SortableItem(props: { id: string; children: React.ReactNode }) {
     );
 }
 
+interface HistoryEvent {
+    id: string;
+    year: string;
+    title: string;
+    content: string;
+    era: 'vintage' | 'retro' | 'classic' | 'modern';
+    icon: string;
+    image_url: string;
+    sort_order: number;
+}
+
 const AdminTheme = () => {
     const { currentUser, token, isAuthenticated } = useAuth();
     const { settings, updateSettings, pageHeaders, updatePageHeader } = useTheme();
-    const [activeTab, setActiveTab] = useState<'general' | 'carousel' | 'headers'>('general');
+    const [activeTab, setActiveTab] = useState<'general' | 'carousel' | 'headers' | 'history'>('general');
     const [headerUploading, setHeaderUploading] = useState<string | null>(null);
 
     // Page Headers Local State
@@ -55,6 +66,14 @@ const AdminTheme = () => {
         setLocalPageHeaders(pageHeaders);
     }, [pageHeaders]);
 
+    // Notification State
+    const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+    const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
+        setNotification({ message, type });
+        setTimeout(() => setNotification(null), 3000);
+    };
+
     const handleHeadersSave = async () => {
         setHeadersSaving(true);
         try {
@@ -62,21 +81,19 @@ const AdminTheme = () => {
                 return updatePageHeader(slug, imageUrl);
             });
             await Promise.all(promises);
-            showCarouselNotification('En-têtes mis à jour avec succès');
+            showNotification('En-têtes mis à jour avec succès');
         } catch (err) {
             console.error(err);
-            showCarouselNotification('Erreur lors de la mise à jour', 'error');
+            showNotification('Erreur lors de la mise à jour', 'error');
         }
         setHeadersSaving(false);
     };
-
 
 
     // Carousel State
     const [images, setImages] = useState<CarouselImage[]>([]);
     const [loadingImages, setLoadingImages] = useState(true);
     const [uploading, setUploading] = useState(false);
-    const [carouselNotification, setCarouselNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
     // Carousel Form State
     const [showCarouselForm, setShowCarouselForm] = useState(false);
@@ -103,7 +120,21 @@ const AdminTheme = () => {
     const [secondaryLogoPreviewUrl, setSecondaryLogoPreviewUrl] = useState<string | null>(settings.secondary_logo_url || null);
 
     const [savingSettings, setSavingSettings] = useState(false);
-    const [settingsNotification, setSettingsNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+    // History State
+    const [historyEvents, setHistoryEvents] = useState<HistoryEvent[]>([]);
+    const [loadingHistory, setLoadingHistory] = useState(true);
+    const [showHistoryForm, setShowHistoryForm] = useState(false);
+    const [editingHistory, setEditingHistory] = useState<HistoryEvent | null>(null);
+    const [historyFile, setHistoryFile] = useState<File | null>(null);
+    const [historyPreviewUrl, setHistoryPreviewUrl] = useState<string | null>(null);
+    const [historyFormData, setHistoryFormData] = useState<{
+        year: string; title: string; content: string; era: 'vintage' | 'retro' | 'classic' | 'modern'; icon: string;
+    }>({
+        year: '', title: '', content: '', era: 'classic', icon: 'Music'
+    });
+    const [deleteHistoryConfirmId, setDeleteHistoryConfirmId] = useState<string | null>(null);
+    const [uploadingHistory, setUploadingHistory] = useState(false);
 
 
     // Dnd Sensors
@@ -118,44 +149,41 @@ const AdminTheme = () => {
         })
     );
 
-    const handleDragEnd = (event: DragEndEvent) => {
+    const handleDragEnd = async (event: DragEndEvent) => {
         const { active, over } = event;
 
         if (active.id !== over?.id) {
-            setImages((items) => {
-                const oldIndex = items.findIndex((item) => item.id === active.id);
-                const newIndex = items.findIndex((item) => item.id === over?.id);
-                return arrayMove(items, oldIndex, newIndex);
-            });
-        }
-    };
+            const oldImages = [...images];
+            const oldIndex = images.findIndex((item) => item.id === active.id);
+            const newIndex = images.findIndex((item) => item.id === over?.id);
+            const newImages = arrayMove(images, oldIndex, newIndex).map((img, idx) => ({
+                ...img,
+                sort_order: idx
+            }));
+            
+            setImages(newImages);
 
-    const handleGlobalCarouselSave = async () => {
-        setSavingSettings(true);
-        try {
-            // 1. Save Interval
-            await updateSettings({ carousel_interval: (carouselInterval * 1000).toString() });
-
-            // 2. Save Order
-            if (images.length > 0) {
-                await fetch(`${API_URL}/carousel/reorder`, {
+            try {
+                const response = await fetch(`${API_URL}/carousel/reorder`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
                     },
-                    body: JSON.stringify({ items: images.map(img => img.id) })
+                    body: JSON.stringify({ items: newImages.map(img => img.id) })
                 });
+                if (!response.ok) throw new Error();
+                showNotification('Ordre mis à jour');
+                // Refresh to be certain
+                fetchImages();
+            } catch (error) {
+                setImages(oldImages);
+                showNotification('Erreur lors du réordonnancement', 'error');
             }
-
-            showCarouselNotification('Configuration et ordre enregistrés !');
-        } catch (error) {
-            console.error('Erreur sauvegarde globale:', error);
-            showCarouselNotification('Erreur lors de la sauvegarde globale', 'error');
-        } finally {
-            setSavingSettings(false);
         }
     };
+
+
 
     // --- CAROUSEL LOGIC ---
     const fetchImages = async () => {
@@ -178,9 +206,25 @@ const AdminTheme = () => {
         setLoadingImages(false);
     };
 
+    const fetchHistory = async () => {
+        try {
+            const response = await fetch(`${API_URL}/history`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                setHistoryEvents(data);
+            }
+        } catch (error) {
+            console.error('Erreur chargement histoire:', error);
+        }
+        setLoadingHistory(false);
+    };
+
     useEffect(() => {
         if (isAuthenticated && (currentUser?.role === "Admin" || currentUser?.managedModules?.includes("theme"))) {
             fetchImages();
+            fetchHistory();
         }
     }, [isAuthenticated, currentUser, token]);
 
@@ -197,10 +241,7 @@ const AdminTheme = () => {
         }
     }, [settings]);
 
-    const showCarouselNotification = (message: string, type: 'success' | 'error' = 'success') => {
-        setCarouselNotification({ message, type });
-        setTimeout(() => setCarouselNotification(null), 3000);
-    };
+    // Removed old showCarouselNotification helper function as it is now showNotification.
 
     const handleCarouselFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -249,13 +290,13 @@ const AdminTheme = () => {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (response.ok) {
-                showCarouselNotification('Image supprimée');
+                showNotification('Image supprimée');
                 fetchImages();
             } else {
                 throw new Error('Erreur suppression');
             }
         } catch (error) {
-            showCarouselNotification('Erreur lors de la suppression', 'error');
+            showNotification('Erreur lors de la suppression', 'error');
         } finally {
             setDeleteConfirmId(null);
         }
@@ -297,11 +338,11 @@ const AdminTheme = () => {
             });
 
             if (!response.ok) throw new Error('Erreur sauvegarde');
-            showCarouselNotification(editingImage ? 'Image modifiée' : 'Image ajoutée');
+            showNotification(editingImage ? 'Image modifiée' : 'Image ajoutée');
             closeCarouselForm();
             fetchImages();
         } catch (error: any) {
-            showCarouselNotification(error.message || 'Erreur inconnue', 'error');
+            showNotification(error.message || 'Erreur inconnue', 'error');
         } finally {
             setUploading(false);
         }
@@ -314,6 +355,141 @@ const AdminTheme = () => {
         setCarouselPreviewUrl(null);
         setEditingImage(null);
         setCarouselFormData({ title: '', subtitle: '', sort_order: 0, is_active: true });
+    };
+
+    // --- HISTORY LOGIC ---
+    const showHistoryNotification = (message: string, type: 'success' | 'error' = 'success') => {
+        showNotification(message, type);
+    };
+
+    const handleHistoryDragEnd = async (event: DragEndEvent) => {
+        const { active, over } = event;
+        if (active.id !== over?.id) {
+            const oldEvents = [...historyEvents];
+            const oldIndex = historyEvents.findIndex((item) => item.id === active.id);
+            const newIndex = historyEvents.findIndex((item) => item.id === over?.id);
+            const newEvents = arrayMove(historyEvents, oldIndex, newIndex).map((evt, idx) => ({
+                ...evt,
+                sort_order: idx
+            }));
+
+            setHistoryEvents(newEvents);
+
+            try {
+                const response = await fetch(`${API_URL}/history/reorder`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ items: newEvents.map(evt => evt.id) })
+                });
+                if (!response.ok) throw new Error();
+                showNotification('Ordre mis à jour');
+                // Refresh to be certain
+                fetchHistory();
+            } catch (error) {
+                setHistoryEvents(oldEvents);
+                showNotification('Erreur lors du réordonnancement', 'error');
+            }
+        }
+    };
+
+
+
+    const handleHistoryFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const selectedFile = e.target.files[0];
+            setHistoryFile(selectedFile);
+            setHistoryPreviewUrl(URL.createObjectURL(selectedFile));
+        }
+    };
+
+    const handleHistoryEdit = (evt: HistoryEvent) => {
+        setEditingHistory(evt);
+        setHistoryFormData({
+            year: evt.year || '',
+            title: evt.title || '',
+            content: evt.content || '',
+            era: evt.era || 'classic',
+            icon: evt.icon || 'Music'
+        });
+        setHistoryPreviewUrl(evt.image_url);
+        setHistoryFile(null);
+        setShowHistoryForm(true);
+    };
+
+    const handleHistoryDelete = (id: string) => {
+        setDeleteHistoryConfirmId(id);
+    };
+
+    const confirmHistoryDelete = async () => {
+        if (!deleteHistoryConfirmId) return;
+        try {
+            const response = await fetch(`${API_URL}/history/${deleteHistoryConfirmId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (response.ok) {
+                showHistoryNotification('Événement supprimé');
+                fetchHistory();
+            } else {
+                throw new Error('Erreur suppression');
+            }
+        } catch (error) {
+            showHistoryNotification('Erreur lors de la suppression', 'error');
+        } finally {
+            setDeleteHistoryConfirmId(null);
+        }
+    };
+
+    const handleHistorySubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setUploadingHistory(true);
+        try {
+            let imageUrl = editingHistory?.image_url;
+            if (historyFile) {
+                const uploadData = new FormData();
+                uploadData.append('file', historyFile);
+                const uploadResponse = await fetch(`${API_URL}/upload`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: uploadData
+                });
+                if (!uploadResponse.ok) throw new Error('Erreur upload image');
+                const uploadResult = await uploadResponse.json();
+                imageUrl = uploadResult.filePath;
+            }
+
+            const body = {
+                ...historyFormData,
+                image_url: imageUrl,
+                sort_order: editingHistory ? editingHistory.sort_order : historyEvents.length
+            };
+
+            const url = editingHistory ? `${API_URL}/history/${editingHistory.id}` : `${API_URL}/history`;
+            const method = editingHistory ? 'PUT' : 'POST';
+
+            const response = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify(body)
+            });
+
+            if (!response.ok) throw new Error('Erreur sauvegarde histoire');
+            showHistoryNotification(editingHistory ? 'Événement modifié' : 'Événement ajouté');
+            closeHistoryForm();
+            fetchHistory();
+        } catch (error: any) {
+            showHistoryNotification(error.message || 'Erreur inconnue', 'error');
+        } finally {
+            setUploadingHistory(false);
+        }
+    };
+
+    const closeHistoryForm = () => {
+        setShowHistoryForm(false);
+        setHistoryFile(null);
+        setHistoryPreviewUrl(null);
+        setEditingHistory(null);
+        setHistoryFormData({ year: '', title: '', content: '', era: 'classic', icon: 'Music' });
     };
 
 
@@ -347,7 +523,6 @@ const AdminTheme = () => {
     const handleSettingsSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setSavingSettings(true);
-        setSettingsNotification(null);
 
         try {
             let headerLogoUrl = settings.header_logo_url || settings.site_logo_url;
@@ -390,13 +565,13 @@ const AdminTheme = () => {
             };
 
             await updateSettings(newSettings);
-            setSettingsNotification({ message: 'Configuration sauvegardée !', type: 'success' });
+            showNotification('Configuration sauvegardée !');
             
             // Clean up files
             setHeaderLogoFile(null);
             setSecondaryLogoFile(null);
-        } catch (error) {
-            setSettingsNotification({ message: 'Erreur lors de la sauvegarde.', type: 'error' });
+        } catch (error: any) {
+            showNotification(error.message || 'Erreur lors de la sauvegarde.', 'error');
         } finally {
                 setSavingSettings(false);
         }
@@ -452,18 +627,19 @@ const AdminTheme = () => {
                             <ImageIcon className="h-5 w-5 mr-2" />
                             En-têtes de Pages
                         </button>
+                        <button
+                            onClick={() => setActiveTab('history')}
+                            className={`flex items-center px-6 py-4 font-medium transition-colors ${activeTab === 'history' ? 'text-teal-600 border-b-2 border-teal-600 bg-teal-50/50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}
+                        >
+                            <BookOpen className="h-5 w-5 mr-2" />
+                            Notre Histoire
+                        </button>
                     </div>
 
                     <div className="p-6 md:p-8">
                         {/* --- TAB: GENERAL --- */}
                         {activeTab === 'general' && (
                             <form onSubmit={handleSettingsSubmit} className="max-w-2xl">
-                                {settingsNotification && (
-                                    <div className={`mb-6 p-4 rounded-lg shadow-sm ${settingsNotification.type === 'success' ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-red-100 text-red-800 border border-red-200'}`}>
-                                        {settingsNotification.message}
-                                    </div>
-                                )}
-
                                 <div className="space-y-8">
                                     {/* Logos Section */}
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -612,12 +788,6 @@ const AdminTheme = () => {
                                     </button>
                                 </div>
 
-                                {carouselNotification && (
-                                    <div className={`mb-4 p-4 rounded-lg shadow-sm ${carouselNotification.type === 'success' ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-red-100 text-red-800 border border-red-200'}`}>
-                                        {carouselNotification.message}
-                                    </div>
-                                )}
-
                                 {/* Carousel Configuration Form */}
                                 <div className="bg-slate-50 border border-slate-200 rounded-xl p-6 mb-8">
                                     <h4 className="font-semibold text-slate-800 mb-4">Configuration du Carrousel</h4>
@@ -631,7 +801,16 @@ const AdminTheme = () => {
                                                 min="1"
                                                 max="60"
                                                 value={carouselInterval}
-                                                onChange={(e) => setCarouselInterval(parseInt(e.target.value) || 5)}
+                                                onChange={async (e) => {
+                                                    const val = parseInt(e.target.value) || 5;
+                                                    setCarouselInterval(val);
+                                                    try {
+                                                        await updateSettings({ carousel_interval: (val * 1000).toString() });
+                                                        showNotification('Intervalle mis à jour');
+                                                    } catch (err) {
+                                                        showNotification('Erreur de mise à jour', 'error');
+                                                    }
+                                                }}
                                                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none"
                                             />
                                         </div>
@@ -639,71 +818,64 @@ const AdminTheme = () => {
                                     <p className="text-xs text-slate-500 mt-2">Définit le temps d'attente avant de passer à l'image suivante automatiquement.</p>
                                 </div>
 
-                                {/* Draggable List */}
-                                <div className="bg-slate-50 rounded-xl p-4 border border-slate-200 max-h-[600px] overflow-y-auto">
-                                    <DndContext
-                                        sensors={sensors}
-                                        collisionDetection={closestCenter}
-                                        onDragEnd={handleDragEnd}
-                                    >
-                                        <SortableContext
-                                            items={images.map(img => img.id)}
-                                            strategy={verticalListSortingStrategy}
-                                        >
-                                            {loadingImages ? (
-                                                <div className="text-center py-8">
-                                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600 mx-auto mb-2"></div>
-                                                    <p className="text-slate-500">Chargement...</p>
-                                                </div>
-                                            ) : images.length === 0 ? (
-                                                <div className="text-center py-12 text-slate-500">
-                                                    <ImageIcon className="h-10 w-10 mx-auto mb-2 opacity-30" />
-                                                    <p>Aucune image dans le carrousel.</p>
-                                                    <button onClick={() => setShowCarouselForm(true)} className="text-teal-600 hover:underline mt-2">
-                                                        Ajouter la première image
-                                                    </button>
-                                                </div>
-                                            ) : (
-                                                images.map((img) => (
-                                                    <SortableItem key={img.id} id={img.id}>
-                                                        <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm mb-3 flex items-center gap-4 group hover:shadow-md transition-shadow cursor-default">
-                                                            <div className="cursor-grab p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded hidden group-hover:block" title="Déplacer">
-                                                                <GripVertical className="h-5 w-5" />
-                                                            </div>
-                                                             <div className="h-16 w-24 bg-slate-100 rounded overflow-hidden flex-shrink-0">
-                                                                <img src={img.image_url.startsWith('http') ? img.image_url : `${BASE_URL}${img.image_url}`} alt={img.title} className="w-full h-full object-cover" />
-                                                            </div>
-                                                            <div className="flex-grow min-w-0">
-                                                                <h4 className="font-semibold text-slate-800 truncate">{img.title || 'Sans titre'}</h4>
-                                                                <div className="flex items-center gap-2 mt-1">
-                                                                    <span className="font-semibold text-slate-800">{img.title || 'Sans titre'}</span>
-                                                                    {!img.is_active && <span className="bg-slate-200 text-slate-500 text-xs px-2 py-0.5 rounded-full">Désactivé</span>}
-                                                                </div>
-                                                            </div>
-                                                            <div className="flex items-center space-x-2">
-                                                                <button onClick={() => handleCarouselEdit(img)} className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors">
-                                                                    <Layout className="h-4 w-4" />
-                                                                </button>
-                                                                <button onClick={() => handleCarouselDelete(img.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"><Trash2 className="h-4 w-4" /></button>
-                                                            </div>
-                                                        </div>
-                                                    </SortableItem>
-                                                ))
-                                            )}
-                                        </SortableContext>
-                                    </DndContext>
-                                </div>
+                                 {/* Draggable List */}
+                                 <div className="mt-4">
+                                     <DndContext
+                                         sensors={sensors}
+                                         collisionDetection={closestCenter}
+                                         onDragEnd={handleDragEnd}
+                                     >
+                                         <SortableContext
+                                             items={images.map(img => img.id)}
+                                             strategy={verticalListSortingStrategy}
+                                         >
+                                             {loadingImages ? (
+                                                 <div className="text-center py-8">
+                                                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600 mx-auto mb-2"></div>
+                                                     <p className="text-slate-500">Chargement...</p>
+                                                 </div>
+                                             ) : images.length === 0 ? (
+                                                 <div className="text-center py-12 text-slate-500">
+                                                     <ImageIcon className="h-10 w-10 mx-auto mb-2 opacity-30" />
+                                                     <p>Aucune image dans le carrousel.</p>
+                                                     <button onClick={() => setShowCarouselForm(true)} className="text-teal-600 hover:underline mt-2">
+                                                         Ajouter la première image
+                                                     </button>
+                                                 </div>
+                                             ) : (
+                                                 images.map((img) => (
+                                                     <SortableItem key={img.id} id={img.id}>
+                                                         <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm mb-3 flex items-center gap-4 group hover:shadow-md transition-shadow cursor-default">
+                                                             <div className="cursor-grab p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded hidden group-hover:block" title="Déplacer">
+                                                                 <GripVertical className="h-5 w-5" />
+                                                             </div>
+                                                              <div className="h-16 w-24 bg-slate-100 rounded overflow-hidden flex-shrink-0">
+                                                                 <img src={img.image_url.startsWith('http') ? img.image_url : `${BASE_URL}${img.image_url}`} alt={img.title} className="w-full h-full object-cover" />
+                                                             </div>
+                                                             <div className="flex-grow min-w-0">
+                                                                 <h4 className="font-semibold text-slate-800 truncate">{img.title || 'Sans titre'}</h4>
+                                                                 <div className="flex items-center gap-2 mt-1">
+                                                                     <span className="font-semibold text-slate-800">{img.title || 'Sans titre'}</span>
+                                                                     {!img.is_active && <span className="bg-slate-200 text-slate-500 text-xs px-2 py-0.5 rounded-full">Désactivé</span>}
+                                                                 </div>
+                                                             </div>
+                                                             <div className="flex items-center justify-end space-x-3">
+                                                                 <button onClick={() => handleCarouselEdit(img)} title="Modifier" className="p-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-all duration-300 hover:scale-110">
+                                                                     <Edit size={18} />
+                                                                 </button>
+                                                                 <button onClick={() => handleCarouselDelete(img.id)} title="Supprimer" className="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-all duration-300 hover:scale-110">
+                                                                     <Trash2 size={18} />
+                                                                 </button>
+                                                             </div>
+                                                         </div>
+                                                     </SortableItem>
+                                                 ))
+                                             )}
+                                         </SortableContext>
+                                     </DndContext>
+                                 </div>
 
-                                <div className="mt-8 pt-6 border-t border-slate-200">
-                                    <button
-                                        onClick={handleGlobalCarouselSave}
-                                        disabled={savingSettings}
-                                        className="w-full md:w-auto inline-flex items-center justify-center px-6 py-3 bg-teal-600 text-white rounded-xl hover:bg-teal-700 transition-colors shadow-lg shadow-teal-200 disabled:opacity-70 font-semibold"
-                                    >
-                                        {savingSettings ? <div className="animate-spin rounded-full h-5 w-5 border-2 border-white mr-2" /> : <Save className="h-5 w-5 mr-2" />}
-                                        Enregistrer toute la configuration
-                                    </button>
-                                </div>
+
                             </div>
                         )}
                         {/* --- TAB: HEADERS --- */}
@@ -711,12 +883,6 @@ const AdminTheme = () => {
                             <div>
                                 <h3 className="text-lg font-bold text-slate-800 mb-6">En-têtes de Pages</h3>
                                 
-                                {carouselNotification && (
-                                    <div className={`mb-6 p-4 rounded-lg shadow-sm ${carouselNotification.type === 'success' ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-red-100 text-red-800 border border-red-200'}`}>
-                                        {carouselNotification.message}
-                                    </div>
-                                )}
-
                                 <p className="text-slate-500 mb-8">Personnalisez les images d'en-tête pour les différentes sections du site.</p>
 
                                 <div className="grid grid-cols-1 gap-6">
@@ -766,7 +932,7 @@ const AdminTheme = () => {
                                                                 }
                                                             } catch (err) {
                                                                 console.error(err);
-                                                                showCarouselNotification('Erreur upload', 'error');
+                                                                showNotification('Erreur upload', 'error');
                                                             } finally {
                                                                 setHeaderUploading(null);
                                                             }
@@ -801,7 +967,76 @@ const AdminTheme = () => {
                                 </div>
                             </div>
                         )}
+
+                        {/* --- TAB: HISTORY --- */}
+                        {activeTab === 'history' && (
+                            <div>
+                                <div className="flex justify-between items-center mb-6">
+                                    <h3 className="text-lg font-bold text-slate-800">Frise Chronologique</h3>
+                                    <button
+                                        onClick={() => setShowHistoryForm(true)}
+                                        className="inline-flex items-center px-4 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-900 transition-colors shadow-sm text-sm"
+                                    >
+                                        <Plus className="h-4 w-4 mr-2" />
+                                        Ajouter une époque
+                                    </button>
+                                </div>
+
+                                {/* Draggable List */}
+                                <div className="mt-4">
+                                    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleHistoryDragEnd}>
+                                        <SortableContext items={historyEvents.map(evt => evt.id)} strategy={verticalListSortingStrategy}>
+                                            {loadingHistory ? (
+                                                <div className="text-center py-8">
+                                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600 mx-auto mb-2"></div>
+                                                    <p className="text-slate-500">Chargement...</p>
+                                                </div>
+                                            ) : historyEvents.length === 0 ? (
+                                                <div className="text-center py-12 text-slate-500">
+                                                    <BookOpen className="h-10 w-10 mx-auto mb-2 opacity-30" />
+                                                    <p>Aucun événement dans l'histoire.</p>
+                                                </div>
+                                            ) : (
+                                                historyEvents.map((evt) => (
+                                                    <SortableItem key={evt.id} id={evt.id}>
+                                                        <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm mb-3 flex items-center gap-4 group hover:shadow-md transition-shadow cursor-default">
+                                                            <div className="cursor-grab p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded hidden group-hover:block" title="Déplacer">
+                                                                <GripVertical className="h-5 w-5" />
+                                                            </div>
+                                                            {evt.image_url && (
+                                                                <div className="h-16 w-24 bg-slate-100 rounded overflow-hidden flex-shrink-0">
+                                                                    <img src={evt.image_url.startsWith('http') ? evt.image_url : `${BASE_URL}${evt.image_url}`} alt={evt.year} className="w-full h-full object-cover" />
+                                                                </div>
+                                                            )}
+                                                            <div className="flex-grow min-w-0">
+                                                                <h4 className="font-bold text-slate-800 text-lg">{evt.year} - {evt.title}</h4>
+                                                                <p className="text-sm text-slate-500 truncate">{evt.content}</p>
+                                                                <div className="flex gap-2 mt-2">
+                                                                    <span className="text-xs bg-slate-100 px-2 py-1 rounded border border-slate-200 text-slate-600 font-medium">Époque: {evt.era}</span>
+                                                                    <span className="text-xs bg-slate-100 px-2 py-1 rounded border border-slate-200 text-slate-600 font-medium">Icône: {evt.icon}</span>
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex items-center justify-end space-x-3">
+                                                                <button onClick={() => handleHistoryEdit(evt)} title="Modifier" className="p-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-all duration-300 hover:scale-110">
+                                                                    <Edit size={18} />
+                                                                </button>
+                                                                <button onClick={() => handleHistoryDelete(evt.id)} title="Supprimer" className="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-all duration-300 hover:scale-110">
+                                                                    <Trash2 size={18} />
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </SortableItem>
+                                                ))
+                                            )}
+                                        </SortableContext>
+                                    </DndContext>
+                                </div>
+
+
+                            </div>
+                        )}
                     </div>
+
                 </div>
             </div>
 
@@ -932,6 +1167,115 @@ const AdminTheme = () => {
                     </div>
                 )
             }
+            {/* History Form Modal */}
+            {
+                showHistoryForm && (
+                    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
+                        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl my-8">
+                            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                                <h2 className="text-xl font-bold text-slate-800">{editingHistory ? 'Modifier l\'époque' : 'Nouvelle époque'}</h2>
+                                <button onClick={closeHistoryForm} className="text-slate-400 hover:text-slate-600">
+                                    <X className="h-6 w-6" />
+                                </button>
+                            </div>
+                            <form onSubmit={handleHistorySubmit} className="p-6 space-y-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="block text-sm font-medium text-slate-700">Année(s)</label>
+                                        <input type="text" value={historyFormData.year} onChange={(e) => setHistoryFormData({ ...historyFormData, year: e.target.value })} className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none" placeholder="Ex: 1886" required />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="block text-sm font-medium text-slate-700">Titre</label>
+                                        <input type="text" value={historyFormData.title} onChange={(e) => setHistoryFormData({ ...historyFormData, title: e.target.value })} className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none" required />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-slate-700">Contenu / Anecdote</label>
+                                    <textarea value={historyFormData.content} onChange={(e) => setHistoryFormData({ ...historyFormData, content: e.target.value })} className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none min-h-[120px]" required />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="block text-sm font-medium text-slate-700">Style d'époque</label>
+                                        <select value={historyFormData.era} onChange={(e) => setHistoryFormData({ ...historyFormData, era: e.target.value as any })} className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
+                                            <option value="vintage">Vintage (Sépia Fort + Ombre)</option>
+                                            <option value="retro">Rétro (Sépia Léger)</option>
+                                            <option value="classic">Classique</option>
+                                            <option value="modern">Moderne</option>
+                                        </select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="block text-sm font-medium text-slate-700">Icône</label>
+                                        <select value={historyFormData.icon} onChange={(e) => setHistoryFormData({ ...historyFormData, icon: e.target.value })} className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
+                                            <option value="Music">Musique (défaut)</option>
+                                            <option value="Award">Récompense / Prix</option>
+                                            <option value="Globe">Monde / Voyage</option>
+                                            <option value="Users">Groupe / Rencontre</option>
+                                            <option value="Star">Étoile / Important</option>
+                                            <option value="Scroll">Parchemin / Début</option>
+                                            <option value="Mic2">Micro / Concert</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-slate-700">Photo historique (optionnelle)</label>
+                                    <div className="relative border-2 border-dashed border-slate-300 rounded-xl p-4 text-center hover:bg-slate-50 transition-colors">
+                                        <input type="file" accept="image/*" onChange={handleHistoryFileChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-50" />
+                                        {historyPreviewUrl ? (
+                                            <div className="relative h-40 w-full mx-auto rounded-lg overflow-hidden flex justify-center bg-slate-100">
+                                                <img src={historyPreviewUrl?.startsWith('http') || historyPreviewUrl?.startsWith('blob:') ? historyPreviewUrl : `${BASE_URL}${historyPreviewUrl}`} alt="Preview" className="h-full object-contain" />
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-2 py-4">
+                                                <ImageIcon className="h-8 w-8 text-slate-400 mx-auto" />
+                                                <p className="text-sm text-slate-500">Cliquez pour choisir une image</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="pt-4 flex justify-end space-x-3">
+                                    <button type="button" onClick={closeHistoryForm} className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">Annuler</button>
+                                    <button type="submit" disabled={uploadingHistory} className="px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors shadow-lg shadow-teal-200 disabled:opacity-70 flex items-center">
+                                        {uploadingHistory && <div className="animate-spin rounded-full h-4 w-4 border-2 border-white mr-2" />}
+                                        {editingHistory ? 'Enregistrer' : 'Créer'}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )
+            }
+
+            {/* Delete Confirmation Modal for History */}
+            {
+                deleteHistoryConfirmId && (
+                    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                        <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden animate-fade-in-up">
+                            <div className="p-6 text-center">
+                                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4"><Trash2 className="h-8 w-8 text-red-600" /></div>
+                                <h3 className="text-xl font-bold text-slate-800 mb-2">Supprimer l'époque ?</h3>
+                                <p className="text-slate-500 mb-6">Cette action est irréversible.</p>
+                                <div className="flex gap-3 justify-center">
+                                    <button onClick={() => setDeleteHistoryConfirmId(null)} className="px-5 py-2.5 text-slate-600 font-medium hover:bg-slate-100 rounded-xl transition-colors">Annuler</button>
+                                    <button onClick={confirmHistoryDelete} className="px-5 py-2.5 bg-red-600 text-white font-medium rounded-xl hover:bg-red-700 transition-colors shadow-lg shadow-red-200">Supprimer</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
+
+            {/* Notification */}
+            {notification && (
+                <div className="fixed top-5 right-5 p-4 rounded-xl shadow-2xl text-white z-[100] transition-all duration-300 animate-in fade-in slide-in-from-top-4" style={{ backgroundColor: notification.type === 'success' ? '#10b981' : '#ef4444' }}>
+                    <div className="flex items-center space-x-3 text-sm font-semibold">
+                        <span>{notification.message}</span>
+                    </div>
+                </div>
+            )}
         </div >
     );
 };
