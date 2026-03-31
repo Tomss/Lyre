@@ -24,3 +24,4 @@ dist-ssr
 *.sw?
 .env
 batch_migrate.bat
+uploads/
