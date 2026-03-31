@@ -159,18 +159,12 @@ const HistoryTimeline = () => {
                                     {/* Image or Spacer for Desktop Layout */}
                                     <div className="flex-1 w-full hidden md:flex justify-center px-4 md:px-24 items-center">
                                         {item.image_url ? (
-                                            <div className={`relative w-full h-64 max-w-md rounded-2xl overflow-hidden shadow-2xl transform hover:scale-[1.03] transition-all duration-500 group flex items-center justify-center 
-                                                ${item.era === 'vintage' ? 'bg-[#f4e4bc]' : 
-                                                  item.era === 'retro' ? 'bg-slate-200' : 
-                                                  item.era === 'classic' ? 'bg-indigo-50' : 
-                                                  'bg-teal-50/50'}`}>
+                                            <div className="relative w-full h-64 max-w-md rounded-xl overflow-hidden shadow-lg transform hover:scale-[1.02] transition-all duration-500 group flex items-center justify-center bg-white/50">
                                                 <img
                                                     src={item.image_url.startsWith('http') ? item.image_url : `${BASE_URL}${item.image_url}`}
                                                     alt={item.title}
-                                                    className="w-full h-full object-contain p-2"
+                                                    className="w-full h-full object-contain"
                                                 />
-                                                {/* Vintage Overlay Effect (subtle on edges) */}
-                                                {(item.era === 'vintage' || item.era === 'retro') && <div className="absolute inset-0 bg-sepia-[.2] pointer-events-none mix-blend-multiply opacity-30 shadow-inner"></div>}
                                             </div>
                                         ) : (
                                             <div className="w-full" />
