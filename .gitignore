@@ -24,4 +24,14 @@ dist-ssr
 *.sw?
 .env
 batch_migrate.bat
+# Migration and sync scripts
+server/migrate_*.ts
+server/sync_*.ts
+server/*_check.ts
+server/migration_*.ts
+server/list_urls.ts
+server/check_prod_urls.ts
+server/final_check.ts
+server/local_urls_check.ts
+
 uploads/
