@@ -208,16 +208,6 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 // Serve static files from the 'uploads' directory
 app.use('/uploads', express.static('uploads'));
 
-// Serve static files from the React app
-const distPath = path.join(__dirname, '../dist');
-const distPathLocal = path.join(__dirname, '../../dist');
-
-if (require('fs').existsSync(distPath)) {
-  app.use(express.static(distPath));
-} else if (require('fs').existsSync(distPathLocal)) {
-  app.use(express.static(distPathLocal));
-}
-
 // API Routes
 app.use('/api/auth', authRouter);
 app.use('/api/events', eventsRouter);
@@ -241,6 +231,11 @@ app.use('/api/partners', partnersRouter);
 app.use('/api/news', newsRouter);
 app.use('/api/history', historyRouter);
 
+
+app.get('/', (req, res) => {
+  res.send('Hello from Lyre Backend!');
+});
+
 app.get('/api/test-db', async (req, res) => {
   try {
     const [rows] = await pool.query('SELECT 1 + 1 AS solution');
@@ -261,20 +256,6 @@ app.get('/api/events-push', (req, res) => {
   res.flushHeaders();
   
   addSseClient(res);
-});
-
-// The "catchall" handler: for any request that doesn't
-// match one above, send back React's index.html file.
-app.get('*', (req, res) => {
-  if (req.url.startsWith('/api')) return res.status(404).send('API endpoint not found');
-  
-  if (require('fs').existsSync(path.join(distPath, 'index.html'))) {
-    res.sendFile(path.join(distPath, 'index.html'));
-  } else if (require('fs').existsSync(path.join(distPathLocal, 'index.html'))) {
-    res.sendFile(path.join(distPathLocal, 'index.html'));
-  } else {
-    res.status(200).send('Backend is running. Frontend build not found.');
-  }
 });
 
 // Global error handler
