@@ -29,15 +29,23 @@ router.get('/', authenticateToken, async (req, res) => {
           e.id, e.title, 
           DATE_FORMAT(e.event_date, '%Y-%m-%dT%H:%i:%s') as event_date,
           e.location, e.practical_info, e.event_type,
-          JSON_ARRAYAGG(JSON_OBJECT('id', o.id, 'name', o.name)) as orchestras
+          CASE 
+            WHEN COUNT(o.id) > 0 THEN 
+              JSON_ARRAYAGG(JSON_OBJECT('id', o.id, 'name', o.name))
+            ELSE 
+              JSON_ARRAY()
+          END as orchestras
         FROM events e
-        JOIN event_orchestras eo ON e.id = eo.event_id
-        JOIN orchestras o ON eo.orchestra_id = o.id
-        WHERE e.event_date > NOW() AND e.id IN (
-          SELECT eo.event_id 
-          FROM event_orchestras eo 
-          JOIN user_orchestras uo ON eo.orchestra_id = uo.orchestra_id 
-          WHERE uo.user_id = ?
+        LEFT JOIN event_orchestras eo ON e.id = eo.event_id
+        LEFT JOIN orchestras o ON eo.orchestra_id = o.id
+        WHERE e.event_date > NOW() AND (
+          e.id IN (
+            SELECT eo2.event_id 
+            FROM event_orchestras eo2 
+            JOIN user_orchestras uo ON eo2.orchestra_id = uo.orchestra_id 
+            WHERE uo.user_id = ?
+          )
+          OR NOT EXISTS (SELECT 1 FROM event_orchestras eo3 WHERE eo3.event_id = e.id)
         )
         GROUP BY e.id
         ORDER BY e.event_date ASC
@@ -51,7 +59,16 @@ router.get('/', authenticateToken, async (req, res) => {
         LEFT JOIN morceaux m ON p.morceau_id = m.id
         LEFT JOIN instruments i ON p.instrument_id = i.id
         WHERE p.instrument_id IN (SELECT instrument_id FROM user_instruments WHERE user_id = ?)
-      `, [userId]),
+        AND (
+          p.morceau_id IN (
+            SELECT mo.morceau_id 
+            FROM morceau_orchestras mo 
+            JOIN user_orchestras uo ON mo.orchestra_id = uo.orchestra_id 
+            WHERE uo.user_id = ?
+          )
+          OR NOT EXISTS (SELECT 1 FROM morceau_orchestras mo2 WHERE mo2.morceau_id = p.morceau_id)
+        )
+      `, [userId, userId]),
       pool.query(`
         SELECT 
           al.*, 
