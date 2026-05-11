@@ -116,6 +116,7 @@ CREATE TABLE `morceaux` (
   `nom` text NOT NULL,
   `compositeur` text,
   `arrangement` text,
+  `is_active` tinyint(1) DEFAULT '1',
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
