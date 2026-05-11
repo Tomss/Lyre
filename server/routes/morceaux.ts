@@ -38,7 +38,7 @@ router.post('/', async (req, res) => {
   if (!['Admin', 'Gestionnaire'].includes((req as any).user.role)) {
     return res.status(403).json({ message: 'AccÃ¨s refusÃ©.' });
   }
-  const { nom, compositeur, arrangement, orchestra_ids } = req.body;
+  const { nom, compositeur, arrangement, orchestra_ids, is_active } = req.body;
   if (!nom || !orchestra_ids || orchestra_ids.length === 0) {
     return res.status(400).json({ message: 'Nom et au moins un orchestre sont requis.' });
   }
@@ -48,8 +48,8 @@ router.post('/', async (req, res) => {
     await connection.beginTransaction();
     const newMorceauId = crypto.randomUUID();
     await connection.query(
-      'INSERT INTO morceaux (id, nom, compositeur, arrangement) VALUES (?, ?, ?, ?)',
-      [newMorceauId, nom, compositeur, arrangement]
+      'INSERT INTO morceaux (id, nom, compositeur, arrangement, is_active) VALUES (?, ?, ?, ?, ?)',
+      [newMorceauId, nom, compositeur, arrangement, is_active !== undefined ? is_active : 1]
     );
     for (const orchestra_id of orchestra_ids) {
       await connection.query(
@@ -75,7 +75,7 @@ router.put('/:id', async (req, res) => {
     return res.status(403).json({ message: 'AccÃ¨s refusÃ©.' });
   }
   const { id } = req.params;
-  const { nom, compositeur, arrangement, orchestra_ids } = req.body;
+  const { nom, compositeur, arrangement, orchestra_ids, is_active } = req.body;
   if (!nom || !orchestra_ids || orchestra_ids.length === 0) {
     return res.status(400).json({ message: 'Nom et au moins un orchestre sont requis.' });
   }
@@ -84,8 +84,8 @@ router.put('/:id', async (req, res) => {
   try {
     await connection.beginTransaction();
     await connection.query(
-      'UPDATE morceaux SET nom = ?, compositeur = ?, arrangement = ? WHERE id = ?',
-      [nom, compositeur, arrangement, id]
+      'UPDATE morceaux SET nom = ?, compositeur = ?, arrangement = ?, is_active = ? WHERE id = ?',
+      [nom, compositeur, arrangement, is_active !== undefined ? is_active : 1, id]
     );
     await connection.query('DELETE FROM morceau_orchestras WHERE morceau_id = ?', [id]);
     for (const orchestra_id of orchestra_ids) {

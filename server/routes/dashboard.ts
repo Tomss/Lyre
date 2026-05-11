@@ -59,6 +59,7 @@ router.get('/', authenticateToken, async (req, res) => {
         LEFT JOIN morceaux m ON p.morceau_id = m.id
         LEFT JOIN instruments i ON p.instrument_id = i.id
         WHERE p.instrument_id IN (SELECT instrument_id FROM user_instruments WHERE user_id = ?)
+        AND m.is_active = 1
         AND (
           p.morceau_id IN (
             SELECT mo.morceau_id 

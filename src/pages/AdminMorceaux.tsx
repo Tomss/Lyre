@@ -13,6 +13,7 @@ interface Morceau {
   created_at: string;
   partitions_count?: number;
   orchestras: Orchestra[];
+  is_active: number | boolean;
 }
 
 interface Orchestra {
@@ -55,6 +56,7 @@ const AdminMorceaux = () => {
     compositeur: '',
     arrangement: '',
     orchestra_ids: [] as string[],
+    is_active: true,
   });
 
   useEffect(() => {
@@ -113,8 +115,13 @@ const AdminMorceaux = () => {
   }, [isAuthenticated, currentUser, token]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const { name, value, type } = e.target;
+    if (type === 'checkbox') {
+      const checked = (e.target as HTMLInputElement).checked;
+      setFormData((prev) => ({ ...prev, [name]: checked }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleOrchestraChange = (orchestraId: string, checked: boolean) => {
@@ -194,6 +201,7 @@ const AdminMorceaux = () => {
       compositeur: morceau.compositeur || '',
       arrangement: morceau.arrangement || '',
       orchestra_ids: morceau.orchestras?.map(o => o.id) || [],
+      is_active: morceau.is_active !== undefined ? !!morceau.is_active : true,
     });
     setShowAddForm(true);
   };
@@ -201,7 +209,7 @@ const AdminMorceaux = () => {
   const cancelEdit = () => {
     setEditingMorceau(null);
     setShowAddForm(false);
-    setFormData({ nom: '', compositeur: '', arrangement: '', orchestra_ids: [] });
+    setFormData({ nom: '', compositeur: '', arrangement: '', orchestra_ids: [], is_active: true });
   };
 
   const clearAllFilters = () => {
@@ -386,7 +394,16 @@ const AdminMorceaux = () => {
                       {orchestraMorceaux.map(morceau => (
                         <div key={morceau.id} className="p-4 flex flex-col md:flex-row md:items-center md:justify-between hover:bg-slate-50/80 transition-colors duration-200">
                           <div className="flex-1 mb-4 md:mb-0">
-                            <p className="font-semibold text-slate-800">{morceau.nom}</p>
+                            <div className="flex items-center gap-3">
+                              <p className={`font-semibold ${morceau.is_active === 0 || morceau.is_active === false ? 'text-slate-400 line-through' : 'text-slate-800'}`}>
+                                {morceau.nom}
+                              </p>
+                              {(morceau.is_active === 0 || morceau.is_active === false) && (
+                                <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 text-xs font-medium border border-slate-200">
+                                  Désactivé
+                                </span>
+                              )}
+                            </div>
                             <p className="text-sm text-slate-500 flex items-center mt-1">
                               <Music className="w-3 h-3 mr-1.5 opacity-50" />
                               {morceau.compositeur || 'Compositeur inconnu'}
@@ -451,6 +468,19 @@ const AdminMorceaux = () => {
                                 </label>
                                 <input type="text" name="arrangement" value={formData.arrangement} onChange={handleInputChange} placeholder="Ex: A. Waignein" className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-slate-50/30 focus:bg-white text-sm" />
                             </div>
+                        </div>
+                        
+                        <div className="pt-2 border-t border-slate-100 mt-4">
+                          <label className="flex items-center space-x-3 cursor-pointer group">
+                            <div className="relative inline-flex items-center cursor-pointer">
+                              <input type="checkbox" name="is_active" checked={formData.is_active} onChange={handleInputChange} className="sr-only peer" />
+                              <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                            </div>
+                            <div>
+                              <span className="text-sm font-semibold text-slate-700 block">Morceau Actif</span>
+                              <span className="text-xs text-slate-500">Un morceau désactivé ne sera pas visible par les musiciens sur leur tableau de bord</span>
+                            </div>
+                          </label>
                         </div>
                     </div>
                 </div>
