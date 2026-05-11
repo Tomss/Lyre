@@ -766,7 +766,7 @@ const AdminUsers = () => {
                       </span>
                     </div>
                   </div>
-                  <ChevronDown-180/>
+                  <ChevronDown className="text-slate-400" />
                 </div>
                 {expandedRoles.has(role) && (
                   <div className="divide-y divide-slate-100">
@@ -925,7 +925,7 @@ const AdminUsers = () => {
                                         <option value="Gestionnaire">🛠️ Gestionnaire</option>
                                         <option value="Admin">⚡ Admin</option>
                                     </select>
-                                    <ChevronDown-180/>
+                                    <ChevronDown className="text-slate-400" />
                                 </div>
                             </div>
                             {formData.role === 'Admin' && (
@@ -1058,3 +1058,4 @@ const AdminUsers = () => {
 };
 
 export default AdminUsers;
+

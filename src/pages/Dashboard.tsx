@@ -711,7 +711,7 @@ const Dashboard = () => {
                             {events.length}
                           </span>
                         </h3>
-                        {isExpanded ? <ChevronUp className="text-slate-400" /> : <ChevronDown className="text-slate-400" />}
+                        <ChevronDown className="text-slate-400" />
                       </button>
                       {isExpanded && (
                         <ul className="p-5 space-y-4 bg-white/30">
@@ -786,7 +786,7 @@ const Dashboard = () => {
                                         >
                                           <Info className="h-4 w-4" />
                                           Plus d'infos
-                                          {isPracticalInfoExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                                          <ChevronDown size={14} />
                                         </button>
                                         
                                         {isPracticalInfoExpanded && (

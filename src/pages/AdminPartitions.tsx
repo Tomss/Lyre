@@ -651,7 +651,7 @@ const AdminPartitions = () => {
                       </span>
                     </div>
                   </div>
-                  <ChevronDown-180/>
+                  <ChevronDown className="text-slate-400" />
                 </div>
                 {expandedMorceaux.has(morceau.id) && (
                   <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-t border-slate-100 bg-slate-50/30">
@@ -722,7 +722,7 @@ const AdminPartitions = () => {
                                       <option value="">Sélectionner un morceau</option>
                                       {morceaux.map(m => <option key={m.id} value={m.id}>{m.nom}</option>)}
                                     </select>
-                                    <ChevronDown-180/>
+                                    <ChevronDown className="text-slate-400" />
                                 </div>
                             </div>
                             <div>
@@ -734,7 +734,7 @@ const AdminPartitions = () => {
                                       <option value="">Sélectionner un instrument</option>
                                       {instruments.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}
                                     </select>
-                                    <ChevronDown-180/>
+                                    <ChevronDown className="text-slate-400" />
                                 </div>
                             </div>
                         </div>
@@ -818,3 +818,4 @@ const AdminPartitions = () => {
 };
 
 export default AdminPartitions;
+

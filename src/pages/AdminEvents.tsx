@@ -444,7 +444,7 @@ const AdminEvents = () => {
                       </span>
                     </div>
                   </div>
-                  <ChevronDown-180/>
+                  <ChevronDown className="text-slate-400" />
                 </div>
                 {expandedTypes.has(type) && (
                   <div className="divide-y divide-slate-100">
@@ -548,7 +548,7 @@ const AdminEvents = () => {
                                         <option value="repetition">⏱️ Répétition</option>
                                         <option value="divers">✨ Divers</option>
                                     </select>
-                                    <ChevronDown-180/>
+                                    <ChevronDown className="text-slate-400" />
                                 </div>
                             </div>
                             
@@ -682,3 +682,4 @@ const AdminEvents = () => {
 };
 
 export default AdminEvents;
+

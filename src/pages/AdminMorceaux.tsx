@@ -406,7 +406,7 @@ const AdminMorceaux = () => {
                         </span>
                       </div>
                     </div>
-                    <ChevronDown-180/>
+                    <ChevronDown className="text-slate-400" />
                   </div>
                   {expandedOrchestras.has(orchestra.id) && (
                     <div className="divide-y divide-slate-100">
@@ -583,3 +583,4 @@ const AdminMorceaux = () => {
 };
 
 export default AdminMorceaux;
+
