@@ -55,6 +55,21 @@ dotenv.config();
       console.log('[Migration] Succès : colonne last_login ajoutée.');
     }
 
+    // Migration: Ajout de la colonne is_active à la table morceaux
+    const [morceauxCols]: any = await pool.query(`
+      SELECT COUNT(*) as count 
+      FROM information_schema.COLUMNS 
+      WHERE TABLE_SCHEMA = DATABASE() 
+      AND TABLE_NAME = 'morceaux' 
+      AND COLUMN_NAME = 'is_active'
+    `);
+    
+    if (morceauxCols[0].count === 0) {
+      console.log('[Migration] Ajout de la colonne is_active à la table morceaux...');
+      await pool.query('ALTER TABLE morceaux ADD COLUMN is_active BOOLEAN DEFAULT 1');
+      console.log('[Migration] Succès : colonne is_active ajoutée.');
+    }
+
     // Migration: Création de la table activity_log
     const [tables]: any = await pool.query(`
       SELECT COUNT(*) as count 
