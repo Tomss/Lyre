@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, Navigate } from 'react-router-dom';
-import { LogOut, Users, Music, Music2, Calendar, Image, FileText, Download, ChevronRight, ChevronDown, User, UserCircle, Mail, MapPin, Info, Clock, Palette, Building2, Bell, Newspaper, Search, X } from 'lucide-react';
+import { ChevronUp,  LogOut, Users, Music, Music2, Calendar, Image, FileText, Download, ChevronRight, ChevronDown, User, UserCircle, Mail, MapPin, Info, Clock, Palette, Building2, Bell, Newspaper, Search, X  } from "lucide-react";
 import ActivityFeed, { Activity } from '../components/ActivityFeed';
 import { useAuth } from '../context/AuthContext';
 
