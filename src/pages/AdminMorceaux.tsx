@@ -37,6 +37,7 @@ const AdminMorceaux = () => {
   const [morceaux, setMorceaux] = useState<Morceau[]>([]);
   const [orchestras, setOrchestras] = useState<Orchestra[]>([]);
   const [orchestraFilter, setOrchestraFilter] = useState<string[]>([]);
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedOrchestras, setExpandedOrchestras] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
@@ -215,6 +216,7 @@ const AdminMorceaux = () => {
   const clearAllFilters = () => {
     setOrchestraFilter([]);
     setSearchTerm('');
+    setStatusFilter('all');
   };
 
   const filteredMorceaux = morceaux.filter(morceau => {
@@ -226,8 +228,12 @@ const AdminMorceaux = () => {
       morceau.orchestras.some(o => o.name.toLowerCase().includes(searchLower))
     );
     const matchesOrchestra = orchestraFilter.length === 0 || morceau.orchestras.some(o => orchestraFilter.includes(o.id));
+    const isActive = morceau.is_active !== 0 && morceau.is_active !== false;
+    const matchesStatus = statusFilter === 'all' || 
+                          (statusFilter === 'active' && isActive) || 
+                          (statusFilter === 'inactive' && !isActive);
 
-    return matchesOrchestra && matchesSearch;
+    return matchesOrchestra && matchesSearch && matchesStatus;
   });
 
   const morceauxByOrchestra = filteredMorceaux.reduce((acc, morceau) => {
@@ -337,17 +343,30 @@ const AdminMorceaux = () => {
           </div>
 
           <div className="flex flex-col lg:flex-row gap-6 pt-2 border-t border-slate-100">
-            <div className="flex-1">
-              <label className="block text-sm font-semibold text-slate-700 mb-3 flex items-center">
-                <Users className="w-4 h-4 mr-2 text-indigo-500" /> Filtrer par orchestre
-              </label>
-              <div className="flex flex-wrap gap-2">
-                <button onClick={() => setOrchestraFilter([])} className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${orchestraFilter.length === 0 ? 'bg-indigo-600 text-white shadow-md shadow-indigo-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>Tous</button>
-                {orchestras.map(orchestra => (
-                  <button key={orchestra.id} onClick={() => toggleOrchestraFilter(orchestra.id)} className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${orchestraFilter.includes(orchestra.id) ? 'bg-indigo-500 text-white shadow-md shadow-indigo-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
-                    {orchestra.name}
-                  </button>
-                ))}
+            <div className="flex-1 space-y-5">
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-3 flex items-center">
+                  <Users className="w-4 h-4 mr-2 text-indigo-500" /> Filtrer par orchestre
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  <button onClick={() => setOrchestraFilter([])} className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${orchestraFilter.length === 0 ? 'bg-indigo-600 text-white shadow-md shadow-indigo-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>Tous</button>
+                  {orchestras.map(orchestra => (
+                    <button key={orchestra.id} onClick={() => toggleOrchestraFilter(orchestra.id)} className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${orchestraFilter.includes(orchestra.id) ? 'bg-indigo-500 text-white shadow-md shadow-indigo-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
+                      {orchestra.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-3 flex items-center">
+                  <div className="w-2 h-2 rounded-full bg-indigo-500 mr-2"></div> Statut
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  <button onClick={() => setStatusFilter('all')} className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${statusFilter === 'all' ? 'bg-indigo-600 text-white shadow-md shadow-indigo-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>Tous</button>
+                  <button onClick={() => setStatusFilter('active')} className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${statusFilter === 'active' ? 'bg-emerald-500 text-white shadow-md shadow-emerald-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>Actifs</button>
+                  <button onClick={() => setStatusFilter('inactive')} className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${statusFilter === 'inactive' ? 'bg-slate-600 text-white shadow-md shadow-slate-200' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>Inactifs</button>
+                </div>
               </div>
             </div>
             
@@ -395,12 +414,16 @@ const AdminMorceaux = () => {
                         <div key={morceau.id} className="p-4 flex flex-col md:flex-row md:items-center md:justify-between hover:bg-slate-50/80 transition-colors duration-200">
                           <div className="flex-1 mb-4 md:mb-0">
                             <div className="flex items-center gap-3">
-                              <p className={`font-semibold ${morceau.is_active === 0 || morceau.is_active === false ? 'text-slate-400 line-through' : 'text-slate-800'}`}>
+                              <p className={`font-semibold ${morceau.is_active === 0 || morceau.is_active === false ? 'text-slate-500' : 'text-slate-800'}`}>
                                 {morceau.nom}
                               </p>
-                              {(morceau.is_active === 0 || morceau.is_active === false) && (
-                                <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 text-xs font-medium border border-slate-200">
-                                  Désactivé
+                              {morceau.is_active !== 0 && morceau.is_active !== false ? (
+                                <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100 text-[11px] font-bold tracking-wide">
+                                  Actif
+                                </span>
+                              ) : (
+                                <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200 text-[11px] font-bold tracking-wide">
+                                  Inactif
                                 </span>
                               )}
                             </div>
