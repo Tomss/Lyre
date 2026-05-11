@@ -444,7 +444,7 @@ const AdminEvents = () => {
                       </span>
                     </div>
                   </div>
-                  <ChevronRight className={`transform transition-transform duration-300 text-slate-400 ${expandedTypes.has(type) ? 'rotate-90' : ''}`} />
+                  <ChevronDown-180/>
                 </div>
                 {expandedTypes.has(type) && (
                   <div className="divide-y divide-slate-100">
@@ -548,7 +548,7 @@ const AdminEvents = () => {
                                         <option value="repetition">⏱️ Répétition</option>
                                         <option value="divers">✨ Divers</option>
                                     </select>
-                                    <ChevronRight className="absolute right-3 top-1/2 -translate-y-1/2 rotate-90 text-slate-400 pointer-events-none" size={16} />
+                                    <ChevronDown-180/>
                                 </div>
                             </div>
                             

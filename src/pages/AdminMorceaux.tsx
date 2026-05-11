@@ -406,7 +406,7 @@ const AdminMorceaux = () => {
                         </span>
                       </div>
                     </div>
-                    <ChevronRight className={`transform transition-transform duration-300 text-slate-400 ${expandedOrchestras.has(orchestra.id) ? 'rotate-90' : ''}`} />
+                    <ChevronDown-180/>
                   </div>
                   {expandedOrchestras.has(orchestra.id) && (
                     <div className="divide-y divide-slate-100">

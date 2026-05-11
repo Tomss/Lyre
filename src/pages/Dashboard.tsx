@@ -711,7 +711,7 @@ const Dashboard = () => {
                             {events.length}
                           </span>
                         </h3>
-                        {isExpanded ? <ChevronDown className="text-slate-400" /> : <ChevronRight className="text-slate-400" />}
+                        {isExpanded ? <ChevronUp className="text-slate-400" /> : <ChevronDown className="text-slate-400" />}
                       </button>
                       {isExpanded && (
                         <ul className="p-5 space-y-4 bg-white/30">

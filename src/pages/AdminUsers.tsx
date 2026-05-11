@@ -766,7 +766,7 @@ const AdminUsers = () => {
                       </span>
                     </div>
                   </div>
-                  <ChevronRight className={`transform transition-transform duration-300 text-slate-400 ${expandedRoles.has(role) ? 'rotate-90' : ''}`} />
+                  <ChevronDown-180/>
                 </div>
                 {expandedRoles.has(role) && (
                   <div className="divide-y divide-slate-100">
@@ -925,7 +925,7 @@ const AdminUsers = () => {
                                         <option value="Gestionnaire">🛠️ Gestionnaire</option>
                                         <option value="Admin">⚡ Admin</option>
                                     </select>
-                                    <ChevronRight className="absolute right-3 top-1/2 -translate-y-1/2 rotate-90 text-slate-400 pointer-events-none" size={14} />
+                                    <ChevronDown-180/>
                                 </div>
                             </div>
                             {formData.role === 'Admin' && (
