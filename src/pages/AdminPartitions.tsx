@@ -87,6 +87,7 @@ const AdminPartitions = () => {
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
+  const [selectedInstruments, setSelectedInstruments] = useState<{instrument_id: string, nom: string}[]>([{instrument_id: '', nom: ''}]);
 
 
   useEffect(() => {
@@ -274,7 +275,7 @@ const AdminPartitions = () => {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ ...formData, ...filePayload }),
+        body: JSON.stringify({ ...formData, instruments: selectedInstruments, ...filePayload }),
       });
 
       if (!response.ok) {
@@ -412,6 +413,7 @@ const AdminPartitions = () => {
       morceau_id: '',
       instrument_id: '',
     });
+    setSelectedInstruments([{instrument_id: '', nom: ''}]);
     setSelectedFile(null);
     setFilePreview(null);
   };
@@ -547,6 +549,7 @@ const AdminPartitions = () => {
                  onClick={() => {
                    setEditingPartition(null);
                    setFormData({ nom: '', morceau_id: '', instrument_id: '' });
+                   setSelectedInstruments([{instrument_id: '', nom: ''}]);
                    setSelectedFile(null);
                    setFilePreview(null);
                    setShowAddForm(true);
@@ -706,12 +709,14 @@ const AdminPartitions = () => {
                     </div>
                     
                     <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-4">
-                        <div>
-                            <label className="flex items-center text-sm font-semibold text-slate-700 mb-1">
-                                Nom de la partition *
-                            </label>
-                            <input type="text" name="nom" value={formData.nom} onChange={handleInputChange} placeholder="Ex: Clarinette 1, Tutti..." required className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-slate-50/30 focus:bg-white text-sm" />
-                        </div>
+                        {editingPartition && (
+                            <div>
+                                <label className="flex items-center text-sm font-semibold text-slate-700 mb-1">
+                                    Nom de la partition *
+                                </label>
+                                <input type="text" name="nom" value={formData.nom} onChange={handleInputChange} placeholder="Ex: Clarinette 1, Tutti..." required className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-slate-50/30 focus:bg-white text-sm" />
+                            </div>
+                        )}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label className="flex items-center text-sm font-semibold text-slate-700 mb-1">
@@ -722,22 +727,95 @@ const AdminPartitions = () => {
                                       <option value="">Sélectionner un morceau</option>
                                       {morceaux.map(m => <option key={m.id} value={m.id}>{m.nom}</option>)}
                                     </select>
-                                    <ChevronDown className="text-slate-400" />
+                                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
                                 </div>
                             </div>
-                            <div>
-                                <label className="flex items-center text-sm font-semibold text-slate-700 mb-1">
-                                    Instrument ciblé *
-                                </label>
-                                <div className="relative">
-                                    <select name="instrument_id" value={formData.instrument_id} onChange={handleInputChange} required className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-slate-50/30 focus:bg-white appearance-none text-sm">
-                                      <option value="">Sélectionner un instrument</option>
-                                      {instruments.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}
-                                    </select>
-                                    <ChevronDown className="text-slate-400" />
+                            {editingPartition && (
+                                <div>
+                                    <label className="flex items-center text-sm font-semibold text-slate-700 mb-1">
+                                        Instrument ciblé *
+                                    </label>
+                                    <div className="relative">
+                                        <select name="instrument_id" value={formData.instrument_id} onChange={handleInputChange} required className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-slate-50/30 focus:bg-white appearance-none text-sm">
+                                          <option value="">Sélectionner un instrument</option>
+                                          {instruments.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}
+                                        </select>
+                                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
+                                    </div>
                                 </div>
-                            </div>
+                            )}
                         </div>
+
+                        {!editingPartition && (
+                            <div className="pt-2 border-t border-slate-100 mt-4">
+                                <label className="flex items-center text-sm font-semibold text-slate-700 mb-3">
+                                    Instruments ciblés *
+                                </label>
+                                <div className="space-y-3">
+                                    {selectedInstruments.map((inst, index) => (
+                                        <div key={index} className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                                            <div className="flex-1 w-full">
+                                                <div className="relative">
+                                                    <select 
+                                                        value={inst.instrument_id} 
+                                                        onChange={(e) => {
+                                                            const newInsts = [...selectedInstruments];
+                                                            newInsts[index].instrument_id = e.target.value;
+                                                            // Auto-fill nom based on selected instrument
+                                                            const instName = instruments.find(i => i.id === e.target.value)?.name || '';
+                                                            if (!newInsts[index].nom || newInsts[index].nom === '') {
+                                                              newInsts[index].nom = instName;
+                                                            }
+                                                            setSelectedInstruments(newInsts);
+                                                        }}
+                                                        required 
+                                                        className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-slate-50/30 focus:bg-white appearance-none text-sm"
+                                                    >
+                                                        <option value="">Sélectionner un instrument</option>
+                                                        {instruments.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}
+                                                    </select>
+                                                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
+                                                </div>
+                                            </div>
+                                            <div className="flex-1 w-full">
+                                                <input 
+                                                    type="text" 
+                                                    value={inst.nom} 
+                                                    onChange={(e) => {
+                                                        const newInsts = [...selectedInstruments];
+                                                        newInsts[index].nom = e.target.value;
+                                                        setSelectedInstruments(newInsts);
+                                                    }}
+                                                    placeholder="Nom (ex: Tuba 1)" 
+                                                    required 
+                                                    className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-slate-50/30 focus:bg-white text-sm" 
+                                                />
+                                            </div>
+                                            {selectedInstruments.length > 1 && (
+                                              <button 
+                                                  type="button" 
+                                                  onClick={() => {
+                                                      const newInsts = [...selectedInstruments];
+                                                      newInsts.splice(index, 1);
+                                                      setSelectedInstruments(newInsts);
+                                                  }}
+                                                  className="p-2 text-rose-500 hover:bg-rose-50 rounded-xl transition-colors"
+                                              >
+                                                  <X size={20} />
+                                              </button>
+                                            )}
+                                        </div>
+                                    ))}
+                                    <button 
+                                        type="button" 
+                                        onClick={() => setSelectedInstruments([...selectedInstruments, { instrument_id: '', nom: '' }])}
+                                        className="text-sm text-indigo-600 font-semibold hover:text-indigo-700 flex items-center mt-2"
+                                    >
+                                        <Plus size={16} className="mr-1" /> Ajouter un autre instrument
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
 

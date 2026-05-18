@@ -123,7 +123,12 @@ router.post('/batch-split', tempUpload.single('file'), async (req, res) => {
                     continue; // Skip invalid splits
                 }
 
-                if (currentSplit.instrument_id === '_IGNORE_') {
+                let insts = currentSplit.instruments || [];
+                if (!insts.length && currentSplit.instrument_id) {
+                    insts = [{ instrument_id: currentSplit.instrument_id, custom_name: currentSplit.custom_name }];
+                }
+
+                if (insts.length === 0 || insts.every((i: any) => i.instrument_id === '_IGNORE_')) {
                     continue; // Do not generate partition for ignored sections
                 }
 
@@ -168,25 +173,29 @@ router.post('/batch-split', tempUpload.single('file'), async (req, res) => {
                     fs.writeFileSync(savePath, newPdfBytes);
                     finalFilePath = `/uploads/${newFilename}`;
                 }
-                const newPartitionId = crypto.randomUUID();
 
-                await connection.query(
-                    'INSERT INTO partitions (id, nom, morceau_id, instrument_id, file_path, file_name, file_type, file_size, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                    [
-                        newPartitionId, 
-                        currentSplit.custom_name || (original_name ? `Extrait de ${original_name}` : 'Partition découpée'), 
-                        morceau_id, 
-                        currentSplit.instrument_id, 
-                        finalFilePath, 
-                        newFilename, 
-                        'pdf', 
-                        newPdfBytes.length, 
-                        new Date(), 
-                        new Date()
-                    ]
-                );
+                for (const inst of insts) {
+                    if (inst.instrument_id === '_IGNORE_') continue;
+                    const newPartitionId = crypto.randomUUID();
 
-                createdPartitions.push(newPartitionId);
+                    await connection.query(
+                        'INSERT INTO partitions (id, nom, morceau_id, instrument_id, file_path, file_name, file_type, file_size, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                        [
+                            newPartitionId, 
+                            inst.custom_name || (original_name ? `Extrait de ${original_name}` : 'Partition découpée'), 
+                            morceau_id, 
+                            inst.instrument_id, 
+                            finalFilePath, 
+                            newFilename, 
+                            'pdf', 
+                            newPdfBytes.length, 
+                            new Date(), 
+                            new Date()
+                        ]
+                    );
+
+                    createdPartitions.push(newPartitionId);
+                }
             }
 
             await connection.commit();
@@ -225,42 +234,56 @@ router.post('/', async (req, res) => {
         return res.status(403).json({ message: 'AccÃ¨s refusÃ©.' });
     }
 
-    const { nom, morceau_id, instrument_id, file_path, file_name, file_type, file_size } = req.body;
-
-    if (!nom || !morceau_id || !instrument_id) {
-        return res.status(400).json({ message: 'Les champs nom, morceau et instrument sont requis.' });
+    const { morceau_id, file_path, file_name, file_type, file_size } = req.body;
+    
+    // Support old format or new format
+    let instruments = req.body.instruments;
+    if (!instruments && req.body.instrument_id && req.body.nom) {
+        instruments = [{ instrument_id: req.body.instrument_id, nom: req.body.nom }];
     }
 
+    if (!morceau_id || !instruments || !Array.isArray(instruments) || instruments.length === 0) {
+        return res.status(400).json({ message: 'Les champs morceau et instruments sont requis.' });
+    }
+
+    const connection = await pool.getConnection();
     try {
-        const newPartition = {
-            id: crypto.randomUUID(),
-            nom,
-            morceau_id,
-            instrument_id,
-            file_path: file_path || null,
-            file_name: file_name || null,
-            file_type: file_type || null,
-            file_size: file_size || null,
-            created_at: new Date(),
-            updated_at: new Date(),
-        };
+        await connection.beginTransaction();
 
-        await pool.query(
-            'INSERT INTO partitions (id, nom, morceau_id, instrument_id, file_path, file_name, file_type, file_size, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-            [newPartition.id, newPartition.nom, newPartition.morceau_id, newPartition.instrument_id, newPartition.file_path, newPartition.file_name, newPartition.file_type, newPartition.file_size, newPartition.created_at, newPartition.updated_at]
-        );
+        const createdPartitions = [];
 
-        res.status(201).json({ message: 'Partition créée avec succès', partition: newPartition });
+        for (const inst of instruments) {
+            if (!inst.nom || !inst.instrument_id) continue;
+            
+            const newPartition = {
+                id: crypto.randomUUID(),
+                nom: inst.nom,
+                morceau_id,
+                instrument_id: inst.instrument_id,
+                file_path: file_path || null,
+                file_name: file_name || null,
+                file_type: file_type || null,
+                file_size: file_size || null,
+                created_at: new Date(),
+                updated_at: new Date(),
+            };
 
-        // Log de l'activité
-        const [morceau] = await pool.query('SELECT nom FROM morceaux WHERE id = ?', [morceau_id]) as any;
-        const [instrument] = await pool.query('SELECT name FROM instruments WHERE id = ?', [instrument_id]) as any;
-        
+            await connection.query(
+                'INSERT INTO partitions (id, nom, morceau_id, instrument_id, file_path, file_name, file_type, file_size, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                [newPartition.id, newPartition.nom, newPartition.morceau_id, newPartition.instrument_id, newPartition.file_path, newPartition.file_name, newPartition.file_type, newPartition.file_size, newPartition.created_at, newPartition.updated_at]
+            );
+            createdPartitions.push(newPartition);
+        }
 
+        await connection.commit();
+        res.status(201).json({ message: 'Partition(s) créée(s) avec succès', partitions: createdPartitions });
 
     } catch (error) {
+        await connection.rollback();
         console.error('Error creating partition:', error);
-        res.status(500).json({ message: 'Erreur lors de la crÃ©ation de la partition.' });
+        res.status(500).json({ message: 'Erreur lors de la création de la/les partition(s).' });
+    } finally {
+        connection.release();
     }
 });
 
