@@ -225,6 +225,35 @@ const AdminMedia = () => {
     }
   };
 
+  const handleTogglePublish = async (media: MediaItem) => {
+    if (!token) return;
+    const newStatus = !media.published;
+    
+    // Optimistic update
+    setMediaItems(prev => prev.map(m => m.id === media.id ? { ...m, published: newStatus } : m));
+
+    try {
+      const response = await fetch(`${API_URL}/media/${media.id}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ published: newStatus }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Erreur lors du changement de statut');
+      }
+      showNotification(`Média ${newStatus ? 'publié' : 'masqué'} avec succès`);
+    } catch (err: any) {
+      console.error(err);
+      showNotification(err.message, 'error');
+      // Rollback
+      fetchMedia();
+    }
+  };
+
   const handleEdit = (media: MediaItem) => {
     setEditingMedia(media);
     
@@ -426,15 +455,13 @@ const AdminMedia = () => {
               <div className="flex items-center mb-1">
                 <p className="font-bold text-lg text-gray-800 leading-tight mr-3">{item.title}</p>
                 <div className="flex items-center space-x-2">
-                  {item.published ? (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-200">
-                          <Eye size={10} className="mr-1" /> Publié
-                      </span>
-                  ) : (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-500 border border-slate-200">
-                          <EyeOff size={10} className="mr-1" /> Brouillon
-                      </span>
-                  )}
+                  <button 
+                    onClick={() => handleTogglePublish(item)}
+                    title={item.published ? "Passer en brouillon" : "Publier"}
+                    className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border transition-colors hover:scale-105 ${item.published ? 'bg-emerald-100 text-emerald-800 border-emerald-200 hover:bg-emerald-200 hover:border-emerald-300' : 'bg-slate-100 text-slate-500 border-slate-200 hover:bg-slate-200 hover:border-slate-300'}`}
+                  >
+                    {item.published ? <><Eye size={10} className="mr-1" /> Publié</> : <><EyeOff size={10} className="mr-1" /> Brouillon</>}
+                  </button>
                 </div>
               </div>
               <p className="text-gray-600 text-sm line-clamp-2 max-w-xl mb-2">{item.description}</p>

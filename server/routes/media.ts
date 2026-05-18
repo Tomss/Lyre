@@ -127,6 +127,30 @@ router.put('/:id', async (req, res) => {
     }
 });
 
+// PATCH /api/media/:id/status
+router.patch('/:id/status', async (req, res) => {
+    // @ts-ignore
+    if ((req as any).user.role !== 'Admin' && (!(req as any).user.managedModules || !(req as any).user.managedModules.includes('media'))) {
+        return res.status(403).json({ message: 'Acces refuse.' });
+    }
+    const { id } = req.params;
+    const { published } = req.body;
+    if (published === undefined) {
+        return res.status(400).json({ message: 'Le statut est requis.' });
+    }
+
+    try {
+        await pool.query(
+            'UPDATE media_items SET published = ? WHERE id = ?',
+            [published ? 1 : 0, id]
+        );
+        res.status(200).json({ message: 'Statut du media mis a jour avec succes.' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Erreur lors de la mise a jour du statut.' });
+    }
+});
+
 // DELETE /api/media/:id
 router.delete('/:id', async (req, res) => {
     // @ts-ignore
