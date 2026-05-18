@@ -186,46 +186,57 @@ const Media = () => {
               {featuredMedia.map((media) => {
                 const TypeIcon = getTypeIcon(media.media_type);
                 return (
-                  <div key={media.id} className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/60 overflow-hidden hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 animate-fade-in group relative">
-                    {/* Effet de brillance au survol */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 z-10"></div>
-
-                    {/* Prévisualisation visuelle */}
-                    <MediaPreview
-                      files={media.media_files}
-                      mediaType={media.media_type}
-                      title={media.title}
-                      onClick={() => openGallery(media)}
-                      className="cursor-pointer"
-                    />
-
-                    <div className="p-6 relative z-10">
-                      <div className="flex items-center space-x-3 mb-4">
-                        <div className="bg-gradient-to-br from-teal-400 to-cyan-500 p-2 rounded-lg shadow-md">
-                          <TypeIcon className="h-6 w-6 text-white" />
-                        </div>
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getTypeColor(media.media_type)}`}>
-                          <TypeIcon className="h-3 w-3 mr-1" />
+                  <div key={media.id} onClick={() => openGallery(media)} className="group flex flex-col bg-white rounded-2xl border border-slate-100 overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-2 transition-all duration-500 cursor-pointer">
+                    {/* Section Image / Preview */}
+                    <div className="relative aspect-video overflow-hidden bg-slate-50 w-full border-b border-slate-100/50">
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 to-transparent z-10 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                      <MediaPreview
+                        files={media.media_files}
+                        mediaType={media.media_type}
+                        title={media.title}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      />
+                      
+                      <div className="absolute top-4 left-4 z-20">
+                        <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider bg-white/95 backdrop-blur-md text-slate-700 shadow-sm border border-white/20">
+                          <TypeIcon className={`h-3.5 w-3.5 mr-2 ${
+                            media.media_type === 'album' ? 'text-teal-500' : 
+                            media.media_type === 'enregistrement' ? 'text-sky-500' : 
+                            media.media_type === 'journal' ? 'text-slate-500' : 
+                            'text-indigo-500'
+                          }`} />
                           {getTypeLabel(media.media_type)}
                         </span>
                       </div>
 
-                      <h3 className="font-semibold text-xl text-slate-800 mb-3">
+                      <div className="absolute top-4 right-4 bg-amber-400 text-white p-2 rounded-xl shadow-lg z-20 border-2 border-white/20 animate-pulse">
+                        <Star className="h-4 w-4 fill-current" />
+                      </div>
+                      
+                      <div className="absolute bottom-4 right-4 z-20">
+                        <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold bg-black/70 backdrop-blur-md text-white border border-white/10">
+                            {media.media_files.length} {media.media_files.length > 1 ? 'fichiers' : 'fichier'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="p-6 md:p-8 flex flex-col flex-grow bg-white">
+                      <h3 className="font-bold text-xl md:text-2xl text-slate-800 mb-4 group-hover:text-teal-600 transition-colors leading-snug">
                         {media.title}
                       </h3>
 
                       {media.description && (
-                        <p className="text-slate-600 mb-4 text-sm leading-relaxed">
+                        <p className="text-slate-500 mb-6 text-sm leading-relaxed line-clamp-3">
                           {media.description}
                         </p>
                       )}
 
-                      <div className="flex items-center justify-between text-sm text-slate-500">
-                        <span>{media.media_files.length} fichier{media.media_files.length > 1 ? 's' : ''}</span>
-                        <span>
+                      <div className="mt-auto flex items-center text-sm font-medium text-slate-400">
+                        <Calendar className="w-4 h-4 mr-2 opacity-70" />
+                        <span className="capitalize">
                           {media.media_date
-                            ? new Date(media.media_date).toLocaleDateString('fr-FR')
-                            : new Date(media.created_at).toLocaleDateString('fr-FR')
+                            ? new Date(media.media_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
+                            : new Date(media.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
                           }
                         </span>
                       </div>
@@ -413,53 +424,55 @@ const Media = () => {
                   {regularMedia.slice(0, visibleCount).map((media) => {
                     const TypeIcon = getTypeIcon(media.media_type);
                     return (
-                      <div key={media.id} className="group relative bg-white rounded-[2rem] border border-slate-200 overflow-hidden hover:-translate-y-2 transition-all duration-500 hover:shadow-2xl shadow-lg animate-fade-in group">
-                        {/* Barre d'accentuation haute */}
-                        <div className={`h-1.5 w-full transition-all duration-500 group-hover:h-3 ${media.media_type === 'album' ? 'bg-teal-500' : media.media_type === 'enregistrement' ? 'bg-sky-500' : media.media_type === 'journal' ? 'bg-slate-500' : media.media_type === 'lyrissimot' ? 'bg-indigo-500' : 'bg-gray-500'}`}></div>
-                        
+                      <div key={media.id} onClick={() => openGallery(media)} className="group flex flex-col bg-white rounded-2xl border border-slate-100 overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 cursor-pointer">
                         {/* Section Image / Preview */}
-                        <div className="relative aspect-square overflow-hidden bg-slate-50">
+                        <div className="relative aspect-[4/3] overflow-hidden bg-slate-50 w-full border-b border-slate-100/50">
                           <MediaPreview
                             files={media.media_files}
                             mediaType={media.media_type}
                             title={media.title}
-                            onClick={() => openGallery(media)}
-                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                           />
                           
-                          {/* Badge de Type */}
+                          {/* Badge de Type - Modern Glassmorphism */}
                           <div className="absolute top-3 left-3 z-20">
-                            <span className={`inline-flex items-center px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-[0.1em] ${media.media_type === 'album' ? 'bg-teal-500 text-white' : media.media_type === 'enregistrement' ? 'bg-sky-500 text-white' : media.media_type === 'journal' ? 'bg-slate-500 text-white' : 'bg-indigo-500 text-white'} shadow-lg backdrop-blur-xl`}>
-                              <TypeIcon className="h-3.5 w-3.5 mr-1.5" />
+                            <span className="inline-flex items-center px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-white/90 backdrop-blur-md text-slate-700 shadow-sm border border-white/20">
+                              <TypeIcon className={`h-3 w-3 mr-1.5 ${
+                                media.media_type === 'album' ? 'text-teal-500' : 
+                                media.media_type === 'enregistrement' ? 'text-sky-500' : 
+                                media.media_type === 'journal' ? 'text-slate-500' : 
+                                'text-indigo-500'
+                              }`} />
                               {getTypeLabel(media.media_type)}
                             </span>
                           </div>
 
                           {!!media.is_featured && (
-                            <div className="absolute top-3 right-3 bg-amber-400 text-white p-2 rounded-full shadow-lg z-20 animate-pulse border-2 border-white">
-                              <Star className="h-3 w-3 fill-current" />
+                            <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-md text-amber-500 p-1.5 rounded-lg shadow-sm z-20 border border-white/20">
+                              <Star className="h-3.5 w-3.5 fill-current" />
                             </div>
                           )}
+
+                          {/* File count indicator */}
+                          <div className="absolute bottom-3 right-3 z-20">
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold bg-black/60 backdrop-blur-md text-white border border-white/10">
+                                {media.media_files.length} {media.media_files.length > 1 ? 'fichiers' : 'fichier'}
+                            </span>
+                          </div>
                         </div>
 
-                        <div className={`p-5 flex flex-col items-center text-center relative transition-colors duration-500 ${
-                          media.media_type === 'album' ? 'bg-teal-600' : 
-                          media.media_type === 'enregistrement' ? 'bg-sky-600' : 
-                          media.media_type === 'journal' ? 'bg-slate-600' : 
-                          'bg-indigo-600'
-                        }`}>
-                          <h3 className="font-bold text-base text-white line-clamp-1 mb-2 group-hover:text-white/90 transition-colors relative z-10">
+                        {/* Contenu textuel */}
+                        <div className="p-5 flex flex-col flex-grow">
+                          <h3 className="font-bold text-[15px] text-slate-800 line-clamp-2 mb-3 group-hover:text-teal-600 transition-colors leading-snug">
                             {media.title}
                           </h3>
-
-                          <div className="flex items-center space-x-2 text-[10px] font-black uppercase tracking-widest text-white/80 relative z-10">
-                            <div className="w-1.5 h-1.5 rounded-full bg-white/40"></div>
-                            <span>{media.media_files.length} {media.media_files.length > 1 ? 'FICHIERS' : 'FICHIER'}</span>
-                            <span>•</span>
-                            <span>
+                          
+                          <div className="mt-auto flex items-center text-xs font-medium text-slate-400">
+                            <Calendar className="w-3.5 h-3.5 mr-1.5 opacity-70" />
+                            <span className="capitalize">
                               {media.media_date
-                                ? new Date(media.media_date).toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' })
-                                : new Date(media.created_at).toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' })
+                                ? new Date(media.media_date).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
+                                : new Date(media.created_at).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
                               }
                             </span>
                           </div>
