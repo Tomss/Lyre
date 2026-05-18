@@ -446,59 +446,58 @@ const AdminEvents = () => {
                   </div>
                   <ChevronDown className="text-slate-400" />
                 </div>
-                {expandedTypes.has(type) && (
-                  <div className="divide-y divide-slate-100">
-                    {eventList.map(event => (
-                      <div key={event.id} className={`p-4 flex flex-col md:flex-row md:items-center md:justify-between hover:bg-slate-50/80 transition-colors duration-200`}>
-                        <div className="flex-1 mb-4 md:mb-0">
-                          <div className="flex items-center mb-1">
-                            <p className="font-bold text-lg text-gray-800">{event.title}</p>
-                            <span className={`ml-3 px-2.5 py-1 text-xs font-semibold rounded-full border bg-white ${color.text} ${color.border.replace('border-l-','border-')}`}>
-                              {event.event_type === 'concert' ? 'Concert' : event.event_type === 'divers' ? 'Divers' : 'Répétition'}
-                            </span>
-                            <div className="ml-3">
+                <div className={`grid transition-all duration-300 ease-in-out ${expandedTypes.has(type) ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
+                  <div className="overflow-hidden">
+                    <div className="divide-y divide-slate-100">
+                      {eventList.map(event => (
+                        <div key={event.id} className="p-4 flex flex-col md:flex-row md:items-center md:justify-between hover:bg-slate-50/80 transition-colors duration-200">
+                          <div className="flex-1 mb-4 md:mb-0">
+                            <h3 className="font-bold text-slate-800 text-lg mb-1">{event.title}</h3>
+                            <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-slate-500">
+                              <span className="flex items-center text-indigo-600 font-medium bg-indigo-50 px-2.5 py-0.5 rounded-md">
+                                <Calendar className="w-3.5 h-3.5 mr-1.5" />
+                                {formatDate(event.event_date)}
+                              </span>
+                              {event.location && (
+                                <span className="flex items-center">
+                                  <MapPin className="w-3.5 h-3.5 mr-1.5 opacity-70" />
+                                  {event.location}
+                                </span>
+                              )}
                               {event.is_public ? (
-                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-teal-100 text-teal-800">
-                                  <span className="w-2 h-2 mr-1 bg-teal-500 rounded-full"></span> Public
+                                <span className="flex items-center text-emerald-600 bg-emerald-50 px-2 rounded-md font-medium text-xs border border-emerald-100">
+                                  <Globe className="w-3 h-3 mr-1" />
+                                  Public
                                 </span>
                               ) : (
-                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-500">
-                                  <span className="w-2 h-2 mr-1 bg-slate-400 rounded-full"></span> Interne
+                                <span className="flex items-center text-slate-500 bg-slate-100 px-2 rounded-md font-medium text-xs border border-slate-200">
+                                  <EyeOff className="w-3 h-3 mr-1" />
+                                  Privé
                                 </span>
                               )}
                             </div>
                           </div>
-                          <div className="flex flex-col space-y-1">
-                            <div className="flex items-center text-gray-500 text-sm">
-                              <Calendar size={14} className="mr-2" /> {formatDate(event.event_date)}
-                            </div>
-                            {event.location && (
-                                <div className="flex items-center text-gray-500 text-sm">
-                                    <MapPin size={14} className="mr-2" /> {event.location}
-                                </div>
-                            )}
+                          <div className="flex-1 mb-4 md:mb-0">
+                            <h4 className="font-semibold text-gray-600 text-sm mb-1">Orchestres</h4>
+                            {event.orchestras && event.orchestras.length > 0 ? (
+                              <div className="flex flex-wrap gap-1">
+                                {event.orchestras.map(orc => (
+                                    <span key={orc.id} className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded">
+                                        {orc.name}
+                                    </span>
+                                ))}
+                              </div>
+                            ) : <p className="text-gray-400 text-xs italic">Aucun</p>}
+                          </div>
+                          <div className="flex items-center space-x-2 flex-shrink-0">
+                            <button onClick={() => handleEdit(event)} title="Modifier" className="p-2 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition-all duration-300 hover:scale-110 shadow-sm"><Edit size={16} /></button>
+                            <button onClick={() => confirmDelete(event)} title="Supprimer" className="p-2 text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl transition-all duration-300 hover:scale-110 shadow-sm"><Trash2 size={16} /></button>
                           </div>
                         </div>
-                        <div className="flex-1 mb-4 md:mb-0">
-                          <h4 className="font-semibold text-gray-600 text-sm mb-1">Orchestres</h4>
-                          {event.orchestras && event.orchestras.length > 0 ? (
-                            <div className="flex flex-wrap gap-1">
-                              {event.orchestras.map(orc => (
-                                  <span key={orc.id} className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded">
-                                      {orc.name}
-                                  </span>
-                              ))}
-                            </div>
-                          ) : <p className="text-gray-400 text-xs italic">Aucun</p>}
-                        </div>
-                        <div className="flex items-center space-x-2 flex-shrink-0">
-                          <button onClick={() => handleEdit(event)} title="Modifier" className="p-2 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition-all duration-300 hover:scale-110 shadow-sm"><Edit size={16} /></button>
-                          <button onClick={() => confirmDelete(event)} title="Supprimer" className="p-2 text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl transition-all duration-300 hover:scale-110 shadow-sm"><Trash2 size={16} /></button>
-                        </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                )}
+                </div>
               </div>
             )})}
           </div>

@@ -25,9 +25,15 @@ const Header = () => {
       }
 
       if (currentScrollY > lastScrollY && currentScrollY > 100) {
-        setIsVisible(false);
+        // Only hide if the scroll difference is significant (prevents hiding on tiny browser layout jumps)
+        if (currentScrollY - lastScrollY > 15) {
+          setIsVisible(false);
+        }
       } else {
-        setIsVisible(true);
+        // Only show if scrolling up significantly
+        if (lastScrollY - currentScrollY > 15 || currentScrollY <= 100) {
+          setIsVisible(true);
+        }
       }
 
       setLastScrollY(currentScrollY);

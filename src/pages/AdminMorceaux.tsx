@@ -408,39 +408,41 @@ const AdminMorceaux = () => {
                     </div>
                     <ChevronDown className="text-slate-400" />
                   </div>
-                  {expandedOrchestras.has(orchestra.id) && (
-                    <div className="divide-y divide-slate-100">
-                      {orchestraMorceaux.map(morceau => (
-                        <div key={morceau.id} className="p-4 flex flex-col md:flex-row md:items-center md:justify-between hover:bg-slate-50/80 transition-colors duration-200">
-                          <div className="flex-1 mb-4 md:mb-0">
-                            <div className="flex items-center gap-3">
-                              <p className={`font-semibold ${morceau.is_active === 0 || morceau.is_active === false ? 'text-slate-500' : 'text-slate-800'}`}>
-                                {morceau.nom}
+                  <div className={`grid transition-all duration-300 ease-in-out ${expandedOrchestras.has(orchestra.id) ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
+                    <div className="overflow-hidden">
+                      <div className="divide-y divide-slate-100">
+                        {orchestraMorceaux.map(morceau => (
+                          <div key={morceau.id} className="p-4 flex flex-col md:flex-row md:items-center md:justify-between hover:bg-slate-50/80 transition-colors duration-200">
+                            <div className="flex-1 mb-4 md:mb-0">
+                              <div className="flex items-center gap-3">
+                                <p className={`font-semibold ${morceau.is_active === 0 || morceau.is_active === false ? 'text-slate-500' : 'text-slate-800'}`}>
+                                  {morceau.nom}
+                                </p>
+                                {morceau.is_active !== 0 && morceau.is_active !== false ? (
+                                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100 text-[11px] font-bold tracking-wide">
+                                    Actif
+                                  </span>
+                                ) : (
+                                  <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200 text-[11px] font-bold tracking-wide">
+                                    Inactif
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-sm text-slate-500 flex items-center mt-1">
+                                <Music className="w-3 h-3 mr-1.5 opacity-50" />
+                                {morceau.compositeur || 'Compositeur inconnu'}
+                                {morceau.arrangement && <span className="ml-2 text-slate-400">• Arr. {morceau.arrangement}</span>}
                               </p>
-                              {morceau.is_active !== 0 && morceau.is_active !== false ? (
-                                <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100 text-[11px] font-bold tracking-wide">
-                                  Actif
-                                </span>
-                              ) : (
-                                <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200 text-[11px] font-bold tracking-wide">
-                                  Inactif
-                                </span>
-                              )}
                             </div>
-                            <p className="text-sm text-slate-500 flex items-center mt-1">
-                              <Music className="w-3 h-3 mr-1.5 opacity-50" />
-                              {morceau.compositeur || 'Compositeur inconnu'}
-                              {morceau.arrangement && <span className="ml-2 text-slate-400">• Arr. {morceau.arrangement}</span>}
-                            </p>
+                            <div className="flex items-center space-x-2 flex-shrink-0">
+                              <button onClick={() => handleEdit(morceau)} className="p-2 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition-all duration-300 hover:scale-110 shadow-sm" title="Modifier"><Edit size={16} /></button>
+                              <button onClick={() => confirmDelete(morceau)} className="p-2 text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl transition-all duration-300 hover:scale-110 shadow-sm" title="Supprimer"><Trash2 size={16} /></button>
+                            </div>
                           </div>
-                          <div className="flex items-center space-x-2 flex-shrink-0">
-                            <button onClick={() => handleEdit(morceau)} className="p-2 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition-all duration-300 hover:scale-110 shadow-sm" title="Modifier"><Edit size={16} /></button>
-                            <button onClick={() => confirmDelete(morceau)} className="p-2 text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl transition-all duration-300 hover:scale-110 shadow-sm" title="Supprimer"><Trash2 size={16} /></button>
-                          </div>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
-                  )}
+                  </div>
                 </div>
               )})}
           </div>

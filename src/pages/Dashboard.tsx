@@ -713,8 +713,9 @@ const Dashboard = () => {
                         </h3>
                         <ChevronDown className="text-slate-400" />
                       </button>
-                      {isExpanded && (
-                        <ul className="p-5 space-y-4 bg-white/30">
+                      <div className={`grid transition-all duration-300 ease-in-out ${isExpanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
+                        <div className="overflow-hidden">
+                          <ul className="p-5 space-y-4 bg-white/30">
                           {events.map((event: any) => {
                             const isPracticalInfoExpanded = expandedPracticalInfo.has(event.id);
                             const isNextEvent = event.id === nextEventId;
@@ -789,13 +790,15 @@ const Dashboard = () => {
                                           <ChevronDown size={14} />
                                         </button>
                                         
-                                        {isPracticalInfoExpanded && (
-                                          <div className={`mt-3 p-4 bg-white rounded-xl border-t-4 ${styles.infoBoxBorder} shadow-inner animate-in slide-in-from-top-2 duration-300`}>
-                                            <p className="text-sm text-slate-600 whitespace-pre-wrap leading-relaxed italic">
-                                              {event.practical_info}
-                                            </p>
+                                        <div className={`grid transition-all duration-300 ease-in-out mt-3 ${isPracticalInfoExpanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
+                                          <div className="overflow-hidden">
+                                            <div className={`p-4 bg-white rounded-xl border-t-4 ${styles.infoBoxBorder} shadow-inner`}>
+                                              <div className="prose prose-sm max-w-none text-slate-700">
+                                                {event.practical_info}
+                                              </div>
+                                            </div>
                                           </div>
-                                        )}
+                                        </div>
                                       </div>
                                     )}
                                   </div>
@@ -803,8 +806,9 @@ const Dashboard = () => {
                               </li>
                             )
                           })}
-                        </ul>
-                      )}
+                          </ul>
+                        </div>
+                      </div>
                     </div>
                   )
                 })}
