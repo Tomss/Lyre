@@ -198,13 +198,13 @@ const Media = () => {
                       />
                       
                       <div className="absolute top-4 left-4 z-20">
-                        <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider bg-white/95 backdrop-blur-md text-slate-700 shadow-sm border border-white/20">
-                          <TypeIcon className={`h-3.5 w-3.5 mr-2 ${
-                            media.media_type === 'album' ? 'text-teal-500' : 
-                            media.media_type === 'enregistrement' ? 'text-sky-500' : 
-                            media.media_type === 'journal' ? 'text-slate-500' : 
-                            'text-indigo-500'
-                          }`} />
+                        <span className={`inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider text-white shadow-sm border border-white/20 backdrop-blur-md ${
+                            media.media_type === 'album' ? 'bg-teal-500/90' : 
+                            media.media_type === 'enregistrement' ? 'bg-sky-500/90' : 
+                            media.media_type === 'journal' ? 'bg-slate-500/90' : 
+                            'bg-indigo-500/90'
+                        }`}>
+                          <TypeIcon className="h-3.5 w-3.5 mr-2 text-white" />
                           {getTypeLabel(media.media_type)}
                         </span>
                       </div>
@@ -434,15 +434,15 @@ const Media = () => {
                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                           />
                           
-                          {/* Badge de Type - Modern Glassmorphism */}
+                          {/* Badge de Type - Modern Colored */}
                           <div className="absolute top-3 left-3 z-20">
-                            <span className="inline-flex items-center px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-white/90 backdrop-blur-md text-slate-700 shadow-sm border border-white/20">
-                              <TypeIcon className={`h-3 w-3 mr-1.5 ${
-                                media.media_type === 'album' ? 'text-teal-500' : 
-                                media.media_type === 'enregistrement' ? 'text-sky-500' : 
-                                media.media_type === 'journal' ? 'text-slate-500' : 
-                                'text-indigo-500'
-                              }`} />
+                            <span className={`inline-flex items-center px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider text-white shadow-sm border border-white/20 backdrop-blur-md ${
+                                media.media_type === 'album' ? 'bg-teal-500/90' : 
+                                media.media_type === 'enregistrement' ? 'bg-sky-500/90' : 
+                                media.media_type === 'journal' ? 'bg-slate-500/90' : 
+                                'bg-indigo-500/90'
+                            }`}>
+                              <TypeIcon className="h-3 w-3 mr-1.5 text-white" />
                               {getTypeLabel(media.media_type)}
                             </span>
                           </div>
