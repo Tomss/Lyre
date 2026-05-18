@@ -404,8 +404,8 @@ const AdminEvents = () => {
             <div className="lg:border-l lg:pl-6 border-slate-100 flex flex-col justify-start gap-2 border-t lg:border-t-0 pt-4 lg:pt-0 min-w-[200px]">
               <button onClick={clearAllFilters} className="text-sm font-medium text-slate-500 hover:text-indigo-600 transition-colors w-full text-left md:text-center block mb-2">Réinitialiser les filtres</button>
               <div className="flex items-center space-x-2">
-                <button onClick={expandAllTypes} className="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl hover:bg-slate-200 transition text-sm font-medium whitespace-nowrap w-full">Tout déplier</button>
-                <button onClick={collapseAllTypes} className="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl hover:bg-slate-200 transition text-sm font-medium whitespace-nowrap w-full">Tout replier</button>
+                <button onClick={expandAllTypes} className={`px-4 py-2 rounded-xl transition text-sm font-medium whitespace-nowrap w-full ${expandedTypes.size === 3 ? 'bg-indigo-600 text-white shadow-md shadow-indigo-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>Tout déplier</button>
+                <button onClick={collapseAllTypes} className={`px-4 py-2 rounded-xl transition text-sm font-medium whitespace-nowrap w-full ${expandedTypes.size === 0 ? 'bg-slate-600 text-white shadow-md shadow-slate-200' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>Tout replier</button>
               </div>
             </div>
           </div>

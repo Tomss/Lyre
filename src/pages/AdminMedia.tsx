@@ -367,8 +367,8 @@ const AdminMedia = () => {
             <div className="lg:border-l lg:pl-6 border-slate-100 flex flex-col justify-start gap-2 border-t lg:border-t-0 pt-4 lg:pt-0 min-w-[200px]">
               <button onClick={clearAllFilters} className="text-sm font-medium text-slate-500 hover:text-indigo-600 transition-colors w-full text-left md:text-center block mb-2">Réinitialiser les filtres</button>
               <div className="flex items-center space-x-2">
-                <button onClick={expandAllTypes} className="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl hover:bg-slate-200 transition text-sm font-medium whitespace-nowrap w-full">Tout déplier</button>
-                <button onClick={collapseAllTypes} className="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl hover:bg-slate-200 transition text-sm font-medium whitespace-nowrap w-full">Tout replier</button>
+                <button onClick={expandAllTypes} className={`px-4 py-2 rounded-xl transition text-sm font-medium whitespace-nowrap w-full ${expandedTypes.size === 4 ? 'bg-indigo-600 text-white shadow-md shadow-indigo-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>Tout déplier</button>
+                <button onClick={collapseAllTypes} className={`px-4 py-2 rounded-xl transition text-sm font-medium whitespace-nowrap w-full ${expandedTypes.size === 0 ? 'bg-slate-600 text-white shadow-md shadow-slate-200' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>Tout replier</button>
               </div>
             </div>
           </div>
@@ -416,7 +416,7 @@ const AdminMedia = () => {
             <div className="w-40 h-24 bg-slate-100 rounded-xl mr-6 flex-shrink-0 flex items-center justify-center overflow-hidden border border-slate-200 shadow-inner group relative">
               <MediaPreview files={item.files} mediaType={item.media_type} />
               <div className="absolute top-1 right-1">
-                  {item.is_featured && <div className="bg-amber-100 text-amber-600 p-1 rounded-full border border-amber-200 shadow-sm"><Star size={12} fill="currentColor" /></div>}
+                  {!!item.is_featured && <div className="bg-amber-100 text-amber-600 p-1 rounded-full border border-amber-200 shadow-sm"><Star size={12} fill="currentColor" /></div>}
               </div>
               <div className="absolute bottom-1 left-1 px-1.5 py-0.5 bg-black/60 backdrop-blur-sm rounded text-[10px] font-bold text-white uppercase tracking-wider">
                   {item.files.length} {item.files.length > 1 ? 'fichiers' : 'fichier'}
