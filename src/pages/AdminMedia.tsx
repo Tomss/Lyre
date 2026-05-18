@@ -410,42 +410,42 @@ const AdminMedia = () => {
                 <div className={"grid transition-all duration-300 ease-in-out " + (expandedTypes.has(type) ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0")}>
   <div className="overflow-hidden">
     <div className="divide-y divide-slate-100">
-      {items.map(media => (
-        <div key={media.id} className="p-4 flex flex-col md:flex-row md:items-center md:justify-between hover:bg-slate-50/80 transition-colors duration-200">
-          <div className="flex-1 mb-4 md:mb-0">
-            <div className="flex items-center gap-3">
-              <p className={`font-semibold ${!media.published ? 'text-slate-500' : 'text-slate-800'}`}>
-                {media.title}
-              </p>
-              {media.published ? (
-                <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100 text-[11px] font-bold tracking-wide">
-                  Publié
-                </span>
-              ) : (
-                <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200 text-[11px] font-bold tracking-wide">
-                  Non publié
-                </span>
-              )}
-              {media.is_featured && (
-                <span className="px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-100 text-[11px] font-bold tracking-wide flex items-center">
-                  <Star size={10} className="mr-1" fill="currentColor" /> Vedette
-                </span>
-              )}
+      {items.map(item => (
+        <div key={item.id} className={`p-4 flex flex-col md:flex-row md:items-center md:justify-between hover:bg-slate-50/80 transition-colors duration-200`}>
+          <div className="flex items-center flex-1 mb-4 md:mb-0">
+            <div className="w-40 h-24 bg-slate-100 rounded-xl mr-6 flex-shrink-0 flex items-center justify-center overflow-hidden border border-slate-200 shadow-inner group relative">
+              <MediaPreview files={item.files} mediaType={item.media_type} />
+              <div className="absolute top-1 right-1">
+                  {item.is_featured && <div className="bg-amber-100 text-amber-600 p-1 rounded-full border border-amber-200 shadow-sm"><Star size={12} fill="currentColor" /></div>}
+              </div>
+              <div className="absolute bottom-1 left-1 px-1.5 py-0.5 bg-black/60 backdrop-blur-sm rounded text-[10px] font-bold text-white uppercase tracking-wider">
+                  {item.files.length} {item.files.length > 1 ? 'fichiers' : 'fichier'}
+              </div>
             </div>
-            <p className="text-sm text-slate-500 flex items-center mt-1">
-              <Calendar className="w-3 h-3 mr-1.5 opacity-50" />
-              {media.media_date ? new Date(media.media_date).toLocaleDateString('fr-FR') : new Date(media.created_at).toLocaleDateString('fr-FR')}
-              {media.files && media.files.length > 0 && (
-                <span className="ml-3 flex items-center text-indigo-500">
-                  <FileText className="w-3 h-3 mr-1" />
-                  {media.files.length} fichier(s)
-                </span>
-              )}
-            </p>
+            <div className="flex-grow">
+              <div className="flex items-center mb-1">
+                <p className="font-bold text-lg text-gray-800 leading-tight mr-3">{item.title}</p>
+                <div className="flex items-center space-x-2">
+                  {item.published ? (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-200">
+                          <Eye size={10} className="mr-1" /> Publié
+                      </span>
+                  ) : (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-500 border border-slate-200">
+                          <EyeOff size={10} className="mr-1" /> Brouillon
+                      </span>
+                  )}
+                </div>
+              </div>
+              <p className="text-gray-600 text-sm line-clamp-2 max-w-xl mb-2">{item.description}</p>
+              <div className="flex items-center text-xs text-slate-400 font-medium">
+                  <Calendar size={12} className="mr-1" /> {item.media_date ? new Date(item.media_date).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Date non définie'}
+              </div>
+            </div>
           </div>
-          <div className="flex items-center space-x-2 flex-shrink-0">
-            <button onClick={() => handleEdit(media)} className="p-2 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition-all duration-300 hover:scale-110 shadow-sm" title="Modifier"><Edit size={16} /></button>
-            <button onClick={() => confirmDelete(media)} className="p-2 text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl transition-all duration-300 hover:scale-110 shadow-sm" title="Supprimer"><Trash2 size={16} /></button>
+          <div className="flex items-center space-x-3 flex-shrink-0">
+            <button onClick={() => handleEdit(item)} title="Modifier" className="p-2 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition-all duration-300 hover:scale-110 shadow-sm"><Edit size={16} /></button>
+            <button onClick={() => confirmDelete(item)} title="Supprimer" className="p-2 text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl transition-all duration-300 hover:scale-110 shadow-sm"><Trash2 size={16} /></button>
           </div>
         </div>
       ))}
