@@ -105,6 +105,30 @@ router.put('/:id', async (req, res) => {
   }
 });
 
+// PATCH /api/morceaux/:id/status - Activer/Désactiver un morceau
+router.patch('/:id/status', async (req, res) => {
+  // @ts-ignore
+  if (!['Admin', 'Gestionnaire'].includes((req as any).user.role)) {
+    return res.status(403).json({ message: 'Accès refusé.' });
+  }
+  const { id } = req.params;
+  const { is_active } = req.body;
+  if (is_active === undefined) {
+    return res.status(400).json({ message: 'Le statut est requis.' });
+  }
+
+  try {
+    await pool.query(
+      'UPDATE morceaux SET is_active = ? WHERE id = ?',
+      [is_active ? 1 : 0, id]
+    );
+    res.status(200).json({ message: 'Statut du morceau mis à jour avec succès.' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Erreur lors de la mise à jour du statut.' });
+  }
+});
+
 // DELETE /api/morceaux/:id - Supprimer un morceau
 router.delete('/:id', async (req, res) => {
   // @ts-ignore

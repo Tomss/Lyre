@@ -187,6 +187,34 @@ const AdminMorceaux = () => {
     }
   };
 
+  const handleToggleStatus = async (morceau: Morceau) => {
+    if (!token) return;
+    const newStatus = morceau.is_active === 0 || morceau.is_active === false ? true : false;
+    
+    // Optimistic UI update
+    setMorceaux(prev => prev.map(m => m.id === morceau.id ? { ...m, is_active: newStatus } : m));
+    
+    try {
+      const response = await fetch(`${API_URL}/morceaux/${morceau.id}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ is_active: newStatus }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Erreur de mise à jour du statut');
+      }
+      showNotification(`Morceau ${newStatus ? 'activé' : 'désactivé'} avec succès`);
+    } catch (err: any) {
+      // Revert optimistic update on error
+      setMorceaux(prev => prev.map(m => m.id === morceau.id ? { ...m, is_active: !newStatus } : m));
+      showNotification(err.message, 'error');
+    }
+  };
+
   const confirmDelete = (morceau: Morceau) => {
     setDeleteConfirmation({ isOpen: true, morceau });
   };
@@ -419,13 +447,13 @@ const AdminMorceaux = () => {
                                   {morceau.nom}
                                 </p>
                                 {morceau.is_active !== 0 && morceau.is_active !== false ? (
-                                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100 text-[11px] font-bold tracking-wide">
+                                  <button onClick={() => handleToggleStatus(morceau)} className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100 text-[11px] font-bold tracking-wide hover:bg-emerald-100 hover:border-emerald-200 transition-colors shadow-sm">
                                     Actif
-                                  </span>
+                                  </button>
                                 ) : (
-                                  <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200 text-[11px] font-bold tracking-wide">
+                                  <button onClick={() => handleToggleStatus(morceau)} className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200 text-[11px] font-bold tracking-wide hover:bg-slate-200 hover:text-slate-600 transition-colors shadow-sm">
                                     Inactif
-                                  </span>
+                                  </button>
                                 )}
                               </div>
                               <p className="text-sm text-slate-500 flex items-center mt-1">
