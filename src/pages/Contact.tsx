@@ -103,18 +103,17 @@ const Contact = () => {
                       <span className="text-[10px] font-black uppercase tracking-widest">Localisation</span>
                     </div>
                     
-                    <div className="py-2 flex items-center space-x-4">
+                    <div className="py-2 flex items-center space-x-4 mb-2">
                       {(settings?.header_logo_url || settings?.site_logo_url) && (
                         <img 
                           src={settings.header_logo_url?.startsWith('http') ? settings.header_logo_url : (settings.header_logo_url ? `${BASE_URL}${settings.header_logo_url}` : (settings.site_logo_url?.startsWith('http') ? settings.site_logo_url : `${BASE_URL}${settings.site_logo_url}`))} 
                           alt="La Lyre" 
-                          className="h-12 lg:h-16 w-auto object-contain flex-shrink-0" 
+                          className="h-10 lg:h-12 w-auto object-contain flex-shrink-0" 
                         />
                       )}
-                      <h3 className="font-bold text-2xl text-teal-800 leading-tight">
-                        Lyre Municipale <br /> 
-                        <span className="text-slate-500">de Chalindrey</span>
-                      </h3>
+                      <p className="font-bold text-slate-800 text-lg">
+                        La lyre - Chalindrey
+                      </p>
                     </div>
                   </div>
 
