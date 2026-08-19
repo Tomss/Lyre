@@ -98,51 +98,6 @@ const HomeAgendaSection = () => {
         };
     }, [selectedEvent, isAllEventsModalOpen]);
 
-    const isPausedRef = useRef(isPaused);
-    const accumulatedScrollRef = useRef(0);
-
-    useEffect(() => {
-        isPausedRef.current = isPaused;
-        if (scrollRef.current) {
-            accumulatedScrollRef.current = scrollRef.current.scrollLeft;
-        }
-    }, [isPaused]);
-
-    // Auto Scroll Logic - Ultra Smooth & Continuous
-    useEffect(() => {
-        const scrollContainer = scrollRef.current;
-        if (!scrollContainer || events.length === 0) return;
-
-        let animationFrameId: number;
-        let lastTime = performance.now();
-        accumulatedScrollRef.current = scrollContainer.scrollLeft;
-
-        const scroll = (currentTime: number) => {
-            if (scrollContainer) {
-                const deltaTime = Math.min(currentTime - lastTime, 50);
-                
-                if (!isPausedRef.current) {
-                    const speed = 0.045; // Smooth subpixel speed
-                    accumulatedScrollRef.current += speed * deltaTime;
-
-                    const halfWidth = (scrollContainer.scrollWidth + 32) / 2;
-                    if (accumulatedScrollRef.current >= halfWidth) {
-                        accumulatedScrollRef.current = 0;
-                    }
-
-                    scrollContainer.scrollLeft = accumulatedScrollRef.current;
-                } else {
-                    accumulatedScrollRef.current = scrollContainer.scrollLeft;
-                }
-            }
-            lastTime = currentTime;
-            animationFrameId = requestAnimationFrame(scroll);
-        };
-
-        animationFrameId = requestAnimationFrame(scroll);
-        return () => cancelAnimationFrame(animationFrameId);
-    }, [events]);
-
     const scrollManual = (direction: 'left' | 'right') => {
         if (scrollRef.current) {
             const scrollAmount = 450;
@@ -360,15 +315,14 @@ const HomeAgendaSection = () => {
                 {events.length > 0 ? (
                     <div
                         ref={scrollRef}
-                        className={`flex gap-8 px-8 py-12 overflow-x-auto no-scrollbar select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+                        className={`flex gap-8 px-8 py-12 overflow-x-auto scroll-smooth no-scrollbar select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
                         onMouseDown={handleMouseDown}
                         onMouseUp={handleMouseUp}
                         onMouseMove={handleMouseMove}
                         onMouseLeave={handleMouseLeave}
                     >
-                        {/* Duplicate the array to create the infinite loop effect */}
-                        {[...events, ...events].map((event, index) => (
-                            <div key={`${event.id}-${index}`} className="w-[300px] md:w-[350px] shrink-0 group relative h-[460px]">
+                        {events.map((event) => (
+                            <div key={event.id} className="w-[300px] md:w-[350px] shrink-0 group relative h-[460px]">
                                 {/* Dark Glass Card - Teal / Emerald Theme */}
                                 <div className="h-full bg-slate-800/50 backdrop-blur-sm rounded-[2rem] border border-white/10 shadow-xl shadow-black/30 hover:shadow-2xl hover:shadow-teal-900/30 hover:bg-slate-800/80 hover:border-teal-500/40 transition-all duration-300 overflow-hidden flex flex-col relative group hover:-translate-y-2">
 
