@@ -98,39 +98,41 @@ const HomeAgendaSection = () => {
         };
     }, [selectedEvent, isAllEventsModalOpen]);
 
-    const [isInViewport, setIsInViewport] = useState(false);
+    const isPausedRef = useRef(isPaused);
+    const accumulatedScrollRef = useRef(0);
 
     useEffect(() => {
-        const container = scrollRef.current;
-        if (!container) return;
+        isPausedRef.current = isPaused;
+        if (scrollRef.current) {
+            accumulatedScrollRef.current = scrollRef.current.scrollLeft;
+        }
+    }, [isPaused]);
 
-        const observer = new IntersectionObserver(([entry]) => {
-            setIsInViewport(entry.isIntersecting);
-        }, { threshold: 0.05 });
-
-        observer.observe(container);
-        return () => observer.disconnect();
-    }, []);
-
-    // Auto Scroll Logic - ONLY runs when section is visible in viewport!
+    // Auto Scroll Logic - Ultra Smooth & Continuous
     useEffect(() => {
         const scrollContainer = scrollRef.current;
-        if (!scrollContainer || events.length === 0 || !isInViewport) return;
+        if (!scrollContainer || events.length === 0) return;
 
         let animationFrameId: number;
         let lastTime = performance.now();
+        accumulatedScrollRef.current = scrollContainer.scrollLeft;
 
         const scroll = (currentTime: number) => {
-            if (!isPaused && scrollContainer) {
-                const deltaTime = currentTime - lastTime;
-                const speed = 0.05; // Pixels per millisecond
+            if (scrollContainer) {
+                const deltaTime = Math.min(currentTime - lastTime, 50);
+                
+                if (!isPausedRef.current) {
+                    const speed = 0.045; // Smooth subpixel speed
+                    accumulatedScrollRef.current += speed * deltaTime;
 
-                scrollContainer.scrollLeft += speed * deltaTime;
+                    const halfWidth = (scrollContainer.scrollWidth + 32) / 2;
+                    if (accumulatedScrollRef.current >= halfWidth) {
+                        accumulatedScrollRef.current = 0;
+                    }
 
-                const halfWidth = (scrollContainer.scrollWidth + 32) / 2;
-
-                if (scrollContainer.scrollLeft >= halfWidth) {
-                    scrollContainer.scrollLeft = 0;
+                    scrollContainer.scrollLeft = accumulatedScrollRef.current;
+                } else {
+                    accumulatedScrollRef.current = scrollContainer.scrollLeft;
                 }
             }
             lastTime = currentTime;
@@ -139,7 +141,7 @@ const HomeAgendaSection = () => {
 
         animationFrameId = requestAnimationFrame(scroll);
         return () => cancelAnimationFrame(animationFrameId);
-    }, [isPaused, events, isInViewport]);
+    }, [events]);
 
     const scrollManual = (direction: 'left' | 'right') => {
         if (scrollRef.current) {
