@@ -7,7 +7,7 @@ import { API_URL, BASE_URL } from '../config';
 
 const Header = () => {
   const [isVisible, setIsVisible] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
+  const lastScrollYRef = useRef(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const location = useLocation();
@@ -18,30 +18,27 @@ const Header = () => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
       
-      // Smart scrolling logic: hide on scroll down, show on scroll up
       if (isMobileMenuOpen) {
         setIsVisible(true);
         return;
       }
 
-      if (currentScrollY > lastScrollY && currentScrollY > 100) {
-        // Only hide if the scroll difference is significant (prevents hiding on tiny browser layout jumps)
-        if (currentScrollY - lastScrollY > 15) {
+      if (currentScrollY > lastScrollYRef.current && currentScrollY > 100) {
+        if (currentScrollY - lastScrollYRef.current > 15) {
           setIsVisible(false);
         }
       } else {
-        // Only show if scrolling up significantly
-        if (lastScrollY - currentScrollY > 15 || currentScrollY <= 100) {
+        if (lastScrollYRef.current - currentScrollY > 15 || currentScrollY <= 100) {
           setIsVisible(true);
         }
       }
 
-      setLastScrollY(currentScrollY);
+      lastScrollYRef.current = currentScrollY;
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [lastScrollY, isMobileMenuOpen]);
+  }, [isMobileMenuOpen]);
 
   // Lock body scroll when mobile menu is open
   useEffect(() => {
@@ -163,8 +160,8 @@ const Header = () => {
     : "container mx-auto px-4 sm:px-6 lg:px-8";
 
   return (
-    <header className={`sticky top-0 left-0 right-0 z-50 transition-all duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'
-      } bg-white transition-shadow duration-300`}>
+    <header className={`sticky top-0 left-0 right-0 z-50 transition-transform duration-200 ease-out will-change-transform ${isVisible ? 'translate-y-0' : '-translate-y-full'
+      } bg-white shadow-xs`}>
       <nav className={containerClass}>
         <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo */}

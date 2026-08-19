@@ -266,28 +266,36 @@ const Dashboard = () => {
     setExpandedOrchestras(new Set());
   };
 
-  const filteredEvents = userEvents.filter(event => 
-    eventFilter === 'all' || event.event_type === eventFilter
-  );
+  const filteredEvents = React.useMemo(() => {
+    return userEvents.filter(event => 
+      eventFilter === 'all' || event.event_type === eventFilter
+    );
+  }, [userEvents, eventFilter]);
 
-  const eventsByType = filteredEvents.reduce((acc, event) => {
-    const type = event.event_type || 'divers';
-    if (!acc[type]) {
-      acc[type] = [];
-    }
-    acc[type].push(event);
-    return acc;
-  }, {} as Record<string, any[]>);
+  const eventsByType = React.useMemo(() => {
+    return filteredEvents.reduce((acc, event) => {
+      const type = event.event_type || 'divers';
+      if (!acc[type]) {
+        acc[type] = [];
+      }
+      acc[type].push(event);
+      return acc;
+    }, {} as Record<string, any[]>);
+  }, [filteredEvents]);
 
-  const filteredPartitions = userPartitions.filter(partition => {
-    const searchLower = partitionSearch.toLowerCase();
-    const morceauNom = partition.morceaux?.nom?.toLowerCase() || '';
-    const partitionNom = partition.nom?.toLowerCase() || '';
-    const instrumentNom = partition.instruments?.name?.toLowerCase() || '';
-    return morceauNom.includes(searchLower) || partitionNom.includes(searchLower) || instrumentNom.includes(searchLower);
-  });
+  const filteredPartitions = React.useMemo(() => {
+    return userPartitions.filter(partition => {
+      const searchLower = partitionSearch.toLowerCase();
+      const morceauNom = partition.morceaux?.nom?.toLowerCase() || '';
+      const partitionNom = partition.nom?.toLowerCase() || '';
+      const instrumentNom = partition.instruments?.name?.toLowerCase() || '';
+      return morceauNom.includes(searchLower) || partitionNom.includes(searchLower) || instrumentNom.includes(searchLower);
+    });
+  }, [userPartitions, partitionSearch]);
 
-  const partitionsByOrchestra = groupPartitionsByOrchestra(filteredPartitions);
+  const partitionsByOrchestra = React.useMemo(() => {
+    return groupPartitionsByOrchestra(filteredPartitions);
+  }, [filteredPartitions]);
 
   const getEventTypeStyles = (eventType: string) => {
     switch (eventType) {
@@ -639,7 +647,7 @@ const Dashboard = () => {
 
         <div className="space-y-8">
           {/* Section Agenda */}
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 p-6 h-full">
+          <div className="bg-white rounded-2xl shadow-md border border-slate-100 p-6 h-full">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 text-dark border-b border-gray-100 pb-4">
               <h2 className="font-bold text-2xl flex items-center gap-3">
                 <Calendar className="h-7 w-7 text-indigo-600" />
@@ -698,7 +706,6 @@ const Dashboard = () => {
                   const TypeIcon = styles.icon;
                   const isExpanded = expandedEventTypes.has(type);
 
-                  // Trouver le prochain événement (le plus proche dans le futur)
                   const now = new Date();
                   const upcomingEvents = events
                     .filter(e => new Date(e.event_date) >= now)
@@ -706,7 +713,7 @@ const Dashboard = () => {
                   const nextEventId = upcomingEvents.length > 0 ? upcomingEvents[0].id : null;
 
                   return (
-                    <div key={type} className="bg-white/40 backdrop-blur-md rounded-2xl shadow-sm border border-white/60 overflow-hidden transition-all duration-300 hover:shadow-md hover:border-indigo-100">
+                    <div key={type} className="bg-slate-50/70 rounded-2xl shadow-xs border border-slate-200/80 overflow-hidden transition-all duration-200 hover:border-indigo-200">
                       <button 
                         onClick={() => toggleEventType(type)} 
                         className={`w-full flex items-center justify-between p-5 bg-gradient-to-r ${styles.lightGradient} hover:opacity-90 transition-all`}
@@ -722,7 +729,7 @@ const Dashboard = () => {
                         </h3>
                         <ChevronDown className="text-slate-400" />
                       </button>
-                      <div className={`grid transition-all duration-300 ease-in-out ${isExpanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
+                      <div className={`grid transition-[grid-template-rows,opacity] duration-200 ease-out ${isExpanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
                         <div className="overflow-hidden">
                           <ul className="p-5 space-y-4 bg-white/30">
                           {events.map((event: any) => {

@@ -10,16 +10,16 @@
 
 @layer components {
   .admin-card {
-    @apply relative p-6 bg-white/60 backdrop-blur-xl rounded-2xl shadow-sm hover:shadow-2xl transition-all duration-300 flex flex-col items-center justify-center border border-white/80 overflow-hidden transform hover:-translate-y-1.5 z-10;
+    @apply relative p-6 bg-white rounded-2xl shadow-sm hover:shadow-md transition-transform transition-shadow duration-200 flex flex-col items-center justify-center border border-slate-100 overflow-hidden transform hover:-translate-y-1 z-10;
   }
   
   .admin-card::before {
     content: '';
-    @apply absolute inset-0 bg-gradient-to-br from-white/40 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-[-1];
+    @apply absolute inset-0 bg-gradient-to-br from-indigo-50/30 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-[-1];
   }
   
   .admin-card:hover {
-    @apply border-teal-200 bg-white/80;
+    @apply border-indigo-200 bg-white;
   }
 }
 
