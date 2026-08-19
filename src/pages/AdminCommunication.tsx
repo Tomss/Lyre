@@ -70,6 +70,7 @@ const AdminCommunication = () => {
   const [freeMessageContent, setFreeMessageContent] = useState('');
   const [isTestMode, setIsTestMode] = useState(false);
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
+  const [selectedOrchestraFilter, setSelectedOrchestraFilter] = useState<string>('all');
   
   // Search & Filter states
   const [memberSearchTerm, setMemberSearchTerm] = useState('');
@@ -163,6 +164,7 @@ const AdminCommunication = () => {
     setCustomNote('');
     setFreeMessageContent('');
     setIsTestMode(false);
+    setSelectedOrchestraFilter('all');
     setShowWizard(true);
     fetchUpcomingEvents();
   };
@@ -230,6 +232,11 @@ const AdminCommunication = () => {
 
   const selectedEvent = events.find(e => e.id === selectedEventId);
 
+  // Available unique orchestra names across recipients
+  const availableOrchestraNames = Array.from(
+    new Set(recipients.flatMap(r => r.userOrchestras || []).filter(Boolean))
+  ).sort();
+
   // Filter recipients based on search
   const filteredRecipients = recipients.filter(r => 
     `${r.firstName} ${r.lastName} ${r.email}`.toLowerCase().includes(memberSearchTerm.toLowerCase())
@@ -257,6 +264,21 @@ const AdminCommunication = () => {
 
   const deselectAll = () => {
     setSelectedUserIds([]);
+  };
+
+  // Handle Orchestra quick selection for Communication Libre
+  const handleSelectOrchestraFilter = (orchName: string) => {
+    setSelectedOrchestraFilter(orchName);
+    if (orchName === 'all') {
+      setSelectedUserIds(recipients.map(r => r.id));
+    } else if (orchName === 'none') {
+      setSelectedUserIds([]);
+    } else {
+      const matchingIds = recipients
+        .filter(r => (r.userOrchestras || []).includes(orchName))
+        .map(r => r.id);
+      setSelectedUserIds(matchingIds);
+    }
   };
 
   const handleSendCommunication = async () => {
@@ -369,7 +391,7 @@ const AdminCommunication = () => {
           </div>
         </div>
 
-        {/* Main Content Card: History & Search (EXACT SAME DA AS ADMINUSERS) */}
+        {/* Main Content Card: History & Search */}
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-6 border-b border-gray-100">
             <div>
@@ -453,7 +475,7 @@ const AdminCommunication = () => {
 
       </div>
 
-      {/* POP-UP WIZARD MODAL (STEP 1 -> STEP 2 -> STEP 3 -> STEP 4 -> STEP 5) */}
+      {/* POP-UP WIZARD MODAL */}
       {showWizard && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white rounded-3xl max-w-3xl w-full shadow-2xl border border-slate-100 my-8 overflow-hidden flex flex-col max-h-[90vh]">
@@ -468,7 +490,7 @@ const AdminCommunication = () => {
                   <h3 className="font-extrabold text-lg text-white">Nouvelle Communication</h3>
                   <p className="text-xs text-slate-400">
                     {wizardStep === 1 && "Étape 1 : Choisir le type de communication"}
-                    {wizardStep === 2 && "Étape 2 : Événement à venir & Contenu"}
+                    {wizardStep === 2 && (commType === 'event' ? "Étape 2 : Sélectionner l'événement à venir" : "Étape 2 : Rédiger la communication libre")}
                     {wizardStep === 3 && "Étape 3 : Ciblage des destinataires & Mode Test"}
                     {wizardStep === 4 && "Étape 4 : Aperçu & Confirmation d'envoi"}
                   </p>
@@ -485,7 +507,7 @@ const AdminCommunication = () => {
             {/* Modal Body */}
             <div className="p-6 overflow-y-auto flex-1 space-y-6">
 
-              {/* STEP 1: Choose Type (Event vs Free) */}
+              {/* STEP 1: Choose Type */}
               {wizardStep === 1 && (
                 <div className="space-y-4">
                   <h4 className="font-bold text-slate-800 text-base">Quel type de communication souhaitez-vous envoyer ?</h4>
@@ -580,7 +602,7 @@ const AdminCommunication = () => {
                                 }`}
                               >
                                 <div>
-                                  <div className="flex items-center gap-2 mb-1">
+                                  <div className="flex items-center gap-2 mb-1 flex-wrap">
                                     <span className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full ${
                                       ev.event_type === 'concert' ? 'bg-amber-100 text-amber-800' : 'bg-indigo-100 text-indigo-800'
                                     }`}>
@@ -672,11 +694,13 @@ const AdminCommunication = () => {
               {/* STEP 3: Target & Test Mode */}
               {wizardStep === 3 && (
                 <div className="space-y-4">
+                  
+                  {/* Mode Banner */}
                   <div className="flex items-center justify-between bg-slate-50 p-4 rounded-2xl border border-slate-200">
                     <div>
                       <h5 className="font-bold text-slate-800 text-sm">Mode de diffusion</h5>
                       <p className="text-xs text-slate-500">
-                        {isTestMode ? "Actuellement en Mode Test (envoi restreint)" : "Actuellement en Envoi Officiel à l'ensemble"}
+                        {isTestMode ? "Actuellement en Mode Test (envoi restreint d'essai)" : (commType === 'event' ? "Envoi officiel aux orchestres ciblés" : "Communication libre sur-mesure")}
                       </p>
                     </div>
 
@@ -694,22 +718,54 @@ const AdminCommunication = () => {
                     </div>
                   </div>
 
+                  {/* Target Context Banner */}
                   {isTestMode ? (
                     <div className="bg-amber-50 border border-amber-200 rounded-xl p-3.5 text-xs text-amber-900 flex items-start gap-2.5">
                       <ShieldAlert size={18} className="text-amber-600 flex-shrink-0 mt-0.5" />
                       <div>
-                        <strong>Mode Test Activé :</strong> Seuls les membres cochés ci-dessous recevront le mail d'essai. Utile pour vérifier le rendu sur votre propre email.
+                        <strong>Mode Test Activé :</strong> Seuls les membres cochés ci-dessous recevront le mail d'essai. Utile pour tester l'envoi sur votre propre email.
                       </div>
                     </div>
-                  ) : (
+                  ) : commType === 'event' ? (
                     <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-3.5 text-xs text-indigo-900 flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Users size={18} className="text-indigo-600" />
-                        <span>Envoi officiel aux musiciens de l'orchestre cible.</span>
+                        <span>Envoi officiel aux musiciens de l'événement : <strong>{selectedEvent?.title}</strong> (Ensembles : {(selectedEvent?.orchestras || []).map(o => o.name).join(', ')})</span>
                       </div>
-                      <span className="font-black bg-indigo-600 text-white px-2.5 py-0.5 rounded-full text-[11px]">
+                      <span className="font-black bg-indigo-600 text-white px-2.5 py-0.5 rounded-full text-[11px] flex-shrink-0">
                         {recipients.length} membre(s)
                       </span>
+                    </div>
+                  ) : (
+                    <div className="bg-purple-50 border border-purple-200 rounded-xl p-3.5 text-xs text-purple-900 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <FileText size={18} className="text-purple-600" />
+                        <span>Communication libre : Cochez les membres ou filtrez par orchestre ci-dessous.</span>
+                      </div>
+                      <span className="font-black bg-purple-600 text-white px-2.5 py-0.5 rounded-full text-[11px] flex-shrink-0">
+                        {selectedUserIds.length} retenu(s)
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Quick Orchestra Filter Dropdown for Free Communication */}
+                  {commType === 'free' && (
+                    <div className="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                      <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5 flex-shrink-0">
+                        <Filter size={14} className="text-purple-600" />
+                        <span>Cibler un orchestre :</span>
+                      </label>
+                      <select
+                        value={selectedOrchestraFilter}
+                        onChange={(e) => handleSelectOrchestraFilter(e.target.value)}
+                        className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-medium text-slate-800 outline-none focus:ring-2 focus:ring-purple-500"
+                      >
+                        <option value="none">-- Choisir un orchestre à cocher --</option>
+                        <option value="all">Tous les orchestres ({recipients.length} membres)</option>
+                        {availableOrchestraNames.map(name => (
+                          <option key={name} value={name}>{name}</option>
+                        ))}
+                      </select>
                     </div>
                   )}
 
@@ -717,7 +773,7 @@ const AdminCommunication = () => {
                   <div className="space-y-2 pt-2">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                        Liste des membres ({filteredRecipients.length})
+                        Liste des membres ({filteredRecipients.length}) &bull; <strong className="text-slate-800">{selectedUserIds.length} coché(s)</strong>
                       </span>
                       {(isTestMode || commType === 'free') && (
                         <div className="flex items-center gap-2 text-xs">
@@ -773,7 +829,7 @@ const AdminCommunication = () => {
                                 </div>
                               </div>
 
-                              <div className="flex items-center gap-1">
+                              <div className="flex items-center gap-1 flex-wrap">
                                 {(r.userOrchestras || []).filter(Boolean).map((oName, i) => (
                                   <span key={i} className="text-[9px] font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded">
                                     {oName}
@@ -820,7 +876,7 @@ const AdminCommunication = () => {
                           {selectedEvent.location && <p className="text-[11px] text-slate-600">📍 <strong>Lieu :</strong> {selectedEvent.location}</p>}
                         </div>
                       ) : (
-                        <div className="bg-slate-50 border-l-4 border-indigo-600 p-3 rounded-r-lg text-slate-700">
+                        <div className="bg-slate-50 border-l-4 border-indigo-600 p-3 rounded-r-lg text-slate-700 font-normal">
                           {(freeMessageContent || 'Aperçu du contenu libre...').replace(/\n/g, '<br/>')}
                         </div>
                       )}
@@ -838,7 +894,7 @@ const AdminCommunication = () => {
                   </div>
 
                   <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs text-slate-700 space-y-1">
-                    <p><strong>Destinataires retenus :</strong> {isTestMode ? selectedUserIds.length : recipients.length} membre(s)</p>
+                    <p><strong>Destinataires retenus :</strong> {isTestMode ? selectedUserIds.length : (commType === 'event' ? recipients.length : selectedUserIds.length)} membre(s)</p>
                     <p><strong>Objet :</strong> {customSubject}</p>
                   </div>
                 </div>
@@ -870,7 +926,7 @@ const AdminCommunication = () => {
               ) : (
                 <button
                   onClick={handleSendCommunication}
-                  disabled={submitting || (isTestMode && selectedUserIds.length === 0)}
+                  disabled={submitting || (commType === 'free' && !isTestMode && selectedUserIds.length === 0) || (isTestMode && selectedUserIds.length === 0)}
                   className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition-all shadow-lg shadow-indigo-200 disabled:opacity-50 flex items-center gap-2"
                 >
                   {submitting ? (
