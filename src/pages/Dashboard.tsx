@@ -598,6 +598,17 @@ const Dashboard = () => {
                 </>
               )}
 
+              {(currentUser?.role === 'Admin' || currentUser?.managedModules?.includes('communication')) && (
+                <Link to="/admin/communication" className="admin-card group block bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition-all border border-gray-100 text-center">
+                  <div className="w-16 h-16 mx-auto rounded-2xl bg-teal-100 text-teal-600 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-teal-600 group-hover:text-white transition-all duration-300">
+                    <Mail className="h-8 w-8" />
+                  </div>
+                  <span className="font-bold text-slate-700">Communication</span>
+                </Link>
+              )}
+                </>
+              )}
+
               {(currentUser?.role === 'Admin' || currentUser?.managedModules?.includes('media')) && (
                 <Link to="/admin/media" className="admin-card group block bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition-all border border-gray-100 text-center">
                   <div className="w-16 h-16 mx-auto rounded-2xl bg-pink-100 text-pink-600 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-pink-500 group-hover:text-white transition-all duration-300">

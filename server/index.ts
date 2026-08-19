@@ -26,6 +26,7 @@ import settingsRouter from './routes/settings';
 import partnersRouter from './routes/partners';
 import newsRouter from './routes/news';
 import historyRouter from './routes/history';
+import communicationRouter from './routes/communication';
 
 dotenv.config();
 
@@ -202,6 +203,34 @@ dotenv.config();
       console.log('[Migration] Données history_events insérées.');
     }
 
+    // Migration: Création table communication_log
+    const [commTables]: any = await pool.query(`
+      SELECT COUNT(*) as count 
+      FROM information_schema.TABLES 
+      WHERE TABLE_SCHEMA = DATABASE() 
+      AND TABLE_NAME = 'communication_log'
+    `);
+
+    if (commTables[0].count === 0) {
+      console.log('[Migration] Création de la table communication_log...');
+      await pool.query(`
+        CREATE TABLE communication_log (
+          id varchar(36) NOT NULL,
+          event_id varchar(36) DEFAULT NULL,
+          subject text NOT NULL,
+          recipient_count int DEFAULT '0',
+          recipients_list json DEFAULT NULL,
+          is_test tinyint(1) DEFAULT '0',
+          sent_by varchar(36) NOT NULL,
+          created_at datetime DEFAULT CURRENT_TIMESTAMP,
+          PRIMARY KEY (id),
+          KEY communication_log_sent_by_fkey (sent_by),
+          CONSTRAINT communication_log_sent_by_fkey FOREIGN KEY (sent_by) REFERENCES profiles (id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+      `);
+      console.log('[Migration] Table communication_log créée avec succès.');
+    }
+
   } catch (e) {
     console.error('[Emergency/Migration] Erreur:', e);
   }
@@ -245,6 +274,7 @@ app.use('/api/settings', settingsRouter);
 app.use('/api/partners', partnersRouter);
 app.use('/api/news', newsRouter);
 app.use('/api/history', historyRouter);
+app.use('/api/communication', communicationRouter);
 
 
 app.get('/', (req, res) => {

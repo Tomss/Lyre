@@ -77,6 +77,7 @@ const AdminUsers = () => {
 
   const availableModules = [
     { id: 'news', label: 'Actualités & Événements' },
+    { id: 'communication', label: 'Communication & Emails' },
     { id: 'orchestras', label: 'Orchestres' },
     { id: 'instruments', label: 'Instruments & Professeurs' },
     { id: 'media', label: 'Média & Photos' },

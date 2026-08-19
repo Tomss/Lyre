@@ -15,13 +15,14 @@ import AdminUsers from './pages/AdminUsers'; // Importer la page d'administratio
 import AdminInstruments from './pages/AdminInstruments'; // Importer la page d'administration des instruments
 import AdminOrchestras from './pages/AdminOrchestras'; // Importer la page d'administration des orchestres
 import AdminEvents from './pages/AdminEvents'; // Importer la page d'administration des événements
-import AdminMedia from './pages/AdminMedia'; // Importer la import AdminCarousel from './pages/AdminCarousel';
+import AdminMedia from './pages/AdminMedia';
 import AdminTheme from './pages/AdminTheme';
 import AdminPartners from './pages/AdminPartners'; // Importer la page d'administration du thème
 import AdminMorceaux from './pages/AdminMorceaux'; // Importer la page d'administration des morceaux
 
 import AdminPartitions from './pages/AdminPartitions';
 import AdminNews from './pages/AdminNews';
+import AdminCommunication from './pages/AdminCommunication';
 
 import NewsArchive from './pages/NewsArchive';
 
@@ -59,6 +60,7 @@ function App() {
   
             <Route path="/admin/partitions" element={<AdminPartitions />} />
             <Route path="/admin/news" element={<AdminNews />} />
+            <Route path="/admin/communication" element={<AdminCommunication />} />
           </Routes>
         </main>
         <Footer />
