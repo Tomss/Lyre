@@ -240,26 +240,26 @@ const HomeNewsSection = () => {
                 onMouseEnter={() => setIsPaused(true)}
                 onMouseLeave={handleMouseLeave}
             >
-                {/* Navigation Buttons */}
+                {/* Navigation Buttons (Positioned outside cards in track padding) */}
                 <button
                     onClick={() => scrollManual('left')}
-                    className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-30 w-12 h-12 rounded-full bg-white/90 backdrop-blur shadow-lg shadow-teal-900/10 border border-teal-100 text-teal-600 flex items-center justify-center hover:bg-teal-500 hover:text-white transition-all duration-300 opacity-0 group-hover/section:opacity-100 translate-x-4 group-hover/section:translate-x-0 cursor-pointer"
+                    className="absolute left-2 sm:left-4 md:left-6 top-1/2 -translate-y-1/2 z-30 w-12 h-12 rounded-full bg-white shadow-xl border border-teal-100 text-teal-600 flex items-center justify-center hover:bg-teal-500 hover:text-white transition-all duration-200 cursor-pointer"
                     aria-label="Précédent"
                 >
                     <ArrowRight className="w-5 h-5 rotate-180" />
                 </button>
                 <button
                     onClick={() => scrollManual('right')}
-                    className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-30 w-12 h-12 rounded-full bg-white/90 backdrop-blur shadow-lg shadow-teal-900/10 border border-teal-100 text-teal-600 flex items-center justify-center hover:bg-teal-500 hover:text-white transition-all duration-300 opacity-0 group-hover/section:opacity-100 -translate-x-4 group-hover/section:translate-x-0 cursor-pointer"
+                    className="absolute right-2 sm:right-4 md:right-6 top-1/2 -translate-y-1/2 z-30 w-12 h-12 rounded-full bg-white shadow-xl border border-teal-100 text-teal-600 flex items-center justify-center hover:bg-teal-500 hover:text-white transition-all duration-200 cursor-pointer"
                     aria-label="Suivant"
                 >
                     <ArrowRight className="w-5 h-5" />
                 </button>
 
-                {/* Scrollable Track - Added py-12 for shadows, increased gap */}
+                {/* Scrollable Track - Extra padding so cards start AFTER left arrow and end BEFORE right arrow */}
                 <div
                     ref={scrollRef}
-                    className={`flex gap-8 px-8 py-12 overflow-x-auto scroll-smooth no-scrollbar select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+                    className={`flex gap-8 px-16 sm:px-20 md:px-24 py-12 overflow-x-auto scroll-smooth no-scrollbar select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
                     onMouseDown={handleMouseDown}
                     onMouseUp={handleMouseUp}
                     onMouseMove={handleMouseMove}
