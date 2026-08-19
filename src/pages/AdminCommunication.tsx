@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   ArrowLeft, Mail, Send, History, Calendar, Users, CheckCircle, 
   AlertCircle, Search, Clock, MapPin, X, Sparkles, Filter, ChevronRight, Check, ShieldAlert, FileText,
@@ -99,9 +99,11 @@ const AdminCommunication = () => {
   const [isTestMode, setIsTestMode] = useState(false);
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
   
-  // Emoji Picker state
+  // Emoji Picker state & Click Outside Ref
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [activeEmojiCategory, setActiveEmojiCategory] = useState(0);
+  const emojiPickerRef = useRef<HTMLDivElement>(null);
+  const editorRef = useRef<HTMLDivElement>(null);
 
   // Search & Filter states
   const [memberSearchTerm, setMemberSearchTerm] = useState('');
@@ -127,30 +129,58 @@ const AdminCommunication = () => {
     }, 4000);
   };
 
-  // Insert formatting tag (bold, italic, underline, list, etc.) in text area
-  const insertFormatting = (prefix: string, suffix: string = '') => {
-    const textarea = document.getElementById('freeMessageTextarea') as HTMLTextAreaElement;
-    if (!textarea) {
-      setFreeMessageContent(prev => prev + prefix + suffix);
-      return;
+  // Close Emoji Picker on Outside Click
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target as Node)) {
+        setShowEmojiPicker(false);
+      }
+    };
+
+    if (showEmojiPicker) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
     }
 
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const selectedText = freeMessageContent.substring(start, end);
-    const replacement = prefix + (selectedText || '') + suffix;
-    const newContent = freeMessageContent.substring(0, start) + replacement + freeMessageContent.substring(end);
-    
-    setFreeMessageContent(newContent);
-    
-    setTimeout(() => {
-      textarea.focus();
-      textarea.setSelectionRange(start + prefix.length, start + prefix.length + selectedText.length);
-    }, 50);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showEmojiPicker]);
+
+  // Synchronize editor innerHTML when step changes to step 2 in free mode
+  useEffect(() => {
+    if (wizardStep === 2 && commType === 'free' && editorRef.current) {
+      if (editorRef.current.innerHTML !== freeMessageContent) {
+        editorRef.current.innerHTML = freeMessageContent || '';
+      }
+    }
+  }, [wizardStep, commType]);
+
+  // Execute Rich Text formatting commands (WYSIWYG Word-like behavior)
+  const execFormat = (command: string, value: string | undefined = undefined) => {
+    if (editorRef.current) {
+      editorRef.current.focus();
+      document.execCommand(command, false, value);
+      setFreeMessageContent(editorRef.current.innerHTML);
+    }
   };
 
-  const insertEmoji = (emoji: string) => {
-    insertFormatting(emoji);
+  const insertCalloutBox = () => {
+    if (editorRef.current) {
+      editorRef.current.focus();
+      const calloutHtml = `<div style="background-color:#eff6ff; border-left:4px solid #4f46e5; padding:14px 18px; border-radius:12px; margin:12px 0; color:#1e40af; font-weight:500;">📌 Votre note d'information ici...</div><p><br></p>`;
+      document.execCommand('insertHTML', false, calloutHtml);
+      setFreeMessageContent(editorRef.current.innerHTML);
+    }
+  };
+
+  const insertEmojiAtCursor = (emoji: string) => {
+    if (editorRef.current) {
+      editorRef.current.focus();
+      document.execCommand('insertText', false, emoji);
+      setFreeMessageContent(editorRef.current.innerHTML);
+    }
     setShowEmojiPicker(false);
   };
 
@@ -417,14 +447,6 @@ const AdminCommunication = () => {
     });
   };
 
-  // Helper to format HTML preview safely without raw <br/> strings appearing
-  const renderPreviewContent = (text: string) => {
-    if (!text) return 'Aperçu du contenu libre...';
-    // Replace newlines with HTML linebreaks for preview
-    const htmlText = text.replace(/\n/g, '<br/>');
-    return <div dangerouslySetInnerHTML={{ __html: htmlText }} />;
-  };
-
   return (
     <div className="pt-8 lg:pt-12 pb-20 min-h-screen bg-gray-100">
       
@@ -576,7 +598,7 @@ const AdminCommunication = () => {
                   <h3 className="font-extrabold text-xl text-white">Nouvelle Communication</h3>
                   <p className="text-xs text-slate-400 mt-0.5">
                     {wizardStep === 1 && "Étape 1 : Choisir le type de communication"}
-                    {wizardStep === 2 && (commType === 'event' ? "Étape 2 : Sélectionner l'événement à venir" : "Étape 2 : Rédiger le message avec mise en forme")}
+                    {wizardStep === 2 && (commType === 'event' ? "Étape 2 : Sélectionner l'événement à venir" : "Étape 2 : Rédiger le message (Éditeur Word & Smileys)")}
                     {wizardStep === 3 && "Étape 3 : Ciblage par Orchestre(s) ou par Membre(s)"}
                     {wizardStep === 4 && "Étape 4 : Aperçu & Confirmation d'envoi"}
                   </p>
@@ -646,7 +668,7 @@ const AdminCommunication = () => {
                 </div>
               )}
 
-              {/* STEP 2: Event selection or Free Content with Rich Text Toolbar */}
+              {/* STEP 2: Event selection or Free Content with TRUE WYSIWYG WORD EDITOR */}
               {wizardStep === 2 && (
                 <div className="space-y-6">
                   {commType === 'event' ? (
@@ -745,7 +767,7 @@ const AdminCommunication = () => {
                       </div>
                     </div>
                   ) : (
-                    /* Free Communication Form with RICH TEXT & EMOJI TOOLBAR */
+                    /* Free Communication Form with TRUE VISUAL WYSIWYG WORD EDITOR */
                     <div className="space-y-5">
                       <div>
                         <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
@@ -760,7 +782,7 @@ const AdminCommunication = () => {
                         />
                       </div>
 
-                      {/* RICH TEXT & EMOJI EDITOR */}
+                      {/* TRUE WYSIWYG WORD EDITOR */}
                       <div>
                         <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
                           Corps du message
@@ -775,27 +797,27 @@ const AdminCommunication = () => {
                             <div className="flex items-center gap-1">
                               <button 
                                 type="button"
-                                onClick={() => insertFormatting('<b>', '</b>')}
-                                title="Gras"
-                                className="p-2 hover:bg-slate-200 rounded-lg text-slate-700 font-extrabold text-xs transition-colors"
+                                onClick={() => execFormat('bold')}
+                                title="Gras (Word style)"
+                                className="p-2 hover:bg-slate-200 rounded-lg text-slate-800 font-extrabold text-xs transition-colors"
                               >
                                 <Bold size={16} />
                               </button>
 
                               <button 
                                 type="button"
-                                onClick={() => insertFormatting('<i>', '</i>')}
-                                title="Italique"
-                                className="p-2 hover:bg-slate-200 rounded-lg text-slate-700 italic text-xs transition-colors"
+                                onClick={() => execFormat('italic')}
+                                title="Italique (Word style)"
+                                className="p-2 hover:bg-slate-200 rounded-lg text-slate-800 italic text-xs transition-colors"
                               >
                                 <Italic size={16} />
                               </button>
 
                               <button 
                                 type="button"
-                                onClick={() => insertFormatting('<u>', '</u>')}
-                                title="Souligné"
-                                className="p-2 hover:bg-slate-200 rounded-lg text-slate-700 underline text-xs transition-colors"
+                                onClick={() => execFormat('underline')}
+                                title="Souligné (Word style)"
+                                className="p-2 hover:bg-slate-200 rounded-lg text-slate-800 underline text-xs transition-colors"
                               >
                                 <Underline size={16} />
                               </button>
@@ -804,25 +826,25 @@ const AdminCommunication = () => {
 
                               <button 
                                 type="button"
-                                onClick={() => insertFormatting('<p>• ', '</p>')}
+                                onClick={() => execFormat('insertUnorderedList')}
                                 title="Liste à puces"
-                                className="p-2 hover:bg-slate-200 rounded-lg text-slate-700 text-xs transition-colors flex items-center gap-1"
+                                className="p-2 hover:bg-slate-200 rounded-lg text-slate-800 text-xs transition-colors flex items-center gap-1"
                               >
                                 <List size={16} />
                               </button>
 
                               <button 
                                 type="button"
-                                onClick={() => insertFormatting('<div style="background-color:#eff6ff; padding:12px; border-left:4px solid #4f46e5; border-radius:8px; margin:10px 0;">', '</div>')}
-                                title="Encadré d'information"
-                                className="px-2.5 py-1 hover:bg-slate-200 rounded-lg text-slate-700 text-xs font-bold transition-colors"
+                                onClick={insertCalloutBox}
+                                title="Insérer un encadré d'information"
+                                className="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold transition-colors"
                               >
-                                Encadré
+                                + Encadré
                               </button>
                             </div>
 
-                            {/* Emoji Picker Trigger */}
-                            <div className="relative">
+                            {/* Emoji Picker Trigger with Ref for Click Outside */}
+                            <div className="relative" ref={emojiPickerRef}>
                               <button 
                                 type="button"
                                 onClick={() => setShowEmojiPicker(!showEmojiPicker)}
@@ -832,7 +854,7 @@ const AdminCommunication = () => {
                                 <span>Smileys & Emojis</span>
                               </button>
 
-                              {/* Emoji Picker Popover */}
+                              {/* Emoji Picker Popover (Closes on outside click) */}
                               {showEmojiPicker && (
                                 <div className="absolute right-0 top-full mt-2 z-50 bg-white border border-slate-200 rounded-2xl shadow-2xl p-3 w-80 space-y-3">
                                   
@@ -859,7 +881,7 @@ const AdminCommunication = () => {
                                       <button
                                         key={i}
                                         type="button"
-                                        onClick={() => insertEmoji(emoji)}
+                                        onClick={() => insertEmojiAtCursor(emoji)}
                                         className="p-2 text-xl hover:bg-slate-100 rounded-xl transition-all hover:scale-125 text-center"
                                       >
                                         {emoji}
@@ -868,7 +890,7 @@ const AdminCommunication = () => {
                                   </div>
 
                                   <div className="text-[10px] text-slate-400 text-center border-t border-slate-100 pt-1">
-                                    Cliquez sur un smiley pour l'insérer dans votre message.
+                                    Cliquez sur un smiley pour l'insérer directement.
                                   </div>
                                 </div>
                               )}
@@ -876,14 +898,14 @@ const AdminCommunication = () => {
 
                           </div>
 
-                          {/* Message Textarea */}
-                          <textarea
-                            id="freeMessageTextarea"
-                            rows={8}
-                            placeholder="Rédigez votre message ici..."
-                            value={freeMessageContent}
-                            onChange={(e) => setFreeMessageContent(e.target.value)}
-                            className="w-full p-4 text-sm bg-white border-0 focus:ring-0 text-slate-800 outline-none leading-relaxed font-normal"
+                          {/* TRUE ContentEditable WYSIWYG Editor */}
+                          <div
+                            ref={editorRef}
+                            contentEditable
+                            suppressContentEditableWarning
+                            onInput={(e) => setFreeMessageContent(e.currentTarget.innerHTML)}
+                            onBlur={(e) => setFreeMessageContent(e.currentTarget.innerHTML)}
+                            className="w-full min-h-[220px] max-h-[350px] p-4 text-sm bg-white focus:outline-none text-slate-800 leading-relaxed overflow-y-auto"
                           />
                         </div>
                       </div>
@@ -1216,15 +1238,16 @@ const AdminCommunication = () => {
                             {selectedEvent.location && <p className="text-xs text-slate-600">📍 <strong>Lieu :</strong> {selectedEvent.location}</p>}
                           </div>
                         ) : (
-                          <div className="bg-slate-50 border-l-4 border-indigo-600 p-4 rounded-r-xl text-slate-800 font-normal leading-relaxed text-sm">
-                            {renderPreviewContent(freeMessageContent)}
-                          </div>
+                          <div 
+                            className="bg-slate-50 border-l-4 border-indigo-600 p-4 rounded-r-xl text-slate-800 font-normal leading-relaxed text-sm"
+                            dangerouslySetInnerHTML={{ __html: freeMessageContent || 'Aperçu du contenu libre...' }}
+                          />
                         )}
 
                         {customNote && (
                           <div className="bg-slate-100 border border-dashed border-slate-300 rounded-xl p-3 text-xs italic text-slate-700">
                             <strong>Note du responsable :</strong>
-                            <div className="mt-1 font-normal not-italic">{renderPreviewContent(customNote)}</div>
+                            <div className="mt-1 font-normal not-italic" dangerouslySetInnerHTML={{ __html: customNote }} />
                           </div>
                         )}
 
