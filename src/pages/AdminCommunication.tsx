@@ -148,9 +148,9 @@ const AdminCommunication = () => {
     };
   }, [showEmojiPicker]);
 
-  // Synchronize editor innerHTML when step changes to step 2 in free mode
+  // Synchronize editor innerHTML when step changes to step 3 in free mode
   useEffect(() => {
-    if (wizardStep === 2 && commType === 'free' && editorRef.current) {
+    if (wizardStep === 3 && commType === 'free' && editorRef.current) {
       if (editorRef.current.innerHTML !== freeMessageContent) {
         editorRef.current.innerHTML = freeMessageContent || '';
       }
@@ -598,8 +598,8 @@ const AdminCommunication = () => {
                   <h3 className="font-extrabold text-xl text-white">Nouvelle Communication</h3>
                   <p className="text-xs text-slate-400 mt-0.5">
                     {wizardStep === 1 && "Étape 1 : Choisir le type de communication"}
-                    {wizardStep === 2 && (commType === 'event' ? "Étape 2 : Sélectionner l'événement à venir" : "Étape 2 : Rédiger le message (Éditeur Word & Smileys)")}
-                    {wizardStep === 3 && "Étape 3 : Ciblage par Orchestre(s) ou par Membre(s)"}
+                    {wizardStep === 2 && "Étape 2 : Sélectionner les destinataires & Mode Test"}
+                    {wizardStep === 3 && (commType === 'event' ? "Étape 3 : Compléter la note d'organisation" : "Étape 3 : Rédiger le message (Éditeur Word & Smileys)")}
                     {wizardStep === 4 && "Étape 4 : Aperçu & Confirmation d'envoi"}
                   </p>
                 </div>
@@ -639,7 +639,7 @@ const AdminCommunication = () => {
                         </p>
                       </div>
                       <span className="text-xs font-extrabold text-indigo-600 flex items-center">
-                        Sélectionner l'événement <ChevronRight size={16} className="ml-1" />
+                        Choisir l'événement & Destinataires <ChevronRight size={16} className="ml-1" />
                       </span>
                     </div>
 
@@ -661,261 +661,15 @@ const AdminCommunication = () => {
                         </p>
                       </div>
                       <span className="text-xs font-extrabold text-purple-600 flex items-center">
-                        Rédiger le message <ChevronRight size={16} className="ml-1" />
+                        Choisir les Destinataires <ChevronRight size={16} className="ml-1" />
                       </span>
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* STEP 2: Event selection or Free Content with TRUE WYSIWYG WORD EDITOR */}
+              {/* STEP 2: TARGET SELECTION FIRST! (EVENT OR FREE ORCHESTRAS/MEMBERS) */}
               {wizardStep === 2 && (
-                <div className="space-y-6">
-                  {commType === 'event' ? (
-                    <div>
-                      <div className="flex items-center justify-between mb-4">
-                        <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-500">
-                          Sélectionner l'Événement à venir
-                        </label>
-
-                        {/* Search input */}
-                        <div className="relative w-64">
-                          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                          <input
-                            type="text"
-                            placeholder="Chercher un événement..."
-                            value={eventSearchTerm}
-                            onChange={(e) => setEventSearchTerm(e.target.value)}
-                            className="w-full pl-9 pr-3.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none"
-                          />
-                        </div>
-                      </div>
-
-                      {loadingEvents ? (
-                        <div className="py-12 text-center text-slate-400 text-sm">Chargement des événements...</div>
-                      ) : filteredUpcomingEvents.length === 0 ? (
-                        <div className="py-12 text-center text-slate-400 text-sm">Aucun événement à venir trouvé.</div>
-                      ) : (
-                        <div className="space-y-3 max-h-64 overflow-y-auto pr-1">
-                          {filteredUpcomingEvents.map(ev => {
-                            const isSelected = ev.id === selectedEventId;
-                            return (
-                              <div
-                                key={ev.id}
-                                onClick={() => setSelectedEventId(ev.id)}
-                                className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-4 ${
-                                  isSelected 
-                                    ? 'bg-indigo-50/70 border-indigo-600 ring-2 ring-indigo-600/20' 
-                                    : 'bg-white border-slate-200 hover:bg-slate-50'
-                                }`}
-                              >
-                                <div>
-                                  <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                                    <span className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full ${
-                                      ev.event_type === 'concert' ? 'bg-amber-100 text-amber-800' : 'bg-indigo-100 text-indigo-800'
-                                    }`}>
-                                      {ev.event_type === 'concert' ? 'Concert' : (ev.event_type === 'repetition' ? 'Répétition' : 'Événement')}
-                                    </span>
-                                    {(ev.orchestras || []).map(o => (
-                                      <span key={o.id} className="text-[10px] font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full">
-                                        {o.name}
-                                      </span>
-                                    ))}
-                                  </div>
-                                  <h5 className="font-bold text-slate-900 text-base">{ev.title}</h5>
-                                  <p className="text-xs text-slate-500 mt-1">
-                                    📅 {formatEventDate(ev.event_date)} {ev.location ? `• 📍 ${ev.location}` : ''}
-                                  </p>
-                                </div>
-                                
-                                <div className={`w-6 h-6 rounded-full border flex items-center justify-center flex-shrink-0 ${
-                                  isSelected ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-slate-300'
-                                }`}>
-                                  {isSelected && <Check size={14} className="stroke-[3]" />}
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-
-                      <div className="mt-6 pt-6 border-t border-slate-100 space-y-4">
-                        <div>
-                          <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
-                            Objet du Mail
-                          </label>
-                          <input
-                            type="text"
-                            value={customSubject}
-                            onChange={(e) => setCustomSubject(e.target.value)}
-                            className="w-full px-4 py-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 font-medium text-slate-800 outline-none"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
-                            Note d'organisation du responsable (Optionnel)
-                          </label>
-                          <textarea
-                            rows={3}
-                            placeholder="Ex: Arrivée requise 15 minutes en avance avec votre tenue de concert..."
-                            value={customNote}
-                            onChange={(e) => setCustomNote(e.target.value)}
-                            className="w-full px-4 py-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 text-slate-800 outline-none"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    /* Free Communication Form with TRUE VISUAL WYSIWYG WORD EDITOR */
-                    <div className="space-y-5">
-                      <div>
-                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
-                          Objet du message
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="Objet de la communication..."
-                          value={customSubject}
-                          onChange={(e) => setCustomSubject(e.target.value)}
-                          className="w-full px-4 py-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 font-medium text-slate-800 outline-none"
-                        />
-                      </div>
-
-                      {/* TRUE WYSIWYG WORD EDITOR */}
-                      <div>
-                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
-                          Corps du message
-                        </label>
-                        
-                        <div className="border border-slate-200 rounded-2xl overflow-hidden bg-white shadow-sm focus-within:ring-2 focus-within:ring-indigo-500 transition-all">
-                          
-                          {/* Formatting Toolbar */}
-                          <div className="bg-slate-50 border-b border-slate-200 px-3 py-2 flex items-center justify-between flex-wrap gap-1.5">
-                            
-                            {/* Format Buttons */}
-                            <div className="flex items-center gap-1">
-                              <button 
-                                type="button"
-                                onClick={() => execFormat('bold')}
-                                title="Gras (Word style)"
-                                className="p-2 hover:bg-slate-200 rounded-lg text-slate-800 font-extrabold text-xs transition-colors"
-                              >
-                                <Bold size={16} />
-                              </button>
-
-                              <button 
-                                type="button"
-                                onClick={() => execFormat('italic')}
-                                title="Italique (Word style)"
-                                className="p-2 hover:bg-slate-200 rounded-lg text-slate-800 italic text-xs transition-colors"
-                              >
-                                <Italic size={16} />
-                              </button>
-
-                              <button 
-                                type="button"
-                                onClick={() => execFormat('underline')}
-                                title="Souligné (Word style)"
-                                className="p-2 hover:bg-slate-200 rounded-lg text-slate-800 underline text-xs transition-colors"
-                              >
-                                <Underline size={16} />
-                              </button>
-
-                              <div className="w-[1px] h-4 bg-slate-300 mx-1" />
-
-                              <button 
-                                type="button"
-                                onClick={() => execFormat('insertUnorderedList')}
-                                title="Liste à puces"
-                                className="p-2 hover:bg-slate-200 rounded-lg text-slate-800 text-xs transition-colors flex items-center gap-1"
-                              >
-                                <List size={16} />
-                              </button>
-
-                              <button 
-                                type="button"
-                                onClick={insertCalloutBox}
-                                title="Insérer un encadré d'information"
-                                className="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold transition-colors"
-                              >
-                                + Encadré
-                              </button>
-                            </div>
-
-                            {/* Emoji Picker Trigger with Ref for Click Outside */}
-                            <div className="relative" ref={emojiPickerRef}>
-                              <button 
-                                type="button"
-                                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                                className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-900 rounded-xl text-xs font-bold transition-all shadow-sm"
-                              >
-                                <Smile size={16} className="text-amber-600" />
-                                <span>Smileys & Emojis</span>
-                              </button>
-
-                              {/* Emoji Picker Popover (Closes on outside click) */}
-                              {showEmojiPicker && (
-                                <div className="absolute right-0 top-full mt-2 z-50 bg-white border border-slate-200 rounded-2xl shadow-2xl p-3 w-80 space-y-3">
-                                  
-                                  {/* Emoji Categories Tabs */}
-                                  <div className="flex items-center gap-1 border-b border-slate-100 pb-2 overflow-x-auto">
-                                    {EMOJI_CATEGORIES.map((cat, idx) => (
-                                      <button
-                                        key={cat.name}
-                                        type="button"
-                                        onClick={() => setActiveEmojiCategory(idx)}
-                                        className={`p-1.5 rounded-lg text-sm transition-colors ${
-                                          activeEmojiCategory === idx ? 'bg-indigo-100 text-indigo-800' : 'hover:bg-slate-100 text-slate-600'
-                                        }`}
-                                        title={cat.name}
-                                      >
-                                        {cat.icon}
-                                      </button>
-                                    ))}
-                                  </div>
-
-                                  {/* Emoji Grid */}
-                                  <div className="grid grid-cols-6 gap-1 max-h-40 overflow-y-auto">
-                                    {EMOJI_CATEGORIES[activeEmojiCategory].emojis.map((emoji, i) => (
-                                      <button
-                                        key={i}
-                                        type="button"
-                                        onClick={() => insertEmojiAtCursor(emoji)}
-                                        className="p-2 text-xl hover:bg-slate-100 rounded-xl transition-all hover:scale-125 text-center"
-                                      >
-                                        {emoji}
-                                      </button>
-                                    ))}
-                                  </div>
-
-                                  <div className="text-[10px] text-slate-400 text-center border-t border-slate-100 pt-1">
-                                    Cliquez sur un smiley pour l'insérer directement.
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-
-                          </div>
-
-                          {/* TRUE ContentEditable WYSIWYG Editor */}
-                          <div
-                            ref={editorRef}
-                            contentEditable
-                            suppressContentEditableWarning
-                            onInput={(e) => setFreeMessageContent(e.currentTarget.innerHTML)}
-                            onBlur={(e) => setFreeMessageContent(e.currentTarget.innerHTML)}
-                            className="w-full min-h-[220px] max-h-[350px] p-4 text-sm bg-white focus:outline-none text-slate-800 leading-relaxed overflow-y-auto"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* STEP 3: Target Selection (Orchestra vs Members choice) */}
-              {wizardStep === 3 && (
                 <div className="space-y-6">
                   
                   {/* Mode Banner */}
@@ -953,40 +707,110 @@ const AdminCommunication = () => {
 
                   {commType === 'event' ? (
                     /* Event Mode Targeting */
-                    <div className="space-y-4">
-                      <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-4 text-xs text-indigo-900 flex items-center justify-between">
-                        <div className="flex items-center gap-2.5">
-                          <Users size={20} className="text-indigo-600" />
-                          <span>Musiciens ciblés par l'événement : <strong>{selectedEvent?.title}</strong> ({(selectedEvent?.orchestras || []).map(o => o.name).join(', ')})</span>
-                        </div>
-                        <span className="font-black bg-indigo-600 text-white px-3 py-1 rounded-full text-xs flex-shrink-0">
-                          {recipients.length} membre(s)
-                        </span>
-                      </div>
+                    <div className="space-y-6">
+                      <div>
+                        <div className="flex items-center justify-between mb-4">
+                          <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-500">
+                            1. Sélectionner l'Événement Cible
+                          </label>
 
-                      <div className="space-y-2 pt-2">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                            Liste des musiciens ({recipients.length})
-                          </span>
+                          {/* Search input */}
+                          <div className="relative w-64">
+                            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                            <input
+                              type="text"
+                              placeholder="Chercher un événement..."
+                              value={eventSearchTerm}
+                              onChange={(e) => setEventSearchTerm(e.target.value)}
+                              className="w-full pl-9 pr-3.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none"
+                            />
+                          </div>
                         </div>
 
-                        <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
-                          {[...recipients]
-                            .sort((a, b) => a.lastName.localeCompare(b.lastName, 'fr', { sensitivity: 'base' }) || a.firstName.localeCompare(b.firstName, 'fr', { sensitivity: 'base' }))
-                            .map(r => (
-                            <div key={r.id} className="p-3 bg-white rounded-xl border border-slate-200 flex items-center justify-between text-xs">
-                              <div className="flex items-center gap-3">
-                                <CheckCircle size={16} className="text-indigo-600" />
-                                <div>
-                                  <span className="font-bold text-slate-900">{r.lastName.toUpperCase()} <span className="font-semibold text-slate-700">{r.firstName}</span></span>
-                                  <span className="text-slate-400 ml-2">{r.email}</span>
+                        {loadingEvents ? (
+                          <div className="py-12 text-center text-slate-400 text-sm">Chargement des événements...</div>
+                        ) : filteredUpcomingEvents.length === 0 ? (
+                          <div className="py-12 text-center text-slate-400 text-sm">Aucun événement à venir trouvé.</div>
+                        ) : (
+                          <div className="space-y-3 max-h-56 overflow-y-auto pr-1">
+                            {filteredUpcomingEvents.map(ev => {
+                              const isSelected = ev.id === selectedEventId;
+                              return (
+                                <div
+                                  key={ev.id}
+                                  onClick={() => setSelectedEventId(ev.id)}
+                                  className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-4 ${
+                                    isSelected 
+                                      ? 'bg-indigo-50/70 border-indigo-600 ring-2 ring-indigo-600/20' 
+                                      : 'bg-white border-slate-200 hover:bg-slate-50'
+                                  }`}
+                                >
+                                  <div>
+                                    <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                                      <span className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full ${
+                                        ev.event_type === 'concert' ? 'bg-amber-100 text-amber-800' : 'bg-indigo-100 text-indigo-800'
+                                      }`}>
+                                        {ev.event_type === 'concert' ? 'Concert' : (ev.event_type === 'repetition' ? 'Répétition' : 'Événement')}
+                                      </span>
+                                      {(ev.orchestras || []).map(o => (
+                                        <span key={o.id} className="text-[10px] font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full">
+                                          {o.name}
+                                        </span>
+                                      ))}
+                                    </div>
+                                    <h5 className="font-bold text-slate-900 text-base">{ev.title}</h5>
+                                    <p className="text-xs text-slate-500 mt-1">
+                                      📅 {formatEventDate(ev.event_date)} {ev.location ? `• 📍 ${ev.location}` : ''}
+                                    </p>
+                                  </div>
+                                  
+                                  <div className={`w-6 h-6 rounded-full border flex items-center justify-center flex-shrink-0 ${
+                                    isSelected ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-slate-300'
+                                  }`}>
+                                    {isSelected && <Check size={14} className="stroke-[3]" />}
+                                  </div>
                                 </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
+                              );
+                            })}
+                          </div>
+                        )}
                       </div>
+
+                      {selectedEvent && (
+                        <div className="space-y-4 pt-4 border-t border-slate-200">
+                          <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-4 text-xs text-indigo-900 flex items-center justify-between">
+                            <div className="flex items-center gap-2.5">
+                              <Users size={20} className="text-indigo-600" />
+                              <span>Musiciens ciblés par l'événement : <strong>{selectedEvent.title}</strong> ({(selectedEvent.orchestras || []).map(o => o.name).join(', ')})</span>
+                            </div>
+                            <span className="font-black bg-indigo-600 text-white px-3 py-1 rounded-full text-xs flex-shrink-0">
+                              {recipients.length} membre(s)
+                            </span>
+                          </div>
+
+                          <div className="space-y-2">
+                            <span className="text-xs font-extrabold uppercase tracking-wider text-slate-500">
+                              2. Musiciens de l'événement ({recipients.length})
+                            </span>
+
+                            <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                              {[...recipients]
+                                .sort((a, b) => a.lastName.localeCompare(b.lastName, 'fr', { sensitivity: 'base' }) || a.firstName.localeCompare(b.firstName, 'fr', { sensitivity: 'base' }))
+                                .map(r => (
+                                <div key={r.id} className="p-3 bg-white rounded-xl border border-slate-200 flex items-center justify-between text-xs">
+                                  <div className="flex items-center gap-3">
+                                    <CheckCircle size={16} className="text-indigo-600" />
+                                    <div>
+                                      <span className="font-bold text-slate-900">{r.lastName.toUpperCase()} <span className="font-semibold text-slate-700">{r.firstName}</span></span>
+                                      <span className="text-slate-400 ml-2">{r.email}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ) : (
                     /* FREE COMMUNICATION TARGETING: Choice between Orchestras or Individual Members */
@@ -1202,7 +1026,185 @@ const AdminCommunication = () => {
                 </div>
               )}
 
-              {/* STEP 4: Live Preview & Send (ELEGANT CHIC EMAIL PREVIEW) */}
+              {/* STEP 3: MESSAGE CONTENT (SUBJECT & WORD WYSIWYG EDITOR) */}
+              {wizardStep === 3 && (
+                <div className="space-y-6">
+                  {commType === 'event' ? (
+                    <div className="space-y-5">
+                      <div>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
+                          Objet du Mail
+                        </label>
+                        <input
+                          type="text"
+                          value={customSubject}
+                          onChange={(e) => setCustomSubject(e.target.value)}
+                          className="w-full px-4 py-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 font-medium text-slate-800 outline-none"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
+                          Note d'organisation du responsable (Optionnel)
+                        </label>
+                        <textarea
+                          rows={4}
+                          placeholder="Ex: Arrivée requise 15 minutes en avance avec votre tenue de concert..."
+                          value={customNote}
+                          onChange={(e) => setCustomNote(e.target.value)}
+                          className="w-full px-4 py-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 text-slate-800 outline-none"
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    /* Free Communication Form with TRUE VISUAL WYSIWYG WORD EDITOR */
+                    <div className="space-y-5">
+                      <div>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
+                          Objet du message
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="Objet de la communication..."
+                          value={customSubject}
+                          onChange={(e) => setCustomSubject(e.target.value)}
+                          className="w-full px-4 py-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 font-medium text-slate-800 outline-none"
+                        />
+                      </div>
+
+                      {/* TRUE WYSIWYG WORD EDITOR */}
+                      <div>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+                          Corps du message
+                        </label>
+                        
+                        <div className="border border-slate-200 rounded-2xl overflow-hidden bg-white shadow-sm focus-within:ring-2 focus-within:ring-indigo-500 transition-all">
+                          
+                          {/* Formatting Toolbar */}
+                          <div className="bg-slate-50 border-b border-slate-200 px-3 py-2 flex items-center justify-between flex-wrap gap-1.5">
+                            
+                            {/* Format Buttons */}
+                            <div className="flex items-center gap-1">
+                              <button 
+                                type="button"
+                                onClick={() => execFormat('bold')}
+                                title="Gras (Word style)"
+                                className="p-2 hover:bg-slate-200 rounded-lg text-slate-800 font-extrabold text-xs transition-colors"
+                              >
+                                <Bold size={16} />
+                              </button>
+
+                              <button 
+                                type="button"
+                                onClick={() => execFormat('italic')}
+                                title="Italique (Word style)"
+                                className="p-2 hover:bg-slate-200 rounded-lg text-slate-800 italic text-xs transition-colors"
+                              >
+                                <Italic size={16} />
+                              </button>
+
+                              <button 
+                                type="button"
+                                onClick={() => execFormat('underline')}
+                                title="Souligné (Word style)"
+                                className="p-2 hover:bg-slate-200 rounded-lg text-slate-800 underline text-xs transition-colors"
+                              >
+                                <Underline size={16} />
+                              </button>
+
+                              <div className="w-[1px] h-4 bg-slate-300 mx-1" />
+
+                              <button 
+                                type="button"
+                                onClick={() => execFormat('insertUnorderedList')}
+                                title="Liste à puces"
+                                className="p-2 hover:bg-slate-200 rounded-lg text-slate-800 text-xs transition-colors flex items-center gap-1"
+                              >
+                                <List size={16} />
+                              </button>
+
+                              <button 
+                                type="button"
+                                onClick={insertCalloutBox}
+                                title="Insérer un encadré d'information"
+                                className="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold transition-colors"
+                              >
+                                + Encadré
+                              </button>
+                            </div>
+
+                            {/* Emoji Picker Trigger with Ref for Click Outside */}
+                            <div className="relative" ref={emojiPickerRef}>
+                              <button 
+                                type="button"
+                                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-900 rounded-xl text-xs font-bold transition-all shadow-sm"
+                              >
+                                <Smile size={16} className="text-amber-600" />
+                                <span>Smileys & Emojis</span>
+                              </button>
+
+                              {/* Emoji Picker Popover (Closes on outside click) */}
+                              {showEmojiPicker && (
+                                <div className="absolute right-0 top-full mt-2 z-50 bg-white border border-slate-200 rounded-2xl shadow-2xl p-3 w-80 space-y-3">
+                                  
+                                  {/* Emoji Categories Tabs */}
+                                  <div className="flex items-center gap-1 border-b border-slate-100 pb-2 overflow-x-auto">
+                                    {EMOJI_CATEGORIES.map((cat, idx) => (
+                                      <button
+                                        key={cat.name}
+                                        type="button"
+                                        onClick={() => setActiveEmojiCategory(idx)}
+                                        className={`p-1.5 rounded-lg text-sm transition-colors ${
+                                          activeEmojiCategory === idx ? 'bg-indigo-100 text-indigo-800' : 'hover:bg-slate-100 text-slate-600'
+                                        }`}
+                                        title={cat.name}
+                                      >
+                                        {cat.icon}
+                                      </button>
+                                    ))}
+                                  </div>
+
+                                  {/* Emoji Grid */}
+                                  <div className="grid grid-cols-6 gap-1 max-h-40 overflow-y-auto">
+                                    {EMOJI_CATEGORIES[activeEmojiCategory].emojis.map((emoji, i) => (
+                                      <button
+                                        key={i}
+                                        type="button"
+                                        onClick={() => insertEmojiAtCursor(emoji)}
+                                        className="p-2 text-xl hover:bg-slate-100 rounded-xl transition-all hover:scale-125 text-center"
+                                      >
+                                        {emoji}
+                                      </button>
+                                    ))}
+                                  </div>
+
+                                  <div className="text-[10px] text-slate-400 text-center border-t border-slate-100 pt-1">
+                                    Cliquez sur un smiley pour l'insérer directement.
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+
+                          </div>
+
+                          {/* TRUE ContentEditable WYSIWYG Editor */}
+                          <div
+                            ref={editorRef}
+                            contentEditable
+                            suppressContentEditableWarning
+                            onInput={(e) => setFreeMessageContent(e.currentTarget.innerHTML)}
+                            onBlur={(e) => setFreeMessageContent(e.currentTarget.innerHTML)}
+                            className="w-full min-h-[220px] max-h-[350px] p-4 text-sm bg-white focus:outline-none text-slate-800 leading-relaxed overflow-y-auto"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* STEP 4: Live Preview & Send (ELEGANT LIGHT & CHIC EMAIL PREVIEW) */}
               {wizardStep === 4 && (
                 <div className="space-y-4">
                   <h4 className="font-bold text-slate-800 text-base">Aperçu du mail avant envoi final</h4>
@@ -1211,11 +1213,13 @@ const AdminCommunication = () => {
                   <div className="border border-slate-200 rounded-3xl overflow-hidden shadow-lg bg-slate-100 text-slate-800 text-xs p-6">
                     <div className="max-w-xl mx-auto bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200">
                       
-                      {/* Dark Navy & Indigo Header */}
-                      <div className="bg-slate-900 text-white p-6 text-center border-b-4 border-indigo-600">
-                        <div className="text-2xl mb-1">🎷</div>
-                        <h5 className="font-black text-lg text-white tracking-tight">La Lyre Municipale</h5>
-                        <p className="text-[11px] text-slate-400 font-medium mt-0.5">Chalindrey &bull; Espace Membre Officiel</p>
+                      {/* Light & Refined Header (Matching Web Theme) */}
+                      <div className="bg-white p-6 text-center border-b-2 border-indigo-600">
+                        <div className="inline-block p-2 bg-indigo-50 rounded-xl mb-2">
+                          <span className="text-xl">🎷</span>
+                        </div>
+                        <h5 className="font-black text-lg text-slate-900 tracking-tight">La Lyre Municipale</h5>
+                        <p className="text-[11px] text-slate-500 font-semibold mt-0.5">Chalindrey &bull; Espace Membre Officiel</p>
                       </div>
 
                       {/* Email Body */}
@@ -1251,8 +1255,9 @@ const AdminCommunication = () => {
                           </div>
                         )}
 
+                        {/* Clean Theme Button */}
                         <div className="text-center pt-4">
-                          <span className="inline-block bg-indigo-600 text-white font-extrabold text-xs px-5 py-3 rounded-xl shadow-md">
+                          <span className="inline-block bg-indigo-600 text-white font-extrabold text-xs px-6 py-3 rounded-xl shadow-sm">
                             Accéder à mon Espace Membre
                           </span>
                         </div>
@@ -1289,7 +1294,11 @@ const AdminCommunication = () => {
               {wizardStep < 4 ? (
                 <button
                   onClick={() => setWizardStep(prev => prev + 1)}
-                  disabled={(wizardStep === 2 && commType === 'event' && !selectedEventId)}
+                  disabled={
+                    (wizardStep === 2 && commType === 'event' && !selectedEventId) ||
+                    (wizardStep === 2 && commType === 'free' && !isTestMode && selectedUserIds.length === 0) ||
+                    (wizardStep === 3 && !customSubject)
+                  }
                   className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition-colors shadow-sm disabled:opacity-50 flex items-center gap-1.5"
                 >
                   <span>Suivant</span>

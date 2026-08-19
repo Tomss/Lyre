@@ -244,20 +244,22 @@ router.post('/send', async (req, res) => {
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <title>${subject}</title>
         </head>
-        <body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #0f172a;">
-          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f1f5f9; padding: 30px 10px;">
+        <body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #1e293b;">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f8fafc; padding: 30px 10px;">
             <tr>
               <td align="center">
-                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width: 620px; background-color: #ffffff; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08); border: 1px solid #e2e8f0;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05); border: 1px solid #e2e8f0;">
                   
-                  <!-- Elegant Chic Header Bar -->
+                  <!-- Light Refined Header Bar (Matching Web Theme) -->
                   <tr>
-                    <td style="background-color: #0f172a; padding: 32px 24px; text-align: center; border-bottom: 4px solid #4f46e5;">
-                      <div style="font-size: 28px; margin-bottom: 8px;">🎷</div>
-                      <h1 style="margin: 0; color: #ffffff; font-size: 22px; font-weight: 800; letter-spacing: -0.5px; font-family: 'Segoe UI', sans-serif;">
+                    <td style="background-color: #ffffff; padding: 24px 30px; text-align: center; border-bottom: 2px solid #4f46e5;">
+                      <div style="display: inline-block; padding: 8px 14px; background-color: #e0e7ff; border-radius: 12px; margin-bottom: 8px;">
+                        <span style="font-size: 20px;">🎷</span>
+                      </div>
+                      <h1 style="margin: 0; color: #0f172a; font-size: 20px; font-weight: 800; letter-spacing: -0.3px;">
                         La Lyre Municipale
                       </h1>
-                      <p style="margin: 4px 0 0 0; color: #94a3b8; font-size: 13px; font-weight: 500;">
+                      <p style="margin: 2px 0 0 0; color: #64748b; font-size: 12px; font-weight: 600;">
                         Chalindrey &bull; Espace Membre Officiel
                       </p>
                     </td>
@@ -265,71 +267,72 @@ router.post('/send', async (req, res) => {
 
                   <!-- Email Content Body -->
                   <tr>
-                    <td style="padding: 36px 30px; background-color: #ffffff;">
+                    <td style="padding: 32px 28px; background-color: #ffffff;">
                       ${isTest ? `
-                        <div style="background-color: #fef3c7; border: 1px solid #f59e0b; color: #92400e; padding: 12px 18px; border-radius: 12px; font-size: 13px; font-weight: bold; margin-bottom: 24px; text-align: center;">
+                        <div style="background-color: #fef3c7; border: 1px solid #f59e0b; color: #92400e; padding: 10px 16px; border-radius: 10px; font-size: 12px; font-weight: bold; margin-bottom: 20px; text-align: center;">
                           ⚠️ EMAIL DE TEST (Envoi d'essai restreint)
                         </div>
                       ` : ''}
 
-                      <p style="font-size: 16px; font-weight: 700; color: #1e293b; margin-top: 0; margin-bottom: 20px;">
+                      <p style="font-size: 15px; font-weight: 700; color: #0f172a; margin-top: 0; margin-bottom: 18px;">
                         Bonjour ${recipient.firstName},
                       </p>
 
                       ${type === 'event' && event ? `
-                        <div style="background-color: #f8fafc; border-left: 4px solid #4f46e5; padding: 22px; border-radius: 12px; margin: 20px 0;">
-                          <span style="display: inline-block; background-color: #e0e7ff; color: #3730a3; font-size: 11px; font-weight: 800; padding: 4px 12px; border-radius: 9999px; text-transform: uppercase; margin-bottom: 10px;">
+                        <div style="background-color: #f8fafc; border-left: 4px solid #4f46e5; padding: 20px; border-radius: 10px; margin: 18px 0;">
+                          <span style="display: inline-block; background-color: #e0e7ff; color: #3730a3; font-size: 10px; font-weight: 800; padding: 3px 10px; border-radius: 9999px; text-transform: uppercase; margin-bottom: 8px;">
                             ${event.event_type === 'concert' ? 'Concert' : (event.event_type === 'repetition' ? 'Répétition' : 'Événement')}
                           </span>
-                          <h2 style="margin: 4px 0 14px 0; font-size: 20px; font-weight: 800; color: #0f172a;">${event.title}</h2>
+                          <h2 style="margin: 4px 0 12px 0; font-size: 18px; font-weight: 800; color: #0f172a;">${event.title}</h2>
                           
-                          <table style="width: 100%; border-collapse: collapse; font-size: 14px; color: #334155;">
+                          <table style="width: 100%; border-collapse: collapse; font-size: 13px; color: #334155;">
                             <tr>
-                              <td style="padding: 6px 0; font-weight: 700; width: 100px; color: #475569;">📅 Date :</td>
-                              <td style="padding: 6px 0; color: #0f172a; font-weight: 700;">${event.formatted_date}</td>
+                              <td style="padding: 5px 0; font-weight: 700; width: 100px; color: #64748b;">📅 Date :</td>
+                              <td style="padding: 5px 0; color: #0f172a; font-weight: 700;">${event.formatted_date}</td>
                             </tr>
                             ${event.location ? `
                             <tr>
-                              <td style="padding: 6px 0; font-weight: 700; color: #475569;">📍 Lieu :</td>
-                              <td style="padding: 6px 0; color: #0f172a;">${event.location}</td>
+                              <td style="padding: 5px 0; font-weight: 700; color: #64748b;">📍 Lieu :</td>
+                              <td style="padding: 5px 0; color: #0f172a;">${event.location}</td>
                             </tr>
                             ` : ''}
                             <tr>
-                              <td style="padding: 6px 0; font-weight: 700; color: #475569;">🎷 Ensemble :</td>
-                              <td style="padding: 6px 0; color: #0f172a;">${orchestraTag}</td>
+                              <td style="padding: 5px 0; font-weight: 700; color: #64748b;">🎷 Ensemble :</td>
+                              <td style="padding: 5px 0; color: #0f172a;">${orchestraTag}</td>
                             </tr>
                           </table>
                         </div>
 
                         ${event.description ? `
-                          <div style="margin-bottom: 20px;">
-                            <h4 style="margin: 0 0 6px 0; font-size: 14px; font-weight: 700; color: #1e293b;">Description :</h4>
-                            <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #334155;">${event.description}</p>
+                          <div style="margin-bottom: 18px;">
+                            <h4 style="margin: 0 0 4px 0; font-size: 13px; font-weight: 700; color: #0f172a;">Description :</h4>
+                            <p style="margin: 0; font-size: 13px; line-height: 1.6; color: #334155;">${event.description}</p>
                           </div>
                         ` : ''}
 
                         ${event.practical_info ? `
-                          <div style="background-color: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 16px; margin-bottom: 20px;">
-                            <h4 style="margin: 0 0 6px 0; font-size: 13px; font-weight: 700; color: #1e40af;">ℹ️ Informations pratiques :</h4>
-                            <p style="margin: 0; font-size: 13px; color: #1e3a8a; line-height: 1.6;">${event.practical_info}</p>
+                          <div style="background-color: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 14px; margin-bottom: 18px;">
+                            <h4 style="margin: 0 0 4px 0; font-size: 12px; font-weight: 700; color: #1e40af;">ℹ️ Informations pratiques :</h4>
+                            <p style="margin: 0; font-size: 12px; color: #1e3a8a; line-height: 1.5;">${event.practical_info}</p>
                           </div>
                         ` : ''}
 
                         ${customNote ? `
-                          <div style="background-color: #f1f5f9; border: 1px dashed #cbd5e1; border-radius: 12px; padding: 18px; margin-bottom: 24px;">
-                            <h4 style="margin: 0 0 6px 0; font-size: 13px; font-weight: 700; color: #1e293b;">Note du responsable :</h4>
-                            <div style="font-size: 14px; color: #1e293b; line-height: 1.6;">${formatMessageBody(customNote)}</div>
+                          <div style="background-color: #f1f5f9; border: 1px dashed #cbd5e1; border-radius: 10px; padding: 16px; margin-bottom: 20px;">
+                            <h4 style="margin: 0 0 6px 0; font-size: 12px; font-weight: 700; color: #0f172a;">Note du responsable :</h4>
+                            <div style="font-size: 13px; color: #1e293b; line-height: 1.6;">${formatMessageBody(customNote)}</div>
                           </div>
                         ` : ''}
                       ` : `
                         <!-- Communication libre -->
-                        <div style="background-color: #f8fafc; border-left: 4px solid #4f46e5; padding: 22px; border-radius: 12px; margin: 20px 0; font-size: 15px; line-height: 1.7; color: #1e293b;">
+                        <div style="background-color: #f8fafc; border-left: 4px solid #4f46e5; padding: 20px; border-radius: 10px; margin: 18px 0; font-size: 14px; line-height: 1.7; color: #1e293b;">
                           ${formatMessageBody(freeMessageContent || '')}
                         </div>
                       `}
 
-                      <div style="text-align: center; margin: 36px 0 16px 0;">
-                        <a href="${frontendUrl}/dashboard" style="background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%); color: #ffffff; font-weight: 800; font-size: 14px; text-decoration: none; padding: 15px 32px; border-radius: 14px; display: inline-block; box-shadow: 0 6px 20px rgba(79, 70, 229, 0.25);">
+                      <!-- Clean Indigo Theme Action Button -->
+                      <div style="text-align: center; margin: 32px 0 12px 0;">
+                        <a href="${frontendUrl}/dashboard" style="background-color: #4f46e5; color: #ffffff; font-weight: 700; font-size: 13px; text-decoration: none; padding: 13px 26px; border-radius: 12px; display: inline-block; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);">
                           Accéder à mon Espace Membre
                         </a>
                       </div>
@@ -338,8 +341,8 @@ router.post('/send', async (req, res) => {
 
                   <!-- Footer -->
                   <tr>
-                    <td style="background-color: #f8fafc; padding: 22px 30px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b;">
-                      <p style="margin: 0 0 4px 0; font-weight: 700; color: #334155;">La Lyre Municipale de Chalindrey</p>
+                    <td style="background-color: #f8fafc; padding: 18px 28px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 11px; color: #64748b;">
+                      <p style="margin: 0 0 2px 0; font-weight: 700; color: #334155;">La Lyre Municipale de Chalindrey</p>
                       <p style="margin: 0;">Communication envoyée depuis l'espace membre officiel.</p>
                     </td>
                   </tr>
