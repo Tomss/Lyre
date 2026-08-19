@@ -3,7 +3,7 @@ import {
   ArrowLeft, Mail, Send, History, Calendar, Users, CheckCircle, 
   AlertCircle, Search, Clock, MapPin, X, Sparkles, Filter, ChevronRight, Check, ShieldAlert, FileText,
   Bold, Italic, Underline, List, Smile, HelpCircle, Music,
-  AlignLeft, AlignCenter, AlignRight, Trash2, Eye, RefreshCw
+  AlignLeft, AlignCenter, AlignRight, Trash2, Eye, RefreshCw, ListOrdered
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Navigate, Link } from 'react-router-dom';
@@ -104,10 +104,11 @@ const AdminCommunication = () => {
   const [showWizard, setShowWizard] = useState(false);
   const [wizardStep, setWizardStep] = useState<number>(1);
   
-  // Communication config
-  const [commType, setCommType] = useState<'event' | 'free'>('event');
+  // Communication config ('event' | 'free' | 'schedule')
+  const [commType, setCommType] = useState<'event' | 'free' | 'schedule'>('event');
   const [events, setEvents] = useState<EventItem[]>([]);
   const [selectedEventId, setSelectedEventId] = useState<string>('');
+  const [selectedScheduleEventIds, setSelectedScheduleEventIds] = useState<string[]>([]);
   const [recipients, setRecipients] = useState<Recipient[]>([]);
   const [history, setHistory] = useState<CommunicationLogItem[]>([]);
   
@@ -132,7 +133,7 @@ const AdminCommunication = () => {
   const [memberSearchTerm, setMemberSearchTerm] = useState('');
   const [eventSearchTerm, setEventSearchTerm] = useState('');
   const [historySearchTerm, setHistorySearchTerm] = useState('');
-  const [historyTypeFilter, setHistoryTypeFilter] = useState<'all' | 'free' | 'event' | 'test'>('all');
+  const [historyTypeFilter, setHistoryTypeFilter] = useState<'all' | 'free' | 'event' | 'schedule' | 'test'>('all');
   const [historyDateFilter, setHistoryDateFilter] = useState<'all' | '7days' | '30days' | 'thisYear'>('all');
 
   // Detail Modal State (View a past communication)
@@ -242,10 +243,12 @@ const AdminCommunication = () => {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!response.ok) throw new Error('Erreur lors du chargement des événements');
-      const data = await response.json();
+      const data: EventItem[] = await response.json();
       setEvents(data || []);
       if (data && data.length > 0) {
         setSelectedEventId(data[0].id);
+        // By default check all events for schedule mode
+        setSelectedScheduleEventIds(data.map(e => e.id));
       }
     } catch (err: any) {
       showNotification(err.message, 'error');
@@ -329,12 +332,13 @@ const AdminCommunication = () => {
     setFreeTargetMode('orchestras');
     setSelectedOrchestraNames([]);
     setSelectedUserIds([]);
+    setSelectedScheduleEventIds([]);
     setShowEmojiPicker(false);
     setShowWizard(true);
     fetchUpcomingEvents();
   };
 
-  // Fetch recipients when selected event changes or commType changes to free
+  // Fetch recipients when selected event changes or commType changes
   useEffect(() => {
     if (!token || !showWizard) return;
 
@@ -360,7 +364,6 @@ const AdminCommunication = () => {
 
       fetchEventRecipients();
 
-      // Auto-fill subject for selected event
       const selectedEv = events.find(e => e.id === selectedEventId);
       if (selectedEv) {
         const formattedDate = new Date(selectedEv.event_date).toLocaleDateString('fr-FR', {
@@ -369,6 +372,33 @@ const AdminCommunication = () => {
         const prefix = selectedEv.event_type === 'concert' ? 'Convocation Concert' : (selectedEv.event_type === 'repetition' ? 'Rappel Répétition' : 'Rappel Événement');
         setCustomSubject(`[La Lyre] ${prefix} : ${selectedEv.title} (${formattedDate})`);
       }
+
+    } else if (commType === 'schedule') {
+      // Planning Mode -> Fetch recipients for selectedScheduleEventIds
+      const fetchScheduleRecipients = async () => {
+        setLoadingRecipients(true);
+        try {
+          const response = await fetch(`${API_URL}/communication/recipients-multi`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ eventIds: selectedScheduleEventIds })
+          });
+          if (!response.ok) throw new Error('Erreur lors du calcul des destinataires du planning');
+          const data = await response.json();
+          setRecipients(data || []);
+          setSelectedUserIds((data || []).map((r: Recipient) => r.id));
+          setCustomSubject('[La Lyre] Planning & Prochaines Échéances');
+        } catch (err: any) {
+          showNotification(err.message, 'error');
+        } finally {
+          setLoadingRecipients(false);
+        }
+      };
+
+      fetchScheduleRecipients();
 
     } else {
       // Free comm -> Fetch all members
@@ -394,16 +424,19 @@ const AdminCommunication = () => {
       fetchAllMembers();
     }
 
-  }, [selectedEventId, commType, token, showWizard, events]);
+  }, [selectedEventId, selectedScheduleEventIds, commType, token, showWizard, events]);
 
   const selectedEvent = events.find(e => e.id === selectedEventId);
+  const selectedScheduleEvents = events
+    .filter(e => selectedScheduleEventIds.includes(e.id))
+    .sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime());
 
   // Available unique orchestra names across recipients
   const availableOrchestraNames = Array.from(
     new Set(recipients.flatMap(r => r.userOrchestras || []).filter(Boolean))
   ).sort();
 
-  // Filter and sort recipients based on search (Sorted alphabetically by Last Name)
+  // Filter and sort recipients based on search
   const filteredRecipients = recipients
     .filter(r => 
       `${r.lastName} ${r.firstName} ${r.email}`.toLowerCase().includes(memberSearchTerm.toLowerCase())
@@ -418,11 +451,12 @@ const AdminCommunication = () => {
     `${e.title} ${e.location} ${e.event_type}`.toLowerCase().includes(eventSearchTerm.toLowerCase())
   );
 
-  // Filter history based on type, date, and search term (search across member names, emails, subject, etc.)
+  // Filter history based on type, date, and search term
   const filteredHistory = history.filter(item => {
     // 1. Type / Mode Filter
     if (historyTypeFilter === 'free' && item.event_title) return false;
     if (historyTypeFilter === 'event' && !item.event_title) return false;
+    if (historyTypeFilter === 'schedule' && !item.subject.toLowerCase().includes('planning')) return false;
     if (historyTypeFilter === 'test' && !item.is_test) return false;
 
     // 2. Date Filter
@@ -434,7 +468,7 @@ const AdminCommunication = () => {
       if (historyDateFilter === 'thisYear' && new Date(item.created_at).getFullYear() !== new Date().getFullYear()) return false;
     }
 
-    // 3. Search Term (subject, event_title, sender_name, recipients list strings containing names and emails)
+    // 3. Search Term
     if (!historySearchTerm.trim()) return true;
 
     const query = historySearchTerm.toLowerCase().trim();
@@ -453,6 +487,12 @@ const AdminCommunication = () => {
     );
   };
 
+  const toggleScheduleEventSelection = (eventId: string) => {
+    setSelectedScheduleEventIds(prev =>
+      prev.includes(eventId) ? prev.filter(id => id !== eventId) : [...prev, eventId]
+    );
+  };
+
   const selectAllFiltered = () => {
     setSelectedUserIds(filteredRecipients.map(r => r.id));
   };
@@ -461,7 +501,6 @@ const AdminCommunication = () => {
     setSelectedUserIds([]);
   };
 
-  // Toggle Orchestra Selection in Free Mode
   const toggleOrchestraSelection = (orchName: string) => {
     const newSelectedOrchestras = selectedOrchestraNames.includes(orchName)
       ? selectedOrchestraNames.filter(name => name !== orchName)
@@ -469,7 +508,6 @@ const AdminCommunication = () => {
 
     setSelectedOrchestraNames(newSelectedOrchestras);
 
-    // Automatically check all members belonging to ANY of the selected orchestras
     const matchingIds = recipients
       .filter(r => (r.userOrchestras || []).some(o => newSelectedOrchestras.includes(o)))
       .map(r => r.id);
@@ -508,6 +546,7 @@ const AdminCommunication = () => {
         body: JSON.stringify({
           type: commType,
           eventId: commType === 'event' ? selectedEventId : null,
+          selectedEventIds: commType === 'schedule' ? selectedScheduleEventIds : [],
           customSubject,
           freeMessageContent,
           customNote,
@@ -564,7 +603,7 @@ const AdminCommunication = () => {
         </div>
       )}
 
-      {/* Custom Tailwind Delete Confirmation Modal (Consistent with rest of the site) */}
+      {/* Custom Tailwind Delete Confirmation Modal */}
       {deleteConfirmation.isOpen && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex justify-center items-center p-4">
           <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-sm w-full text-center border border-slate-100 animate-in fade-in zoom-in duration-200">
@@ -593,7 +632,7 @@ const AdminCommunication = () => {
         </div>
       )}
 
-      {/* Communication Detail Modal (View Full Log Contents & Recipients) */}
+      {/* Communication Detail Modal */}
       {selectedHistoryItem && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[90] flex justify-center items-center p-4 overflow-y-auto">
           <div className="bg-white rounded-3xl max-w-3xl w-full shadow-2xl border border-slate-100 overflow-hidden flex flex-col max-h-[90vh] animate-in fade-in zoom-in duration-200">
@@ -636,7 +675,11 @@ const AdminCommunication = () => {
                   </span>
                 )}
 
-                {selectedHistoryItem.event_title ? (
+                {selectedHistoryItem.subject.toLowerCase().includes('planning') ? (
+                  <span className="px-3 py-1 bg-teal-100 text-teal-900 text-xs font-bold rounded-full">
+                    📅 Planning / Échéancier
+                  </span>
+                ) : selectedHistoryItem.event_title ? (
                   <span className="px-3 py-1 bg-indigo-100 text-indigo-900 text-xs font-bold rounded-full">
                     📅 Événement : {selectedHistoryItem.event_title}
                   </span>
@@ -658,16 +701,6 @@ const AdminCommunication = () => {
                 </label>
                 <h4 className="font-extrabold text-slate-900 text-base">{selectedHistoryItem.subject}</h4>
               </div>
-
-              {/* Event Info if applicable */}
-              {selectedHistoryItem.event_title && (
-                <div className="bg-indigo-50/60 p-4 rounded-2xl border border-indigo-200 text-xs text-indigo-900 space-y-1">
-                  <h5 className="font-bold text-sm text-indigo-950">Détails de l'événement associé :</h5>
-                  <p><strong>Titre :</strong> {selectedHistoryItem.event_title}</p>
-                  {selectedHistoryItem.formatted_event_date && <p><strong>Date :</strong> {selectedHistoryItem.formatted_event_date}</p>}
-                  {selectedHistoryItem.event_location && <p><strong>Lieu :</strong> {selectedHistoryItem.event_location}</p>}
-                </div>
-              )}
 
               {/* Message Content */}
               <div>
@@ -746,7 +779,7 @@ const AdminCommunication = () => {
                   Administration Communication
                 </h1>
                 <p className="text-sm text-slate-500 font-medium">
-                  Rappels d'événements à venir et convocations par email aux orchestres
+                  Rappels d'événements, plannings chronologiques et convocations par email
                 </p>
               </div>
             </div>
@@ -761,7 +794,7 @@ const AdminCommunication = () => {
           </div>
         </div>
 
-        {/* SEARCH & FILTERS CARD (EXACT SAME DA & LAYOUT AS OTHER ADMIN PAGES) */}
+        {/* SEARCH & FILTERS CARD */}
         <div className="mb-6 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-6">
           
           {/* Row 1: Search Bar */}
@@ -792,8 +825,9 @@ const AdminCommunication = () => {
               <div className="flex flex-wrap gap-2">
                 {[
                   { id: 'all', label: 'Tous' },
-                  { id: 'free', label: 'Communication Libre' },
                   { id: 'event', label: 'Liée à un Événement' },
+                  { id: 'schedule', label: '📅 Planning / Échéancier' },
+                  { id: 'free', label: 'Communication Libre' },
                   { id: 'test', label: '🧪 Tests uniquement' },
                 ].map(type => (
                   <button
@@ -874,7 +908,7 @@ const AdminCommunication = () => {
                 <thead>
                   <tr className="border-b border-slate-200 text-xs font-bold text-slate-400 uppercase tracking-wider">
                     <th className="pb-3 px-3">Date</th>
-                    <th className="pb-3 px-3">Événement Cible</th>
+                    <th className="pb-3 px-3">Événement / Type</th>
                     <th className="pb-3 px-3">Objet du mail</th>
                     <th className="pb-3 px-3">Mode</th>
                     <th className="pb-3 px-3">Destinataires</th>
@@ -895,7 +929,15 @@ const AdminCommunication = () => {
                         })}
                       </td>
                       <td className="py-3.5 px-3 font-bold text-slate-900">
-                        {item.event_title || <span className="text-slate-400 italic">Communication Libre</span>}
+                        {item.subject.toLowerCase().includes('planning') ? (
+                          <span className="text-teal-700 font-extrabold flex items-center gap-1 text-xs">
+                            <Clock size={14} /> Planning / Échéancier
+                          </span>
+                        ) : item.event_title ? (
+                          item.event_title
+                        ) : (
+                          <span className="text-slate-400 italic">Communication Libre</span>
+                        )}
                       </td>
                       <td className="py-3.5 px-3 text-slate-700 text-xs max-w-xs truncate font-medium group-hover:text-indigo-600 transition-colors">
                         {item.subject}
@@ -946,7 +988,7 @@ const AdminCommunication = () => {
 
       </div>
 
-      {/* POP-UP WIZARD MODAL (MUCH LARGER: max-w-5xl) */}
+      {/* POP-UP WIZARD MODAL */}
       {showWizard && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white rounded-3xl max-w-5xl w-full shadow-2xl border border-slate-100 my-4 overflow-hidden flex flex-col max-h-[92vh]">
@@ -961,8 +1003,8 @@ const AdminCommunication = () => {
                   <h3 className="font-extrabold text-xl text-white">Nouvelle Communication</h3>
                   <p className="text-xs text-slate-400 mt-0.5">
                     {wizardStep === 1 && "Étape 1 : Choisir le type de communication"}
-                    {wizardStep === 2 && "Étape 2 : Sélectionner les destinataires & Mode Test"}
-                    {wizardStep === 3 && (commType === 'event' ? "Étape 3 : Compléter la note d'organisation" : "Étape 3 : Rédiger le message (Éditeur Word complet)")}
+                    {wizardStep === 2 && "Étape 2 : Sélectionner les événements & destinataires"}
+                    {wizardStep === 3 && (commType === 'event' ? "Étape 3 : Compléter la note d'organisation" : (commType === 'schedule' ? "Étape 3 : Note d'introduction du planning" : "Étape 3 : Rédiger le message"))}
                     {wizardStep === 4 && "Étape 4 : Aperçu & Confirmation d'envoi"}
                   </p>
                 </div>
@@ -978,60 +1020,85 @@ const AdminCommunication = () => {
             {/* Modal Body */}
             <div className="p-8 overflow-y-auto flex-1 space-y-6">
 
-              {/* STEP 1: Choose Type */}
+              {/* STEP 1: Choose Type (3 OPTIONS) */}
               {wizardStep === 1 && (
                 <div className="space-y-6">
                   <h4 className="font-extrabold text-slate-800 text-lg">Quel type de communication souhaitez-vous envoyer ?</h4>
                   
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {/* Option 1: Event */}
                     <div 
                       onClick={() => setCommType('event')}
-                      className={`p-8 rounded-3xl border-2 transition-all cursor-pointer text-left flex flex-col justify-between space-y-6 ${
+                      className={`p-6 rounded-3xl border-2 transition-all cursor-pointer text-left flex flex-col justify-between space-y-6 ${
                         commType === 'event' 
                           ? 'border-indigo-600 bg-indigo-50/40 ring-4 ring-indigo-600/10' 
                           : 'border-gray-200 hover:border-gray-300 bg-white'
                       }`}
                     >
-                      <div className="w-14 h-14 rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">
-                        <Calendar size={28} />
+                      <div className="w-12 h-12 rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">
+                        <Calendar size={26} />
                       </div>
                       <div>
-                        <h5 className="font-extrabold text-slate-900 text-lg">Liée à un Événement</h5>
+                        <h5 className="font-extrabold text-slate-900 text-base">Liée à un Événement</h5>
                         <p className="text-xs text-slate-500 mt-2 leading-relaxed">
-                          Rappel de répétition, convocation concert ou détails d'organisation automatiquement adressés aux musiciens concernés par l'événement.
+                          Rappel de répétition, convocation concert ou détails d'organisation ciblés sur un événement.
                         </p>
                       </div>
                       <span className="text-xs font-extrabold text-indigo-600 flex items-center">
-                        Choisir l'événement & Destinataires <ChevronRight size={16} className="ml-1" />
+                        Choisir l'événement <ChevronRight size={16} className="ml-1" />
                       </span>
                     </div>
 
+                    {/* Option 2: Schedule / Planning (NEW!) */}
                     <div 
-                      onClick={() => setCommType('free')}
-                      className={`p-8 rounded-3xl border-2 transition-all cursor-pointer text-left flex flex-col justify-between space-y-6 ${
-                        commType === 'free' 
-                          ? 'border-indigo-600 bg-indigo-50/40 ring-4 ring-indigo-600/10' 
+                      onClick={() => setCommType('schedule')}
+                      className={`p-6 rounded-3xl border-2 transition-all cursor-pointer text-left flex flex-col justify-between space-y-6 ${
+                        commType === 'schedule' 
+                          ? 'border-teal-600 bg-teal-50/40 ring-4 ring-teal-600/10' 
                           : 'border-gray-200 hover:border-gray-300 bg-white'
                       }`}
                     >
-                      <div className="w-14 h-14 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center font-bold">
-                        <FileText size={28} />
+                      <div className="w-12 h-12 rounded-2xl bg-teal-100 text-teal-600 flex items-center justify-center font-bold">
+                        <ListOrdered size={26} />
                       </div>
                       <div>
-                        <h5 className="font-extrabold text-slate-900 text-lg">Communication Libre</h5>
+                        <h5 className="font-extrabold text-slate-900 text-base">Planning / Échéancier</h5>
                         <p className="text-xs text-slate-500 mt-2 leading-relaxed">
-                          Annonce générale, note d'information ou message personnalisé adressé à un ou plusieurs orchestres ou membres spécifiques.
+                          Sélectionnez plusieurs événements à venir pour générer un mail de planning chronologique visuel et épuré.
+                        </p>
+                      </div>
+                      <span className="text-xs font-extrabold text-teal-600 flex items-center">
+                        Composer le planning <ChevronRight size={16} className="ml-1" />
+                      </span>
+                    </div>
+
+                    {/* Option 3: Free */}
+                    <div 
+                      onClick={() => setCommType('free')}
+                      className={`p-6 rounded-3xl border-2 transition-all cursor-pointer text-left flex flex-col justify-between space-y-6 ${
+                        commType === 'free' 
+                          ? 'border-purple-600 bg-purple-50/40 ring-4 ring-purple-600/10' 
+                          : 'border-gray-200 hover:border-gray-300 bg-white'
+                      }`}
+                    >
+                      <div className="w-12 h-12 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center font-bold">
+                        <FileText size={26} />
+                      </div>
+                      <div>
+                        <h5 className="font-extrabold text-slate-900 text-base">Communication Libre</h5>
+                        <p className="text-xs text-slate-500 mt-2 leading-relaxed">
+                          Annonce générale, note d'information ou message personnalisé pour des orchestres ou membres spécifiques.
                         </p>
                       </div>
                       <span className="text-xs font-extrabold text-purple-600 flex items-center">
-                        Choisir les Destinataires <ChevronRight size={16} className="ml-1" />
+                        Rédiger un message <ChevronRight size={16} className="ml-1" />
                       </span>
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* STEP 2: TARGET SELECTION FIRST! (EVENT OR FREE ORCHESTRAS/MEMBERS) */}
+              {/* STEP 2: TARGET & SELECTION */}
               {wizardStep === 2 && (
                 <div className="space-y-6">
                   
@@ -1058,7 +1125,6 @@ const AdminCommunication = () => {
                     </div>
                   </div>
 
-                  {/* Mode Test Alert */}
                   {isTestMode && (
                     <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-xs text-amber-900 flex items-start gap-3">
                       <ShieldAlert size={20} className="text-amber-600 flex-shrink-0 mt-0.5" />
@@ -1068,7 +1134,133 @@ const AdminCommunication = () => {
                     </div>
                   )}
 
-                  {commType === 'event' ? (
+                  {commType === 'schedule' ? (
+                    /* PLANNING / MULTI-EVENT MODE TARGETING */
+                    <div className="space-y-6">
+                      
+                      {/* Event Multi-Selection */}
+                      <div>
+                        <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+                          <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-500">
+                            1. Sélectionner les événements à inclure au planning ({selectedScheduleEventIds.length} retenus)
+                          </label>
+
+                          <div className="flex items-center gap-2 text-xs">
+                            <button type="button" onClick={() => setSelectedScheduleEventIds(events.map(e => e.id))} className="font-bold text-teal-600 hover:underline">Tous les événements</button>
+                            <span className="text-slate-300">•</span>
+                            <button type="button" onClick={() => setSelectedScheduleEventIds(events.slice(0, 3).map(e => e.id))} className="font-bold text-indigo-600 hover:underline">3 prochains</button>
+                            <span className="text-slate-300">•</span>
+                            <button type="button" onClick={() => setSelectedScheduleEventIds([])} className="font-bold text-slate-500 hover:underline">Aucun</button>
+                          </div>
+                        </div>
+
+                        {loadingEvents ? (
+                          <div className="py-12 text-center text-slate-400 text-sm">Chargement des événements...</div>
+                        ) : events.length === 0 ? (
+                          <div className="py-12 text-center text-slate-400 text-sm">Aucun événement à venir trouvé.</div>
+                        ) : (
+                          <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                            {events.map(ev => {
+                              const isChecked = selectedScheduleEventIds.includes(ev.id);
+                              return (
+                                <div
+                                  key={ev.id}
+                                  onClick={() => toggleScheduleEventSelection(ev.id)}
+                                  className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-4 ${
+                                    isChecked 
+                                      ? 'bg-teal-50/70 border-teal-600 ring-2 ring-teal-600/20' 
+                                      : 'bg-white border-slate-200 hover:bg-slate-50'
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <input 
+                                      type="checkbox"
+                                      checked={isChecked}
+                                      onChange={() => {}}
+                                      className="w-4 h-4 text-teal-600 rounded border-slate-300 focus:ring-teal-500 cursor-pointer"
+                                    />
+                                    <div>
+                                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                        <span className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full ${
+                                          ev.event_type === 'concert' ? 'bg-amber-100 text-amber-800' : 'bg-indigo-100 text-indigo-800'
+                                        }`}>
+                                          {ev.event_type === 'concert' ? 'Concert' : (ev.event_type === 'repetition' ? 'Répétition' : 'Événement')}
+                                        </span>
+                                        {(ev.orchestras || []).map(o => (
+                                          <span key={o.id} className="text-[10px] font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full">
+                                            {o.name}
+                                          </span>
+                                        ))}
+                                      </div>
+                                      <h5 className="font-bold text-slate-900 text-sm">{ev.title}</h5>
+                                      <p className="text-xs text-slate-500">
+                                        📅 {formatEventDate(ev.event_date)} {ev.location ? `• 📍 ${ev.location}` : ''}
+                                      </p>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Recipient Musicians for selected events */}
+                      <div className="space-y-4 pt-4 border-t border-slate-200">
+                        <div className="bg-teal-50 border border-teal-200 rounded-2xl p-4 text-xs text-teal-900 flex items-center justify-between flex-wrap gap-2">
+                          <div className="flex items-center gap-2.5">
+                            <Users size={20} className="text-teal-600 flex-shrink-0" />
+                            <span>Musiciens ciblés par les {selectedScheduleEventIds.length} événements du planning</span>
+                          </div>
+                          <span className="font-black bg-teal-600 text-white px-3 py-1 rounded-full text-xs flex-shrink-0">
+                            {selectedUserIds.length} / {recipients.length} membre(s) retenu(s)
+                          </span>
+                        </div>
+
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-extrabold uppercase tracking-wider text-slate-500">
+                              2. Musiciens de la sélection ({recipients.length})
+                            </span>
+                            <div className="flex items-center gap-2 text-xs">
+                              <button type="button" onClick={() => setSelectedUserIds(recipients.map(r => r.id))} className="font-bold text-teal-600 hover:underline">Tout cocher</button>
+                              <span className="text-slate-300">•</span>
+                              <button type="button" onClick={() => setSelectedUserIds([])} className="font-bold text-slate-500 hover:underline">Tout décocher</button>
+                            </div>
+                          </div>
+
+                          <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                            {filteredRecipients.map(r => {
+                              const isChecked = selectedUserIds.includes(r.id);
+                              return (
+                                <div 
+                                  key={r.id} 
+                                  onClick={() => toggleUserSelection(r.id)}
+                                  className={`p-3 rounded-xl border flex items-center justify-between text-xs cursor-pointer transition-colors ${
+                                    isChecked ? 'bg-teal-50/60 border-teal-300 shadow-xs' : 'bg-white border-slate-200 hover:bg-slate-50 opacity-60'
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <input
+                                      type="checkbox"
+                                      checked={isChecked}
+                                      onChange={() => {}}
+                                      className="w-4 h-4 text-teal-600 rounded border-slate-300 focus:ring-teal-500 cursor-pointer"
+                                    />
+                                    <div>
+                                      <span className="font-bold text-slate-900 text-sm">{r.lastName.toUpperCase()} <span className="font-semibold text-slate-700">{r.firstName}</span></span>
+                                      <span className="text-slate-400 text-xs ml-2">{r.email}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </div>
+
+                    </div>
+                  ) : commType === 'event' ? (
                     /* Event Mode Targeting */
                     <div className="space-y-6">
                       <div>
@@ -1077,7 +1269,6 @@ const AdminCommunication = () => {
                             1. Sélectionner l'Événement Cible
                           </label>
 
-                          {/* Search input */}
                           <div className="relative w-64">
                             <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                             <input
@@ -1202,10 +1393,8 @@ const AdminCommunication = () => {
                       )}
                     </div>
                   ) : (
-                    /* FREE COMMUNICATION TARGETING: Choice between Orchestras or Individual Members */
+                    /* FREE COMMUNICATION TARGETING */
                     <div className="space-y-6">
-                      
-                      {/* Sub-Tabs: Par Orchestre(s) VS Par Membre(s) */}
                       <div className="flex items-center p-1 bg-slate-100 rounded-2xl gap-1">
                         <button
                           type="button"
@@ -1234,7 +1423,6 @@ const AdminCommunication = () => {
                         </button>
                       </div>
 
-                      {/* Summary Banner */}
                       <div className="bg-purple-50 border border-purple-200 rounded-2xl p-4 text-xs text-purple-900 flex items-center justify-between">
                         <div className="flex items-center gap-2.5">
                           <FileText size={20} className="text-purple-600" />
@@ -1249,7 +1437,6 @@ const AdminCommunication = () => {
                         </span>
                       </div>
 
-                      {/* OPTION 1: TARGET BY ORCHESTRAS */}
                       {freeTargetMode === 'orchestras' ? (
                         <div className="space-y-4">
                           <div className="flex items-center justify-between">
@@ -1295,7 +1482,6 @@ const AdminCommunication = () => {
                             })}
                           </div>
 
-                          {/* Unfolded Members List under selected Orchestras */}
                           {selectedOrchestraNames.length > 0 && (
                             <div className="pt-4 border-t border-slate-200 space-y-3">
                               <h5 className="text-xs font-extrabold uppercase tracking-wider text-slate-500">
@@ -1351,7 +1537,6 @@ const AdminCommunication = () => {
                           )}
                         </div>
                       ) : (
-                        /* OPTION 2: TARGET BY INDIVIDUAL MEMBERS DIRECTLY */
                         <div className="space-y-3">
                           <div className="flex items-center justify-between">
                             <span className="text-xs font-extrabold uppercase tracking-wider text-slate-500">
@@ -1415,7 +1600,7 @@ const AdminCommunication = () => {
                 </div>
               )}
 
-              {/* STEP 3: MESSAGE CONTENT (SUBJECT & COMPLETE WORD WYSIWYG TOOLBAR) */}
+              {/* STEP 3: MESSAGE CONTENT & NOTES */}
               {wizardStep === 3 && (
                 <div className="space-y-6">
                   {commType === 'event' ? (
@@ -1445,8 +1630,36 @@ const AdminCommunication = () => {
                         />
                       </div>
                     </div>
+                  ) : commType === 'schedule' ? (
+                    /* PLANNING INTRO NOTE */
+                    <div className="space-y-5">
+                      <div>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
+                          Objet du Mail
+                        </label>
+                        <input
+                          type="text"
+                          value={customSubject}
+                          onChange={(e) => setCustomSubject(e.target.value)}
+                          className="w-full px-4 py-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 font-medium text-slate-800 outline-none"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
+                          Message d'introduction du planning (Optionnel)
+                        </label>
+                        <textarea
+                          rows={4}
+                          placeholder="Ex: Bonjour à tous, voici le récapitulatif chronologique des prochaines répétitions et concerts..."
+                          value={customNote}
+                          onChange={(e) => setCustomNote(e.target.value)}
+                          className="w-full px-4 py-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 text-slate-800 outline-none"
+                        />
+                      </div>
+                    </div>
                   ) : (
-                    /* Free Communication Form with COMPLETE WORD TOOLBAR */
+                    /* FREE COMMUNICATION WITH WORD TOOLBAR */
                     <div className="space-y-5">
                       <div>
                         <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
@@ -1461,199 +1674,53 @@ const AdminCommunication = () => {
                         />
                       </div>
 
-                      {/* COMPLETE WORD TOOLBAR & WYSIWYG EDITOR */}
                       <div>
                         <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
                           Corps du message
                         </label>
                         
                         <div className="border border-slate-200 rounded-2xl overflow-hidden bg-white shadow-sm focus-within:ring-2 focus-within:ring-indigo-500 transition-all">
-                          
-                          {/* Complete Word Toolbar */}
                           <div className="bg-slate-50 border-b border-slate-200 px-3 py-2.5 flex items-center justify-between flex-wrap gap-3">
-                            
-                            {/* Format Controls */}
                             <div className="flex items-center gap-1.5 flex-wrap">
-                              
-                              {/* Bold, Italic, Underline */}
-                              <button 
-                                type="button"
-                                onClick={() => execFormat('bold')}
-                                title="Gras"
-                                className="p-2 hover:bg-slate-200 rounded-lg text-slate-800 font-extrabold text-xs transition-colors"
-                              >
-                                <Bold size={16} />
-                              </button>
-
-                              <button 
-                                type="button"
-                                onClick={() => execFormat('italic')}
-                                title="Italique"
-                                className="p-2 hover:bg-slate-200 rounded-lg text-slate-800 italic text-xs transition-colors"
-                              >
-                                <Italic size={16} />
-                              </button>
-
-                              <button 
-                                type="button"
-                                onClick={() => execFormat('underline')}
-                                title="Souligné"
-                                className="p-2 hover:bg-slate-200 rounded-lg text-slate-800 underline text-xs transition-colors"
-                              >
-                                <Underline size={16} />
-                              </button>
-
+                              <button type="button" onClick={() => execFormat('bold')} title="Gras" className="p-2 hover:bg-slate-200 rounded-lg text-slate-800 font-extrabold text-xs transition-colors"><Bold size={16} /></button>
+                              <button type="button" onClick={() => execFormat('italic')} title="Italique" className="p-2 hover:bg-slate-200 rounded-lg text-slate-800 italic text-xs transition-colors"><Italic size={16} /></button>
+                              <button type="button" onClick={() => execFormat('underline')} title="Souligné" className="p-2 hover:bg-slate-200 rounded-lg text-slate-800 underline text-xs transition-colors"><Underline size={16} /></button>
                               <div className="w-[1px] h-4 bg-slate-300 mx-0.5" />
-
-                              {/* Text Size Dropdown */}
-                              <select 
-                                onChange={(e) => execFormat('fontSize', e.target.value)}
-                                defaultValue="3"
-                                className="px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 outline-none cursor-pointer hover:border-slate-300"
-                                title="Taille du texte"
-                              >
+                              <select onChange={(e) => execFormat('fontSize', e.target.value)} defaultValue="3" className="px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 outline-none cursor-pointer">
                                 <option value="2">Petite</option>
                                 <option value="3">Normale</option>
                                 <option value="5">Grande</option>
                                 <option value="6">Très grande</option>
                               </select>
-
                               <div className="w-[1px] h-4 bg-slate-300 mx-0.5" />
-
-                              {/* Text Color Picker */}
                               <div className="flex items-center gap-1">
                                 <span className="text-[11px] font-bold text-slate-500">Couleur :</span>
                                 {TEXT_COLORS.map(c => (
-                                  <button
-                                    key={c.color}
-                                    type="button"
-                                    onClick={() => execFormat('foreColor', c.color)}
-                                    className="w-4 h-4 rounded-full border border-slate-300 hover:scale-125 transition-transform shadow-xs"
-                                    style={{ backgroundColor: c.color }}
-                                    title={`Couleur ${c.label}`}
-                                  />
+                                  <button key={c.color} type="button" onClick={() => execFormat('foreColor', c.color)} className="w-4 h-4 rounded-full border border-slate-300 hover:scale-125 transition-transform" style={{ backgroundColor: c.color }} />
                                 ))}
                               </div>
-
-                              <div className="w-[1px] h-4 bg-slate-300 mx-0.5" />
-
-                              {/* Highlight Color (Surlignage) */}
-                              <div className="flex items-center gap-1">
-                                <span className="text-[11px] font-bold text-slate-500">Surligner :</span>
-                                {HIGHLIGHT_COLORS.map(c => (
-                                  <button
-                                    key={c.label}
-                                    type="button"
-                                    onClick={() => execFormat('hiliteColor', c.color)}
-                                    className="w-4 h-4 rounded-md border border-slate-300 hover:scale-125 transition-transform shadow-xs flex items-center justify-center"
-                                    style={{ backgroundColor: c.color === 'transparent' ? '#ffffff' : c.color }}
-                                    title={`Surlignage : ${c.label}`}
-                                  >
-                                    {c.color === 'transparent' && <span className="text-[9px] text-red-500 font-bold">✕</span>}
-                                  </button>
-                                ))}
-                              </div>
-
-                              <div className="w-[1px] h-4 bg-slate-300 mx-0.5" />
-
-                              {/* Text Alignment */}
-                              <button 
-                                type="button"
-                                onClick={() => execFormat('justifyLeft')}
-                                title="Aligner à gauche"
-                                className="p-2 hover:bg-slate-200 rounded-lg text-slate-800 transition-colors"
-                              >
-                                <AlignLeft size={16} />
-                              </button>
-
-                              <button 
-                                type="button"
-                                onClick={() => execFormat('justifyCenter')}
-                                title="Centrer"
-                                className="p-2 hover:bg-slate-200 rounded-lg text-slate-800 transition-colors"
-                              >
-                                <AlignCenter size={16} />
-                              </button>
-
-                              <button 
-                                type="button"
-                                onClick={() => execFormat('justifyRight')}
-                                title="Aligner à droite"
-                                className="p-2 hover:bg-slate-200 rounded-lg text-slate-800 transition-colors"
-                              >
-                                <AlignRight size={16} />
-                              </button>
-
-                              <div className="w-[1px] h-4 bg-slate-300 mx-0.5" />
-
-                              {/* Bullet List */}
-                              <button 
-                                type="button"
-                                onClick={() => execFormat('insertUnorderedList')}
-                                title="Liste à puces"
-                                className="p-2 hover:bg-slate-200 rounded-lg text-slate-800 transition-colors"
-                              >
-                                <List size={16} />
-                              </button>
-
                             </div>
-
-                            {/* Emoji Picker Trigger with Ref for Click Outside */}
                             <div className="relative" ref={emojiPickerRef}>
-                              <button 
-                                type="button"
-                                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                                className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-900 rounded-xl text-xs font-bold transition-all shadow-sm"
-                              >
+                              <button type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-900 rounded-xl text-xs font-bold transition-all">
                                 <Smile size={16} className="text-amber-600" />
-                                <span>Smileys & Emojis</span>
+                                <span>Smileys</span>
                               </button>
-
-                              {/* Emoji Picker Popover (Closes on outside click) */}
                               {showEmojiPicker && (
                                 <div className="absolute right-0 top-full mt-2 z-50 bg-white border border-slate-200 rounded-2xl shadow-2xl p-3 w-80 space-y-3">
-                                  
-                                  {/* Emoji Categories Tabs */}
-                                  <div className="flex items-center gap-1 border-b border-slate-100 pb-2 overflow-x-auto">
+                                  <div className="flex items-center gap-1 border-b border-slate-100 pb-2">
                                     {EMOJI_CATEGORIES.map((cat, idx) => (
-                                      <button
-                                        key={cat.name}
-                                        type="button"
-                                        onClick={() => setActiveEmojiCategory(idx)}
-                                        className={`p-1.5 rounded-lg text-sm transition-colors ${
-                                          activeEmojiCategory === idx ? 'bg-indigo-100 text-indigo-800' : 'hover:bg-slate-100 text-slate-600'
-                                        }`}
-                                        title={cat.name}
-                                      >
-                                        {cat.icon}
-                                      </button>
+                                      <button key={cat.name} type="button" onClick={() => setActiveEmojiCategory(idx)} className={`p-1.5 rounded-lg text-sm ${activeEmojiCategory === idx ? 'bg-indigo-100 text-indigo-800' : 'hover:bg-slate-100'}`}>{cat.icon}</button>
                                     ))}
                                   </div>
-
-                                  {/* Emoji Grid */}
                                   <div className="grid grid-cols-6 gap-1 max-h-40 overflow-y-auto">
                                     {EMOJI_CATEGORIES[activeEmojiCategory].emojis.map((emoji, i) => (
-                                      <button
-                                        key={i}
-                                        type="button"
-                                        onClick={() => insertEmojiAtCursor(emoji)}
-                                        className="p-2 text-xl hover:bg-slate-100 rounded-xl transition-all hover:scale-125 text-center"
-                                      >
-                                        {emoji}
-                                      </button>
+                                      <button key={i} type="button" onClick={() => insertEmojiAtCursor(emoji)} className="p-2 text-xl hover:bg-slate-100 rounded-xl">{emoji}</button>
                                     ))}
-                                  </div>
-
-                                  <div className="text-[10px] text-slate-400 text-center border-t border-slate-100 pt-1">
-                                    Cliquez sur un smiley pour l'insérer directement.
                                   </div>
                                 </div>
                               )}
                             </div>
-
                           </div>
-
-                          {/* TRUE ContentEditable WYSIWYG Editor */}
                           <div
                             ref={editorRef}
                             contentEditable
@@ -1669,16 +1736,14 @@ const AdminCommunication = () => {
                 </div>
               )}
 
-              {/* STEP 4: Live Preview & Send (REAL LOGO, NO SAXOPHONE, NO CHALINDREY, NO VERTICAL LEFT BAR) */}
+              {/* STEP 4: Live Preview & Send */}
               {wizardStep === 4 && (
                 <div className="space-y-4">
                   <h4 className="font-bold text-slate-800 text-base">Aperçu du mail avant envoi final</h4>
 
-                  {/* Render Chic Simulated Email Container */}
                   <div className="border border-slate-200 rounded-3xl overflow-hidden shadow-lg bg-slate-100 text-slate-800 text-xs p-6">
                     <div className="max-w-xl mx-auto bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200">
                       
-                      {/* Real Logo Header (No Saxophone, No Chalindrey, Just "La Lyre") */}
                       <div className="bg-white p-6 text-center border-b-2 border-indigo-600">
                         <img 
                           src={LOGO_URL} 
@@ -1689,7 +1754,6 @@ const AdminCommunication = () => {
                         <p className="text-[11px] text-slate-500 font-semibold mt-0.5">Espace Membre</p>
                       </div>
 
-                      {/* Email Body */}
                       <div className="p-6 space-y-4">
                         {isTestMode && (
                           <div className="bg-amber-100 text-amber-900 text-xs font-bold px-3 py-1.5 rounded-xl text-center border border-amber-300">
@@ -1699,7 +1763,45 @@ const AdminCommunication = () => {
 
                         <p className="font-bold text-slate-800 text-sm">Bonjour [Prénom],</p>
 
-                        {commType === 'event' && selectedEvent ? (
+                        {commType === 'schedule' ? (
+                          /* PLANNING TIMELINE PREVIEW */
+                          <div className="space-y-4">
+                            {customNote && (
+                              <p className="text-sm text-slate-800 leading-relaxed">{customNote}</p>
+                            )}
+
+                            <div className="space-y-3">
+                              <h5 className="font-black text-slate-900 text-sm border-b border-indigo-500 pb-2 flex items-center gap-2">
+                                <Calendar size={18} className="text-indigo-600" />
+                                📅 Programme & Prochaines Échéances ({selectedScheduleEvents.length} événements)
+                              </h5>
+
+                              {selectedScheduleEvents.map(ev => (
+                                <div key={ev.id} className="bg-slate-50 border-l-4 border-indigo-600 rounded-2xl p-4 border border-slate-200 space-y-1.5">
+                                  <div className="flex items-center justify-between flex-wrap gap-2">
+                                    <span className="bg-indigo-100 text-indigo-900 text-[11px] font-extrabold px-2.5 py-0.5 rounded-full">
+                                      📅 {formatEventDate(ev.event_date)}
+                                    </span>
+                                    <span className="bg-slate-200 text-slate-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
+                                      {ev.event_type === 'concert' ? 'Concert' : (ev.event_type === 'repetition' ? 'Répétition' : 'Événement')}
+                                    </span>
+                                  </div>
+                                  <h6 className="font-black text-slate-900 text-sm">{ev.title}</h6>
+                                  {ev.location && <p className="text-xs text-slate-600">📍 <strong>Lieu :</strong> {ev.location}</p>}
+                                  {(ev.orchestras || []).length > 0 && (
+                                    <p className="text-xs text-slate-600">🎷 <strong>Ensemble(s) :</strong> {(ev.orchestras || []).map(o => o.name).join(', ')}</p>
+                                  )}
+                                  {ev.description && <p className="text-xs text-slate-600 pt-1 leading-relaxed">{ev.description}</p>}
+                                  {ev.practical_info && (
+                                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-2.5 text-[11px] text-blue-900 mt-1">
+                                      <strong>ℹ️ Infos pratiques :</strong> {ev.practical_info}
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ) : commType === 'event' && selectedEvent ? (
                           <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-3">
                             <div className="flex items-center gap-2 flex-wrap">
                               <span className="inline-block bg-indigo-100 text-indigo-800 text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full">
@@ -1739,21 +1841,19 @@ const AdminCommunication = () => {
                             )}
                           </div>
                         ) : (
-                          /* CLEAN MESSAGE CONTAINER WITHOUT VERTICAL LEFT BAR */
                           <div 
                             className="bg-slate-50 p-5 rounded-2xl border border-slate-200 text-slate-800 font-normal leading-relaxed text-sm"
                             dangerouslySetInnerHTML={{ __html: freeMessageContent || 'Aperçu du contenu libre...' }}
                           />
                         )}
 
-                        {customNote && (
+                        {customNote && commType !== 'schedule' && (
                           <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs italic text-slate-700">
                             <strong>Note du responsable :</strong>
                             <div className="mt-1 font-normal not-italic" dangerouslySetInnerHTML={{ __html: customNote }} />
                           </div>
                         )}
 
-                        {/* Clean Theme Button */}
                         <div className="text-center pt-4">
                           <span className="inline-block bg-indigo-600 text-white font-extrabold text-xs px-6 py-3 rounded-xl shadow-sm">
                             Accéder à mon Espace Membre
@@ -1761,7 +1861,6 @@ const AdminCommunication = () => {
                         </div>
                       </div>
 
-                      {/* Footer */}
                       <div className="bg-slate-50 p-3 text-center text-[10px] text-slate-400 border-t border-slate-100">
                         La Lyre &bull; Espace Membre
                       </div>
@@ -1769,7 +1868,7 @@ const AdminCommunication = () => {
                   </div>
 
                   <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs text-slate-700 space-y-1.5">
-                    <p><strong>Destinataires retenus :</strong> {isTestMode ? selectedUserIds.length : (commType === 'event' ? recipients.length : selectedUserIds.length)} membre(s)</p>
+                    <p><strong>Destinataires retenus :</strong> {selectedUserIds.length} membre(s)</p>
                     <p><strong>Objet du mail :</strong> {customSubject}</p>
                   </div>
                 </div>
@@ -1794,6 +1893,7 @@ const AdminCommunication = () => {
                   onClick={() => setWizardStep(prev => prev + 1)}
                   disabled={
                     (wizardStep === 2 && commType === 'event' && !selectedEventId) ||
+                    (wizardStep === 2 && commType === 'schedule' && selectedScheduleEventIds.length === 0) ||
                     (wizardStep === 2 && commType === 'free' && !isTestMode && selectedUserIds.length === 0) ||
                     (wizardStep === 3 && !customSubject)
                   }
@@ -1805,7 +1905,7 @@ const AdminCommunication = () => {
               ) : (
                 <button
                   onClick={handleSendCommunication}
-                  disabled={submitting || (commType === 'free' && !isTestMode && selectedUserIds.length === 0) || (isTestMode && selectedUserIds.length === 0)}
+                  disabled={submitting || selectedUserIds.length === 0}
                   className="px-7 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition-all shadow-lg shadow-indigo-200 disabled:opacity-50 flex items-center gap-2"
                 >
                   {submitting ? (

@@ -55,7 +55,6 @@ router.get('/recipients/:eventId', async (req, res) => {
   const { eventId } = req.params;
 
   try {
-    // 1. Récupérer les orchestres de cet événement
     const [orchestras]: any = await pool.query(`
       SELECT orchestra_id FROM event_orchestras WHERE event_id = ?
     `, [eventId]);
@@ -66,7 +65,6 @@ router.get('/recipients/:eventId', async (req, res) => {
       return res.json([]);
     }
 
-    // 2. Récupérer tous les musiciens membres de ces orchestres
     const placeholders = orchestraIds.map(() => '?').join(',');
     const [recipients]: any = await pool.query(`
       SELECT DISTINCT 
@@ -83,7 +81,6 @@ router.get('/recipients/:eventId', async (req, res) => {
       ORDER BY p.last_name ASC, p.first_name ASC
     `, orchestraIds);
 
-    // 3. Récupérer les noms des orchestres pour chaque membre
     for (const r of recipients) {
       const [orchs]: any = await pool.query(`
         SELECT o.name 
@@ -97,6 +94,89 @@ router.get('/recipients/:eventId', async (req, res) => {
     res.json(recipients);
   } catch (error) {
     console.error('Error fetching recipients:', error);
+    res.status(500).json({ message: 'Erreur lors du calcul des destinataires.' });
+  }
+});
+
+// POST /api/communication/recipients-multi - Récupérer les membres ciblés par plusieurs événements (Planning)
+router.post('/recipients-multi', async (req, res) => {
+  if (!hasCommunicationAccess(req)) {
+    return res.status(403).json({ message: 'Accès refusé.' });
+  }
+
+  const { eventIds } = req.body;
+
+  try {
+    if (!eventIds || !Array.isArray(eventIds) || eventIds.length === 0) {
+      const [allMembers]: any = await pool.query(`
+        SELECT u.id, u.email, p.first_name AS firstName, p.last_name AS lastName, p.role, p.status
+        FROM users u
+        JOIN profiles p ON u.id = p.id
+        WHERE p.status != 'Inactive'
+        ORDER BY p.last_name ASC, p.first_name ASC
+      `);
+      for (const r of allMembers) {
+        const [orchs]: any = await pool.query(`
+          SELECT o.name FROM user_orchestras uo JOIN orchestras o ON uo.orchestra_id = o.id WHERE uo.user_id = ?
+        `, [r.id]);
+        r.userOrchestras = orchs.map((o: any) => o.name);
+      }
+      return res.json(allMembers);
+    }
+
+    const eventPlaceholders = eventIds.map(() => '?').join(',');
+    const [orchestras]: any = await pool.query(`
+      SELECT DISTINCT orchestra_id FROM event_orchestras WHERE event_id IN (${eventPlaceholders})
+    `, eventIds);
+
+    const orchestraIds = orchestras.map((o: any) => o.orchestra_id);
+
+    if (orchestraIds.length === 0) {
+      const [allMembers]: any = await pool.query(`
+        SELECT u.id, u.email, p.first_name AS firstName, p.last_name AS lastName, p.role, p.status
+        FROM users u
+        JOIN profiles p ON u.id = p.id
+        WHERE p.status != 'Inactive'
+        ORDER BY p.last_name ASC, p.first_name ASC
+      `);
+      for (const r of allMembers) {
+        const [orchs]: any = await pool.query(`
+          SELECT o.name FROM user_orchestras uo JOIN orchestras o ON uo.orchestra_id = o.id WHERE uo.user_id = ?
+        `, [r.id]);
+        r.userOrchestras = orchs.map((o: any) => o.name);
+      }
+      return res.json(allMembers);
+    }
+
+    const orchPlaceholders = orchestraIds.map(() => '?').join(',');
+    const [recipients]: any = await pool.query(`
+      SELECT DISTINCT 
+        u.id, 
+        u.email, 
+        p.first_name AS firstName, 
+        p.last_name AS lastName, 
+        p.role,
+        p.status
+      FROM users u
+      JOIN profiles p ON u.id = p.id
+      JOIN user_orchestras uo ON p.id = uo.user_id
+      WHERE uo.orchestra_id IN (${orchPlaceholders}) AND p.status != 'Inactive'
+      ORDER BY p.last_name ASC, p.first_name ASC
+    `, orchestraIds);
+
+    for (const r of recipients) {
+      const [orchs]: any = await pool.query(`
+        SELECT o.name 
+        FROM user_orchestras uo
+        JOIN orchestras o ON uo.orchestra_id = o.id
+        WHERE uo.user_id = ?
+      `, [r.id]);
+      r.userOrchestras = orchs.map((o: any) => o.name);
+    }
+
+    res.json(recipients);
+  } catch (error) {
+    console.error('Error fetching multi-event recipients:', error);
     res.status(500).json({ message: 'Erreur lors du calcul des destinataires.' });
   }
 });
@@ -142,7 +222,6 @@ router.get('/all-members', async (req, res) => {
 // Helper function to format message HTML safely
 const formatMessageBody = (text: string) => {
   if (!text) return '';
-  // If text already has HTML tags like <p>, <b>, <i>, <br>, keep it; otherwise replace \n with <br/>
   if (/<[a-z][\s\S]*>/i.test(text)) {
     return text;
   }
@@ -155,10 +234,11 @@ router.post('/send', async (req, res) => {
     return res.status(403).json({ message: 'Accès refusé.' });
   }
 
-  const { type, eventId, customSubject, freeMessageContent, customNote, selectedUserIds, isTest } = req.body;
+  const { type, eventId, selectedEventIds, customSubject, freeMessageContent, customNote, selectedUserIds, isTest } = req.body;
 
   try {
     let event: any = null;
+    let scheduleEvents: any[] = [];
     let finalRecipients: any[] = [];
     let orchestraTag = 'Tous les membres';
 
@@ -167,7 +247,6 @@ router.post('/send', async (req, res) => {
         return res.status(400).json({ message: 'L\'événement cible est requis pour une communication liée à un événement.' });
       }
 
-      // Récupérer l'événement et ses orchestres
       const [eventRows]: any = await pool.query(`
         SELECT 
           e.id, e.title, e.description, e.event_type, 
@@ -187,7 +266,6 @@ router.post('/send', async (req, res) => {
 
       event = eventRows[0];
 
-      // Récupérer les orchestres
       const [orchestras]: any = await pool.query(`
         SELECT orchestra_id FROM event_orchestras WHERE event_id = ?
       `, [eventId]);
@@ -205,6 +283,36 @@ router.post('/send', async (req, res) => {
         finalRecipients = allRecipients;
       }
       orchestraTag = (event.orchestra_names || []).filter(Boolean).join(', ') || 'Tous les ensembles';
+
+    } else if (type === 'schedule') {
+      // TYPE 3: PLANNING / PROGRAMME ÉCHÉANCIER
+      if (selectedEventIds && Array.isArray(selectedEventIds) && selectedEventIds.length > 0) {
+        const placeholders = selectedEventIds.map(() => '?').join(',');
+        const [eventRows]: any = await pool.query(`
+          SELECT 
+            e.id, e.title, e.description, e.event_type, 
+            DATE_FORMAT(e.event_date, '%d/%m/%Y à %H:%i') as formatted_date,
+            e.event_date, e.location, e.practical_info,
+            JSON_ARRAYAGG(o.name) AS orchestra_names
+          FROM events e
+          LEFT JOIN event_orchestras eo ON e.id = eo.event_id
+          LEFT JOIN orchestras o ON eo.orchestra_id = o.id
+          WHERE e.id IN (${placeholders})
+          GROUP BY e.id, e.title, e.description, e.event_type, e.event_date, e.location, e.practical_info
+          ORDER BY e.event_date ASC
+        `, selectedEventIds);
+
+        scheduleEvents = eventRows || [];
+      }
+
+      const [allRecipients]: any = await pool.query(`
+        SELECT u.id, u.email, p.first_name AS firstName, p.last_name AS lastName
+        FROM users u
+        JOIN profiles p ON u.id = p.id
+        WHERE p.status != 'Inactive'
+      `);
+      finalRecipients = allRecipients;
+
     } else {
       // Communication Libre
       const [allRecipients]: any = await pool.query(`
@@ -231,7 +339,11 @@ router.post('/send', async (req, res) => {
     }
 
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-    const subject = customSubject || (type === 'event' ? `Rappel : ${event.title}` : 'Information - La Lyre');
+    const subject = customSubject || (
+      type === 'event' ? `Rappel : ${event.title}` : (
+        type === 'schedule' ? '[La Lyre] Planning & Prochaines Échéances' : 'Information - La Lyre'
+      )
+    );
     
     // Store full name + email in recipient list JSON so searching by Name/Surname works!
     const recipientFormattedList = finalRecipients.map((r: any) => `${(r.lastName || '').toUpperCase()} ${r.firstName || ''} (${r.email})`.trim());
@@ -249,6 +361,38 @@ router.post('/send', async (req, res) => {
         </div>
         ${customNote ? `<div style="margin-top: 12px; background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 14px; border-radius: 10px; font-size: 13px; color: #1e293b;"><strong>Note du responsable :</strong><br/>${formatMessageBody(customNote)}</div>` : ''}
       `.trim();
+    } else if (type === 'schedule') {
+      let timelineHtml = `
+        <div style="margin: 20px 0;">
+          <h3 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 800; color: #0f172a; border-bottom: 2px solid #4f46e5; padding-bottom: 8px;">
+            📅 Programme & Prochaines Échéances (${scheduleEvents.length} événements)
+          </h3>
+      `;
+
+      for (const ev of scheduleEvents) {
+        const orchsText = (ev.orchestra_names || []).filter(Boolean).join(', ');
+        timelineHtml += `
+          <div style="background-color: #ffffff; border: 1px solid #e2e8f0; border-left: 4px solid #4f46e5; border-radius: 12px; padding: 16px; margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+            <div style="margin-bottom: 6px;">
+              <span style="background-color: #e0e7ff; color: #3730a3; font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 9999px; display: inline-block; margin-right: 6px;">
+                📅 ${ev.formatted_date}
+              </span>
+              <span style="background-color: #f1f5f9; color: #475569; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 9999px; display: inline-block;">
+                ${ev.event_type === 'concert' ? 'Concert' : (ev.event_type === 'repetition' ? 'Répétition' : 'Événement')}
+              </span>
+            </div>
+            <h4 style="margin: 6px 0; font-size: 16px; font-weight: 800; color: #0f172a;">${ev.title}</h4>
+            ${ev.location ? `<p style="margin: 2px 0; font-size: 12px; color: #475569;">📍 <strong>Lieu :</strong> ${ev.location}</p>` : ''}
+            ${orchsText ? `<p style="margin: 2px 0; font-size: 12px; color: #475569;">🎷 <strong>Ensemble(s) :</strong> ${orchsText}</p>` : ''}
+            ${ev.description ? `<p style="margin: 8px 0 0 0; font-size: 12px; color: #334155; line-height: 1.5;">${formatMessageBody(ev.description)}</p>` : ''}
+            ${ev.practical_info ? `<div style="margin-top: 8px; background-color: #eff6ff; border: 1px solid #bfdbfe; padding: 8px 12px; border-radius: 8px; font-size: 11px; color: #1e3a8a;"><strong>ℹ️ Infos pratiques :</strong> ${formatMessageBody(ev.practical_info)}</div>` : ''}
+          </div>
+        `;
+      }
+      timelineHtml += `</div>`;
+
+      const introHtml = customNote ? `<div style="margin-bottom: 20px; font-size: 14px; color: #1e293b; line-height: 1.6;">${formatMessageBody(customNote)}</div>` : '';
+      messageToSave = `${introHtml}${timelineHtml}`;
     }
 
     let successCount = 0;
@@ -335,15 +479,15 @@ router.post('/send', async (req, res) => {
                         ` : ''}
 
                         ${customNote ? `
-                          <div style="background-color: #f8fafc; border: 1px border-slate-200; border-radius: 10px; padding: 16px; margin-bottom: 20px;">
+                          <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; margin-bottom: 20px;">
                             <h4 style="margin: 0 0 6px 0; font-size: 12px; font-weight: 700; color: #0f172a;">Note du responsable :</h4>
                             <div style="font-size: 13px; color: #1e293b; line-height: 1.6;">${formatMessageBody(customNote)}</div>
                           </div>
                         ` : ''}
                       ` : `
-                        <!-- Communication libre -->
+                        <!-- Communication libre ou Planning -->
                         <div style="background-color: #f8fafc; padding: 22px; border-radius: 12px; border: 1px solid #e2e8f0; margin: 18px 0; font-size: 14px; line-height: 1.7; color: #1e293b;">
-                          ${formatMessageBody(freeMessageContent || '')}
+                          ${messageToSave}
                         </div>
                       `}
 
@@ -447,7 +591,6 @@ router.get('/history', async (req, res) => {
   }
 
   try {
-    // Vérification dynamique si la colonne message_content existe (résilience)
     const [cols]: any = await pool.query(`
       SELECT COUNT(*) as count 
       FROM information_schema.COLUMNS 
@@ -458,7 +601,6 @@ router.get('/history', async (req, res) => {
     const hasMessageContent = cols[0]?.count > 0;
     const selectMessageContent = hasMessageContent ? 'cl.message_content,' : "'' AS message_content,";
 
-    // Récupérer la table de correspondance email -> "NOM Prénom"
     const [usersWithProfiles]: any = await pool.query(`
       SELECT u.email, p.first_name, p.last_name
       FROM users u
@@ -488,7 +630,6 @@ router.get('/history', async (req, res) => {
       LIMIT 100
     `);
 
-    // Enrichir chaque entrée de l'historique (noms de destinataires + message fallback)
     const enrichedHistory = history.map((item: any) => {
       let rawList: string[] = [];
       if (Array.isArray(item.recipients_list)) {
@@ -501,12 +642,9 @@ router.get('/history', async (req, res) => {
         }
       }
 
-      // Format clean list: "NOM Prénom (email)"
       const enrichedList = rawList.map((rec: string) => {
         if (typeof rec === 'string') {
-          // If already contains a name or parenthesis, keep it
           if (rec.includes('(')) return rec;
-          // Otherwise, look up email in DB profile map
           const cleanEmail = rec.trim().toLowerCase();
           const name = emailToNameMap[cleanEmail];
           if (name) {
@@ -518,7 +656,6 @@ router.get('/history', async (req, res) => {
 
       item.recipients_list = enrichedList;
 
-      // Fallback message content if NULL (older test records)
       if (!item.message_content || item.message_content.trim() === '') {
         if (item.event_title) {
           item.message_content = `<p><strong>Événement :</strong> ${item.event_title}</p><p>📅 <strong>Date :</strong> ${item.formatted_event_date || 'Non spécifiée'}</p>${item.event_location ? `<p>📍 <strong>Lieu :</strong> ${item.event_location}</p>` : ''}`;
