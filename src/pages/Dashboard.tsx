@@ -210,7 +210,10 @@ const Dashboard = () => {
   const partitionsByOrchestra = groupPartitionsByOrchestra(userPartitions);
   */
 
-  const toggleOrchestra = (orchestraName: string) => {
+  const toggleOrchestra = (orchestraName: string, event?: React.MouseEvent) => {
+    const target = event?.currentTarget as HTMLElement | null;
+    const initialTop = target ? target.getBoundingClientRect().top : null;
+
     const newSet = new Set(expandedOrchestras);
     if (newSet.has(orchestraName)) {
       newSet.delete(orchestraName);
@@ -218,9 +221,22 @@ const Dashboard = () => {
       newSet.add(orchestraName);
     }
     setExpandedOrchestras(newSet);
+
+    if (target && initialTop !== null) {
+      requestAnimationFrame(() => {
+        const newTop = target.getBoundingClientRect().top;
+        const diff = newTop - initialTop;
+        if (Math.abs(diff) > 1) {
+          window.scrollBy({ top: diff, behavior: 'instant' as ScrollBehavior });
+        }
+      });
+    }
   };
 
-  const toggleMorceau = (morceauName: string) => {
+  const toggleMorceau = (morceauName: string, event?: React.MouseEvent) => {
+    const target = event?.currentTarget as HTMLElement | null;
+    const initialTop = target ? target.getBoundingClientRect().top : null;
+
     const newSet = new Set(expandedMorceaux);
     if (newSet.has(morceauName)) {
       newSet.delete(morceauName);
@@ -228,9 +244,22 @@ const Dashboard = () => {
       newSet.add(morceauName);
     }
     setExpandedMorceaux(newSet);
+
+    if (target && initialTop !== null) {
+      requestAnimationFrame(() => {
+        const newTop = target.getBoundingClientRect().top;
+        const diff = newTop - initialTop;
+        if (Math.abs(diff) > 1) {
+          window.scrollBy({ top: diff, behavior: 'instant' as ScrollBehavior });
+        }
+      });
+    }
   };
 
-  const toggleEventType = (type: string) => {
+  const toggleEventType = (type: string, event?: React.MouseEvent) => {
+    const target = event?.currentTarget as HTMLElement | null;
+    const initialTop = target ? target.getBoundingClientRect().top : null;
+
     const newSet = new Set(expandedEventTypes);
     if (newSet.has(type)) {
       newSet.delete(type);
@@ -238,9 +267,22 @@ const Dashboard = () => {
       newSet.add(type);
     }
     setExpandedEventTypes(newSet);
+
+    if (target && initialTop !== null) {
+      requestAnimationFrame(() => {
+        const newTop = target.getBoundingClientRect().top;
+        const diff = newTop - initialTop;
+        if (Math.abs(diff) > 1) {
+          window.scrollBy({ top: diff, behavior: 'instant' as ScrollBehavior });
+        }
+      });
+    }
   };
 
-  const togglePracticalInfo = (eventId: string) => {
+  const togglePracticalInfo = (eventId: string, event?: React.MouseEvent) => {
+    const target = event?.currentTarget as HTMLElement | null;
+    const initialTop = target ? target.getBoundingClientRect().top : null;
+
     const newSet = new Set(expandedPracticalInfo);
     if (newSet.has(eventId)) {
       newSet.delete(eventId);
@@ -248,6 +290,16 @@ const Dashboard = () => {
       newSet.add(eventId);
     }
     setExpandedPracticalInfo(newSet);
+
+    if (target && initialTop !== null) {
+      requestAnimationFrame(() => {
+        const newTop = target.getBoundingClientRect().top;
+        const diff = newTop - initialTop;
+        if (Math.abs(diff) > 1) {
+          window.scrollBy({ top: diff, behavior: 'instant' as ScrollBehavior });
+        }
+      });
+    }
   };
 
   const filteredEvents = React.useMemo(() => {
@@ -715,7 +767,7 @@ const Dashboard = () => {
                   return (
                     <div key={type} className="bg-slate-50/70 rounded-2xl shadow-xs border border-slate-200/80 overflow-hidden transition-colors duration-200 hover:border-indigo-200 [overflow-anchor:none]">
                       <button 
-                        onClick={() => toggleEventType(type)} 
+                        onClick={(e) => toggleEventType(type, e)} 
                         className={`w-full flex items-center justify-between p-5 bg-gradient-to-r ${styles.lightGradient} hover:opacity-90 transition-colors cursor-pointer`}
                       >
                         <h3 className="font-bold text-lg text-slate-800 flex items-center group">
@@ -799,7 +851,7 @@ const Dashboard = () => {
                                     {event.practical_info && (
                                       <div className="mt-4">
                                         <button 
-                                          onClick={() => togglePracticalInfo(event.id)} 
+                                          onClick={(e) => togglePracticalInfo(event.id, e)} 
                                           className={`group/info flex items-center gap-2 text-xs font-bold ${styles.tagText} hover:bg-white p-2 rounded-lg transition-colors border border-transparent hover:border-gray-100 shadow-sm bg-gray-50/50 cursor-pointer`}
                                         >
                                           <Info className="h-4 w-4" />
@@ -900,7 +952,7 @@ const Dashboard = () => {
                   return (
                     <div key={orchestraName} className="bg-white/40 backdrop-blur-md rounded-2xl shadow-sm border border-white/60 overflow-hidden transition-colors duration-200 hover:shadow-md [overflow-anchor:none]">
                       <button 
-                        onClick={() => toggleOrchestra(orchestraName)} 
+                        onClick={(e) => toggleOrchestra(orchestraName, e)} 
                         className="w-full flex items-center justify-between p-5 bg-gradient-to-r from-purple-50 to-white hover:opacity-90 transition-colors cursor-pointer"
                       >
                         <h3 className="font-bold text-lg text-slate-800 flex items-center">
@@ -923,7 +975,7 @@ const Dashboard = () => {
                             return (
                               <div key={morceauName} className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden [overflow-anchor:none]">
                                 <button 
-                                  onClick={() => toggleMorceau(morceauName)} 
+                                  onClick={(e) => toggleMorceau(morceauName, e)} 
                                   className={`w-full text-left flex items-center justify-between p-4 transition-colors duration-200 group/item cursor-pointer ${isMorceauExpanded ? 'bg-emerald-50/50' : 'hover:bg-slate-50'}`}
                                 >
                                   <div className="flex flex-col">

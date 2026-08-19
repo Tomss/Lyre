@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+html, body {
+  overflow-anchor: none !important;
+}
+
 @layer base {
   body {
     @apply font-sans;
