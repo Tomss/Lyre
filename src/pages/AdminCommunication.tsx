@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { 
   ArrowLeft, Mail, Send, History, Calendar, Users, CheckCircle, 
-  AlertCircle, Search, Clock, MapPin, X, Sparkles, Filter, ChevronRight, Check, ShieldAlert, FileText, ChevronDown, ChevronUp, Layers
+  AlertCircle, Search, Clock, MapPin, X, Sparkles, Filter, ChevronRight, Check, ShieldAlert, FileText,
+  Bold, Italic, Underline, List, Smile, HelpCircle, Music
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Navigate, Link } from 'react-router-dom';
-import { API_URL } from '../config';
+import { API_URL, BASE_URL } from '../config';
 
 interface Orchestra {
   id: string;
@@ -50,6 +51,29 @@ interface Notification {
   type: 'success' | 'error';
 }
 
+const EMOJI_CATEGORIES = [
+  {
+    name: 'Émotions & Visages',
+    icon: '😊',
+    emojis: ['😊', '😄', '😃', '😎', '🥳', '🤔', '😇', '😉', '😍', '🥰', '🤗', '👋', '👏', '🙌', '🙏']
+  },
+  {
+    name: 'Musique & Instruments',
+    icon: '🎷',
+    emojis: ['🎷', '🎺', '🎸', '🎻', '🥁', '🎹', '🎼', '🎵', '🎶', '🎤', '🎧', '🎭', '🎨', '🎟️']
+  },
+  {
+    name: 'Agenda & Événements',
+    icon: '📅',
+    emojis: ['📅', '📍', '⏰', '⏳', '📢', '✉️', '📝', '📌', '🏆', '🎉', '🎈', '⭐', '💡', '✨']
+  },
+  {
+    name: 'Symboles & Gestes',
+    icon: '👍',
+    emojis: ['👍', '👎', '👌', '🤝', '🔥', '💯', 'ℹ️', '⚠️', '✅', '❌', '❓', '❗']
+  }
+];
+
 const AdminCommunication = () => {
   const { currentUser, token, isAuthenticated } = useAuth();
 
@@ -68,13 +92,17 @@ const AdminCommunication = () => {
   const [freeTargetMode, setFreeTargetMode] = useState<'orchestras' | 'members'>('orchestras');
   const [selectedOrchestraNames, setSelectedOrchestraNames] = useState<string[]>([]);
   
-  // Form fields
+  // Form fields & Rich text state
   const [customSubject, setCustomSubject] = useState('');
   const [customNote, setCustomNote] = useState('');
   const [freeMessageContent, setFreeMessageContent] = useState('');
   const [isTestMode, setIsTestMode] = useState(false);
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
   
+  // Emoji Picker state
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [activeEmojiCategory, setActiveEmojiCategory] = useState(0);
+
   // Search & Filter states
   const [memberSearchTerm, setMemberSearchTerm] = useState('');
   const [eventSearchTerm, setEventSearchTerm] = useState('');
@@ -97,6 +125,33 @@ const AdminCommunication = () => {
     setTimeout(() => {
       setNotification({ show: false, message: '', type: 'success' });
     }, 4000);
+  };
+
+  // Insert formatting tag (bold, italic, underline, list, etc.) in text area
+  const insertFormatting = (prefix: string, suffix: string = '') => {
+    const textarea = document.getElementById('freeMessageTextarea') as HTMLTextAreaElement;
+    if (!textarea) {
+      setFreeMessageContent(prev => prev + prefix + suffix);
+      return;
+    }
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = freeMessageContent.substring(start, end);
+    const replacement = prefix + (selectedText || '') + suffix;
+    const newContent = freeMessageContent.substring(0, start) + replacement + freeMessageContent.substring(end);
+    
+    setFreeMessageContent(newContent);
+    
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(start + prefix.length, start + prefix.length + selectedText.length);
+    }, 50);
+  };
+
+  const insertEmoji = (emoji: string) => {
+    insertFormatting(emoji);
+    setShowEmojiPicker(false);
   };
 
   // Prevent scroll when wizard is open
@@ -170,6 +225,7 @@ const AdminCommunication = () => {
     setFreeTargetMode('orchestras');
     setSelectedOrchestraNames([]);
     setSelectedUserIds([]);
+    setShowEmojiPicker(false);
     setShowWizard(true);
     fetchUpcomingEvents();
   };
@@ -361,6 +417,14 @@ const AdminCommunication = () => {
     });
   };
 
+  // Helper to format HTML preview safely without raw <br/> strings appearing
+  const renderPreviewContent = (text: string) => {
+    if (!text) return 'Aperçu du contenu libre...';
+    // Replace newlines with HTML linebreaks for preview
+    const htmlText = text.replace(/\n/g, '<br/>');
+    return <div dangerouslySetInnerHTML={{ __html: htmlText }} />;
+  };
+
   return (
     <div className="pt-8 lg:pt-12 pb-20 min-h-screen bg-gray-100">
       
@@ -512,7 +576,7 @@ const AdminCommunication = () => {
                   <h3 className="font-extrabold text-xl text-white">Nouvelle Communication</h3>
                   <p className="text-xs text-slate-400 mt-0.5">
                     {wizardStep === 1 && "Étape 1 : Choisir le type de communication"}
-                    {wizardStep === 2 && (commType === 'event' ? "Étape 2 : Sélectionner l'événement à venir" : "Étape 2 : Rédiger la communication libre")}
+                    {wizardStep === 2 && (commType === 'event' ? "Étape 2 : Sélectionner l'événement à venir" : "Étape 2 : Rédiger le message avec mise en forme")}
                     {wizardStep === 3 && "Étape 3 : Ciblage par Orchestre(s) ou par Membre(s)"}
                     {wizardStep === 4 && "Étape 4 : Aperçu & Confirmation d'envoi"}
                   </p>
@@ -582,7 +646,7 @@ const AdminCommunication = () => {
                 </div>
               )}
 
-              {/* STEP 2: Event selection or Free Content */}
+              {/* STEP 2: Event selection or Free Content with Rich Text Toolbar */}
               {wizardStep === 2 && (
                 <div className="space-y-6">
                   {commType === 'event' ? (
@@ -681,7 +745,7 @@ const AdminCommunication = () => {
                       </div>
                     </div>
                   ) : (
-                    /* Free Communication Form */
+                    /* Free Communication Form with RICH TEXT & EMOJI TOOLBAR */
                     <div className="space-y-5">
                       <div>
                         <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
@@ -696,17 +760,132 @@ const AdminCommunication = () => {
                         />
                       </div>
 
+                      {/* RICH TEXT & EMOJI EDITOR */}
                       <div>
-                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
+                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
                           Corps du message
                         </label>
-                        <textarea
-                          rows={8}
-                          placeholder="Rédigez votre message ici..."
-                          value={freeMessageContent}
-                          onChange={(e) => setFreeMessageContent(e.target.value)}
-                          className="w-full px-4 py-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 text-slate-800 outline-none leading-relaxed"
-                        />
+                        
+                        <div className="border border-slate-200 rounded-2xl overflow-hidden bg-white shadow-sm focus-within:ring-2 focus-within:ring-indigo-500 transition-all">
+                          
+                          {/* Formatting Toolbar */}
+                          <div className="bg-slate-50 border-b border-slate-200 px-3 py-2 flex items-center justify-between flex-wrap gap-1.5">
+                            
+                            {/* Format Buttons */}
+                            <div className="flex items-center gap-1">
+                              <button 
+                                type="button"
+                                onClick={() => insertFormatting('<b>', '</b>')}
+                                title="Gras"
+                                className="p-2 hover:bg-slate-200 rounded-lg text-slate-700 font-extrabold text-xs transition-colors"
+                              >
+                                <Bold size={16} />
+                              </button>
+
+                              <button 
+                                type="button"
+                                onClick={() => insertFormatting('<i>', '</i>')}
+                                title="Italique"
+                                className="p-2 hover:bg-slate-200 rounded-lg text-slate-700 italic text-xs transition-colors"
+                              >
+                                <Italic size={16} />
+                              </button>
+
+                              <button 
+                                type="button"
+                                onClick={() => insertFormatting('<u>', '</u>')}
+                                title="Souligné"
+                                className="p-2 hover:bg-slate-200 rounded-lg text-slate-700 underline text-xs transition-colors"
+                              >
+                                <Underline size={16} />
+                              </button>
+
+                              <div className="w-[1px] h-4 bg-slate-300 mx-1" />
+
+                              <button 
+                                type="button"
+                                onClick={() => insertFormatting('<p>• ', '</p>')}
+                                title="Liste à puces"
+                                className="p-2 hover:bg-slate-200 rounded-lg text-slate-700 text-xs transition-colors flex items-center gap-1"
+                              >
+                                <List size={16} />
+                              </button>
+
+                              <button 
+                                type="button"
+                                onClick={() => insertFormatting('<div style="background-color:#eff6ff; padding:12px; border-left:4px solid #4f46e5; border-radius:8px; margin:10px 0;">', '</div>')}
+                                title="Encadré d'information"
+                                className="px-2.5 py-1 hover:bg-slate-200 rounded-lg text-slate-700 text-xs font-bold transition-colors"
+                              >
+                                Encadré
+                              </button>
+                            </div>
+
+                            {/* Emoji Picker Trigger */}
+                            <div className="relative">
+                              <button 
+                                type="button"
+                                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-900 rounded-xl text-xs font-bold transition-all shadow-sm"
+                              >
+                                <Smile size={16} className="text-amber-600" />
+                                <span>Smileys & Emojis</span>
+                              </button>
+
+                              {/* Emoji Picker Popover */}
+                              {showEmojiPicker && (
+                                <div className="absolute right-0 top-full mt-2 z-50 bg-white border border-slate-200 rounded-2xl shadow-2xl p-3 w-80 space-y-3">
+                                  
+                                  {/* Emoji Categories Tabs */}
+                                  <div className="flex items-center gap-1 border-b border-slate-100 pb-2 overflow-x-auto">
+                                    {EMOJI_CATEGORIES.map((cat, idx) => (
+                                      <button
+                                        key={cat.name}
+                                        type="button"
+                                        onClick={() => setActiveEmojiCategory(idx)}
+                                        className={`p-1.5 rounded-lg text-sm transition-colors ${
+                                          activeEmojiCategory === idx ? 'bg-indigo-100 text-indigo-800' : 'hover:bg-slate-100 text-slate-600'
+                                        }`}
+                                        title={cat.name}
+                                      >
+                                        {cat.icon}
+                                      </button>
+                                    ))}
+                                  </div>
+
+                                  {/* Emoji Grid */}
+                                  <div className="grid grid-cols-6 gap-1 max-h-40 overflow-y-auto">
+                                    {EMOJI_CATEGORIES[activeEmojiCategory].emojis.map((emoji, i) => (
+                                      <button
+                                        key={i}
+                                        type="button"
+                                        onClick={() => insertEmoji(emoji)}
+                                        className="p-2 text-xl hover:bg-slate-100 rounded-xl transition-all hover:scale-125 text-center"
+                                      >
+                                        {emoji}
+                                      </button>
+                                    ))}
+                                  </div>
+
+                                  <div className="text-[10px] text-slate-400 text-center border-t border-slate-100 pt-1">
+                                    Cliquez sur un smiley pour l'insérer dans votre message.
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+
+                          </div>
+
+                          {/* Message Textarea */}
+                          <textarea
+                            id="freeMessageTextarea"
+                            rows={8}
+                            placeholder="Rédigez votre message ici..."
+                            value={freeMessageContent}
+                            onChange={(e) => setFreeMessageContent(e.target.value)}
+                            className="w-full p-4 text-sm bg-white border-0 focus:ring-0 text-slate-800 outline-none leading-relaxed font-normal"
+                          />
+                        </div>
                       </div>
                     </div>
                   )}
@@ -802,7 +981,7 @@ const AdminCommunication = () => {
                               : 'text-slate-500 hover:text-slate-800'
                           }`}
                         >
-                          <Layers size={16} />
+                          <Filter size={16} />
                           <span>1. Cibler par Orchestre(s)</span>
                         </button>
 
@@ -1001,57 +1180,71 @@ const AdminCommunication = () => {
                 </div>
               )}
 
-              {/* STEP 4: Live Preview & Send */}
+              {/* STEP 4: Live Preview & Send (ELEGANT CHIC EMAIL PREVIEW) */}
               {wizardStep === 4 && (
                 <div className="space-y-4">
-                  <h4 className="font-bold text-slate-800 text-base">Aperçu avant envoi final</h4>
+                  <h4 className="font-bold text-slate-800 text-base">Aperçu du mail avant envoi final</h4>
 
-                  {/* Render simulated Email */}
-                  <div className="border border-slate-200 rounded-2xl overflow-hidden shadow-sm bg-white text-slate-800 text-xs">
-                    <div className="bg-gradient-to-r from-indigo-600 to-cyan-600 p-4 text-center text-white">
-                      <h5 className="font-black text-base">La Lyre Municipale</h5>
-                      <p className="text-[10px] opacity-90">Chalindrey</p>
-                    </div>
+                  {/* Render Chic Simulated Email Container */}
+                  <div className="border border-slate-200 rounded-3xl overflow-hidden shadow-lg bg-slate-100 text-slate-800 text-xs p-6">
+                    <div className="max-w-xl mx-auto bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200">
+                      
+                      {/* Dark Navy & Indigo Header */}
+                      <div className="bg-slate-900 text-white p-6 text-center border-b-4 border-indigo-600">
+                        <div className="text-2xl mb-1">🎷</div>
+                        <h5 className="font-black text-lg text-white tracking-tight">La Lyre Municipale</h5>
+                        <p className="text-[11px] text-slate-400 font-medium mt-0.5">Chalindrey &bull; Espace Membre Officiel</p>
+                      </div>
 
-                    <div className="p-4 space-y-3">
-                      {isTestMode && (
-                        <div className="bg-amber-100 text-amber-900 text-[10px] font-bold px-2 py-1 rounded text-center">
-                          ⚠️ MODE TEST ({selectedUserIds.length} destinataire(s))
-                        </div>
-                      )}
+                      {/* Email Body */}
+                      <div className="p-6 space-y-4">
+                        {isTestMode && (
+                          <div className="bg-amber-100 text-amber-900 text-xs font-bold px-3 py-1.5 rounded-xl text-center border border-amber-300">
+                            ⚠️ EMAIL DE TEST (Envoi d'essai restreint)
+                          </div>
+                        )}
 
-                      <p className="font-semibold text-slate-700">Bonjour [Prénom],</p>
+                        <p className="font-bold text-slate-800 text-sm">Bonjour [Prénom],</p>
 
-                      {commType === 'event' && selectedEvent ? (
-                        <div className="bg-slate-50 border-l-4 border-indigo-600 p-3 rounded-r-lg space-y-1">
-                          <span className="inline-block bg-indigo-100 text-indigo-800 text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full">
-                            {selectedEvent.event_type === 'concert' ? 'Concert' : (selectedEvent.event_type === 'repetition' ? 'Répétition' : 'Événement')}
+                        {commType === 'event' && selectedEvent ? (
+                          <div className="bg-slate-50 border-l-4 border-indigo-600 p-4 rounded-r-xl space-y-2">
+                            <span className="inline-block bg-indigo-100 text-indigo-800 text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full">
+                              {selectedEvent.event_type === 'concert' ? 'Concert' : (selectedEvent.event_type === 'repetition' ? 'Répétition' : 'Événement')}
+                            </span>
+                            <h5 className="font-black text-slate-900 text-base">{selectedEvent.title}</h5>
+                            <p className="text-xs text-slate-600">📅 <strong>Date :</strong> {formatEventDate(selectedEvent.event_date)}</p>
+                            {selectedEvent.location && <p className="text-xs text-slate-600">📍 <strong>Lieu :</strong> {selectedEvent.location}</p>}
+                          </div>
+                        ) : (
+                          <div className="bg-slate-50 border-l-4 border-indigo-600 p-4 rounded-r-xl text-slate-800 font-normal leading-relaxed text-sm">
+                            {renderPreviewContent(freeMessageContent)}
+                          </div>
+                        )}
+
+                        {customNote && (
+                          <div className="bg-slate-100 border border-dashed border-slate-300 rounded-xl p-3 text-xs italic text-slate-700">
+                            <strong>Note du responsable :</strong>
+                            <div className="mt-1 font-normal not-italic">{renderPreviewContent(customNote)}</div>
+                          </div>
+                        )}
+
+                        <div className="text-center pt-4">
+                          <span className="inline-block bg-indigo-600 text-white font-extrabold text-xs px-5 py-3 rounded-xl shadow-md">
+                            Accéder à mon Espace Membre
                           </span>
-                          <h5 className="font-bold text-slate-900 text-sm">{selectedEvent.title}</h5>
-                          <p className="text-[11px] text-slate-600">📅 <strong>Date :</strong> {formatEventDate(selectedEvent.event_date)}</p>
-                          {selectedEvent.location && <p className="text-[11px] text-slate-600">📍 <strong>Lieu :</strong> {selectedEvent.location}</p>}
                         </div>
-                      ) : (
-                        <div className="bg-slate-50 border-l-4 border-indigo-600 p-3 rounded-r-lg text-slate-700 font-normal">
-                          {(freeMessageContent || 'Aperçu du contenu libre...').replace(/\n/g, '<br/>')}
-                        </div>
-                      )}
+                      </div>
 
-                      {customNote && (
-                        <div className="bg-slate-100 border border-dashed border-slate-300 rounded-lg p-2.5 text-[11px] italic text-slate-700">
-                          <strong>Note du responsable :</strong> "{customNote}"
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="bg-slate-50 p-2 text-center text-[9px] text-slate-400 border-t border-slate-100">
-                      La Lyre Municipale de Chalindrey
+                      {/* Footer */}
+                      <div className="bg-slate-50 p-3 text-center text-[10px] text-slate-400 border-t border-slate-100">
+                        La Lyre Municipale de Chalindrey &bull; Espace Membre Officiel
+                      </div>
                     </div>
                   </div>
 
-                  <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs text-slate-700 space-y-1">
+                  <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs text-slate-700 space-y-1.5">
                     <p><strong>Destinataires retenus :</strong> {isTestMode ? selectedUserIds.length : (commType === 'event' ? recipients.length : selectedUserIds.length)} membre(s)</p>
-                    <p><strong>Objet :</strong> {customSubject}</p>
+                    <p><strong>Objet du mail :</strong> {customSubject}</p>
                   </div>
                 </div>
               )}

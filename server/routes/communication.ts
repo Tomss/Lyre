@@ -78,7 +78,7 @@ router.get('/recipients/:eventId', async (req, res) => {
       JOIN profiles p ON u.id = p.id
       JOIN user_orchestras uo ON p.id = uo.user_id
       WHERE uo.orchestra_id IN (${placeholders}) AND p.status != 'Inactive'
-      ORDER BY p.last_name, p.first_name
+      ORDER BY p.last_name ASC, p.first_name ASC
     `, orchestraIds);
 
     // 3. Récupérer les noms des orchestres pour chaque membre
@@ -99,7 +99,7 @@ router.get('/recipients/:eventId', async (req, res) => {
   }
 });
 
-// GET /api/communication/all-members - Récupérer TOUS les membres inscrits
+// GET /api/communication/all-members - Récupérer TOUS les membres actifs / invités
 router.get('/all-members', async (req, res) => {
   if (!hasCommunicationAccess(req)) {
     return res.status(403).json({ message: 'Accès refusé.' });
@@ -117,7 +117,7 @@ router.get('/all-members', async (req, res) => {
       FROM users u
       JOIN profiles p ON u.id = p.id
       WHERE p.status != 'Inactive'
-      ORDER BY p.last_name, p.first_name
+      ORDER BY p.last_name ASC, p.first_name ASC
     `);
 
     for (const r of recipients) {
@@ -136,6 +136,16 @@ router.get('/all-members', async (req, res) => {
     res.status(500).json({ message: 'Erreur lors du chargement des membres.' });
   }
 });
+
+// Helper function to format message HTML safely
+const formatMessageBody = (text: string) => {
+  if (!text) return '';
+  // If text already has HTML tags like <p>, <b>, <i>, <br>, keep it; otherwise replace \n with <br/>
+  if (/<[a-z][\s\S]*>/i.test(text)) {
+    return text;
+  }
+  return text.replace(/\n/g, '<br/>');
+};
 
 // POST /api/communication/send - Envoyer une communication par email via Resend
 router.post('/send', async (req, res) => {
@@ -227,90 +237,119 @@ router.post('/send', async (req, res) => {
 
     for (const recipient of finalRecipients) {
       const htmlContent = `
-        <div style="font-family: 'Poppins', Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1e293b; background-color: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
-          
-          <!-- Header Banner -->
-          <div style="background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%); padding: 32px 24px; text-align: center; color: #ffffff;">
-            <h1 style="margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.5px;">La Lyre Municipale</h1>
-            <p style="margin: 4px 0 0 0; font-size: 14px; opacity: 0.9;">Chalindrey</p>
-          </div>
-
-          <!-- Body Content -->
-          <div style="padding: 32px 24px;">
-            ${isTest ? `
-              <div style="background-color: #fef3c7; border: 1px solid #f59e0b; color: #92400e; padding: 10px 16px; border-radius: 8px; font-size: 13px; font-weight: bold; margin-bottom: 20px; text-align: center;">
-                ⚠️ EMAIL DE TEST (Envoyé uniquement à vous / sélection restreinte)
-              </div>
-            ` : ''}
-
-            <p style="font-size: 16px; font-weight: 600; color: #334155; margin-top: 0;">
-              Bonjour ${recipient.firstName},
-            </p>
-
-            ${type === 'event' && event ? `
-              <div style="background-color: #f8fafc; border-left: 4px solid #4f46e5; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                <span style="display: inline-block; background-color: #e0e7ff; color: #3730a3; font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 9999px; text-transform: uppercase; margin-bottom: 8px;">
-                  ${event.event_type === 'concert' ? 'Concert' : (event.event_type === 'repetition' ? 'Répétition' : 'Événement')}
-                </span>
-                <h2 style="margin: 4px 0 12px 0; font-size: 20px; font-weight: 700; color: #0f172a;">${event.title}</h2>
-                
-                <table style="width: 100%; border-collapse: collapse; font-size: 14px; color: #475569;">
+        <!DOCTYPE html>
+        <html lang="fr">
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>${subject}</title>
+        </head>
+        <body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #0f172a;">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f1f5f9; padding: 30px 10px;">
+            <tr>
+              <td align="center">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width: 620px; background-color: #ffffff; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08); border: 1px solid #e2e8f0;">
+                  
+                  <!-- Elegant Chic Header Bar -->
                   <tr>
-                    <td style="padding: 6px 0; font-weight: 600; width: 100px;">📅 Date :</td>
-                    <td style="padding: 6px 0; color: #0f172a; font-weight: bold;">${event.formatted_date}</td>
+                    <td style="background-color: #0f172a; padding: 32px 24px; text-align: center; border-bottom: 4px solid #4f46e5;">
+                      <div style="font-size: 28px; margin-bottom: 8px;">🎷</div>
+                      <h1 style="margin: 0; color: #ffffff; font-size: 22px; font-weight: 800; letter-spacing: -0.5px; font-family: 'Segoe UI', sans-serif;">
+                        La Lyre Municipale
+                      </h1>
+                      <p style="margin: 4px 0 0 0; color: #94a3b8; font-size: 13px; font-weight: 500;">
+                        Chalindrey &bull; Espace Membre Officiel
+                      </p>
+                    </td>
                   </tr>
-                  ${event.location ? `
+
+                  <!-- Email Content Body -->
                   <tr>
-                    <td style="padding: 6px 0; font-weight: 600;">📍 Lieu :</td>
-                    <td style="padding: 6px 0; color: #0f172a;">${event.location}</td>
+                    <td style="padding: 36px 30px; background-color: #ffffff;">
+                      ${isTest ? `
+                        <div style="background-color: #fef3c7; border: 1px solid #f59e0b; color: #92400e; padding: 12px 18px; border-radius: 12px; font-size: 13px; font-weight: bold; margin-bottom: 24px; text-align: center;">
+                          ⚠️ EMAIL DE TEST (Envoi d'essai restreint)
+                        </div>
+                      ` : ''}
+
+                      <p style="font-size: 16px; font-weight: 700; color: #1e293b; margin-top: 0; margin-bottom: 20px;">
+                        Bonjour ${recipient.firstName},
+                      </p>
+
+                      ${type === 'event' && event ? `
+                        <div style="background-color: #f8fafc; border-left: 4px solid #4f46e5; padding: 22px; border-radius: 12px; margin: 20px 0;">
+                          <span style="display: inline-block; background-color: #e0e7ff; color: #3730a3; font-size: 11px; font-weight: 800; padding: 4px 12px; border-radius: 9999px; text-transform: uppercase; margin-bottom: 10px;">
+                            ${event.event_type === 'concert' ? 'Concert' : (event.event_type === 'repetition' ? 'Répétition' : 'Événement')}
+                          </span>
+                          <h2 style="margin: 4px 0 14px 0; font-size: 20px; font-weight: 800; color: #0f172a;">${event.title}</h2>
+                          
+                          <table style="width: 100%; border-collapse: collapse; font-size: 14px; color: #334155;">
+                            <tr>
+                              <td style="padding: 6px 0; font-weight: 700; width: 100px; color: #475569;">📅 Date :</td>
+                              <td style="padding: 6px 0; color: #0f172a; font-weight: 700;">${event.formatted_date}</td>
+                            </tr>
+                            ${event.location ? `
+                            <tr>
+                              <td style="padding: 6px 0; font-weight: 700; color: #475569;">📍 Lieu :</td>
+                              <td style="padding: 6px 0; color: #0f172a;">${event.location}</td>
+                            </tr>
+                            ` : ''}
+                            <tr>
+                              <td style="padding: 6px 0; font-weight: 700; color: #475569;">🎷 Ensemble :</td>
+                              <td style="padding: 6px 0; color: #0f172a;">${orchestraTag}</td>
+                            </tr>
+                          </table>
+                        </div>
+
+                        ${event.description ? `
+                          <div style="margin-bottom: 20px;">
+                            <h4 style="margin: 0 0 6px 0; font-size: 14px; font-weight: 700; color: #1e293b;">Description :</h4>
+                            <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #334155;">${event.description}</p>
+                          </div>
+                        ` : ''}
+
+                        ${event.practical_info ? `
+                          <div style="background-color: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+                            <h4 style="margin: 0 0 6px 0; font-size: 13px; font-weight: 700; color: #1e40af;">ℹ️ Informations pratiques :</h4>
+                            <p style="margin: 0; font-size: 13px; color: #1e3a8a; line-height: 1.6;">${event.practical_info}</p>
+                          </div>
+                        ` : ''}
+
+                        ${customNote ? `
+                          <div style="background-color: #f1f5f9; border: 1px dashed #cbd5e1; border-radius: 12px; padding: 18px; margin-bottom: 24px;">
+                            <h4 style="margin: 0 0 6px 0; font-size: 13px; font-weight: 700; color: #1e293b;">Note du responsable :</h4>
+                            <div style="font-size: 14px; color: #1e293b; line-height: 1.6;">${formatMessageBody(customNote)}</div>
+                          </div>
+                        ` : ''}
+                      ` : `
+                        <!-- Communication libre -->
+                        <div style="background-color: #f8fafc; border-left: 4px solid #4f46e5; padding: 22px; border-radius: 12px; margin: 20px 0; font-size: 15px; line-height: 1.7; color: #1e293b;">
+                          ${formatMessageBody(freeMessageContent || '')}
+                        </div>
+                      `}
+
+                      <div style="text-align: center; margin: 36px 0 16px 0;">
+                        <a href="${frontendUrl}/dashboard" style="background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%); color: #ffffff; font-weight: 800; font-size: 14px; text-decoration: none; padding: 15px 32px; border-radius: 14px; display: inline-block; box-shadow: 0 6px 20px rgba(79, 70, 229, 0.25);">
+                          Accéder à mon Espace Membre
+                        </a>
+                      </div>
+                    </td>
                   </tr>
-                  ` : ''}
+
+                  <!-- Footer -->
                   <tr>
-                    <td style="padding: 6px 0; font-weight: 600;">🎷 Ensemble :</td>
-                    <td style="padding: 6px 0; color: #0f172a;">${orchestraTag}</td>
+                    <td style="background-color: #f8fafc; padding: 22px 30px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b;">
+                      <p style="margin: 0 0 4px 0; font-weight: 700; color: #334155;">La Lyre Municipale de Chalindrey</p>
+                      <p style="margin: 0;">Communication envoyée depuis l'espace membre officiel.</p>
+                    </td>
                   </tr>
+
                 </table>
-              </div>
-
-              ${event.description ? `
-                <div style="margin-bottom: 20px;">
-                  <h4 style="margin: 0 0 6px 0; font-size: 14px; font-weight: 700; color: #334155;">Description :</h4>
-                  <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #475569;">${event.description}</p>
-                </div>
-              ` : ''}
-
-              ${event.practical_info ? `
-                <div style="background-color: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 14px; margin-bottom: 20px;">
-                  <h4 style="margin: 0 0 4px 0; font-size: 13px; font-weight: 700; color: #1e40af;">ℹ️ Informations pratiques :</h4>
-                  <p style="margin: 0; font-size: 13px; color: #1e3a8a; line-height: 1.5;">${event.practical_info}</p>
-                </div>
-              ` : ''}
-
-              ${customNote ? `
-                <div style="background-color: #f1f5f9; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 16px; margin-bottom: 24px;">
-                  <h4 style="margin: 0 0 6px 0; font-size: 13px; font-weight: 700; color: #334155;">Note du responsable :</h4>
-                  <p style="margin: 0; font-size: 14px; color: #1e293b; line-height: 1.5; font-style: italic;">"${customNote}"</p>
-                </div>
-              ` : ''}
-            ` : `
-              <!-- Communication libre -->
-              <div style="background-color: #f8fafc; border-left: 4px solid #4f46e5; padding: 20px; border-radius: 8px; margin: 20px 0; font-size: 14px; line-height: 1.6; color: #334155;">
-                ${(freeMessageContent || '').replace(/\n/g, '<br/>')}
-              </div>
-            `}
-
-            <div style="text-align: center; margin: 32px 0 16px 0;">
-              <a href="${frontendUrl}/dashboard" style="background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%); color: #ffffff; font-weight: 700; font-size: 14px; text-decoration: none; padding: 14px 28px; border-radius: 12px; display: inline-block; box-shadow: 0 4px 12px rgba(79,70,229,0.3);">
-                Accéder à mon Espace Membre
-              </a>
-            </div>
-          </div>
-
-          <!-- Footer -->
-          <div style="background-color: #f8fafc; padding: 16px 24px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 12px; color: #94a3b8;">
-            La Lyre Municipale de Chalindrey &bull; Communication Espace Membre
-          </div>
-        </div>
+              </td>
+            </tr>
+          </table>
+        </body>
+        </html>
       `;
 
       try {
