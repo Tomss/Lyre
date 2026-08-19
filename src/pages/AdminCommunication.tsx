@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   ArrowLeft, Mail, Send, History, Calendar, Users, CheckCircle, 
-  AlertCircle, Search, Clock, MapPin, X, Sparkles, Filter, ChevronRight, Check, ShieldAlert, FileText
+  AlertCircle, Search, Clock, MapPin, X, Sparkles, Filter, ChevronRight, Check, ShieldAlert, FileText, ChevronDown, ChevronUp, Layers
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Navigate, Link } from 'react-router-dom';
@@ -64,13 +64,16 @@ const AdminCommunication = () => {
   const [recipients, setRecipients] = useState<Recipient[]>([]);
   const [history, setHistory] = useState<CommunicationLogItem[]>([]);
   
+  // Free communication targeting mode: 'orchestras' | 'members'
+  const [freeTargetMode, setFreeTargetMode] = useState<'orchestras' | 'members'>('orchestras');
+  const [selectedOrchestraNames, setSelectedOrchestraNames] = useState<string[]>([]);
+  
   // Form fields
   const [customSubject, setCustomSubject] = useState('');
   const [customNote, setCustomNote] = useState('');
   const [freeMessageContent, setFreeMessageContent] = useState('');
   const [isTestMode, setIsTestMode] = useState(false);
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
-  const [selectedOrchestraFilter, setSelectedOrchestraFilter] = useState<string>('all');
   
   // Search & Filter states
   const [memberSearchTerm, setMemberSearchTerm] = useState('');
@@ -164,7 +167,9 @@ const AdminCommunication = () => {
     setCustomNote('');
     setFreeMessageContent('');
     setIsTestMode(false);
-    setSelectedOrchestraFilter('all');
+    setFreeTargetMode('orchestras');
+    setSelectedOrchestraNames([]);
+    setSelectedUserIds([]);
     setShowWizard(true);
     fetchUpcomingEvents();
   };
@@ -216,7 +221,8 @@ const AdminCommunication = () => {
           if (!response.ok) throw new Error('Erreur lors du chargement de la liste des membres');
           const data = await response.json();
           setRecipients(data || []);
-          setSelectedUserIds([]); // Pas de pré-sélection automatique en communication libre
+          setSelectedUserIds([]);
+          setSelectedOrchestraNames([]);
           setCustomSubject('[La Lyre] Information importante');
         } catch (err: any) {
           showNotification(err.message, 'error');
@@ -266,19 +272,30 @@ const AdminCommunication = () => {
     setSelectedUserIds([]);
   };
 
-  // Handle Orchestra quick selection for Communication Libre
-  const handleSelectOrchestraFilter = (orchName: string) => {
-    setSelectedOrchestraFilter(orchName);
-    if (orchName === 'all') {
-      setSelectedUserIds(recipients.map(r => r.id));
-    } else if (orchName === 'none') {
-      setSelectedUserIds([]);
-    } else {
-      const matchingIds = recipients
-        .filter(r => (r.userOrchestras || []).includes(orchName))
-        .map(r => r.id);
-      setSelectedUserIds(matchingIds);
-    }
+  // Toggle Orchestra Selection in Free Mode
+  const toggleOrchestraSelection = (orchName: string) => {
+    const newSelectedOrchestras = selectedOrchestraNames.includes(orchName)
+      ? selectedOrchestraNames.filter(name => name !== orchName)
+      : [...selectedOrchestraNames, orchName];
+
+    setSelectedOrchestraNames(newSelectedOrchestras);
+
+    // Automatically check all members belonging to ANY of the selected orchestras
+    const matchingIds = recipients
+      .filter(r => (r.userOrchestras || []).some(o => newSelectedOrchestras.includes(o)))
+      .map(r => r.id);
+
+    setSelectedUserIds(matchingIds);
+  };
+
+  const selectAllOrchestras = () => {
+    setSelectedOrchestraNames(availableOrchestraNames);
+    setSelectedUserIds(recipients.map(r => r.id));
+  };
+
+  const deselectAllOrchestras = () => {
+    setSelectedOrchestraNames([]);
+    setSelectedUserIds([]);
   };
 
   const handleSendCommunication = async () => {
@@ -475,23 +492,23 @@ const AdminCommunication = () => {
 
       </div>
 
-      {/* POP-UP WIZARD MODAL */}
+      {/* POP-UP WIZARD MODAL (MUCH LARGER: max-w-5xl) */}
       {showWizard && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-3xl max-w-3xl w-full shadow-2xl border border-slate-100 my-8 overflow-hidden flex flex-col max-h-[90vh]">
+          <div className="bg-white rounded-3xl max-w-5xl w-full shadow-2xl border border-slate-100 my-4 overflow-hidden flex flex-col max-h-[92vh]">
             
             {/* Modal Header */}
-            <div className="bg-slate-900 text-white px-6 py-5 flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold text-sm">
+            <div className="bg-slate-900 text-white px-8 py-5 flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="w-11 h-11 rounded-2xl bg-indigo-600 flex items-center justify-center text-white font-extrabold text-base shadow-md">
                   {wizardStep}/4
                 </div>
                 <div>
-                  <h3 className="font-extrabold text-lg text-white">Nouvelle Communication</h3>
-                  <p className="text-xs text-slate-400">
+                  <h3 className="font-extrabold text-xl text-white">Nouvelle Communication</h3>
+                  <p className="text-xs text-slate-400 mt-0.5">
                     {wizardStep === 1 && "Étape 1 : Choisir le type de communication"}
                     {wizardStep === 2 && (commType === 'event' ? "Étape 2 : Sélectionner l'événement à venir" : "Étape 2 : Rédiger la communication libre")}
-                    {wizardStep === 3 && "Étape 3 : Ciblage des destinataires & Mode Test"}
+                    {wizardStep === 3 && "Étape 3 : Ciblage par Orchestre(s) ou par Membre(s)"}
                     {wizardStep === 4 && "Étape 4 : Aperçu & Confirmation d'envoi"}
                   </p>
                 </div>
@@ -500,60 +517,60 @@ const AdminCommunication = () => {
                 onClick={() => setShowWizard(false)}
                 className="text-slate-400 hover:text-white p-2 rounded-xl hover:bg-slate-800 transition-colors"
               >
-                <X size={20} />
+                <X size={22} />
               </button>
             </div>
 
             {/* Modal Body */}
-            <div className="p-6 overflow-y-auto flex-1 space-y-6">
+            <div className="p-8 overflow-y-auto flex-1 space-y-6">
 
               {/* STEP 1: Choose Type */}
               {wizardStep === 1 && (
-                <div className="space-y-4">
-                  <h4 className="font-bold text-slate-800 text-base">Quel type de communication souhaitez-vous envoyer ?</h4>
+                <div className="space-y-6">
+                  <h4 className="font-extrabold text-slate-800 text-lg">Quel type de communication souhaitez-vous envoyer ?</h4>
                   
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div 
                       onClick={() => setCommType('event')}
-                      className={`p-6 rounded-2xl border-2 transition-all cursor-pointer text-left flex flex-col justify-between space-y-4 ${
+                      className={`p-8 rounded-3xl border-2 transition-all cursor-pointer text-left flex flex-col justify-between space-y-6 ${
                         commType === 'event' 
-                          ? 'border-indigo-600 bg-indigo-50/40 ring-2 ring-indigo-600/20' 
+                          ? 'border-indigo-600 bg-indigo-50/40 ring-4 ring-indigo-600/10' 
                           : 'border-gray-200 hover:border-gray-300 bg-white'
                       }`}
                     >
-                      <div className="w-12 h-12 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">
-                        <Calendar size={24} />
+                      <div className="w-14 h-14 rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">
+                        <Calendar size={28} />
                       </div>
                       <div>
-                        <h5 className="font-bold text-slate-900 text-base">Liée à un Événement</h5>
-                        <p className="text-xs text-slate-500 mt-1">
-                          Rappel de répétition, convocation concert, détails d'organisation pour un orchestre.
+                        <h5 className="font-extrabold text-slate-900 text-lg">Liée à un Événement</h5>
+                        <p className="text-xs text-slate-500 mt-2 leading-relaxed">
+                          Rappel de répétition, convocation concert ou détails d'organisation automatiquement adressés aux musiciens concernés par l'événement.
                         </p>
                       </div>
-                      <span className="text-xs font-bold text-indigo-600 flex items-center">
-                        Sélectionner l'événement <ChevronRight size={14} className="ml-1" />
+                      <span className="text-xs font-extrabold text-indigo-600 flex items-center">
+                        Sélectionner l'événement <ChevronRight size={16} className="ml-1" />
                       </span>
                     </div>
 
                     <div 
                       onClick={() => setCommType('free')}
-                      className={`p-6 rounded-2xl border-2 transition-all cursor-pointer text-left flex flex-col justify-between space-y-4 ${
+                      className={`p-8 rounded-3xl border-2 transition-all cursor-pointer text-left flex flex-col justify-between space-y-6 ${
                         commType === 'free' 
-                          ? 'border-indigo-600 bg-indigo-50/40 ring-2 ring-indigo-600/20' 
+                          ? 'border-indigo-600 bg-indigo-50/40 ring-4 ring-indigo-600/10' 
                           : 'border-gray-200 hover:border-gray-300 bg-white'
                       }`}
                     >
-                      <div className="w-12 h-12 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center font-bold">
-                        <FileText size={24} />
+                      <div className="w-14 h-14 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center font-bold">
+                        <FileText size={28} />
                       </div>
                       <div>
-                        <h5 className="font-bold text-slate-900 text-base">Communication Libre</h5>
-                        <p className="text-xs text-slate-500 mt-1">
-                          Annonce générale, information administrative ou message personnalisé adressé aux membres.
+                        <h5 className="font-extrabold text-slate-900 text-lg">Communication Libre</h5>
+                        <p className="text-xs text-slate-500 mt-2 leading-relaxed">
+                          Annonce générale, note d'information ou message personnalisé adressé à un ou plusieurs orchestres ou membres spécifiques.
                         </p>
                       </div>
-                      <span className="text-xs font-bold text-purple-600 flex items-center">
-                        Rédiger le message <ChevronRight size={14} className="ml-1" />
+                      <span className="text-xs font-extrabold text-purple-600 flex items-center">
+                        Rédiger le message <ChevronRight size={16} className="ml-1" />
                       </span>
                     </div>
                   </div>
@@ -565,45 +582,45 @@ const AdminCommunication = () => {
                 <div className="space-y-6">
                   {commType === 'event' ? (
                     <div>
-                      <div className="flex items-center justify-between mb-3">
-                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">
+                      <div className="flex items-center justify-between mb-4">
+                        <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-500">
                           Sélectionner l'Événement à venir
                         </label>
 
                         {/* Search input */}
-                        <div className="relative w-48 sm:w-64">
-                          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                        <div className="relative w-64">
+                          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                           <input
                             type="text"
                             placeholder="Chercher un événement..."
                             value={eventSearchTerm}
                             onChange={(e) => setEventSearchTerm(e.target.value)}
-                            className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none"
+                            className="w-full pl-9 pr-3.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none"
                           />
                         </div>
                       </div>
 
                       {loadingEvents ? (
-                        <div className="py-8 text-center text-slate-400 text-xs">Chargement des événements...</div>
+                        <div className="py-12 text-center text-slate-400 text-sm">Chargement des événements...</div>
                       ) : filteredUpcomingEvents.length === 0 ? (
-                        <div className="py-8 text-center text-slate-400 text-xs">Aucun événement à venir trouvé.</div>
+                        <div className="py-12 text-center text-slate-400 text-sm">Aucun événement à venir trouvé.</div>
                       ) : (
-                        <div className="space-y-2.5 max-h-56 overflow-y-auto pr-1">
+                        <div className="space-y-3 max-h-64 overflow-y-auto pr-1">
                           {filteredUpcomingEvents.map(ev => {
                             const isSelected = ev.id === selectedEventId;
                             return (
                               <div
                                 key={ev.id}
                                 onClick={() => setSelectedEventId(ev.id)}
-                                className={`p-3.5 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${
+                                className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-4 ${
                                   isSelected 
                                     ? 'bg-indigo-50/70 border-indigo-600 ring-2 ring-indigo-600/20' 
                                     : 'bg-white border-slate-200 hover:bg-slate-50'
                                 }`}
                               >
                                 <div>
-                                  <div className="flex items-center gap-2 mb-1 flex-wrap">
-                                    <span className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full ${
+                                  <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                                    <span className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full ${
                                       ev.event_type === 'concert' ? 'bg-amber-100 text-amber-800' : 'bg-indigo-100 text-indigo-800'
                                     }`}>
                                       {ev.event_type === 'concert' ? 'Concert' : (ev.event_type === 'repetition' ? 'Répétition' : 'Événement')}
@@ -614,16 +631,16 @@ const AdminCommunication = () => {
                                       </span>
                                     ))}
                                   </div>
-                                  <h5 className="font-bold text-slate-900 text-sm">{ev.title}</h5>
-                                  <p className="text-xs text-slate-500 mt-0.5">
+                                  <h5 className="font-bold text-slate-900 text-base">{ev.title}</h5>
+                                  <p className="text-xs text-slate-500 mt-1">
                                     📅 {formatEventDate(ev.event_date)} {ev.location ? `• 📍 ${ev.location}` : ''}
                                   </p>
                                 </div>
                                 
-                                <div className={`w-5 h-5 rounded-full border flex items-center justify-center flex-shrink-0 ${
+                                <div className={`w-6 h-6 rounded-full border flex items-center justify-center flex-shrink-0 ${
                                   isSelected ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-slate-300'
                                 }`}>
-                                  {isSelected && <Check size={12} className="stroke-[3]" />}
+                                  {isSelected && <Check size={14} className="stroke-[3]" />}
                                 </div>
                               </div>
                             );
@@ -631,7 +648,7 @@ const AdminCommunication = () => {
                         </div>
                       )}
 
-                      <div className="mt-4 pt-4 border-t border-slate-100 space-y-4">
+                      <div className="mt-6 pt-6 border-t border-slate-100 space-y-4">
                         <div>
                           <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
                             Objet du Mail
@@ -640,7 +657,7 @@ const AdminCommunication = () => {
                             type="text"
                             value={customSubject}
                             onChange={(e) => setCustomSubject(e.target.value)}
-                            className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 font-medium text-slate-800 outline-none"
+                            className="w-full px-4 py-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 font-medium text-slate-800 outline-none"
                           />
                         </div>
 
@@ -653,14 +670,14 @@ const AdminCommunication = () => {
                             placeholder="Ex: Arrivée requise 15 minutes en avance avec votre tenue de concert..."
                             value={customNote}
                             onChange={(e) => setCustomNote(e.target.value)}
-                            className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 text-slate-800 outline-none"
+                            className="w-full px-4 py-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 text-slate-800 outline-none"
                           />
                         </div>
                       </div>
                     </div>
                   ) : (
                     /* Free Communication Form */
-                    <div className="space-y-4">
+                    <div className="space-y-5">
                       <div>
                         <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
                           Objet du message
@@ -670,7 +687,7 @@ const AdminCommunication = () => {
                           placeholder="Objet de la communication..."
                           value={customSubject}
                           onChange={(e) => setCustomSubject(e.target.value)}
-                          className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 font-medium text-slate-800 outline-none"
+                          className="w-full px-4 py-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 font-medium text-slate-800 outline-none"
                         />
                       </div>
 
@@ -679,11 +696,11 @@ const AdminCommunication = () => {
                           Corps du message
                         </label>
                         <textarea
-                          rows={6}
+                          rows={8}
                           placeholder="Rédigez votre message ici..."
                           value={freeMessageContent}
                           onChange={(e) => setFreeMessageContent(e.target.value)}
-                          className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 text-slate-800 outline-none"
+                          className="w-full px-4 py-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 text-slate-800 outline-none leading-relaxed"
                         />
                       </div>
                     </div>
@@ -691,22 +708,22 @@ const AdminCommunication = () => {
                 </div>
               )}
 
-              {/* STEP 3: Target & Test Mode */}
+              {/* STEP 3: Target Selection (Orchestra vs Members choice) */}
               {wizardStep === 3 && (
-                <div className="space-y-4">
+                <div className="space-y-6">
                   
                   {/* Mode Banner */}
                   <div className="flex items-center justify-between bg-slate-50 p-4 rounded-2xl border border-slate-200">
                     <div>
-                      <h5 className="font-bold text-slate-800 text-sm">Mode de diffusion</h5>
+                      <h5 className="font-bold text-slate-800 text-sm">Mode d'envoi</h5>
                       <p className="text-xs text-slate-500">
-                        {isTestMode ? "Actuellement en Mode Test (envoi restreint d'essai)" : (commType === 'event' ? "Envoi officiel aux orchestres ciblés" : "Communication libre sur-mesure")}
+                        {isTestMode ? "Actuellement en Mode Test (envoi restreint)" : "Envoi réel à la sélection"}
                       </p>
                     </div>
 
                     <div 
                       onClick={() => setIsTestMode(!isTestMode)}
-                      className={`flex items-center gap-2 px-3 py-2 rounded-xl cursor-pointer transition-all border ${
+                      className={`flex items-center gap-2 px-3.5 py-2 rounded-xl cursor-pointer transition-all border ${
                         isTestMode ? 'bg-amber-100 border-amber-300 text-amber-900' : 'bg-white border-slate-200 text-slate-700'
                       }`}
                     >
@@ -718,130 +735,257 @@ const AdminCommunication = () => {
                     </div>
                   </div>
 
-                  {/* Target Context Banner */}
-                  {isTestMode ? (
-                    <div className="bg-amber-50 border border-amber-200 rounded-xl p-3.5 text-xs text-amber-900 flex items-start gap-2.5">
-                      <ShieldAlert size={18} className="text-amber-600 flex-shrink-0 mt-0.5" />
+                  {/* Mode Test Alert */}
+                  {isTestMode && (
+                    <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-xs text-amber-900 flex items-start gap-3">
+                      <ShieldAlert size={20} className="text-amber-600 flex-shrink-0 mt-0.5" />
                       <div>
-                        <strong>Mode Test Activé :</strong> Seuls les membres cochés ci-dessous recevront le mail d'essai. Utile pour tester l'envoi sur votre propre email.
+                        <strong>Mode Test Activé :</strong> Seuls les membres cochés recevront le mail d'essai. Utile pour vérifier l'affichage du mail sur votre adresse.
                       </div>
-                    </div>
-                  ) : commType === 'event' ? (
-                    <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-3.5 text-xs text-indigo-900 flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Users size={18} className="text-indigo-600" />
-                        <span>Envoi officiel aux musiciens de l'événement : <strong>{selectedEvent?.title}</strong> (Ensembles : {(selectedEvent?.orchestras || []).map(o => o.name).join(', ')})</span>
-                      </div>
-                      <span className="font-black bg-indigo-600 text-white px-2.5 py-0.5 rounded-full text-[11px] flex-shrink-0">
-                        {recipients.length} membre(s)
-                      </span>
-                    </div>
-                  ) : (
-                    <div className="bg-purple-50 border border-purple-200 rounded-xl p-3.5 text-xs text-purple-900 flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <FileText size={18} className="text-purple-600" />
-                        <span>Communication libre : Cochez les membres ou filtrez par orchestre ci-dessous.</span>
-                      </div>
-                      <span className="font-black bg-purple-600 text-white px-2.5 py-0.5 rounded-full text-[11px] flex-shrink-0">
-                        {selectedUserIds.length} retenu(s)
-                      </span>
                     </div>
                   )}
 
-                  {/* Quick Orchestra Filter Dropdown for Free Communication */}
-                  {commType === 'free' && (
-                    <div className="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
-                      <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5 flex-shrink-0">
-                        <Filter size={14} className="text-purple-600" />
-                        <span>Cibler un orchestre :</span>
-                      </label>
-                      <select
-                        value={selectedOrchestraFilter}
-                        onChange={(e) => handleSelectOrchestraFilter(e.target.value)}
-                        className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-medium text-slate-800 outline-none focus:ring-2 focus:ring-purple-500"
-                      >
-                        <option value="none">-- Choisir un orchestre à cocher --</option>
-                        <option value="all">Tous les orchestres ({recipients.length} membres)</option>
-                        {availableOrchestraNames.map(name => (
-                          <option key={name} value={name}>{name}</option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
-
-                  {/* Checklist */}
-                  <div className="space-y-2 pt-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                        Liste des membres ({filteredRecipients.length}) &bull; <strong className="text-slate-800">{selectedUserIds.length} coché(s)</strong>
-                      </span>
-                      {(isTestMode || commType === 'free') && (
-                        <div className="flex items-center gap-2 text-xs">
-                          <button onClick={selectAllFiltered} className="font-bold text-indigo-600 hover:underline">Tout cocher</button>
-                          <span className="text-slate-300">•</span>
-                          <button onClick={deselectAll} className="font-bold text-slate-500 hover:underline">Tout décocher</button>
+                  {commType === 'event' ? (
+                    /* Event Mode Targeting */
+                    <div className="space-y-4">
+                      <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-4 text-xs text-indigo-900 flex items-center justify-between">
+                        <div className="flex items-center gap-2.5">
+                          <Users size={20} className="text-indigo-600" />
+                          <span>Musiciens ciblés par l'événement : <strong>{selectedEvent?.title}</strong> ({(selectedEvent?.orchestras || []).map(o => o.name).join(', ')})</span>
                         </div>
-                      )}
-                    </div>
+                        <span className="font-black bg-indigo-600 text-white px-3 py-1 rounded-full text-xs flex-shrink-0">
+                          {recipients.length} membre(s)
+                        </span>
+                      </div>
 
-                    <div className="relative">
-                      <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                      <input
-                        type="text"
-                        placeholder="Filtrer par nom, email..."
-                        value={memberSearchTerm}
-                        onChange={(e) => setMemberSearchTerm(e.target.value)}
-                        className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none"
-                      />
-                    </div>
+                      <div className="space-y-2 pt-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                            Liste des musiciens ({recipients.length})
+                          </span>
+                        </div>
 
-                    {loadingRecipients ? (
-                      <div className="py-8 text-center text-slate-400 text-xs">Chargement des membres...</div>
-                    ) : filteredRecipients.length === 0 ? (
-                      <div className="py-8 text-center text-slate-400 text-xs">Aucun membre trouvé.</div>
-                    ) : (
-                      <div className="space-y-1.5 max-h-52 overflow-y-auto pr-1">
-                        {filteredRecipients.map(r => {
-                          const canSelect = isTestMode || commType === 'free';
-                          const isChecked = selectedUserIds.includes(r.id);
-                          return (
-                            <div
-                              key={r.id}
-                              onClick={() => canSelect && toggleUserSelection(r.id)}
-                              className={`p-2.5 rounded-xl border flex items-center justify-between text-xs transition-colors ${
-                                canSelect ? 'cursor-pointer' : ''
-                              } ${
-                                isChecked ? 'bg-indigo-50/50 border-indigo-200' : 'bg-white border-slate-100 hover:bg-slate-50'
-                              }`}
-                            >
-                              <div className="flex items-center gap-2.5 min-w-0">
-                                {canSelect && (
-                                  <input
-                                    type="checkbox"
-                                    checked={isChecked}
-                                    onChange={() => {}}
-                                    className="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500"
-                                  />
-                                )}
-                                <div className="min-w-0">
+                        <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+                          {recipients.map(r => (
+                            <div key={r.id} className="p-3 bg-white rounded-xl border border-slate-200 flex items-center justify-between text-xs">
+                              <div className="flex items-center gap-3">
+                                <CheckCircle size={16} className="text-indigo-600" />
+                                <div>
                                   <span className="font-bold text-slate-800">{r.firstName} {r.lastName.toUpperCase()}</span>
-                                  <span className="text-slate-400 ml-2 text-[11px]">{r.email}</span>
+                                  <span className="text-slate-400 ml-2">{r.email}</span>
                                 </div>
                               </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    /* FREE COMMUNICATION TARGETING: Choice between Orchestras or Individual Members */
+                    <div className="space-y-6">
+                      
+                      {/* Sub-Tabs: Par Orchestre(s) VS Par Membre(s) */}
+                      <div className="flex items-center p-1 bg-slate-100 rounded-2xl gap-1">
+                        <button
+                          type="button"
+                          onClick={() => setFreeTargetMode('orchestras')}
+                          className={`flex-1 py-3 px-4 rounded-xl text-xs font-extrabold transition-all flex items-center justify-center gap-2 ${
+                            freeTargetMode === 'orchestras'
+                              ? 'bg-white text-indigo-600 shadow-md shadow-indigo-100/50'
+                              : 'text-slate-500 hover:text-slate-800'
+                          }`}
+                        >
+                          <Layers size={16} />
+                          <span>1. Cibler par Orchestre(s)</span>
+                        </button>
 
-                              <div className="flex items-center gap-1 flex-wrap">
-                                {(r.userOrchestras || []).filter(Boolean).map((oName, i) => (
-                                  <span key={i} className="text-[9px] font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded">
-                                    {oName}
-                                  </span>
-                                ))}
+                        <button
+                          type="button"
+                          onClick={() => setFreeTargetMode('members')}
+                          className={`flex-1 py-3 px-4 rounded-xl text-xs font-extrabold transition-all flex items-center justify-center gap-2 ${
+                            freeTargetMode === 'members'
+                              ? 'bg-white text-indigo-600 shadow-md shadow-indigo-100/50'
+                              : 'text-slate-500 hover:text-slate-800'
+                          }`}
+                        >
+                          <Users size={16} />
+                          <span>2. Sélectionner par Membre(s) direct(s)</span>
+                        </button>
+                      </div>
+
+                      {/* Summary Banner */}
+                      <div className="bg-purple-50 border border-purple-200 rounded-2xl p-4 text-xs text-purple-900 flex items-center justify-between">
+                        <div className="flex items-center gap-2.5">
+                          <FileText size={20} className="text-purple-600" />
+                          <span>
+                            {freeTargetMode === 'orchestras' 
+                              ? "Cochez un ou plusieurs orchestres pour déplier et retenir tous leurs musiciens."
+                              : "Cochez directement les membres auxquels vous souhaitez envoyer le message."}
+                          </span>
+                        </div>
+                        <span className="font-black bg-purple-600 text-white px-3 py-1 rounded-full text-xs flex-shrink-0">
+                          {selectedUserIds.length} destinataire(s) retenu(s)
+                        </span>
+                      </div>
+
+                      {/* OPTION 1: TARGET BY ORCHESTRAS */}
+                      {freeTargetMode === 'orchestras' ? (
+                        <div className="space-y-4">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-extrabold uppercase tracking-wider text-slate-500">
+                              Sélectionner les orchestres ({availableOrchestraNames.length})
+                            </span>
+                            <div className="flex items-center gap-2 text-xs">
+                              <button onClick={selectAllOrchestras} className="font-bold text-indigo-600 hover:underline">Tous les orchestres</button>
+                              <span className="text-slate-300">•</span>
+                              <button onClick={deselectAllOrchestras} className="font-bold text-slate-500 hover:underline">Aucun orchestre</button>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            {availableOrchestraNames.map(orchName => {
+                              const isChecked = selectedOrchestraNames.includes(orchName);
+                              const membersOfOrch = recipients.filter(r => (r.userOrchestras || []).includes(orchName));
+
+                              return (
+                                <div 
+                                  key={orchName}
+                                  onClick={() => toggleOrchestraSelection(orchName)}
+                                  className={`p-4 rounded-2xl border cursor-pointer transition-all flex items-center justify-between ${
+                                    isChecked 
+                                      ? 'bg-indigo-50/70 border-indigo-600 ring-2 ring-indigo-600/20' 
+                                      : 'bg-white border-slate-200 hover:bg-slate-50'
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <input 
+                                      type="checkbox"
+                                      checked={isChecked}
+                                      onChange={() => {}}
+                                      className="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500"
+                                    />
+                                    <div>
+                                      <h6 className="font-bold text-slate-800 text-sm">{orchName}</h6>
+                                      <p className="text-xs text-slate-500">{membersOfOrch.length} membre(s)</p>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+
+                          {/* Unfolded Members List under selected Orchestras */}
+                          {selectedOrchestraNames.length > 0 && (
+                            <div className="pt-4 border-t border-slate-200 space-y-3">
+                              <h5 className="text-xs font-extrabold uppercase tracking-wider text-slate-500">
+                                Musiciens dépliés ({selectedUserIds.length} membres cochés par défaut)
+                              </h5>
+
+                              <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                                {selectedOrchestraNames.map(orchName => {
+                                  const orchMembers = recipients.filter(r => (r.userOrchestras || []).includes(orchName));
+
+                                  return (
+                                    <div key={orchName} className="bg-slate-50 rounded-2xl p-4 border border-slate-200 space-y-2">
+                                      <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+                                        <span className="font-bold text-slate-800 text-xs">Ensemble : {orchName}</span>
+                                        <span className="text-[11px] text-slate-500">{orchMembers.length} membre(s)</span>
+                                      </div>
+
+                                      <div className="space-y-1.5">
+                                        {orchMembers.map(m => {
+                                          const isMemberChecked = selectedUserIds.includes(m.id);
+                                          return (
+                                            <div 
+                                              key={m.id}
+                                              onClick={() => toggleUserSelection(m.id)}
+                                              className={`p-2.5 rounded-xl border flex items-center justify-between text-xs cursor-pointer transition-colors ${
+                                                isMemberChecked ? 'bg-white border-indigo-200 shadow-sm' : 'bg-slate-100/70 border-slate-200 opacity-60'
+                                              }`}
+                                            >
+                                              <div className="flex items-center gap-3">
+                                                <input 
+                                                  type="checkbox"
+                                                  checked={isMemberChecked}
+                                                  onChange={() => {}}
+                                                  className="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500"
+                                                />
+                                                <span className="font-bold text-slate-800">{m.firstName} {m.lastName.toUpperCase()}</span>
+                                                <span className="text-slate-400">{m.email}</span>
+                                              </div>
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
                               </div>
                             </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
+                          )}
+                        </div>
+                      ) : (
+                        /* OPTION 2: TARGET BY INDIVIDUAL MEMBERS DIRECTLY */
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-extrabold uppercase tracking-wider text-slate-500">
+                              Membres de La Lyre ({filteredRecipients.length})
+                            </span>
+                            <div className="flex items-center gap-2 text-xs">
+                              <button onClick={selectAllFiltered} className="font-bold text-indigo-600 hover:underline">Tout cocher</button>
+                              <span className="text-slate-300">•</span>
+                              <button onClick={deselectAll} className="font-bold text-slate-500 hover:underline">Tout décocher</button>
+                            </div>
+                          </div>
+
+                          <div className="relative">
+                            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                            <input
+                              type="text"
+                              placeholder="Rechercher un membre par nom, prénom, email..."
+                              value={memberSearchTerm}
+                              onChange={(e) => setMemberSearchTerm(e.target.value)}
+                              className="w-full pl-9 pr-3.5 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none"
+                            />
+                          </div>
+
+                          {loadingRecipients ? (
+                            <div className="py-12 text-center text-slate-400 text-xs">Chargement des membres...</div>
+                          ) : filteredRecipients.length === 0 ? (
+                            <div className="py-12 text-center text-slate-400 text-xs">Aucun membre trouvé.</div>
+                          ) : (
+                            <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+                              {filteredRecipients.map(r => {
+                                const isChecked = selectedUserIds.includes(r.id);
+                                return (
+                                  <div
+                                    key={r.id}
+                                    onClick={() => toggleUserSelection(r.id)}
+                                    className={`p-3 rounded-xl border flex items-center justify-between text-xs cursor-pointer transition-colors ${
+                                      isChecked ? 'bg-indigo-50/60 border-indigo-300' : 'bg-white border-slate-200 hover:bg-slate-50'
+                                    }`}
+                                  >
+                                    <div className="flex items-center gap-3">
+                                      <input
+                                        type="checkbox"
+                                        checked={isChecked}
+                                        onChange={() => {}}
+                                        className="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500"
+                                      />
+                                      <span className="font-bold text-slate-800 text-sm">{r.firstName} {r.lastName.toUpperCase()}</span>
+                                      <span className="text-slate-400 text-xs">{r.email}</span>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                    </div>
+                  )}
+
                 </div>
               )}
 
@@ -903,12 +1047,12 @@ const AdminCommunication = () => {
             </div>
 
             {/* Modal Footer (Controls) */}
-            <div className="bg-slate-50 border-t border-slate-200 px-6 py-4 flex items-center justify-between">
+            <div className="bg-slate-50 border-t border-slate-200 px-8 py-5 flex items-center justify-between">
               {wizardStep > 1 ? (
                 <button
                   onClick={() => setWizardStep(prev => prev - 1)}
                   disabled={submitting}
-                  className="px-4 py-2 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl text-xs hover:bg-slate-100 transition-colors"
+                  className="px-5 py-2.5 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl text-xs hover:bg-slate-100 transition-colors"
                 >
                   Précédent
                 </button>
@@ -918,7 +1062,7 @@ const AdminCommunication = () => {
                 <button
                   onClick={() => setWizardStep(prev => prev + 1)}
                   disabled={(wizardStep === 2 && commType === 'event' && !selectedEventId)}
-                  className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition-colors shadow-sm disabled:opacity-50 flex items-center gap-1.5"
+                  className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition-colors shadow-sm disabled:opacity-50 flex items-center gap-1.5"
                 >
                   <span>Suivant</span>
                   <ChevronRight size={14} />
@@ -927,7 +1071,7 @@ const AdminCommunication = () => {
                 <button
                   onClick={handleSendCommunication}
                   disabled={submitting || (commType === 'free' && !isTestMode && selectedUserIds.length === 0) || (isTestMode && selectedUserIds.length === 0)}
-                  className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition-all shadow-lg shadow-indigo-200 disabled:opacity-50 flex items-center gap-2"
+                  className="px-7 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition-all shadow-lg shadow-indigo-200 disabled:opacity-50 flex items-center gap-2"
                 >
                   {submitting ? (
                     <span>Envoi en cours...</span>
