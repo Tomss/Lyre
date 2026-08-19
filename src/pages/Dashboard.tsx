@@ -645,9 +645,9 @@ const Dashboard = () => {
           </div>
         )}
 
-        <div className="space-y-8">
+        <div className="space-y-8 [overflow-anchor:none]">
           {/* Section Agenda */}
-          <div className="bg-white rounded-2xl shadow-md border border-slate-100 p-6">
+          <div className="bg-white rounded-2xl shadow-md border border-slate-100 p-6 [overflow-anchor:none]">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 text-dark border-b border-gray-100 pb-4">
               <h2 className="font-bold text-2xl flex items-center gap-3">
                 <Calendar className="h-7 w-7 text-indigo-600" />
@@ -657,13 +657,13 @@ const Dashboard = () => {
               <div className="flex items-center gap-3">
                 <button 
                   onClick={expandAllEvents}
-                  className="bg-slate-100 text-slate-500 px-4 py-2 rounded-xl hover:bg-slate-200 transition text-[10px] font-bold uppercase tracking-widest"
+                  className="bg-slate-100 text-slate-500 px-4 py-2 rounded-xl hover:bg-slate-200 transition text-[10px] font-bold uppercase tracking-widest cursor-pointer"
                 >
                   Tout déplier
                 </button>
                 <button 
                   onClick={collapseAllEvents}
-                  className="bg-slate-100 text-slate-500 px-4 py-2 rounded-xl hover:bg-slate-200 transition text-[10px] font-bold uppercase tracking-widest"
+                  className="bg-slate-100 text-slate-500 px-4 py-2 rounded-xl hover:bg-slate-200 transition text-[10px] font-bold uppercase tracking-widest cursor-pointer"
                 >
                   Tout replier
                 </button>
@@ -681,7 +681,7 @@ const Dashboard = () => {
                 <button
                   key={filter.id}
                   onClick={() => setEventFilter(filter.id)}
-                  className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all border ${
+                  className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all border cursor-pointer ${
                     eventFilter === filter.id 
                       ? `${filter.color} border-transparent shadow-sm scale-105` 
                       : 'bg-white text-slate-400 border-gray-100 hover:border-gray-200'
@@ -713,10 +713,10 @@ const Dashboard = () => {
                   const nextEventId = upcomingEvents.length > 0 ? upcomingEvents[0].id : null;
 
                   return (
-                    <div key={type} className="bg-slate-50/70 rounded-2xl shadow-xs border border-slate-200/80 overflow-hidden transition-all duration-200 hover:border-indigo-200">
+                    <div key={type} className="bg-slate-50/70 rounded-2xl shadow-xs border border-slate-200/80 overflow-hidden transition-colors duration-200 hover:border-indigo-200 [overflow-anchor:none]">
                       <button 
                         onClick={() => toggleEventType(type)} 
-                        className={`w-full flex items-center justify-between p-5 bg-gradient-to-r ${styles.lightGradient} hover:opacity-90 transition-all`}
+                        className={`w-full flex items-center justify-between p-5 bg-gradient-to-r ${styles.lightGradient} hover:opacity-90 transition-colors cursor-pointer`}
                       >
                         <h3 className="font-bold text-lg text-slate-800 flex items-center group">
                           <div className={`p-2 rounded-lg bg-gradient-to-br ${styles.gradient} text-white mr-4 shadow-sm group-hover:scale-110 transition-transform`}>
@@ -739,7 +739,7 @@ const Dashboard = () => {
                               <li 
                                 key={event.id} 
                                 id={`event-${event.id}`}
-                                className={`p-6 rounded-2xl border transition-all duration-300 relative group overflow-hidden ${
+                                className={`p-6 rounded-2xl border transition-colors duration-200 relative group overflow-hidden ${
                                   isNextEvent 
                                     ? `bg-white border-indigo-200 shadow-md ring-1 ring-indigo-50` 
                                     : 'bg-white/80 border-gray-100 shadow-sm'
@@ -799,7 +799,7 @@ const Dashboard = () => {
                                       <div className="mt-4">
                                         <button 
                                           onClick={() => togglePracticalInfo(event.id)} 
-                                          className={`group/info flex items-center gap-2 text-xs font-bold ${styles.tagText} hover:bg-white p-2 rounded-lg transition-colors border border-transparent hover:border-gray-100 shadow-sm bg-gray-50/50`}
+                                          className={`group/info flex items-center gap-2 text-xs font-bold ${styles.tagText} hover:bg-white p-2 rounded-lg transition-colors border border-transparent hover:border-gray-100 shadow-sm bg-gray-50/50 cursor-pointer`}
                                         >
                                           <Info className="h-4 w-4" />
                                           Plus d'infos
@@ -840,7 +840,7 @@ const Dashboard = () => {
           </div>
 
           {/* Section Partitions */}
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 p-6">
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 p-6 [overflow-anchor:none]">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 text-dark border-b border-gray-100 pb-4">
               <h2 className="font-bold text-2xl flex items-center gap-3">
                 <Music2 className="h-7 w-7 text-purple-600" />
@@ -850,13 +850,13 @@ const Dashboard = () => {
               <div className="flex items-center gap-3">
                 <button 
                   onClick={expandAllOrchestras}
-                  className="bg-slate-100 text-slate-500 px-4 py-2 rounded-xl hover:bg-slate-200 transition text-[10px] font-bold uppercase tracking-widest"
+                  className="bg-slate-100 text-slate-500 px-4 py-2 rounded-xl hover:bg-slate-200 transition text-[10px] font-bold uppercase tracking-widest cursor-pointer"
                 >
                   Tout déplier
                 </button>
                 <button 
                   onClick={collapseAllOrchestras}
-                  className="bg-slate-100 text-slate-500 px-4 py-2 rounded-xl hover:bg-slate-200 transition text-[10px] font-bold uppercase tracking-widest"
+                  className="bg-slate-100 text-slate-500 px-4 py-2 rounded-xl hover:bg-slate-200 transition text-[10px] font-bold uppercase tracking-widest cursor-pointer"
                 >
                   Tout replier
                 </button>
@@ -878,7 +878,7 @@ const Dashboard = () => {
               {partitionSearch && (
                 <button 
                   onClick={() => setPartitionSearch('')}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -891,7 +891,7 @@ const Dashboard = () => {
                 <p className="text-slate-500 font-medium">Récupération des partitions...</p>
               </div>
             ) : Object.keys(partitionsByOrchestra).length > 0 ? (
-              <div className="space-y-6">
+              <div className="space-y-6 [overflow-anchor:none]">
                 {Object.entries(partitionsByOrchestra)
                   .sort(([a], [b]) => a.localeCompare(b))
                   .map(([orchestraName, partitionsList]) => {
@@ -899,10 +899,10 @@ const Dashboard = () => {
                   const partitionsByMorceau = groupPartitionsByMorceau(partitions);
                   const isOrchestraExpanded = expandedOrchestras.has(orchestraName);
                   return (
-                    <div key={orchestraName} className="bg-white/40 backdrop-blur-md rounded-2xl shadow-sm border border-white/60 overflow-hidden transition-all duration-300 hover:shadow-md">
+                    <div key={orchestraName} className="bg-white/40 backdrop-blur-md rounded-2xl shadow-sm border border-white/60 overflow-hidden transition-colors duration-200 hover:shadow-md [overflow-anchor:none]">
                       <button 
                         onClick={() => toggleOrchestra(orchestraName)} 
-                        className="w-full flex items-center justify-between p-5 bg-gradient-to-r from-purple-50 to-white hover:opacity-90 transition-all cursor-pointer"
+                        className="w-full flex items-center justify-between p-5 bg-gradient-to-r from-purple-50 to-white hover:opacity-90 transition-colors cursor-pointer"
                       >
                         <h3 className="font-bold text-lg text-slate-800 flex items-center">
                           <Music2 className="h-5 w-5 mr-3 text-purple-500" />
@@ -923,10 +923,10 @@ const Dashboard = () => {
                               const ps = (data as any).partitions;
                               const isMorceauExpanded = expandedMorceaux.has(morceauName);
                               return (
-                                <div key={morceauName} className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+                                <div key={morceauName} className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden [overflow-anchor:none]">
                                   <button 
                                     onClick={() => toggleMorceau(morceauName)} 
-                                    className={`w-full text-left flex items-center justify-between p-4 transition-all group/item cursor-pointer ${isMorceauExpanded ? 'bg-emerald-50/50' : 'hover:bg-slate-50'}`}
+                                    className={`w-full text-left flex items-center justify-between p-4 transition-colors duration-200 group/item cursor-pointer ${isMorceauExpanded ? 'bg-emerald-50/50' : 'hover:bg-slate-50'}`}
                                   >
                                     <div className="flex flex-col">
                                       <h4 className="font-bold text-lg text-slate-800 flex items-center gap-3">
