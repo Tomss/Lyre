@@ -234,107 +234,112 @@ const HomeNewsSection = () => {
                 </div>
             </div>
 
-            {/* Slider Container - Removed py-10 here to move it to track for shadow visibility */}
-            <div
-                className="relative w-full"
-                onMouseEnter={() => setIsPaused(true)}
-                onMouseLeave={handleMouseLeave}
-            >
-                {/* Navigation Buttons (Positioned outside cards in track padding) */}
-                <button
-                    onClick={() => scrollManual('left')}
-                    className="absolute left-2 sm:left-4 md:left-6 top-1/2 -translate-y-1/2 z-30 w-12 h-12 rounded-full bg-white shadow-xl border border-teal-100 text-teal-600 flex items-center justify-center hover:bg-teal-500 hover:text-white transition-all duration-200 cursor-pointer"
-                    aria-label="Précédent"
-                >
-                    <ArrowRight className="w-5 h-5 rotate-180" />
-                </button>
-                <button
-                    onClick={() => scrollManual('right')}
-                    className="absolute right-2 sm:right-4 md:right-6 top-1/2 -translate-y-1/2 z-30 w-12 h-12 rounded-full bg-white shadow-xl border border-teal-100 text-teal-600 flex items-center justify-center hover:bg-teal-500 hover:text-white transition-all duration-200 cursor-pointer"
-                    aria-label="Suivant"
-                >
-                    <ArrowRight className="w-5 h-5" />
-                </button>
-
-                {/* Scrollable Track - Extra padding so cards start AFTER left arrow and end BEFORE right arrow */}
-                <div
-                    ref={scrollRef}
-                    className={`flex gap-8 px-16 sm:px-20 md:px-24 py-12 overflow-x-auto scroll-smooth no-scrollbar select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
-                    onMouseDown={handleMouseDown}
-                    onMouseUp={handleMouseUp}
-                    onMouseMove={handleMouseMove}
-                    onMouseLeave={handleMouseLeave}
-                >
-                    {news.map((item) => (
-                        <div
-                            key={item.id}
-                            className="w-[300px] md:w-[350px] shrink-0 group relative h-[460px]" // Standardized size
+            {/* Slider Container with Dedicated Arrow Slots */}
+            <div className="container mx-auto px-2 sm:px-4 lg:px-6 relative z-10">
+                <div className="flex items-center gap-2 sm:gap-4 w-full">
+                    
+                    {/* Dedicated Left Arrow Slot (Outside cards) */}
+                    <div className="flex-shrink-0 z-20">
+                        <button
+                            onClick={() => scrollManual('left')}
+                            className="w-12 h-12 rounded-full bg-white shadow-xl border border-teal-100 text-teal-600 flex items-center justify-center hover:bg-teal-500 hover:text-white transition-all cursor-pointer"
+                            aria-label="Précédent"
+                            title="Précédent"
                         >
-                            <div className="h-full bg-gradient-to-br from-teal-50/80 to-cyan-50/50 rounded-[2rem] shadow-lg shadow-teal-900/5 border border-teal-100/50 hover:border-teal-300/50 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:shadow-teal-100/60 overflow-hidden flex flex-col relative group">
-                                {/* Border Gradient Trick */}
-                                <div className="absolute inset-0 rounded-[2rem] p-[2px] bg-gradient-to-br from-teal-100 to-cyan-100/30 -z-10 opacity-60 group-hover:opacity-100 transition-opacity duration-500"></div>
+                            <ArrowRight className="w-5 h-5 rotate-180" />
+                        </button>
+                    </div>
 
-                                {/* Click Overlay (avoids text selection/dragging issues) */}
-                                <div 
-                                    className="absolute inset-0 z-30 cursor-pointer" 
-                                    onClick={() => {
-                                        if (dragDistance < 10) setSelectedNews(item);
-                                    }}
-                                ></div>
+                    {/* Middle Scroll Track (Cards clipped strictly inside middle area) */}
+                    <div className="flex-1 min-w-0 overflow-hidden">
+                        <div
+                            ref={scrollRef}
+                            className={`flex gap-8 px-2 py-12 overflow-x-auto scroll-smooth no-scrollbar select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+                            onMouseDown={handleMouseDown}
+                            onMouseUp={handleMouseUp}
+                            onMouseMove={handleMouseMove}
+                            onMouseLeave={handleMouseLeave}
+                        >
+                            {news.map((item) => (
+                                <div
+                                    key={item.id}
+                                    className="w-[300px] md:w-[350px] shrink-0 group relative h-[460px]"
+                                >
+                                    <div className="h-full bg-gradient-to-br from-teal-50/80 to-cyan-50/50 rounded-[2rem] shadow-lg shadow-teal-900/5 border border-teal-100/50 hover:border-teal-300/50 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:shadow-teal-100/60 overflow-hidden flex flex-col relative group">
+                                        <div className="absolute inset-0 rounded-[2rem] p-[2px] bg-gradient-to-br from-teal-100 to-cyan-100/30 -z-10 opacity-60 group-hover:opacity-100 transition-opacity duration-500"></div>
 
-                                {/* Image Section */}
-                                <div className="h-[200px] relative overflow-hidden bg-teal-100/30">
-                                    <div className="absolute inset-0 bg-gradient-to-t from-teal-900/60 via-teal-900/10 to-transparent opacity-60 group-hover:opacity-40 transition-opacity z-10"></div>
-                                    {item.image_url ? (
-                                        <img
-                                            src={item.image_url.startsWith('http') ? item.image_url : `${BASE_URL}${item.image_url}`}
-                                            alt={item.title}
-                                            className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-1000 pointer-events-none"
-                                        />
-                                    ) : (
-                                        <div className="w-full h-full flex flex-col items-center justify-center bg-teal-50/50 text-teal-300">
-                                            <Newspaper className="h-16 w-16 mb-4 opacity-50" />
-                                            <span className="text-xs font-bold uppercase tracking-widest opacity-70">Actualité</span>
-                                        </div>
-                                    )}
+                                        <div 
+                                            className="absolute inset-0 z-30 cursor-pointer" 
+                                            onClick={() => {
+                                                if (dragDistance < 10) setSelectedNews(item);
+                                            }}
+                                        ></div>
 
-                                    {/* Date Badge */}
-                                    <div className="absolute top-4 left-4 z-20">
-                                        <div className="bg-white/95 backdrop-blur-md pr-4 pl-1 py-1 rounded-full flex items-center gap-3 shadow-lg shadow-teal-900/10 border border-white/60 group-hover:scale-105 transition-transform">
-                                            <div className="bg-gradient-to-br from-teal-500 to-cyan-500 text-white rounded-full w-10 h-10 flex flex-col items-center justify-center shadow-md shadow-teal-500/20">
-                                                <span className="text-sm font-black leading-none">{new Date(item.published_at).getDate()}</span>
+                                        <div className="h-[200px] relative overflow-hidden bg-teal-100/30">
+                                            <div className="absolute inset-0 bg-gradient-to-t from-teal-900/60 via-teal-900/10 to-transparent opacity-60 group-hover:opacity-40 transition-opacity z-10"></div>
+                                            {item.image_url ? (
+                                                <img
+                                                    src={item.image_url.startsWith('http') ? item.image_url : `${BASE_URL}${item.image_url}`}
+                                                    alt={item.title}
+                                                    className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-1000 pointer-events-none"
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full flex flex-col items-center justify-center bg-teal-50/50 text-teal-300">
+                                                    <Newspaper className="h-16 w-16 mb-4 opacity-50" />
+                                                    <span className="text-xs font-bold uppercase tracking-widest opacity-70">Actualité</span>
+                                                </div>
+                                            )}
+
+                                            <div className="absolute top-4 left-4 z-20">
+                                                <div className="bg-white/95 backdrop-blur-md pr-4 pl-1 py-1 rounded-full flex items-center gap-3 shadow-lg shadow-teal-900/10 border border-white/60 group-hover:scale-105 transition-transform">
+                                                    <div className="bg-gradient-to-br from-teal-500 to-cyan-500 text-white rounded-full w-10 h-10 flex flex-col items-center justify-center shadow-md shadow-teal-500/20">
+                                                        <span className="text-sm font-black leading-none">{new Date(item.published_at).getDate()}</span>
+                                                    </div>
+                                                    <span className="text-xs font-bold uppercase text-teal-800 tracking-wider">
+                                                        {new Date(item.published_at).toLocaleDateString('fr-FR', { month: 'short' }).replace('.', '')}
+                                                    </span>
+                                                </div>
                                             </div>
-                                            <span className="text-xs font-bold uppercase text-teal-800 tracking-wider">
-                                                {new Date(item.published_at).toLocaleDateString('fr-FR', { month: 'short' }).replace('.', '')}
-                                            </span>
+                                        </div>
+
+                                        <div className="p-8 flex flex-col flex-1 relative bg-transparent">
+                                            <h3 className="font-bold text-xl text-slate-800 mb-3 leading-tight group-hover:text-teal-700 transition-colors line-clamp-2">
+                                                {item.title}
+                                            </h3>
+
+                                            <p className="text-slate-600 text-sm leading-relaxed line-clamp-3 mb-6 font-medium">
+                                                {item.content}
+                                            </p>
+
+                                            <div className="mt-auto flex items-center justify-between border-t border-teal-100 pt-4">
+                                                <span className="text-xs font-bold text-teal-700 uppercase tracking-wide flex items-center">
+                                                    <CalendarDays className="w-4 h-4 mr-2 text-teal-600" />
+                                                    {new Date(item.published_at).toLocaleDateString('fr-FR', { year: 'numeric' })}
+                                                </span>
+
+                                                <button className="w-10 h-10 rounded-full bg-white border border-teal-100 flex items-center justify-center text-teal-600 group-hover:bg-gradient-to-r group-hover:from-teal-500 group-hover:to-cyan-500 group-hover:text-white transition-all duration-300 shadow-sm group-hover:shadow-teal-200">
+                                                    <ArrowRight className="w-5 h-5 transform group-hover:rotate-[-45deg] transition-transform duration-300" />
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-
-                                {/* Content Section (Transparent background to let gradient show through) */}
-                                <div className="p-8 flex flex-col flex-1 relative bg-transparent">
-                                    <h3 className="font-bold text-xl text-slate-800 mb-3 leading-tight group-hover:text-teal-700 transition-colors line-clamp-2">
-                                        {item.title}
-                                    </h3>
-
-                                    <p className="text-slate-600 text-sm leading-relaxed line-clamp-3 mb-6 font-medium">
-                                        {item.content}
-                                    </p>
-
-                                    <div className="mt-auto flex items-center justify-between border-t border-teal-100 pt-4">
-                                        <span className="text-xs font-bold text-teal-700 uppercase tracking-wide flex items-center">
-                                            <CalendarDays className="w-4 h-4 mr-2 text-teal-600" />
-                                            {new Date(item.published_at).toLocaleDateString('fr-FR', { year: 'numeric' })}
-                                        </span>
-
-                                        <button className="w-10 h-10 rounded-full bg-white border border-teal-100 flex items-center justify-center text-teal-600 group-hover:bg-gradient-to-r group-hover:from-teal-500 group-hover:to-cyan-500 group-hover:text-white transition-all duration-300 shadow-sm group-hover:shadow-teal-200">
-                                            <ArrowRight className="w-5 h-5 transform group-hover:rotate-[-45deg] transition-transform duration-300" />
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
+                            ))}
                         </div>
-                    ))}
+                    </div>
+
+                    {/* Dedicated Right Arrow Slot (Outside cards) */}
+                    <div className="flex-shrink-0 z-20">
+                        <button
+                            onClick={() => scrollManual('right')}
+                            className="w-12 h-12 rounded-full bg-white shadow-xl border border-teal-100 text-teal-600 flex items-center justify-center hover:bg-teal-500 hover:text-white transition-all cursor-pointer"
+                            aria-label="Suivant"
+                            title="Suivant"
+                        >
+                            <ArrowRight className="w-5 h-5" />
+                        </button>
+                    </div>
+
                 </div>
             </div>
 

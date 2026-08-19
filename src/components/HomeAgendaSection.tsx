@@ -289,122 +289,131 @@ const HomeAgendaSection = () => {
                 </div>
             </div>
 
-            {/* Slider Container */}
-            <div
-                className="relative w-full"
-                onMouseEnter={() => setIsPaused(true)}
-                onMouseLeave={handleMouseLeave}
-            >
-                {/* Navigation Buttons (Positioned outside cards in track padding) */}
-                <button
-                    onClick={() => scrollManual('left')}
-                    className="absolute left-2 sm:left-4 md:left-6 top-1/2 -translate-y-1/2 z-30 w-12 h-12 rounded-full bg-slate-800/90 shadow-xl border border-white/20 text-teal-400 flex items-center justify-center hover:bg-teal-600 hover:text-white hover:border-teal-500 transition-all duration-200 cursor-pointer"
-                    aria-label="Précédent"
-                >
-                    <ArrowRight className="w-5 h-5 rotate-180" />
-                </button>
-                <button
-                    onClick={() => scrollManual('right')}
-                    className="absolute right-2 sm:right-4 md:right-6 top-1/2 -translate-y-1/2 z-30 w-12 h-12 rounded-full bg-slate-800/90 shadow-xl border border-white/20 text-teal-400 flex items-center justify-center hover:bg-teal-600 hover:text-white hover:border-teal-500 transition-all duration-200 cursor-pointer"
-                    aria-label="Suivant"
-                >
-                    <ArrowRight className="w-5 h-5" />
-                </button>
+            {/* Slider Container with Dedicated Flex Columns for Arrows */}
+            <div className="container mx-auto px-2 sm:px-4 lg:px-6 relative z-10">
+                <div className="flex items-center gap-2 sm:gap-4 w-full">
+                    
+                    {/* Dedicated Left Arrow Column */}
+                    <div className="flex-shrink-0 z-20">
+                        <button
+                            onClick={() => scrollManual('left')}
+                            className="w-12 h-12 rounded-full bg-slate-800/90 shadow-xl border border-white/20 text-teal-400 flex items-center justify-center hover:bg-teal-600 hover:text-white hover:border-teal-500 transition-all cursor-pointer"
+                            aria-label="Précédent"
+                            title="Précédent"
+                        >
+                            <ArrowRight className="w-5 h-5 rotate-180" />
+                        </button>
+                    </div>
 
-                {/* Scrollable Track - Extra padding so cards start AFTER left arrow and end BEFORE right arrow */}
-                {events.length > 0 ? (
-                    <div
-                        ref={scrollRef}
-                        className={`flex gap-8 px-16 sm:px-20 md:px-24 py-12 overflow-x-auto scroll-smooth no-scrollbar select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
-                        onMouseDown={handleMouseDown}
-                        onMouseUp={handleMouseUp}
-                        onMouseMove={handleMouseMove}
-                        onMouseLeave={handleMouseLeave}
-                    >
-                        {events.map((event) => (
-                            <div key={event.id} className="w-[300px] md:w-[350px] shrink-0 group relative h-[460px]">
-                                {/* Dark Glass Card - Teal / Emerald Theme */}
-                                <div className="h-full bg-slate-800/50 backdrop-blur-sm rounded-[2rem] border border-white/10 shadow-xl shadow-black/30 hover:shadow-2xl hover:shadow-teal-900/30 hover:bg-slate-800/80 hover:border-teal-500/40 transition-all duration-300 overflow-hidden flex flex-col relative group hover:-translate-y-2">
+                    {/* Middle Scroll Track (Cards scroll strictly inside this area) */}
+                    <div className="flex-1 min-w-0 overflow-hidden">
+                        {events.length > 0 ? (
+                            <div
+                                ref={scrollRef}
+                                className={`flex gap-8 px-2 py-12 overflow-x-auto scroll-smooth no-scrollbar select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+                                onMouseDown={handleMouseDown}
+                                onMouseUp={handleMouseUp}
+                                onMouseMove={handleMouseMove}
+                                onMouseLeave={handleMouseLeave}
+                            >
+                                {events.map((event) => (
+                                    <div key={event.id} className="w-[300px] md:w-[350px] shrink-0 group relative h-[460px]">
+                                        {/* Dark Glass Card - Teal / Emerald Theme */}
+                                        <div className="h-full bg-slate-800/50 backdrop-blur-sm rounded-[2rem] border border-white/10 shadow-xl shadow-black/30 hover:shadow-2xl hover:shadow-teal-900/30 hover:bg-slate-800/80 hover:border-teal-500/40 transition-all duration-300 overflow-hidden flex flex-col relative group hover:-translate-y-2">
 
-                                    {/* Click Overlay (avoids text selection/dragging issues) */}
-                                    <div 
-                                        className="absolute inset-0 z-30 cursor-pointer" 
-                                        onClick={() => {
-                                            if (dragDistance < 10) setSelectedEvent(event);
-                                        }}
-                                    ></div>
+                                            {/* Click Overlay */}
+                                            <div 
+                                                className="absolute inset-0 z-30 cursor-pointer" 
+                                                onClick={() => {
+                                                    if (dragDistance < 10) setSelectedEvent(event);
+                                                }}
+                                            ></div>
 
-                                    {/* Image / Header */}
-                                    <div className="h-[200px] relative overflow-hidden bg-slate-900/50 flex-shrink-0">
-                                        <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent opacity-80 z-10"></div>
-                                        {event.image_url ? (
-                                            <img
-                                                src={event.image_url}
-                                                alt={event.title}
-                                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-90 group-hover:opacity-100 pointer-events-none"
-                                            />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center opacity-30">
-                                                <Music className="h-20 w-20 text-teal-400" />
+                                            {/* Image / Header */}
+                                            <div className="h-[200px] relative overflow-hidden bg-slate-900/50 flex-shrink-0">
+                                                <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent opacity-80 z-10"></div>
+                                                {event.image_url ? (
+                                                    <img
+                                                        src={event.image_url}
+                                                        alt={event.title}
+                                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-90 group-hover:opacity-100 pointer-events-none"
+                                                    />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center opacity-30">
+                                                        <Music className="h-20 w-20 text-teal-400" />
+                                                    </div>
+                                                )}
+
+                                                {/* Date Badge */}
+                                                <div className="absolute top-4 right-4 z-20">
+                                                    <div className="bg-slate-900/80 backdrop-blur-md pl-4 pr-1 py-1 rounded-full flex items-center gap-3 shadow-lg border border-white/10 group-hover:border-teal-500/50 transition-colors">
+                                                        <span className="text-xs font-bold uppercase text-teal-300 tracking-wider">
+                                                            {new Date(event.event_date).toLocaleDateString('fr-FR', { month: 'short' }).replace('.', '')}
+                                                        </span>
+                                                        <div className="bg-gradient-to-br from-teal-500 to-emerald-500 text-white rounded-full w-10 h-10 flex flex-col items-center justify-center shadow-md shadow-teal-500/30">
+                                                            <span className="text-sm font-black leading-none">{new Date(event.event_date).getDate()}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Type Badge */}
+                                                <div className="absolute bottom-4 left-4 z-20">
+                                                    <span className="px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-white text-xs font-bold uppercase tracking-wide shadow-sm flex items-center gap-2">
+                                                        <div className={`w-1.5 h-1.5 rounded-full shadow-[0_0_5px_currentColor] ${
+                                                            event.event_type === 'concert' ? 'bg-emerald-400 text-emerald-400' : 
+                                                            event.event_type === 'divers' ? 'bg-purple-400 text-purple-400' : 'bg-blue-400 text-blue-400'
+                                                        }`}></div>
+                                                        {event.event_type === 'divers' ? 'Divers' : event.event_type === 'concert' ? 'Concert' : event.event_type === 'repetition' ? 'Répétition' : 'Autre'}
+                                                    </span>
+                                                </div>
                                             </div>
-                                        )}
 
-                                        {/* Date Badge - Dark Theme / Teal Adaptation */}
-                                        <div className="absolute top-4 right-4 z-20">
-                                            <div className="bg-slate-900/80 backdrop-blur-md pl-4 pr-1 py-1 rounded-full flex items-center gap-3 shadow-lg border border-white/10 group-hover:border-teal-500/50 transition-colors">
-                                                <span className="text-xs font-bold uppercase text-teal-300 tracking-wider">
-                                                    {new Date(event.event_date).toLocaleDateString('fr-FR', { month: 'short' }).replace('.', '')}
-                                                </span>
-                                                <div className="bg-gradient-to-br from-teal-500 to-emerald-500 text-white rounded-full w-10 h-10 flex flex-col items-center justify-center shadow-md shadow-teal-500/30">
-                                                    <span className="text-sm font-black leading-none">{new Date(event.event_date).getDate()}</span>
+                                            {/* Body */}
+                                            <div className="p-8 flex-grow flex flex-col relative z-10">
+                                                <h3 className="font-bold text-xl text-white mb-3 group-hover:text-teal-300 transition-colors line-clamp-2 leading-tight">
+                                                    {event.title}
+                                                </h3>
+
+                                                <div className="h-px w-10 bg-gradient-to-r from-teal-500 to-transparent mb-4 opacity-50"></div>
+
+                                                <div className="space-y-4 mt-auto">
+                                                    <div className="flex items-center text-slate-300 text-sm font-medium bg-white/5 p-2 rounded-xl border border-white/5 group-hover:border-teal-500/20 transition-colors">
+                                                        <Clock className="w-4 h-4 mr-3 text-teal-400" />
+                                                        {new Date(event.event_date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                                                    </div>
+                                                    <div className="flex items-center text-slate-300 text-sm font-medium bg-white/5 p-2 rounded-xl border border-white/5 group-hover:border-teal-500/20 transition-colors">
+                                                        <MapPin className="w-4 h-4 mr-3 text-teal-400" />
+                                                        <span className="truncate max-w-[280px]">{event.location || 'Lieu à définir'}</span>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-
-                                        {/* Type Badge */}
-                                        <div className="absolute bottom-4 left-4 z-20">
-                                            <span className="px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-white text-xs font-bold uppercase tracking-wide shadow-sm flex items-center gap-2">
-                                                <div className={`w-1.5 h-1.5 rounded-full shadow-[0_0_5px_currentColor] ${
-                                                    event.event_type === 'concert' ? 'bg-emerald-400 text-emerald-400' : 
-                                                    event.event_type === 'divers' ? 'bg-purple-400 text-purple-400' : 'bg-blue-400 text-blue-400'
-                                                }`}></div>
-                                                {event.event_type === 'divers' ? 'Divers' : event.event_type === 'concert' ? 'Concert' : event.event_type === 'repetition' ? 'Répétition' : 'Autre'}
-                                            </span>
-                                        </div>
                                     </div>
-
-                                    {/* Body */}
-                                    <div className="p-8 flex-grow flex flex-col relative z-10">
-                                        <h3 className="font-bold text-xl text-white mb-3 group-hover:text-teal-300 transition-colors line-clamp-2 leading-tight">
-                                            {event.title}
-                                        </h3>
-
-                                        {/* Separator - Gradient Teal */}
-                                        <div className="h-px w-10 bg-gradient-to-r from-teal-500 to-transparent mb-4 opacity-50"></div>
-
-                                        <div className="space-y-4 mt-auto">
-                                            <div className="flex items-center text-slate-300 text-sm font-medium bg-white/5 p-2 rounded-xl border border-white/5 group-hover:border-teal-500/20 transition-colors">
-                                                <Clock className="w-4 h-4 mr-3 text-teal-400" />
-                                                {new Date(event.event_date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-                                            </div>
-                                            <div className="flex items-center text-slate-300 text-sm font-medium bg-white/5 p-2 rounded-xl border border-white/5 group-hover:border-teal-500/20 transition-colors">
-                                                <MapPin className="w-4 h-4 mr-3 text-teal-400" />
-                                                <span className="truncate max-w-[280px]">{event.location || 'Lieu à définir'}</span>
-                                            </div>
-                                        </div>
-                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="max-w-4xl mx-auto px-4">
+                                <div className="py-16 text-center bg-white/5 rounded-3xl border border-dashed border-slate-700 text-slate-400 backdrop-blur-sm">
+                                    <Calendar className="h-12 w-12 mx-auto mb-3 text-slate-600" />
+                                    Aucun événement à venir.
                                 </div>
                             </div>
-                        ))}
+                        )}
                     </div>
-                ) : (
-                    <div className="max-w-4xl mx-auto px-4">
-                        <div className="py-16 text-center bg-white/5 rounded-3xl border border-dashed border-slate-700 text-slate-400 backdrop-blur-sm">
-                            <Calendar className="h-12 w-12 mx-auto mb-3 text-slate-600" />
-                            Aucun événement à venir.
-                        </div>
+
+                    {/* Dedicated Right Arrow Column */}
+                    <div className="flex-shrink-0 z-20">
+                        <button
+                            onClick={() => scrollManual('right')}
+                            className="w-12 h-12 rounded-full bg-slate-800/90 shadow-xl border border-white/20 text-teal-400 flex items-center justify-center hover:bg-teal-600 hover:text-white hover:border-teal-500 transition-all cursor-pointer"
+                            aria-label="Suivant"
+                            title="Suivant"
+                        >
+                            <ArrowRight className="w-5 h-5" />
+                        </button>
                     </div>
-                )}
+
+                </div>
             </div>
 
             <div className="text-center mt-12 relative z-10">
