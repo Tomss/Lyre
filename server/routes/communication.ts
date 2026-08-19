@@ -232,7 +232,10 @@ router.post('/send', async (req, res) => {
 
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
     const subject = customSubject || (type === 'event' ? `Rappel : ${event.title}` : 'Information - La Lyre');
-    const recipientEmails = finalRecipients.map((r: any) => r.email);
+    
+    // Store full name + email in recipient list JSON so searching by Name/Surname works!
+    const recipientFormattedList = finalRecipients.map((r: any) => `${(r.lastName || '').toUpperCase()} ${r.firstName || ''} (${r.email})`.trim());
+    const messageToSave = type === 'event' ? (customNote || event?.description || '') : freeMessageContent;
 
     let successCount = 0;
     let failCount = 0;
@@ -252,7 +255,7 @@ router.post('/send', async (req, res) => {
               <td align="center">
                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05); border: 1px solid #e2e8f0;">
                   
-                  <!-- Real Logo & Clean Header (No Saxophone, No Chalindrey, Just "La Lyre") -->
+                  <!-- Real Logo & Clean Header -->
                   <tr>
                     <td style="background-color: #ffffff; padding: 26px 30px; text-align: center; border-bottom: 2px solid #4f46e5;">
                       <img src="${LOGO_URL}" alt="La Lyre" style="height: 54px; width: auto; max-width: 180px; margin-bottom: 6px; display: inline-block; object-fit: contain;" />
@@ -324,7 +327,7 @@ router.post('/send', async (req, res) => {
                           </div>
                         ` : ''}
                       ` : `
-                        <!-- Communication libre (CLEAN BACKGROUND, NO LEFT VERTICAL BORDER BAR) -->
+                        <!-- Communication libre -->
                         <div style="background-color: #f8fafc; padding: 22px; border-radius: 12px; border: 1px solid #e2e8f0; margin: 18px 0; font-size: 14px; line-height: 1.7; color: #1e293b;">
                           ${formatMessageBody(freeMessageContent || '')}
                         </div>
@@ -382,18 +385,19 @@ router.post('/send', async (req, res) => {
       }
     }
 
-    // Enregistrer dans communication_log
+    // Enregistrer dans communication_log avec message_content et formatted recipient names
     const logId = crypto.randomUUID();
     const currentUserId = (req as any).user.id;
     await pool.query(`
-      INSERT INTO communication_log (id, event_id, subject, recipient_count, recipients_list, is_test, sent_by, created_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
+      INSERT INTO communication_log (id, event_id, subject, message_content, recipient_count, recipients_list, is_test, sent_by, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
     `, [
       logId,
       eventId || null,
       subject,
+      messageToSave,
       successCount,
-      JSON.stringify(recipientEmails),
+      JSON.stringify(recipientFormattedList),
       isTest ? 1 : 0,
       currentUserId
     ]);
@@ -422,7 +426,7 @@ router.post('/send', async (req, res) => {
   }
 });
 
-// GET /api/communication/history - Récupérer l'historique
+// GET /api/communication/history - Récupérer l'historique complet avec message_content
 router.get('/history', async (req, res) => {
   if (!hasCommunicationAccess(req)) {
     return res.status(403).json({ message: 'Accès refusé.' });
@@ -431,9 +435,10 @@ router.get('/history', async (req, res) => {
   try {
     const [history] = await pool.query(`
       SELECT 
-        cl.id, cl.subject, cl.recipient_count, cl.recipients_list, cl.is_test,
+        cl.id, cl.subject, cl.message_content, cl.recipient_count, cl.recipients_list, cl.is_test,
         DATE_FORMAT(cl.created_at, '%Y-%m-%dT%H:%i:%s') as created_at,
-        e.title AS event_title, e.event_type,
+        e.title AS event_title, e.event_type, e.location AS event_location,
+        DATE_FORMAT(e.event_date, '%d/%m/%Y à %H:%i') AS formatted_event_date,
         CONCAT(p.first_name, ' ', p.last_name) AS sender_name
       FROM communication_log cl
       LEFT JOIN events e ON cl.event_id = e.id

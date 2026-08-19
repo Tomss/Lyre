@@ -3,7 +3,7 @@ import {
   ArrowLeft, Mail, Send, History, Calendar, Users, CheckCircle, 
   AlertCircle, Search, Clock, MapPin, X, Sparkles, Filter, ChevronRight, Check, ShieldAlert, FileText,
   Bold, Italic, Underline, List, Smile, HelpCircle, Music,
-  AlignLeft, AlignCenter, AlignRight, Trash2
+  AlignLeft, AlignCenter, AlignRight, Trash2, Eye, RefreshCw
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Navigate, Link } from 'react-router-dom';
@@ -37,12 +37,15 @@ interface Recipient {
 interface CommunicationLogItem {
   id: string;
   subject: string;
+  message_content?: string;
   recipient_count: number;
   recipients_list: string[];
   is_test: boolean;
   created_at: string;
-  event_title: string;
-  event_type: string;
+  event_title?: string;
+  event_type?: string;
+  event_location?: string;
+  formatted_event_date?: string;
   sender_name: string;
 }
 
@@ -132,6 +135,9 @@ const AdminCommunication = () => {
   const [historyTypeFilter, setHistoryTypeFilter] = useState<'all' | 'free' | 'event' | 'test'>('all');
   const [historyDateFilter, setHistoryDateFilter] = useState<'all' | '7days' | '30days' | 'thisYear'>('all');
 
+  // Detail Modal State (View a past communication)
+  const [selectedHistoryItem, setSelectedHistoryItem] = useState<CommunicationLogItem | null>(null);
+
   // Loading & Action states
   const [loadingEvents, setLoadingEvents] = useState(false);
   const [loadingRecipients, setLoadingRecipients] = useState(false);
@@ -209,9 +215,9 @@ const AdminCommunication = () => {
     setShowEmojiPicker(false);
   };
 
-  // Prevent scroll when wizard is open
+  // Prevent scroll when wizard or modal is open
   useEffect(() => {
-    if (showWizard || deleteConfirmation.isOpen) {
+    if (showWizard || deleteConfirmation.isOpen || selectedHistoryItem) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
@@ -219,7 +225,7 @@ const AdminCommunication = () => {
     return () => {
       document.body.style.overflow = 'unset';
     };
-  }, [showWizard, deleteConfirmation.isOpen]);
+  }, [showWizard, deleteConfirmation.isOpen, selectedHistoryItem]);
 
   // Redirect if unauthorized
   if (!isAuthenticated) return <Navigate to="/connexion" replace />;
@@ -304,6 +310,13 @@ const AdminCommunication = () => {
     } finally {
       setDeletingId(null);
     }
+  };
+
+  // Reset all history filters
+  const resetHistoryFilters = () => {
+    setHistorySearchTerm('');
+    setHistoryTypeFilter('all');
+    setHistoryDateFilter('all');
   };
 
   // Handle opening wizard
@@ -405,7 +418,7 @@ const AdminCommunication = () => {
     `${e.title} ${e.location} ${e.event_type}`.toLowerCase().includes(eventSearchTerm.toLowerCase())
   );
 
-  // Filter history based on type, date, and search term
+  // Filter history based on type, date, and search term (search across member names, emails, subject, etc.)
   const filteredHistory = history.filter(item => {
     // 1. Type / Mode Filter
     if (historyTypeFilter === 'free' && item.event_title) return false;
@@ -421,11 +434,17 @@ const AdminCommunication = () => {
       if (historyDateFilter === 'thisYear' && new Date(item.created_at).getFullYear() !== new Date().getFullYear()) return false;
     }
 
-    // 3. Search Term (subject, event_title, sender_name, recipient emails)
-    const recipientsString = (item.recipients_list || []).join(' ');
+    // 3. Search Term (subject, event_title, sender_name, recipients list strings containing names and emails)
+    if (!historySearchTerm.trim()) return true;
+
+    const query = historySearchTerm.toLowerCase().trim();
+    const recipientsString = Array.isArray(item.recipients_list) 
+      ? item.recipients_list.join(' ') 
+      : String(item.recipients_list || '');
+      
     const fullText = `${item.subject} ${item.event_title || ''} ${item.sender_name || ''} ${recipientsString}`.toLowerCase();
     
-    return fullText.includes(historySearchTerm.toLowerCase());
+    return fullText.includes(query);
   });
 
   const toggleUserSelection = (userId: string) => {
@@ -574,6 +593,131 @@ const AdminCommunication = () => {
         </div>
       )}
 
+      {/* Communication Detail Modal (View Full Log Contents & Recipients) */}
+      {selectedHistoryItem && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[90] flex justify-center items-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-3xl w-full shadow-2xl border border-slate-100 overflow-hidden flex flex-col max-h-[90vh] animate-in fade-in zoom-in duration-200">
+            
+            {/* Modal Header */}
+            <div className="bg-slate-900 text-white px-8 py-5 flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white">
+                  <Mail size={22} />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-lg text-white">Détails de la communication</h3>
+                  <p className="text-xs text-slate-400">
+                    Envoyé le {new Date(selectedHistoryItem.created_at).toLocaleDateString('fr-FR', {
+                      day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                    })} par {selectedHistoryItem.sender_name || 'Admin'}
+                  </p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setSelectedHistoryItem(null)}
+                className="text-slate-400 hover:text-white p-2 rounded-xl hover:bg-slate-800 transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Modal Content Body */}
+            <div className="p-8 overflow-y-auto flex-1 space-y-6">
+              
+              {/* Badges & Overview */}
+              <div className="flex flex-wrap items-center gap-2">
+                {selectedHistoryItem.is_test ? (
+                  <span className="px-3 py-1 bg-amber-100 text-amber-900 text-xs font-bold rounded-full">
+                    🧪 Mode Test
+                  </span>
+                ) : (
+                  <span className="px-3 py-1 bg-green-100 text-green-900 text-xs font-bold rounded-full">
+                    📢 Envoi Officiel
+                  </span>
+                )}
+
+                {selectedHistoryItem.event_title ? (
+                  <span className="px-3 py-1 bg-indigo-100 text-indigo-900 text-xs font-bold rounded-full">
+                    📅 Événement : {selectedHistoryItem.event_title}
+                  </span>
+                ) : (
+                  <span className="px-3 py-1 bg-purple-100 text-purple-900 text-xs font-bold rounded-full">
+                    📝 Communication Libre
+                  </span>
+                )}
+
+                <span className="px-3 py-1 bg-slate-100 text-slate-700 text-xs font-bold rounded-full">
+                  👥 {selectedHistoryItem.recipient_count} membre(s) ciblé(s)
+                </span>
+              </div>
+
+              {/* Subject */}
+              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                <label className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">
+                  Objet du mail
+                </label>
+                <h4 className="font-extrabold text-slate-900 text-base">{selectedHistoryItem.subject}</h4>
+              </div>
+
+              {/* Event Info if applicable */}
+              {selectedHistoryItem.event_title && (
+                <div className="bg-indigo-50/60 p-4 rounded-2xl border border-indigo-200 text-xs text-indigo-900 space-y-1">
+                  <h5 className="font-bold text-sm text-indigo-950">Détails de l'événement associé :</h5>
+                  <p><strong>Titre :</strong> {selectedHistoryItem.event_title}</p>
+                  {selectedHistoryItem.formatted_event_date && <p><strong>Date :</strong> {selectedHistoryItem.formatted_event_date}</p>}
+                  {selectedHistoryItem.event_location && <p><strong>Lieu :</strong> {selectedHistoryItem.event_location}</p>}
+                </div>
+              )}
+
+              {/* Message Content */}
+              {selectedHistoryItem.message_content && (
+                <div>
+                  <label className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-500 mb-2">
+                    Contenu du message transmis
+                  </label>
+                  <div 
+                    className="bg-white p-5 rounded-2xl border border-slate-200 text-slate-800 text-sm leading-relaxed max-h-60 overflow-y-auto"
+                    dangerouslySetInnerHTML={{ __html: selectedHistoryItem.message_content }}
+                  />
+                </div>
+              )}
+
+              {/* Recipients List */}
+              <div>
+                <label className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-500 mb-2">
+                  Liste des destinataires ({selectedHistoryItem.recipient_count})
+                </label>
+                
+                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 max-h-48 overflow-y-auto space-y-1.5 text-xs">
+                  {Array.isArray(selectedHistoryItem.recipients_list) && selectedHistoryItem.recipients_list.length > 0 ? (
+                    selectedHistoryItem.recipients_list.map((rec, idx) => (
+                      <div key={idx} className="flex items-center gap-2 py-1 border-b border-slate-100 last:border-0 font-medium text-slate-700">
+                        <CheckCircle size={14} className="text-indigo-600 flex-shrink-0" />
+                        <span>{rec}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-slate-400 italic">Liste des destinataires enregistrée ({selectedHistoryItem.recipient_count} membres)</div>
+                  )}
+                </div>
+              </div>
+
+            </div>
+
+            {/* Modal Footer */}
+            <div className="bg-slate-50 border-t border-slate-200 px-8 py-4 flex justify-end">
+              <button
+                onClick={() => setSelectedHistoryItem(null)}
+                className="px-6 py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl text-xs transition-colors"
+              >
+                Fermer
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
       <div className="w-full px-4 sm:px-10 lg:px-16">
 
         {/* Header - EXACTLY SAME DA AS ADMINUSERS */}
@@ -607,59 +751,107 @@ const AdminCommunication = () => {
           </div>
         </div>
 
-        {/* Main Content Card: History & Search & Filters */}
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-6">
+        {/* SEARCH & FILTERS CARD (EXACT SAME DA & LAYOUT AS OTHER ADMIN PAGES) */}
+        <div className="mb-6 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-6">
           
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 pb-6 border-b border-gray-100">
-            <div>
-              <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                <History className="w-5 h-5 text-indigo-600" />
-                Historique des Communications Envoyées
-              </h2>
-              <p className="text-xs text-slate-500">
-                Journal des emails d'information et rappels de répétition/concert transmis aux membres.
-              </p>
+          {/* Row 1: Search Bar */}
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-2">
+              Rechercher une communication
+            </label>
+            <div className="relative">
+              <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Rechercher par objet, nom de membre, prénom, email, événement, expéditeur..."
+                value={historySearchTerm}
+                onChange={(e) => setHistorySearchTerm(e.target.value)}
+                className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none text-sm text-slate-800"
+              />
             </div>
+          </div>
 
-            {/* FILTERS & SEARCH BAR */}
-            <div className="flex items-center flex-wrap gap-2.5">
-              
-              {/* Type Filter */}
-              <select
-                value={historyTypeFilter}
-                onChange={(e) => setHistoryTypeFilter(e.target.value as any)}
-                className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none cursor-pointer"
-              >
-                <option value="all">Tous les types</option>
-                <option value="free">Communication Libre</option>
-                <option value="event">Liée à un Événement</option>
-                <option value="test">🧪 Tests uniquement</option>
-              </select>
-
-              {/* Date Filter */}
-              <select
-                value={historyDateFilter}
-                onChange={(e) => setHistoryDateFilter(e.target.value as any)}
-                className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none cursor-pointer"
-              >
-                <option value="all">Toutes les dates</option>
-                <option value="7days">7 derniers jours</option>
-                <option value="30days">30 derniers jours</option>
-                <option value="thisYear">Cette année</option>
-              </select>
-
-              {/* History Search Bar */}
-              <div className="relative w-full sm:w-72">
-                <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="Rechercher par sujet, destinataire, événement..."
-                  value={historySearchTerm}
-                  onChange={(e) => setHistorySearchTerm(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-xs"
-                />
+          {/* Row 2: Filters Chips / Pills */}
+          <div className="flex flex-col lg:flex-row gap-6 pt-4 border-t border-slate-100">
+            
+            {/* Filter by Type */}
+            <div className="flex-1">
+              <label className="block text-sm font-semibold text-slate-700 mb-3 flex items-center">
+                <Filter className="w-4 h-4 mr-2 text-indigo-500" /> Type & Mode de communication
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { id: 'all', label: 'Tous' },
+                  { id: 'free', label: 'Communication Libre' },
+                  { id: 'event', label: 'Liée à un Événement' },
+                  { id: 'test', label: '🧪 Tests uniquement' },
+                ].map(type => (
+                  <button
+                    key={type.id}
+                    onClick={() => setHistoryTypeFilter(type.id as any)}
+                    className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                      historyTypeFilter === type.id 
+                        ? 'bg-indigo-600 text-white shadow-md shadow-indigo-100' 
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    }`}
+                  >
+                    {type.label}
+                  </button>
+                ))}
               </div>
             </div>
+
+            {/* Filter by Period */}
+            <div className="lg:border-l lg:pl-6 border-slate-100 flex-1 border-t lg:border-t-0 pt-4 lg:pt-0">
+              <label className="block text-sm font-semibold text-slate-700 mb-3 flex items-center">
+                <Calendar className="w-4 h-4 mr-2 text-amber-500" /> Période d'envoi
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { id: 'all', label: 'Toutes les dates' },
+                  { id: '7days', label: '7 derniers jours' },
+                  { id: '30days', label: '30 derniers jours' },
+                  { id: 'thisYear', label: 'Cette année' },
+                ].map(period => (
+                  <button
+                    key={period.id}
+                    onClick={() => setHistoryDateFilter(period.id as any)}
+                    className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                      historyDateFilter === period.id 
+                        ? 'bg-amber-500 text-white shadow-md shadow-amber-100' 
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    }`}
+                  >
+                    {period.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Reset Filters */}
+            <div className="lg:border-l lg:pl-6 border-slate-100 flex flex-col justify-center border-t lg:border-t-0 pt-4 lg:pt-0 min-w-[160px]">
+              <button
+                onClick={resetHistoryFilters}
+                className="text-xs font-bold text-slate-500 hover:text-indigo-600 transition-colors flex items-center gap-1.5"
+              >
+                <RefreshCw size={14} />
+                <span>Réinitialiser les filtres</span>
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+        {/* Main Content Card: History Table */}
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-6">
+          <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-100">
+            <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+              <History className="w-5 h-5 text-indigo-600" />
+              Historique des Communications ({filteredHistory.length})
+            </h2>
+            <span className="text-xs font-semibold text-slate-400">
+              Cliquez sur une ligne pour voir le détail complet
+            </span>
           </div>
 
           {loadingHistory ? (
@@ -682,8 +874,12 @@ const AdminCommunication = () => {
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-sm">
                   {filteredHistory.map(item => (
-                    <tr key={item.id} className="hover:bg-slate-50/70 transition-colors">
-                      <td className="py-3.5 px-3 font-medium text-slate-600 text-xs">
+                    <tr 
+                      key={item.id} 
+                      onClick={() => setSelectedHistoryItem(item)}
+                      className="hover:bg-slate-50/80 cursor-pointer transition-colors group"
+                    >
+                      <td className="py-3.5 px-3 font-medium text-slate-600 text-xs whitespace-nowrap">
                         {new Date(item.created_at).toLocaleDateString('fr-FR', {
                           day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
                         })}
@@ -691,10 +887,10 @@ const AdminCommunication = () => {
                       <td className="py-3.5 px-3 font-bold text-slate-900">
                         {item.event_title || <span className="text-slate-400 italic">Communication Libre</span>}
                       </td>
-                      <td className="py-3.5 px-3 text-slate-700 text-xs max-w-xs truncate font-medium">
+                      <td className="py-3.5 px-3 text-slate-700 text-xs max-w-xs truncate font-medium group-hover:text-indigo-600 transition-colors">
                         {item.subject}
                       </td>
-                      <td className="py-3.5 px-3">
+                      <td className="py-3.5 px-3 whitespace-nowrap">
                         {item.is_test ? (
                           <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
                             🧪 Test ({item.recipient_count})
@@ -705,21 +901,30 @@ const AdminCommunication = () => {
                           </span>
                         )}
                       </td>
-                      <td className="py-3.5 px-3 font-bold text-slate-700">
+                      <td className="py-3.5 px-3 font-bold text-slate-700 whitespace-nowrap">
                         {item.recipient_count} membre(s)
                       </td>
-                      <td className="py-3.5 px-3 text-slate-500 text-xs">
+                      <td className="py-3.5 px-3 text-slate-500 text-xs whitespace-nowrap">
                         {item.sender_name || 'Admin'}
                       </td>
-                      <td className="py-3.5 px-3 text-right">
-                        <button
-                          onClick={() => promptDeleteHistoryItem(item.id, item.subject)}
-                          disabled={deletingId === item.id}
-                          className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                          title="Supprimer cette communication de l'historique"
-                        >
-                          <Trash2 size={16} />
-                        </button>
+                      <td className="py-3.5 px-3 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            onClick={() => setSelectedHistoryItem(item)}
+                            className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                            title="Voir le résumé complet de la communication"
+                          >
+                            <Eye size={16} />
+                          </button>
+                          <button
+                            onClick={() => promptDeleteHistoryItem(item.id, item.subject)}
+                            disabled={deletingId === item.id}
+                            className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Supprimer cette communication de l'historique"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
