@@ -606,8 +606,6 @@ const Dashboard = () => {
                   <span className="font-bold text-slate-700">Communication</span>
                 </Link>
               )}
-                </>
-              )}
 
               {(currentUser?.role === 'Admin' || currentUser?.managedModules?.includes('media')) && (
                 <Link to="/admin/media" className="admin-card group block bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition-all border border-gray-100 text-center">
