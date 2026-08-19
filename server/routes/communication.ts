@@ -235,7 +235,21 @@ router.post('/send', async (req, res) => {
     
     // Store full name + email in recipient list JSON so searching by Name/Surname works!
     const recipientFormattedList = finalRecipients.map((r: any) => `${(r.lastName || '').toUpperCase()} ${r.firstName || ''} (${r.email})`.trim());
-    const messageToSave = type === 'event' ? (customNote || event?.description || '') : freeMessageContent;
+    
+    let messageToSave = freeMessageContent;
+    if (type === 'event' && event) {
+      messageToSave = `
+        <div style="background-color: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; margin: 10px 0;">
+          <h3 style="margin: 0 0 10px 0; font-size: 16px; font-weight: 800; color: #0f172a;">${event.title}</h3>
+          <p style="margin: 4px 0; font-size: 13px; color: #334155;">📅 <strong>Date :</strong> ${event.formatted_date}</p>
+          ${event.location ? `<p style="margin: 4px 0; font-size: 13px; color: #334155;">📍 <strong>Lieu :</strong> ${event.location}</p>` : ''}
+          <p style="margin: 4px 0; font-size: 13px; color: #334155;">🎷 <strong>Ensemble(s) :</strong> ${orchestraTag}</p>
+          ${event.description ? `<div style="margin-top: 12px; font-size: 13px; color: #334155; line-height: 1.6;"><strong>Description / Programme :</strong><br/>${formatMessageBody(event.description)}</div>` : ''}
+          ${event.practical_info ? `<div style="margin-top: 12px; background-color: #eff6ff; border: 1px solid #bfdbfe; padding: 12px; border-radius: 10px; font-size: 12px; color: #1e3a8a;"><strong>ℹ️ Informations pratiques :</strong><br/>${formatMessageBody(event.practical_info)}</div>` : ''}
+        </div>
+        ${customNote ? `<div style="margin-top: 12px; background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 14px; border-radius: 10px; font-size: 13px; color: #1e293b;"><strong>Note du responsable :</strong><br/>${formatMessageBody(customNote)}</div>` : ''}
+      `.trim();
+    }
 
     let successCount = 0;
     let failCount = 0;

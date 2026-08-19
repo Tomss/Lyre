@@ -1700,13 +1700,43 @@ const AdminCommunication = () => {
                         <p className="font-bold text-slate-800 text-sm">Bonjour [Prénom],</p>
 
                         {commType === 'event' && selectedEvent ? (
-                          <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-2">
-                            <span className="inline-block bg-indigo-100 text-indigo-800 text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full">
-                              {selectedEvent.event_type === 'concert' ? 'Concert' : (selectedEvent.event_type === 'repetition' ? 'Répétition' : 'Événement')}
-                            </span>
+                          <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-3">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="inline-block bg-indigo-100 text-indigo-800 text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full">
+                                {selectedEvent.event_type === 'concert' ? 'Concert' : (selectedEvent.event_type === 'repetition' ? 'Répétition' : 'Événement')}
+                              </span>
+                              {(selectedEvent.orchestras || []).map(o => (
+                                <span key={o.id} className="text-[10px] font-bold bg-slate-200/70 text-slate-700 px-2 py-0.5 rounded-full">
+                                  {o.name}
+                                </span>
+                              ))}
+                            </div>
+
                             <h5 className="font-black text-slate-900 text-base">{selectedEvent.title}</h5>
-                            <p className="text-xs text-slate-600">📅 <strong>Date :</strong> {formatEventDate(selectedEvent.event_date)}</p>
-                            {selectedEvent.location && <p className="text-xs text-slate-600">📍 <strong>Lieu :</strong> {selectedEvent.location}</p>}
+
+                            <div className="space-y-1 text-xs text-slate-700 pt-1">
+                              <p>📅 <strong>Date :</strong> {formatEventDate(selectedEvent.event_date)}</p>
+                              {selectedEvent.location && <p>📍 <strong>Lieu :</strong> {selectedEvent.location}</p>}
+                              {(selectedEvent.orchestras || []).length > 0 && (
+                                <p>🎷 <strong>Ensemble(s) :</strong> {(selectedEvent.orchestras || []).map(o => o.name).join(', ')}</p>
+                              )}
+                            </div>
+
+                            {selectedEvent.description && (
+                              <div className="pt-2 border-t border-slate-200/80">
+                                <h6 className="font-bold text-slate-900 text-xs mb-1">Description / Programme :</h6>
+                                <p className="text-xs text-slate-600 leading-relaxed whitespace-pre-line">{selectedEvent.description}</p>
+                              </div>
+                            )}
+
+                            {selectedEvent.practical_info && (
+                              <div className="bg-blue-50 border border-blue-200 rounded-xl p-3.5 text-xs text-blue-900 mt-2">
+                                <h6 className="font-bold text-blue-950 mb-1 flex items-center gap-1.5">
+                                  <span>ℹ️ Informations pratiques :</span>
+                                </h6>
+                                <p className="text-blue-900/90 leading-relaxed font-normal whitespace-pre-line">{selectedEvent.practical_info}</p>
+                              </div>
+                            )}
                           </div>
                         ) : (
                           /* CLEAN MESSAGE CONTAINER WITHOUT VERTICAL LEFT BAR */
