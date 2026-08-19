@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   ArrowLeft, Mail, Send, History, Calendar, Users, CheckCircle, 
   AlertCircle, Search, Clock, MapPin, X, Sparkles, Filter, ChevronRight, Check, ShieldAlert, FileText,
-  Bold, Italic, Underline, List, Smile, HelpCircle, Music
+  Bold, Italic, Underline, List, Smile, HelpCircle, Music,
+  AlignLeft, AlignCenter, AlignRight
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Navigate, Link } from 'react-router-dom';
@@ -74,6 +75,23 @@ const EMOJI_CATEGORIES = [
     icon: '👍',
     emojis: ['👍', '👎', '👌', '🤝', '🔥', '💯', 'ℹ️', '⚠️', '✅', '❌', '❓', '❗']
   }
+];
+
+const TEXT_COLORS = [
+  { label: 'Noir', color: '#0f172a' },
+  { label: 'Indigo', color: '#4f46e5' },
+  { label: 'Rouge', color: '#dc2626' },
+  { label: 'Vert', color: '#16a34a' },
+  { label: 'Bleu', color: '#2563eb' },
+  { label: 'Orange', color: '#d97706' },
+];
+
+const HIGHLIGHT_COLORS = [
+  { label: 'Jaune', color: '#fef08a' },
+  { label: 'Vert menthe', color: '#a7f3d0' },
+  { label: 'Bleu clair', color: '#bfdbfe' },
+  { label: 'Rose', color: '#fbcfe8' },
+  { label: 'Aucun', color: 'transparent' },
 ];
 
 const AdminCommunication = () => {
@@ -164,15 +182,6 @@ const AdminCommunication = () => {
     if (editorRef.current) {
       editorRef.current.focus();
       document.execCommand(command, false, value);
-      setFreeMessageContent(editorRef.current.innerHTML);
-    }
-  };
-
-  const insertCalloutBox = () => {
-    if (editorRef.current) {
-      editorRef.current.focus();
-      const calloutHtml = `<div style="background-color:#eff6ff; padding:14px 18px; border-radius:12px; border:1px solid #bfdbfe; margin:12px 0; color:#1e40af; font-weight:500;">📌 Votre note d'information ici...</div><p><br></p>`;
-      document.execCommand('insertHTML', false, calloutHtml);
       setFreeMessageContent(editorRef.current.innerHTML);
     }
   };
@@ -601,7 +610,7 @@ const AdminCommunication = () => {
                   <p className="text-xs text-slate-400 mt-0.5">
                     {wizardStep === 1 && "Étape 1 : Choisir le type de communication"}
                     {wizardStep === 2 && "Étape 2 : Sélectionner les destinataires & Mode Test"}
-                    {wizardStep === 3 && (commType === 'event' ? "Étape 3 : Compléter la note d'organisation" : "Étape 3 : Rédiger le message (Éditeur Word & Smileys)")}
+                    {wizardStep === 3 && (commType === 'event' ? "Étape 3 : Compléter la note d'organisation" : "Étape 3 : Rédiger le message (Éditeur Word complet)")}
                     {wizardStep === 4 && "Étape 4 : Aperçu & Confirmation d'envoi"}
                   </p>
                 </div>
@@ -1028,7 +1037,7 @@ const AdminCommunication = () => {
                 </div>
               )}
 
-              {/* STEP 3: MESSAGE CONTENT (SUBJECT & WORD WYSIWYG EDITOR) */}
+              {/* STEP 3: MESSAGE CONTENT (SUBJECT & COMPLETE WORD WYSIWYG TOOLBAR) */}
               {wizardStep === 3 && (
                 <div className="space-y-6">
                   {commType === 'event' ? (
@@ -1059,7 +1068,7 @@ const AdminCommunication = () => {
                       </div>
                     </div>
                   ) : (
-                    /* Free Communication Form with TRUE VISUAL WYSIWYG WORD EDITOR */
+                    /* Free Communication Form with COMPLETE WORD TOOLBAR */
                     <div className="space-y-5">
                       <div>
                         <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
@@ -1074,7 +1083,7 @@ const AdminCommunication = () => {
                         />
                       </div>
 
-                      {/* TRUE WYSIWYG WORD EDITOR */}
+                      {/* COMPLETE WORD TOOLBAR & WYSIWYG EDITOR */}
                       <div>
                         <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
                           Corps du message
@@ -1082,15 +1091,17 @@ const AdminCommunication = () => {
                         
                         <div className="border border-slate-200 rounded-2xl overflow-hidden bg-white shadow-sm focus-within:ring-2 focus-within:ring-indigo-500 transition-all">
                           
-                          {/* Formatting Toolbar */}
-                          <div className="bg-slate-50 border-b border-slate-200 px-3 py-2 flex items-center justify-between flex-wrap gap-1.5">
+                          {/* Complete Word Toolbar */}
+                          <div className="bg-slate-50 border-b border-slate-200 px-3 py-2.5 flex items-center justify-between flex-wrap gap-3">
                             
-                            {/* Format Buttons */}
-                            <div className="flex items-center gap-1">
+                            {/* Format Controls */}
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              
+                              {/* Bold, Italic, Underline */}
                               <button 
                                 type="button"
                                 onClick={() => execFormat('bold')}
-                                title="Gras (Word style)"
+                                title="Gras"
                                 className="p-2 hover:bg-slate-200 rounded-lg text-slate-800 font-extrabold text-xs transition-colors"
                               >
                                 <Bold size={16} />
@@ -1099,7 +1110,7 @@ const AdminCommunication = () => {
                               <button 
                                 type="button"
                                 onClick={() => execFormat('italic')}
-                                title="Italique (Word style)"
+                                title="Italique"
                                 className="p-2 hover:bg-slate-200 rounded-lg text-slate-800 italic text-xs transition-colors"
                               >
                                 <Italic size={16} />
@@ -1108,31 +1119,105 @@ const AdminCommunication = () => {
                               <button 
                                 type="button"
                                 onClick={() => execFormat('underline')}
-                                title="Souligné (Word style)"
+                                title="Souligné"
                                 className="p-2 hover:bg-slate-200 rounded-lg text-slate-800 underline text-xs transition-colors"
                               >
                                 <Underline size={16} />
                               </button>
 
-                              <div className="w-[1px] h-4 bg-slate-300 mx-1" />
+                              <div className="w-[1px] h-4 bg-slate-300 mx-0.5" />
 
+                              {/* Text Size Dropdown */}
+                              <select 
+                                onChange={(e) => execFormat('fontSize', e.target.value)}
+                                defaultValue="3"
+                                className="px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 outline-none cursor-pointer hover:border-slate-300"
+                                title="Taille du texte"
+                              >
+                                <option value="2">Petite</option>
+                                <option value="3">Normale</option>
+                                <option value="5">Grande</option>
+                                <option value="6">Très grande</option>
+                              </select>
+
+                              <div className="w-[1px] h-4 bg-slate-300 mx-0.5" />
+
+                              {/* Text Color Picker */}
+                              <div className="flex items-center gap-1">
+                                <span className="text-[11px] font-bold text-slate-500">Couleur :</span>
+                                {TEXT_COLORS.map(c => (
+                                  <button
+                                    key={c.color}
+                                    type="button"
+                                    onClick={() => execFormat('foreColor', c.color)}
+                                    className="w-4 h-4 rounded-full border border-slate-300 hover:scale-125 transition-transform shadow-xs"
+                                    style={{ backgroundColor: c.color }}
+                                    title={`Couleur ${c.label}`}
+                                  />
+                                ))}
+                              </div>
+
+                              <div className="w-[1px] h-4 bg-slate-300 mx-0.5" />
+
+                              {/* Highlight Color (Surlignage) */}
+                              <div className="flex items-center gap-1">
+                                <span className="text-[11px] font-bold text-slate-500">Surligner :</span>
+                                {HIGHLIGHT_COLORS.map(c => (
+                                  <button
+                                    key={c.label}
+                                    type="button"
+                                    onClick={() => execFormat('hiliteColor', c.color)}
+                                    className="w-4 h-4 rounded-md border border-slate-300 hover:scale-125 transition-transform shadow-xs flex items-center justify-center"
+                                    style={{ backgroundColor: c.color === 'transparent' ? '#ffffff' : c.color }}
+                                    title={`Surlignage : ${c.label}`}
+                                  >
+                                    {c.color === 'transparent' && <span className="text-[9px] text-red-500 font-bold">✕</span>}
+                                  </button>
+                                ))}
+                              </div>
+
+                              <div className="w-[1px] h-4 bg-slate-300 mx-0.5" />
+
+                              {/* Text Alignment */}
+                              <button 
+                                type="button"
+                                onClick={() => execFormat('justifyLeft')}
+                                title="Aligner à gauche"
+                                className="p-2 hover:bg-slate-200 rounded-lg text-slate-800 transition-colors"
+                              >
+                                <AlignLeft size={16} />
+                              </button>
+
+                              <button 
+                                type="button"
+                                onClick={() => execFormat('justifyCenter')}
+                                title="Centrer"
+                                className="p-2 hover:bg-slate-200 rounded-lg text-slate-800 transition-colors"
+                              >
+                                <AlignCenter size={16} />
+                              </button>
+
+                              <button 
+                                type="button"
+                                onClick={() => execFormat('justifyRight')}
+                                title="Aligner à droite"
+                                className="p-2 hover:bg-slate-200 rounded-lg text-slate-800 transition-colors"
+                              >
+                                <AlignRight size={16} />
+                              </button>
+
+                              <div className="w-[1px] h-4 bg-slate-300 mx-0.5" />
+
+                              {/* Bullet List */}
                               <button 
                                 type="button"
                                 onClick={() => execFormat('insertUnorderedList')}
                                 title="Liste à puces"
-                                className="p-2 hover:bg-slate-200 rounded-lg text-slate-800 text-xs transition-colors flex items-center gap-1"
+                                className="p-2 hover:bg-slate-200 rounded-lg text-slate-800 transition-colors"
                               >
                                 <List size={16} />
                               </button>
 
-                              <button 
-                                type="button"
-                                onClick={insertCalloutBox}
-                                title="Insérer un encadré d'information"
-                                className="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold transition-colors"
-                              >
-                                + Encadré
-                              </button>
                             </div>
 
                             {/* Emoji Picker Trigger with Ref for Click Outside */}
