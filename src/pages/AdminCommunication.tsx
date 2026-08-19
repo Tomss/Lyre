@@ -51,6 +51,8 @@ interface Notification {
   type: 'success' | 'error';
 }
 
+const LOGO_URL = 'https://res.cloudinary.com/dr2sbjrms/image/upload/v1774629447/lyre-uploads/ll5sutyvmfrocohfv3yd.png';
+
 const EMOJI_CATEGORIES = [
   {
     name: 'Émotions & Visages',
@@ -169,7 +171,7 @@ const AdminCommunication = () => {
   const insertCalloutBox = () => {
     if (editorRef.current) {
       editorRef.current.focus();
-      const calloutHtml = `<div style="background-color:#eff6ff; border-left:4px solid #4f46e5; padding:14px 18px; border-radius:12px; margin:12px 0; color:#1e40af; font-weight:500;">📌 Votre note d'information ici...</div><p><br></p>`;
+      const calloutHtml = `<div style="background-color:#eff6ff; padding:14px 18px; border-radius:12px; border:1px solid #bfdbfe; margin:12px 0; color:#1e40af; font-weight:500;">📌 Votre note d'information ici...</div><p><br></p>`;
       document.execCommand('insertHTML', false, calloutHtml);
       setFreeMessageContent(editorRef.current.innerHTML);
     }
@@ -1204,7 +1206,7 @@ const AdminCommunication = () => {
                 </div>
               )}
 
-              {/* STEP 4: Live Preview & Send (ELEGANT LIGHT & CHIC EMAIL PREVIEW) */}
+              {/* STEP 4: Live Preview & Send (REAL LOGO, NO SAXOPHONE, NO CHALINDREY, NO VERTICAL LEFT BAR) */}
               {wizardStep === 4 && (
                 <div className="space-y-4">
                   <h4 className="font-bold text-slate-800 text-base">Aperçu du mail avant envoi final</h4>
@@ -1213,13 +1215,15 @@ const AdminCommunication = () => {
                   <div className="border border-slate-200 rounded-3xl overflow-hidden shadow-lg bg-slate-100 text-slate-800 text-xs p-6">
                     <div className="max-w-xl mx-auto bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200">
                       
-                      {/* Light & Refined Header (Matching Web Theme) */}
+                      {/* Real Logo Header (No Saxophone, No Chalindrey, Just "La Lyre") */}
                       <div className="bg-white p-6 text-center border-b-2 border-indigo-600">
-                        <div className="inline-block p-2 bg-indigo-50 rounded-xl mb-2">
-                          <span className="text-xl">🎷</span>
-                        </div>
-                        <h5 className="font-black text-lg text-slate-900 tracking-tight">La Lyre Municipale</h5>
-                        <p className="text-[11px] text-slate-500 font-semibold mt-0.5">Chalindrey &bull; Espace Membre Officiel</p>
+                        <img 
+                          src={LOGO_URL} 
+                          alt="La Lyre" 
+                          className="h-14 w-auto mx-auto mb-2 object-contain" 
+                        />
+                        <h5 className="font-black text-xl text-slate-900 tracking-tight">La Lyre</h5>
+                        <p className="text-[11px] text-slate-500 font-semibold mt-0.5">Espace Membre</p>
                       </div>
 
                       {/* Email Body */}
@@ -1233,7 +1237,7 @@ const AdminCommunication = () => {
                         <p className="font-bold text-slate-800 text-sm">Bonjour [Prénom],</p>
 
                         {commType === 'event' && selectedEvent ? (
-                          <div className="bg-slate-50 border-l-4 border-indigo-600 p-4 rounded-r-xl space-y-2">
+                          <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-2">
                             <span className="inline-block bg-indigo-100 text-indigo-800 text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full">
                               {selectedEvent.event_type === 'concert' ? 'Concert' : (selectedEvent.event_type === 'repetition' ? 'Répétition' : 'Événement')}
                             </span>
@@ -1242,14 +1246,15 @@ const AdminCommunication = () => {
                             {selectedEvent.location && <p className="text-xs text-slate-600">📍 <strong>Lieu :</strong> {selectedEvent.location}</p>}
                           </div>
                         ) : (
+                          /* CLEAN MESSAGE CONTAINER WITHOUT VERTICAL LEFT BAR */
                           <div 
-                            className="bg-slate-50 border-l-4 border-indigo-600 p-4 rounded-r-xl text-slate-800 font-normal leading-relaxed text-sm"
+                            className="bg-slate-50 p-5 rounded-2xl border border-slate-200 text-slate-800 font-normal leading-relaxed text-sm"
                             dangerouslySetInnerHTML={{ __html: freeMessageContent || 'Aperçu du contenu libre...' }}
                           />
                         )}
 
                         {customNote && (
-                          <div className="bg-slate-100 border border-dashed border-slate-300 rounded-xl p-3 text-xs italic text-slate-700">
+                          <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs italic text-slate-700">
                             <strong>Note du responsable :</strong>
                             <div className="mt-1 font-normal not-italic" dangerouslySetInnerHTML={{ __html: customNote }} />
                           </div>
@@ -1265,7 +1270,7 @@ const AdminCommunication = () => {
 
                       {/* Footer */}
                       <div className="bg-slate-50 p-3 text-center text-[10px] text-slate-400 border-t border-slate-100">
-                        La Lyre Municipale de Chalindrey &bull; Espace Membre Officiel
+                        La Lyre &bull; Espace Membre
                       </div>
                     </div>
                   </div>

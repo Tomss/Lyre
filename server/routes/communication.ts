@@ -8,6 +8,8 @@ const router = Router();
 
 router.use(authenticateToken);
 
+const LOGO_URL = 'https://res.cloudinary.com/dr2sbjrms/image/upload/v1774629447/lyre-uploads/ll5sutyvmfrocohfv3yd.png';
+
 // Helper function to check if user has access to communication module
 const hasCommunicationAccess = (req: any) => {
   const user = req.user;
@@ -229,7 +231,7 @@ router.post('/send', async (req, res) => {
     }
 
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-    const subject = customSubject || (type === 'event' ? `Rappel : ${event.title}` : 'Information de La Lyre');
+    const subject = customSubject || (type === 'event' ? `Rappel : ${event.title}` : 'Information - La Lyre');
     const recipientEmails = finalRecipients.map((r: any) => r.email);
 
     let successCount = 0;
@@ -250,17 +252,15 @@ router.post('/send', async (req, res) => {
               <td align="center">
                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05); border: 1px solid #e2e8f0;">
                   
-                  <!-- Light Refined Header Bar (Matching Web Theme) -->
+                  <!-- Real Logo & Clean Header (No Saxophone, No Chalindrey, Just "La Lyre") -->
                   <tr>
-                    <td style="background-color: #ffffff; padding: 24px 30px; text-align: center; border-bottom: 2px solid #4f46e5;">
-                      <div style="display: inline-block; padding: 8px 14px; background-color: #e0e7ff; border-radius: 12px; margin-bottom: 8px;">
-                        <span style="font-size: 20px;">🎷</span>
-                      </div>
+                    <td style="background-color: #ffffff; padding: 26px 30px; text-align: center; border-bottom: 2px solid #4f46e5;">
+                      <img src="${LOGO_URL}" alt="La Lyre" style="height: 54px; width: auto; max-width: 180px; margin-bottom: 6px; display: inline-block; object-fit: contain;" />
                       <h1 style="margin: 0; color: #0f172a; font-size: 20px; font-weight: 800; letter-spacing: -0.3px;">
-                        La Lyre Municipale
+                        La Lyre
                       </h1>
                       <p style="margin: 2px 0 0 0; color: #64748b; font-size: 12px; font-weight: 600;">
-                        Chalindrey &bull; Espace Membre Officiel
+                        Espace Membre
                       </p>
                     </td>
                   </tr>
@@ -279,7 +279,7 @@ router.post('/send', async (req, res) => {
                       </p>
 
                       ${type === 'event' && event ? `
-                        <div style="background-color: #f8fafc; border-left: 4px solid #4f46e5; padding: 20px; border-radius: 10px; margin: 18px 0;">
+                        <div style="background-color: #f8fafc; padding: 20px; border-radius: 12px; margin: 18px 0; border: 1px solid #e2e8f0;">
                           <span style="display: inline-block; background-color: #e0e7ff; color: #3730a3; font-size: 10px; font-weight: 800; padding: 3px 10px; border-radius: 9999px; text-transform: uppercase; margin-bottom: 8px;">
                             ${event.event_type === 'concert' ? 'Concert' : (event.event_type === 'repetition' ? 'Répétition' : 'Événement')}
                           </span>
@@ -318,14 +318,14 @@ router.post('/send', async (req, res) => {
                         ` : ''}
 
                         ${customNote ? `
-                          <div style="background-color: #f1f5f9; border: 1px dashed #cbd5e1; border-radius: 10px; padding: 16px; margin-bottom: 20px;">
+                          <div style="background-color: #f8fafc; border: 1px border-slate-200; border-radius: 10px; padding: 16px; margin-bottom: 20px;">
                             <h4 style="margin: 0 0 6px 0; font-size: 12px; font-weight: 700; color: #0f172a;">Note du responsable :</h4>
                             <div style="font-size: 13px; color: #1e293b; line-height: 1.6;">${formatMessageBody(customNote)}</div>
                           </div>
                         ` : ''}
                       ` : `
-                        <!-- Communication libre -->
-                        <div style="background-color: #f8fafc; border-left: 4px solid #4f46e5; padding: 20px; border-radius: 10px; margin: 18px 0; font-size: 14px; line-height: 1.7; color: #1e293b;">
+                        <!-- Communication libre (CLEAN BACKGROUND, NO LEFT VERTICAL BORDER BAR) -->
+                        <div style="background-color: #f8fafc; padding: 22px; border-radius: 12px; border: 1px solid #e2e8f0; margin: 18px 0; font-size: 14px; line-height: 1.7; color: #1e293b;">
                           ${formatMessageBody(freeMessageContent || '')}
                         </div>
                       `}
@@ -342,8 +342,7 @@ router.post('/send', async (req, res) => {
                   <!-- Footer -->
                   <tr>
                     <td style="background-color: #f8fafc; padding: 18px 28px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 11px; color: #64748b;">
-                      <p style="margin: 0 0 2px 0; font-weight: 700; color: #334155;">La Lyre Municipale de Chalindrey</p>
-                      <p style="margin: 0;">Communication envoyée depuis l'espace membre officiel.</p>
+                      <p style="margin: 0 0 2px 0; font-weight: 700; color: #334155;">La Lyre &bull; Espace Membre</p>
                     </td>
                   </tr>
 
