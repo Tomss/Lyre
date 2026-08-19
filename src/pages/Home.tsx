@@ -80,23 +80,35 @@ const Home = () => {
     return () => observer.disconnect();
   }, []);
 
+  // Preload carousel images for instant smooth transitions
+  useEffect(() => {
+    if (backgroundImages.length > 0) {
+      backgroundImages.forEach((src) => {
+        const img = new Image();
+        img.src = src;
+      });
+    }
+  }, [backgroundImages]);
+
   return (
     <div className="">
       {/* Hero Section - Optimisé Ultra-Wide (Style Samsung) */}
-      <section id="accueil" className="relative h-[calc(100vh-80px)] flex items-center justify-center bg-white overflow-hidden">
+      <section id="accueil" className="relative h-[calc(100vh-80px)] flex items-center justify-center bg-slate-900 overflow-hidden">
         {/* Images de fond avec structure Contenue pour Ultra-Wide */}
         {backgroundImages.map((image, index) => (
           <div
             key={index}
             className={`absolute inset-0 transition-opacity duration-1000 ${index === currentImageIndex ? 'opacity-100' : 'opacity-0'}`}
           >
-            {/* Main Stage - Contained and Sharp */}
-            <div className="relative h-full w-full overflow-hidden">
-               <div 
-                 className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-                 style={{ backgroundImage: `linear-gradient(rgba(15, 23, 42, 0.4), rgba(15, 23, 42, 0.4)), url("${image}")` }}
-               />
-            </div>
+            <img
+              src={image}
+              alt=""
+              loading={index === 0 ? 'eager' : 'lazy'}
+              decoding="async"
+              fetchPriority={index === 0 ? 'high' : 'low'}
+              className="absolute inset-0 w-full h-full object-cover z-0"
+            />
+            <div className="absolute inset-0 bg-slate-950/40 z-1" />
           </div>
         ))}
         

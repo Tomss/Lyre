@@ -63,6 +63,8 @@ const PhotoStack = ({ photos, altPrefix, height = "h-[400px] md:h-[500px]" }: { 
                         <img
                             src={photo.photo_url.startsWith('http') ? photo.photo_url : `${BASE_URL}${photo.photo_url}`}
                             alt={`${altPrefix} - ${photo.display_order}`}
+                            loading="lazy"
+                            decoding="async"
                             className="w-full h-full object-cover"
                         />
                         {/* Visual cue for background photos */}

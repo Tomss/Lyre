@@ -70,11 +70,20 @@ const PageHero: React.FC<PageHeroProps> = ({ title, subtitle, backgroundImage, a
     };
 
     return (
-        <section className="relative min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat bg-gray-900 fixed-bg"
-            style={{
-                backgroundImage: `linear-gradient(to bottom, rgba(15, 23, 42, 0.6), rgba(15, 23, 42, 0.95)), url("${backgroundImage}")`,
-                backgroundAttachment: 'fixed'
-            }}>
+        <section className="relative min-h-screen flex items-center justify-center bg-slate-900 overflow-hidden">
+            {/* Optimized High-Priority Hero Background Image */}
+            {backgroundImage && (
+                <img
+                    src={backgroundImage}
+                    alt=""
+                    loading="eager"
+                    decoding="async"
+                    fetchPriority="high"
+                    className="absolute inset-0 w-full h-full object-cover pointer-events-none z-0"
+                />
+            )}
+            <div className="absolute inset-0 bg-gradient-to-b from-slate-950/60 via-slate-900/80 to-slate-900/95 z-[1] pointer-events-none" />
+
             <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10 pt-20">
 
                 <div className="flex flex-col items-center mb-12 lg:mb-16">

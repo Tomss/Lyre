@@ -98,10 +98,24 @@ const HomeAgendaSection = () => {
         };
     }, [selectedEvent, isAllEventsModalOpen]);
 
-    // Auto Scroll Logic
+    const [isInViewport, setIsInViewport] = useState(false);
+
+    useEffect(() => {
+        const container = scrollRef.current;
+        if (!container) return;
+
+        const observer = new IntersectionObserver(([entry]) => {
+            setIsInViewport(entry.isIntersecting);
+        }, { threshold: 0.05 });
+
+        observer.observe(container);
+        return () => observer.disconnect();
+    }, []);
+
+    // Auto Scroll Logic - ONLY runs when section is visible in viewport!
     useEffect(() => {
         const scrollContainer = scrollRef.current;
-        if (!scrollContainer || events.length === 0) return;
+        if (!scrollContainer || events.length === 0 || !isInViewport) return;
 
         let animationFrameId: number;
         let lastTime = performance.now();
@@ -113,8 +127,6 @@ const HomeAgendaSection = () => {
 
                 scrollContainer.scrollLeft += speed * deltaTime;
 
-                // Reset to start when we reach the halfway point (end of first set)
-                // with gap-8 (32px), the reset point is (scrollWidth + 32) / 2
                 const halfWidth = (scrollContainer.scrollWidth + 32) / 2;
 
                 if (scrollContainer.scrollLeft >= halfWidth) {
@@ -127,7 +139,7 @@ const HomeAgendaSection = () => {
 
         animationFrameId = requestAnimationFrame(scroll);
         return () => cancelAnimationFrame(animationFrameId);
-    }, [isPaused, events]);
+    }, [isPaused, events, isInViewport]);
 
     const scrollManual = (direction: 'left' | 'right') => {
         if (scrollRef.current) {
