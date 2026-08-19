@@ -301,7 +301,7 @@ const HomeAgendaSection = () => {
                         e.stopPropagation();
                         scrollManual('left');
                     }}
-                    className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-50 w-12 h-12 rounded-full bg-slate-800/90 backdrop-blur-md shadow-xl border border-white/20 text-teal-400 flex items-center justify-center hover:bg-teal-600 hover:text-white hover:border-teal-500 transition-all duration-200 cursor-pointer"
+                    className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 z-50 w-12 h-12 rounded-full bg-slate-800/90 backdrop-blur-md shadow-xl border border-white/20 text-teal-400 flex items-center justify-center hover:bg-teal-600 hover:text-white hover:border-teal-500 transition-all duration-200 cursor-pointer"
                     aria-label="Précédent"
                     title="Précédent"
                 >
@@ -312,18 +312,18 @@ const HomeAgendaSection = () => {
                         e.stopPropagation();
                         scrollManual('right');
                     }}
-                    className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-50 w-12 h-12 rounded-full bg-slate-800/90 backdrop-blur-md shadow-xl border border-white/20 text-teal-400 flex items-center justify-center hover:bg-teal-600 hover:text-white hover:border-teal-500 transition-all duration-200 cursor-pointer"
+                    className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 z-50 w-12 h-12 rounded-full bg-slate-800/90 backdrop-blur-md shadow-xl border border-white/20 text-teal-400 flex items-center justify-center hover:bg-teal-600 hover:text-white hover:border-teal-500 transition-all duration-200 cursor-pointer"
                     aria-label="Suivant"
                     title="Suivant"
                 >
                     <ArrowRight className="w-5 h-5" />
                 </button>
 
-                {/* Scrollable Track */}
+                {/* Scrollable Track - px-20 md:px-24 ensures 1st and last cards don't overlap arrows in initial/end states */}
                 {events.length > 0 ? (
                     <div
                         ref={scrollRef}
-                        className={`flex gap-8 px-8 py-12 overflow-x-auto scroll-smooth no-scrollbar select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+                        className={`flex gap-8 px-20 md:px-24 py-12 overflow-x-auto scroll-smooth no-scrollbar select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
                         onMouseDown={handleMouseDown}
                         onMouseUp={handleMouseUp}
                         onMouseMove={handleMouseMove}
