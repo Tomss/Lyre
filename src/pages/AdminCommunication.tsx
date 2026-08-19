@@ -490,7 +490,7 @@ const AdminCommunication = () => {
   const handleSendCommunication = async () => {
     if (!token) return;
     
-    const finalRecipientsIds = isTestMode ? selectedUserIds : (commType === 'event' ? recipients.map(r => r.id) : selectedUserIds);
+    const finalRecipientsIds = selectedUserIds;
 
     if (finalRecipientsIds.length === 0) {
       showNotification('Veuillez sélectionner au moins un destinataire.', 'error');
@@ -1141,35 +1141,61 @@ const AdminCommunication = () => {
 
                       {selectedEvent && (
                         <div className="space-y-4 pt-4 border-t border-slate-200">
-                          <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-4 text-xs text-indigo-900 flex items-center justify-between">
+                          <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-4 text-xs text-indigo-900 flex items-center justify-between flex-wrap gap-2">
                             <div className="flex items-center gap-2.5">
-                              <Users size={20} className="text-indigo-600" />
+                              <Users size={20} className="text-indigo-600 flex-shrink-0" />
                               <span>Musiciens ciblés par l'événement : <strong>{selectedEvent.title}</strong> ({(selectedEvent.orchestras || []).map(o => o.name).join(', ')})</span>
                             </div>
                             <span className="font-black bg-indigo-600 text-white px-3 py-1 rounded-full text-xs flex-shrink-0">
-                              {recipients.length} membre(s)
+                              {selectedUserIds.length} / {recipients.length} membre(s) retenu(s)
                             </span>
                           </div>
 
                           <div className="space-y-2">
-                            <span className="text-xs font-extrabold uppercase tracking-wider text-slate-500">
-                              2. Musiciens de l'événement ({recipients.length})
-                            </span>
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-extrabold uppercase tracking-wider text-slate-500">
+                                2. Musiciens de l'événement ({recipients.length})
+                              </span>
+                              <div className="flex items-center gap-2 text-xs">
+                                <button type="button" onClick={() => setSelectedUserIds(recipients.map(r => r.id))} className="font-bold text-indigo-600 hover:underline">Tout cocher</button>
+                                <span className="text-slate-300">•</span>
+                                <button type="button" onClick={() => setSelectedUserIds([])} className="font-bold text-slate-500 hover:underline">Tout décocher</button>
+                              </div>
+                            </div>
 
-                            <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                            <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
                               {[...recipients]
                                 .sort((a, b) => a.lastName.localeCompare(b.lastName, 'fr', { sensitivity: 'base' }) || a.firstName.localeCompare(b.firstName, 'fr', { sensitivity: 'base' }))
-                                .map(r => (
-                                <div key={r.id} className="p-3 bg-white rounded-xl border border-slate-200 flex items-center justify-between text-xs">
-                                  <div className="flex items-center gap-3">
-                                    <CheckCircle size={16} className="text-indigo-600" />
-                                    <div>
-                                      <span className="font-bold text-slate-900">{r.lastName.toUpperCase()} <span className="font-semibold text-slate-700">{r.firstName}</span></span>
-                                      <span className="text-slate-400 ml-2">{r.email}</span>
+                                .map(r => {
+                                  const isChecked = selectedUserIds.includes(r.id);
+                                  return (
+                                    <div 
+                                      key={r.id} 
+                                      onClick={() => toggleUserSelection(r.id)}
+                                      className={`p-3 rounded-xl border flex items-center justify-between text-xs cursor-pointer transition-colors ${
+                                        isChecked ? 'bg-indigo-50/60 border-indigo-300 shadow-xs' : 'bg-white border-slate-200 hover:bg-slate-50 opacity-60'
+                                      }`}
+                                    >
+                                      <div className="flex items-center gap-3">
+                                        <input
+                                          type="checkbox"
+                                          checked={isChecked}
+                                          onChange={() => {}}
+                                          className="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer"
+                                        />
+                                        <div>
+                                          <span className="font-bold text-slate-900 text-sm">{r.lastName.toUpperCase()} <span className="font-semibold text-slate-700">{r.firstName}</span></span>
+                                          <span className="text-slate-400 text-xs ml-2">{r.email}</span>
+                                        </div>
+                                      </div>
+                                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
+                                        isChecked ? 'bg-indigo-100 text-indigo-800' : 'bg-slate-100 text-slate-500'
+                                      }`}>
+                                        {isChecked ? 'Retenu' : 'Exclu'}
+                                      </span>
                                     </div>
-                                  </div>
-                                </div>
-                              ))}
+                                  );
+                                })}
                             </div>
                           </div>
                         </div>
