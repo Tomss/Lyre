@@ -250,22 +250,6 @@ const Dashboard = () => {
     setExpandedPracticalInfo(newSet);
   };
 
-  const expandAllEvents = () => {
-    setExpandedEventTypes(new Set(Object.keys(eventsByType)));
-  };
-
-  const collapseAllEvents = () => {
-    setExpandedEventTypes(new Set());
-  };
-
-  const expandAllOrchestras = () => {
-    setExpandedOrchestras(new Set(Object.keys(partitionsByOrchestra)));
-  };
-
-  const collapseAllOrchestras = () => {
-    setExpandedOrchestras(new Set());
-  };
-
   const filteredEvents = React.useMemo(() => {
     return userEvents.filter(event => 
       eventFilter === 'all' || event.event_type === eventFilter
@@ -296,6 +280,22 @@ const Dashboard = () => {
   const partitionsByOrchestra = React.useMemo(() => {
     return groupPartitionsByOrchestra(filteredPartitions);
   }, [filteredPartitions]);
+
+  const expandAllEvents = () => {
+    setExpandedEventTypes(new Set(Object.keys(eventsByType)));
+  };
+
+  const collapseAllEvents = () => {
+    setExpandedEventTypes(new Set());
+  };
+
+  const expandAllOrchestras = () => {
+    setExpandedOrchestras(new Set(Object.keys(partitionsByOrchestra)));
+  };
+
+  const collapseAllOrchestras = () => {
+    setExpandedOrchestras(new Set());
+  };
 
   const getEventTypeStyles = (eventType: string) => {
     switch (eventType) {
