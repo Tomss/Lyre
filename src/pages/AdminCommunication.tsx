@@ -670,17 +670,15 @@ const AdminCommunication = () => {
               )}
 
               {/* Message Content */}
-              {selectedHistoryItem.message_content && (
-                <div>
-                  <label className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-500 mb-2">
-                    Contenu du message transmis
-                  </label>
-                  <div 
-                    className="bg-white p-5 rounded-2xl border border-slate-200 text-slate-800 text-sm leading-relaxed max-h-60 overflow-y-auto"
-                    dangerouslySetInnerHTML={{ __html: selectedHistoryItem.message_content }}
-                  />
-                </div>
-              )}
+              <div>
+                <label className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-500 mb-2">
+                  Contenu du message transmis
+                </label>
+                <div 
+                  className="bg-slate-50 p-5 rounded-2xl border border-slate-200 text-slate-800 text-sm leading-relaxed max-h-64 overflow-y-auto"
+                  dangerouslySetInnerHTML={{ __html: selectedHistoryItem.message_content || '<p className="italic text-slate-400">Contenu non archivé pour ce test antérieur</p>' }}
+                />
+              </div>
 
               {/* Recipients List */}
               <div>
@@ -688,16 +686,28 @@ const AdminCommunication = () => {
                   Liste des destinataires ({selectedHistoryItem.recipient_count})
                 </label>
                 
-                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 max-h-48 overflow-y-auto space-y-1.5 text-xs">
+                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 max-h-52 overflow-y-auto space-y-2 text-xs">
                   {Array.isArray(selectedHistoryItem.recipients_list) && selectedHistoryItem.recipients_list.length > 0 ? (
-                    selectedHistoryItem.recipients_list.map((rec, idx) => (
-                      <div key={idx} className="flex items-center gap-2 py-1 border-b border-slate-100 last:border-0 font-medium text-slate-700">
-                        <CheckCircle size={14} className="text-indigo-600 flex-shrink-0" />
-                        <span>{rec}</span>
-                      </div>
-                    ))
+                    selectedHistoryItem.recipients_list.map((rec, idx) => {
+                      const recStr = String(rec || '');
+                      const match = recStr.match(/^(.*?)\s*\(([^)]+)\)$/);
+                      
+                      return (
+                        <div key={idx} className="flex items-center gap-2.5 p-2 bg-white rounded-xl border border-slate-200/80 shadow-xs">
+                          <CheckCircle size={15} className="text-indigo-600 flex-shrink-0" />
+                          {match ? (
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-bold text-slate-900 text-xs">{match[1].trim()}</span>
+                              <span className="text-slate-400 font-normal text-[11px]">&lt;{match[2].trim()}&gt;</span>
+                            </div>
+                          ) : (
+                            <span className="font-bold text-slate-800 text-xs">{recStr}</span>
+                          )}
+                        </div>
+                      );
+                    })
                   ) : (
-                    <div className="text-slate-400 italic">Liste des destinataires enregistrée ({selectedHistoryItem.recipient_count} membres)</div>
+                    <div className="text-slate-400 italic text-xs">Liste des destinataires enregistrée ({selectedHistoryItem.recipient_count} membres)</div>
                   )}
                 </div>
               </div>

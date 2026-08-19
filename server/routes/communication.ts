@@ -426,7 +426,7 @@ router.post('/send', async (req, res) => {
   }
 });
 
-// GET /api/communication/history - Récupérer l'historique complet avec message_content
+// GET /api/communication/history - Récupérer l'historique complet avec message_content et noms des destinataires
 router.get('/history', async (req, res) => {
   if (!hasCommunicationAccess(req)) {
     return res.status(403).json({ message: 'Accès refusé.' });
@@ -444,7 +444,23 @@ router.get('/history', async (req, res) => {
     const hasMessageContent = cols[0]?.count > 0;
     const selectMessageContent = hasMessageContent ? 'cl.message_content,' : "'' AS message_content,";
 
-    const [history] = await pool.query(`
+    // Récupérer la table de correspondance email -> "NOM Prénom"
+    const [usersWithProfiles]: any = await pool.query(`
+      SELECT u.email, p.first_name, p.last_name
+      FROM users u
+      JOIN profiles p ON u.id = p.id
+    `);
+    const emailToNameMap: Record<string, string> = {};
+    for (const u of usersWithProfiles) {
+      if (u.email) {
+        const fullName = `${(u.last_name || '').toUpperCase()} ${u.first_name || ''}`.trim();
+        if (fullName) {
+          emailToNameMap[u.email.toLowerCase()] = fullName;
+        }
+      }
+    }
+
+    const [history]: any = await pool.query(`
       SELECT 
         cl.id, cl.subject, ${selectMessageContent} cl.recipient_count, cl.recipients_list, cl.is_test,
         DATE_FORMAT(cl.created_at, '%Y-%m-%dT%H:%i:%s') as created_at,
@@ -457,7 +473,50 @@ router.get('/history', async (req, res) => {
       ORDER BY cl.created_at DESC
       LIMIT 100
     `);
-    res.json(history);
+
+    // Enrichir chaque entrée de l'historique (noms de destinataires + message fallback)
+    const enrichedHistory = history.map((item: any) => {
+      let rawList: string[] = [];
+      if (Array.isArray(item.recipients_list)) {
+        rawList = item.recipients_list;
+      } else if (typeof item.recipients_list === 'string') {
+        try {
+          rawList = JSON.parse(item.recipients_list);
+        } catch (e) {
+          rawList = [item.recipients_list];
+        }
+      }
+
+      // Format clean list: "NOM Prénom (email)"
+      const enrichedList = rawList.map((rec: string) => {
+        if (typeof rec === 'string') {
+          // If already contains a name or parenthesis, keep it
+          if (rec.includes('(')) return rec;
+          // Otherwise, look up email in DB profile map
+          const cleanEmail = rec.trim().toLowerCase();
+          const name = emailToNameMap[cleanEmail];
+          if (name) {
+            return `${name} (${rec.trim()})`;
+          }
+        }
+        return rec;
+      });
+
+      item.recipients_list = enrichedList;
+
+      // Fallback message content if NULL (older test records)
+      if (!item.message_content || item.message_content.trim() === '') {
+        if (item.event_title) {
+          item.message_content = `<p><strong>Événement :</strong> ${item.event_title}</p><p>📅 <strong>Date :</strong> ${item.formatted_event_date || 'Non spécifiée'}</p>${item.event_location ? `<p>📍 <strong>Lieu :</strong> ${item.event_location}</p>` : ''}`;
+        } else {
+          item.message_content = `<p className="italic text-slate-400">[Communication libre de test archivée - Contenu non conservé dans l'ancien format]</p>`;
+        }
+      }
+
+      return item;
+    });
+
+    res.json(enrichedHistory);
   } catch (error) {
     console.error('Error fetching communication history:', error);
     res.status(500).json({ message: 'Erreur lors du chargement de l\'historique.' });
