@@ -3,7 +3,7 @@ import {
   ArrowLeft, Mail, Send, History, Calendar, Users, CheckCircle, 
   AlertCircle, Search, Clock, MapPin, X, Sparkles, Filter, ChevronRight, Check, ShieldAlert, FileText,
   Bold, Italic, Underline, List, Smile, HelpCircle, Music,
-  AlignLeft, AlignCenter, AlignRight
+  AlignLeft, AlignCenter, AlignRight, Trash2
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Navigate, Link } from 'react-router-dom';
@@ -129,12 +129,15 @@ const AdminCommunication = () => {
   const [memberSearchTerm, setMemberSearchTerm] = useState('');
   const [eventSearchTerm, setEventSearchTerm] = useState('');
   const [historySearchTerm, setHistorySearchTerm] = useState('');
+  const [historyTypeFilter, setHistoryTypeFilter] = useState<'all' | 'free' | 'event' | 'test'>('all');
+  const [historyDateFilter, setHistoryDateFilter] = useState<'all' | '7days' | '30days' | 'thisYear'>('all');
 
   // Loading & Action states
   const [loadingEvents, setLoadingEvents] = useState(false);
   const [loadingRecipients, setLoadingRecipients] = useState(false);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const [notification, setNotification] = useState<Notification>({
     show: false,
@@ -256,6 +259,34 @@ const AdminCommunication = () => {
     fetchHistory();
   }, [token]);
 
+  // Delete history item
+  const handleDeleteHistoryItem = async (id: string, subject: string) => {
+    if (!window.confirm(`Voulez-vous vraiment supprimer la communication "${subject}" de l'historique ?`)) {
+      return;
+    }
+
+    if (!token) return;
+    setDeletingId(id);
+    try {
+      const response = await fetch(`${API_URL}/communication/log/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.message || 'Erreur lors de la suppression.');
+      }
+
+      showNotification('Communication supprimée de l\'historique avec succès.', 'success');
+      setHistory(prev => prev.filter(h => h.id !== id));
+    } catch (err: any) {
+      showNotification(err.message, 'error');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   // Handle opening wizard
   const openNewWizard = () => {
     setWizardStep(1);
@@ -355,10 +386,28 @@ const AdminCommunication = () => {
     `${e.title} ${e.location} ${e.event_type}`.toLowerCase().includes(eventSearchTerm.toLowerCase())
   );
 
-  // Filter history based on search
-  const filteredHistory = history.filter(h => 
-    `${h.subject} ${h.event_title} ${h.sender_name}`.toLowerCase().includes(historySearchTerm.toLowerCase())
-  );
+  // Filter history based on type, date, and search term
+  const filteredHistory = history.filter(item => {
+    // 1. Type / Mode Filter
+    if (historyTypeFilter === 'free' && item.event_title) return false;
+    if (historyTypeFilter === 'event' && !item.event_title) return false;
+    if (historyTypeFilter === 'test' && !item.is_test) return false;
+
+    // 2. Date Filter
+    if (historyDateFilter !== 'all') {
+      const itemDate = new Date(item.created_at).getTime();
+      const now = Date.now();
+      if (historyDateFilter === '7days' && (now - itemDate) > 7 * 24 * 3600 * 1000) return false;
+      if (historyDateFilter === '30days' && (now - itemDate) > 30 * 24 * 3600 * 1000) return false;
+      if (historyDateFilter === 'thisYear' && new Date(item.created_at).getFullYear() !== new Date().getFullYear()) return false;
+    }
+
+    // 3. Search Term (subject, event_title, sender_name, recipient emails)
+    const recipientsString = (item.recipients_list || []).join(' ');
+    const fullText = `${item.subject} ${item.event_title || ''} ${item.sender_name || ''} ${recipientsString}`.toLowerCase();
+    
+    return fullText.includes(historySearchTerm.toLowerCase());
+  });
 
   const toggleUserSelection = (userId: string) => {
     setSelectedUserIds(prev => 
@@ -510,9 +559,10 @@ const AdminCommunication = () => {
           </div>
         </div>
 
-        {/* Main Content Card: History & Search */}
+        {/* Main Content Card: History & Search & Filters */}
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-6">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-6 border-b border-gray-100">
+          
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 pb-6 border-b border-gray-100">
             <div>
               <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
                 <History className="w-5 h-5 text-indigo-600" />
@@ -523,23 +573,51 @@ const AdminCommunication = () => {
               </p>
             </div>
 
-            {/* History Search Bar */}
-            <div className="relative w-full md:w-80">
-              <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Rechercher par objet, événement, expéditeur..."
-                value={historySearchTerm}
-                onChange={(e) => setHistorySearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none text-xs"
-              />
+            {/* FILTERS & SEARCH BAR */}
+            <div className="flex items-center flex-wrap gap-2.5">
+              
+              {/* Type Filter */}
+              <select
+                value={historyTypeFilter}
+                onChange={(e) => setHistoryTypeFilter(e.target.value as any)}
+                className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none cursor-pointer"
+              >
+                <option value="all">Tous les types</option>
+                <option value="free">Communication Libre</option>
+                <option value="event">Liée à un Événement</option>
+                <option value="test">🧪 Tests uniquement</option>
+              </select>
+
+              {/* Date Filter */}
+              <select
+                value={historyDateFilter}
+                onChange={(e) => setHistoryDateFilter(e.target.value as any)}
+                className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none cursor-pointer"
+              >
+                <option value="all">Toutes les dates</option>
+                <option value="7days">7 derniers jours</option>
+                <option value="30days">30 derniers jours</option>
+                <option value="thisYear">Cette année</option>
+              </select>
+
+              {/* History Search Bar */}
+              <div className="relative w-full sm:w-72">
+                <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Rechercher par sujet, destinataire, événement..."
+                  value={historySearchTerm}
+                  onChange={(e) => setHistorySearchTerm(e.target.value)}
+                  className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-xs"
+                />
+              </div>
             </div>
           </div>
 
           {loadingHistory ? (
             <div className="py-12 text-center text-slate-400 text-sm">Chargement de l'historique...</div>
           ) : filteredHistory.length === 0 ? (
-            <div className="py-12 text-center text-slate-400 text-sm">Aucune communication enregistrée pour le moment.</div>
+            <div className="py-12 text-center text-slate-400 text-sm">Aucune communication ne correspond à vos filtres.</div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
@@ -551,6 +629,7 @@ const AdminCommunication = () => {
                     <th className="pb-3 px-3">Mode</th>
                     <th className="pb-3 px-3">Destinataires</th>
                     <th className="pb-3 px-3">Expéditeur</th>
+                    <th className="pb-3 px-3 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-sm">
@@ -583,6 +662,16 @@ const AdminCommunication = () => {
                       </td>
                       <td className="py-3.5 px-3 text-slate-500 text-xs">
                         {item.sender_name || 'Admin'}
+                      </td>
+                      <td className="py-3.5 px-3 text-right">
+                        <button
+                          onClick={() => handleDeleteHistoryItem(item.id, item.subject)}
+                          disabled={deletingId === item.id}
+                          className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          title="Supprimer cette communication de l'historique"
+                        >
+                          <Trash2 size={16} />
+                        </button>
                       </td>
                     </tr>
                   ))}

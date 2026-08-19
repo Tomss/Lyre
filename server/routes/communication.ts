@@ -439,12 +439,36 @@ router.get('/history', async (req, res) => {
       LEFT JOIN events e ON cl.event_id = e.id
       LEFT JOIN profiles p ON cl.sent_by = p.id
       ORDER BY cl.created_at DESC
-      LIMIT 50
+      LIMIT 100
     `);
     res.json(history);
   } catch (error) {
     console.error('Error fetching communication history:', error);
     res.status(500).json({ message: 'Erreur serveur.' });
+  }
+});
+
+// DELETE /api/communication/log/:id - Supprimer une communication de l'historique
+router.delete('/log/:id', async (req, res) => {
+  if (!hasCommunicationAccess(req)) {
+    return res.status(403).json({ message: 'Accès refusé.' });
+  }
+
+  const { id } = req.params;
+
+  try {
+    const [result]: any = await pool.query(`
+      DELETE FROM communication_log WHERE id = ?
+    `, [id]);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Entrée d\'historique non trouvée.' });
+    }
+
+    res.json({ success: true, message: 'Communication supprimée de l\'historique.' });
+  } catch (error) {
+    console.error('Error deleting communication log:', error);
+    res.status(500).json({ message: 'Erreur lors de la suppression.' });
   }
 });
 
