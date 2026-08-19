@@ -433,9 +433,20 @@ router.get('/history', async (req, res) => {
   }
 
   try {
+    // Vérification dynamique si la colonne message_content existe (résilience)
+    const [cols]: any = await pool.query(`
+      SELECT COUNT(*) as count 
+      FROM information_schema.COLUMNS 
+      WHERE TABLE_SCHEMA = DATABASE() 
+      AND TABLE_NAME = 'communication_log' 
+      AND COLUMN_NAME = 'message_content'
+    `);
+    const hasMessageContent = cols[0]?.count > 0;
+    const selectMessageContent = hasMessageContent ? 'cl.message_content,' : "'' AS message_content,";
+
     const [history] = await pool.query(`
       SELECT 
-        cl.id, cl.subject, cl.message_content, cl.recipient_count, cl.recipients_list, cl.is_test,
+        cl.id, cl.subject, ${selectMessageContent} cl.recipient_count, cl.recipients_list, cl.is_test,
         DATE_FORMAT(cl.created_at, '%Y-%m-%dT%H:%i:%s') as created_at,
         e.title AS event_title, e.event_type, e.location AS event_location,
         DATE_FORMAT(e.event_date, '%d/%m/%Y à %H:%i') AS formatted_event_date,
@@ -449,7 +460,7 @@ router.get('/history', async (req, res) => {
     res.json(history);
   } catch (error) {
     console.error('Error fetching communication history:', error);
-    res.status(500).json({ message: 'Erreur serveur.' });
+    res.status(500).json({ message: 'Erreur lors du chargement de l\'historique.' });
   }
 });
 

@@ -218,6 +218,7 @@ dotenv.config();
           id varchar(36) NOT NULL,
           event_id varchar(36) DEFAULT NULL,
           subject text NOT NULL,
+          message_content text DEFAULT NULL,
           recipient_count int DEFAULT '0',
           recipients_list json DEFAULT NULL,
           is_test tinyint(1) DEFAULT '0',
@@ -229,6 +230,21 @@ dotenv.config();
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
       `);
       console.log('[Migration] Table communication_log créée avec succès.');
+    } else {
+      // Migration de sécurité: Ajout de la colonne message_content si elle n'existe pas encore
+      const [commCols]: any = await pool.query(`
+        SELECT COUNT(*) as count 
+        FROM information_schema.COLUMNS 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = 'communication_log' 
+        AND COLUMN_NAME = 'message_content'
+      `);
+      
+      if (commCols[0].count === 0) {
+        console.log('[Migration] Ajout de la colonne message_content à la table communication_log...');
+        await pool.query('ALTER TABLE communication_log ADD COLUMN message_content TEXT NULL AFTER subject');
+        console.log('[Migration] Succès : colonne message_content ajoutée à communication_log.');
+      }
     }
 
   } catch (e) {
