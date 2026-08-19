@@ -243,10 +243,15 @@ const AdminCommunication = () => {
     new Set(recipients.flatMap(r => r.userOrchestras || []).filter(Boolean))
   ).sort();
 
-  // Filter recipients based on search
-  const filteredRecipients = recipients.filter(r => 
-    `${r.firstName} ${r.lastName} ${r.email}`.toLowerCase().includes(memberSearchTerm.toLowerCase())
-  );
+  // Filter and sort recipients based on search (Sorted alphabetically by Last Name)
+  const filteredRecipients = recipients
+    .filter(r => 
+      `${r.lastName} ${r.firstName} ${r.email}`.toLowerCase().includes(memberSearchTerm.toLowerCase())
+    )
+    .sort((a, b) => 
+      a.lastName.localeCompare(b.lastName, 'fr', { sensitivity: 'base' }) || 
+      a.firstName.localeCompare(b.firstName, 'fr', { sensitivity: 'base' })
+    );
 
   // Filter upcoming events based on search
   const filteredUpcomingEvents = events.filter(e => 
@@ -766,12 +771,14 @@ const AdminCommunication = () => {
                         </div>
 
                         <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
-                          {recipients.map(r => (
+                          {[...recipients]
+                            .sort((a, b) => a.lastName.localeCompare(b.lastName, 'fr', { sensitivity: 'base' }) || a.firstName.localeCompare(b.firstName, 'fr', { sensitivity: 'base' }))
+                            .map(r => (
                             <div key={r.id} className="p-3 bg-white rounded-xl border border-slate-200 flex items-center justify-between text-xs">
                               <div className="flex items-center gap-3">
                                 <CheckCircle size={16} className="text-indigo-600" />
                                 <div>
-                                  <span className="font-bold text-slate-800">{r.firstName} {r.lastName.toUpperCase()}</span>
+                                  <span className="font-bold text-slate-900">{r.lastName.toUpperCase()} <span className="font-semibold text-slate-700">{r.firstName}</span></span>
                                   <span className="text-slate-400 ml-2">{r.email}</span>
                                 </div>
                               </div>
@@ -883,7 +890,12 @@ const AdminCommunication = () => {
 
                               <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
                                 {selectedOrchestraNames.map(orchName => {
-                                  const orchMembers = recipients.filter(r => (r.userOrchestras || []).includes(orchName));
+                                  const orchMembers = recipients
+                                    .filter(r => (r.userOrchestras || []).includes(orchName))
+                                    .sort((a, b) => 
+                                      a.lastName.localeCompare(b.lastName, 'fr', { sensitivity: 'base' }) || 
+                                      a.firstName.localeCompare(b.firstName, 'fr', { sensitivity: 'base' })
+                                    );
 
                                   return (
                                     <div key={orchName} className="bg-slate-50 rounded-2xl p-4 border border-slate-200 space-y-2">
@@ -910,7 +922,7 @@ const AdminCommunication = () => {
                                                   onChange={() => {}}
                                                   className="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500"
                                                 />
-                                                <span className="font-bold text-slate-800">{m.firstName} {m.lastName.toUpperCase()}</span>
+                                                <span className="font-bold text-slate-900">{m.lastName.toUpperCase()} <span className="font-semibold text-slate-700">{m.firstName}</span></span>
                                                 <span className="text-slate-400">{m.email}</span>
                                               </div>
                                             </div>
@@ -972,7 +984,7 @@ const AdminCommunication = () => {
                                         onChange={() => {}}
                                         className="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500"
                                       />
-                                      <span className="font-bold text-slate-800 text-sm">{r.firstName} {r.lastName.toUpperCase()}</span>
+                                      <span className="font-bold text-slate-900 text-sm">{r.lastName.toUpperCase()} <span className="font-semibold text-slate-700">{r.firstName}</span></span>
                                       <span className="text-slate-400 text-xs">{r.email}</span>
                                     </div>
                                   </div>
