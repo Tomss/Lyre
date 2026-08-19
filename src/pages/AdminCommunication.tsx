@@ -139,6 +139,17 @@ const AdminCommunication = () => {
   const [submitting, setSubmitting] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
+  // Custom Delete Confirmation Modal state
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{
+    isOpen: boolean;
+    id: string | null;
+    subject: string;
+  }>({
+    isOpen: false,
+    id: null,
+    subject: '',
+  });
+
   const [notification, setNotification] = useState<Notification>({
     show: false,
     message: '',
@@ -200,7 +211,7 @@ const AdminCommunication = () => {
 
   // Prevent scroll when wizard is open
   useEffect(() => {
-    if (showWizard) {
+    if (showWizard || deleteConfirmation.isOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
@@ -208,7 +219,7 @@ const AdminCommunication = () => {
     return () => {
       document.body.style.overflow = 'unset';
     };
-  }, [showWizard]);
+  }, [showWizard, deleteConfirmation.isOpen]);
 
   // Redirect if unauthorized
   if (!isAuthenticated) return <Navigate to="/connexion" replace />;
@@ -259,16 +270,24 @@ const AdminCommunication = () => {
     fetchHistory();
   }, [token]);
 
-  // Delete history item
-  const handleDeleteHistoryItem = async (id: string, subject: string) => {
-    if (!window.confirm(`Voulez-vous vraiment supprimer la communication "${subject}" de l'historique ?`)) {
-      return;
-    }
+  // Open custom delete modal
+  const promptDeleteHistoryItem = (id: string, subject: string) => {
+    setDeleteConfirmation({
+      isOpen: true,
+      id,
+      subject,
+    });
+  };
 
-    if (!token) return;
-    setDeletingId(id);
+  // Execute deletion after user confirms in custom modal
+  const handleConfirmDelete = async () => {
+    if (!deleteConfirmation.id || !token) return;
+    const targetId = deleteConfirmation.id;
+    setDeletingId(targetId);
+    setDeleteConfirmation({ isOpen: false, id: null, subject: '' });
+
     try {
-      const response = await fetch(`${API_URL}/communication/log/${id}`, {
+      const response = await fetch(`${API_URL}/communication/log/${targetId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -279,7 +298,7 @@ const AdminCommunication = () => {
       }
 
       showNotification('Communication supprimée de l\'historique avec succès.', 'success');
-      setHistory(prev => prev.filter(h => h.id !== id));
+      setHistory(prev => prev.filter(h => h.id !== targetId));
     } catch (err: any) {
       showNotification(err.message, 'error');
     } finally {
@@ -526,6 +545,35 @@ const AdminCommunication = () => {
         </div>
       )}
 
+      {/* Custom Tailwind Delete Confirmation Modal (Consistent with rest of the site) */}
+      {deleteConfirmation.isOpen && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex justify-center items-center p-4">
+          <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-sm w-full text-center border border-slate-100 animate-in fade-in zoom-in duration-200">
+            <div className="w-16 h-16 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-red-100 shadow-sm">
+              <Trash2 size={32} />
+            </div>
+            <h3 className="text-xl font-black text-slate-800 mb-2">Confirmer la suppression</h3>
+            <p className="text-slate-500 mb-6 text-xs leading-relaxed">
+              Voulez-vous vraiment supprimer la communication <strong className="text-slate-800">"{deleteConfirmation.subject}"</strong> de l'historique ? Cette action est irréversible.
+            </p>
+            <div className="flex justify-center items-center gap-3">
+              <button 
+                onClick={() => setDeleteConfirmation({ isOpen: false, id: null, subject: '' })}
+                className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-xs font-bold hover:bg-slate-50 transition-colors"
+              >
+                Annuler
+              </button>
+              <button 
+                onClick={handleConfirmDelete}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-lg shadow-red-200 transition-colors"
+              >
+                Supprimer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="w-full px-4 sm:px-10 lg:px-16">
 
         {/* Header - EXACTLY SAME DA AS ADMINUSERS */}
@@ -665,7 +713,7 @@ const AdminCommunication = () => {
                       </td>
                       <td className="py-3.5 px-3 text-right">
                         <button
-                          onClick={() => handleDeleteHistoryItem(item.id, item.subject)}
+                          onClick={() => promptDeleteHistoryItem(item.id, item.subject)}
                           disabled={deletingId === item.id}
                           className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                           title="Supprimer cette communication de l'historique"
