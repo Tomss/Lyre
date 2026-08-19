@@ -729,9 +729,10 @@ const Dashboard = () => {
                         </h3>
                         <ChevronDown className={`text-slate-400 transition-transform duration-300 ${isExpanded ? 'rotate-180 text-indigo-600' : ''}`} />
                       </button>
-                      <div className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out ${isExpanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
-                        <div className="overflow-hidden">
-                          <ul className="p-5 space-y-4 bg-white/30">
+
+                      {isExpanded && (
+                        <div className="border-t border-slate-200/60 bg-white/30 p-5">
+                          <ul className="space-y-4">
                           {events.map((event: any) => {
                             const isPracticalInfoExpanded = expandedPracticalInfo.has(event.id);
                             const isNextEvent = event.id === nextEventId;
@@ -806,15 +807,13 @@ const Dashboard = () => {
                                           <ChevronDown size={14} className={`transition-transform duration-300 ${isPracticalInfoExpanded ? 'rotate-180' : ''}`} />
                                         </button>
                                         
-                                        <div className={`grid transition-all duration-300 ease-in-out mt-3 ${isPracticalInfoExpanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
-                                          <div className="overflow-hidden">
-                                            <div className={`p-4 bg-white rounded-xl border-t-4 ${styles.infoBoxBorder} shadow-inner`}>
-                                              <div className="prose prose-sm max-w-none text-slate-700">
-                                                {event.practical_info}
-                                              </div>
+                                        {isPracticalInfoExpanded && (
+                                          <div className={`mt-3 p-4 bg-white rounded-xl border-t-4 ${styles.infoBoxBorder} shadow-inner`}>
+                                            <div className="prose prose-sm max-w-none text-slate-700">
+                                              {event.practical_info}
                                             </div>
                                           </div>
-                                        </div>
+                                        )}
                                       </div>
                                     )}
                                   </div>
@@ -824,7 +823,7 @@ const Dashboard = () => {
                           })}
                           </ul>
                         </div>
-                      </div>
+                      )}
                     </div>
                   )
                 })}
@@ -914,76 +913,72 @@ const Dashboard = () => {
                         <ChevronDown size={20} className={`text-slate-400 transition-transform duration-300 ${isOrchestraExpanded ? 'rotate-180 text-purple-600' : ''}`} />
                       </button>
                       
-                      <div className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out ${isOrchestraExpanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
-                        <div className="overflow-hidden">
-                          <div className="p-4 space-y-4">
-                            {Object.entries(partitionsByMorceau)
-                              .sort(([a], [b]) => a.localeCompare(b))
-                              .map(([morceauName, data]) => {
-                              const ps = (data as any).partitions;
-                              const isMorceauExpanded = expandedMorceaux.has(morceauName);
-                              return (
-                                <div key={morceauName} className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden [overflow-anchor:none]">
-                                  <button 
-                                    onClick={() => toggleMorceau(morceauName)} 
-                                    className={`w-full text-left flex items-center justify-between p-4 transition-colors duration-200 group/item cursor-pointer ${isMorceauExpanded ? 'bg-emerald-50/50' : 'hover:bg-slate-50'}`}
-                                  >
-                                    <div className="flex flex-col">
-                                      <h4 className="font-bold text-lg text-slate-800 flex items-center gap-3">
-                                        <div className="p-1.5 bg-emerald-100 rounded-lg text-emerald-600">
-                                          <Music className="h-4 w-4" />
-                                        </div>
-                                        {morceauName}
-                                      </h4>
-                                      {(data as any).created_at && (
-                                        <span className="text-[10px] text-slate-400 mt-1 ml-11 font-medium italic">Ajouté le {formatDateMini((data as any).created_at)}</span>
-                                      )}
-                                    </div>
-                                    <ChevronDown size={20} className={`transition-transform duration-300 ${isMorceauExpanded ? 'rotate-180 text-emerald-600' : 'text-slate-400'}`} />
-                                  </button>
-                                  
-                                  <div className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out ${isMorceauExpanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
-                                    <div className="overflow-hidden">
-                                      <ul className="divide-y divide-slate-50 bg-slate-50/50">
-                                        {(ps as any[]).sort((a, b) => a.nom.localeCompare(b.nom)).map((p: any) => (
-                                          <li key={p.id} className="flex items-center justify-between p-4 hover:bg-white transition-all group/file">
-                                            <div className="flex items-center space-x-4">
-                                              <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-500 border border-slate-200 transition-all">
-                                                <FileText size={20} />
-                                              </div>
-                                              <div>
-                                                <span className="block text-sm font-bold text-slate-700 uppercase tracking-tight">{p.nom}</span>
-                                                <div className="flex items-center gap-3">
-                                                  <span className="text-[10px] text-slate-400 uppercase font-black tracking-widest flex items-center gap-1.5 mt-0.5">
-                                                    <Music size={10} />
-                                                    {p.instruments.name}
-                                                  </span>
-                                                  {p.created_at && (
-                                                    <span className="text-[10px] text-slate-400 font-medium mt-0.5">• Ajouté le {formatDateMini(p.created_at)}</span>
-                                                  )}
-                                                </div>
-                                              </div>
-                                            </div>
-                                            <a 
-                                              href={p.file_path} 
-                                              target="_blank" 
-                                              rel="noreferrer" 
-                                              className="flex items-center gap-2 bg-purple-50 text-purple-700 hover:bg-purple-100 px-4 py-2 rounded-xl text-xs font-bold transition-all"
-                                            >
-                                              <Download size={14} />
-                                              <span>Ouvrir</span>
-                                            </a>
-                                          </li>
-                                        ))}
-                                      </ul>
-                                    </div>
+                      {isOrchestraExpanded && (
+                        <div className="p-4 space-y-4 border-t border-purple-100/80 bg-slate-50/30">
+                          {Object.entries(partitionsByMorceau)
+                            .sort(([a], [b]) => a.localeCompare(b))
+                            .map(([morceauName, data]) => {
+                            const ps = (data as any).partitions;
+                            const isMorceauExpanded = expandedMorceaux.has(morceauName);
+                            return (
+                              <div key={morceauName} className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden [overflow-anchor:none]">
+                                <button 
+                                  onClick={() => toggleMorceau(morceauName)} 
+                                  className={`w-full text-left flex items-center justify-between p-4 transition-colors duration-200 group/item cursor-pointer ${isMorceauExpanded ? 'bg-emerald-50/50' : 'hover:bg-slate-50'}`}
+                                >
+                                  <div className="flex flex-col">
+                                    <h4 className="font-bold text-lg text-slate-800 flex items-center gap-3">
+                                      <div className="p-1.5 bg-emerald-100 rounded-lg text-emerald-600">
+                                        <Music className="h-4 w-4" />
+                                      </div>
+                                      {morceauName}
+                                    </h4>
+                                    {(data as any).created_at && (
+                                      <span className="text-[10px] text-slate-400 mt-1 ml-11 font-medium italic">Ajouté le {formatDateMini((data as any).created_at)}</span>
+                                    )}
                                   </div>
-                                </div>
-                              )
-                            })}
-                          </div>
+                                  <ChevronDown size={20} className={`transition-transform duration-300 ${isMorceauExpanded ? 'rotate-180 text-emerald-600' : 'text-slate-400'}`} />
+                                </button>
+                                
+                                {isMorceauExpanded && (
+                                  <ul className="divide-y divide-slate-50 bg-slate-50/50 border-t border-slate-100">
+                                    {(ps as any[]).sort((a, b) => a.nom.localeCompare(b.nom)).map((p: any) => (
+                                      <li key={p.id} className="flex items-center justify-between p-4 hover:bg-white transition-all group/file">
+                                        <div className="flex items-center space-x-4">
+                                          <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-500 border border-slate-200 transition-all">
+                                            <FileText size={20} />
+                                          </div>
+                                          <div>
+                                            <span className="block text-sm font-bold text-slate-700 uppercase tracking-tight">{p.nom}</span>
+                                            <div className="flex items-center gap-3">
+                                              <span className="text-[10px] text-slate-400 uppercase font-black tracking-widest flex items-center gap-1.5 mt-0.5">
+                                                <Music size={10} />
+                                                {p.instruments.name}
+                                              </span>
+                                              {p.created_at && (
+                                                <span className="text-[10px] text-slate-400 font-medium mt-0.5">• Ajouté le {formatDateMini(p.created_at)}</span>
+                                              )}
+                                            </div>
+                                          </div>
+                                        </div>
+                                        <a 
+                                          href={p.file_path} 
+                                          target="_blank" 
+                                          rel="noreferrer" 
+                                          className="flex items-center gap-2 bg-purple-50 text-purple-700 hover:bg-purple-100 px-4 py-2 rounded-xl text-xs font-bold transition-all"
+                                        >
+                                          <Download size={14} />
+                                          <span>Ouvrir</span>
+                                        </a>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                )}
+                              </div>
+                            )
+                          })}
                         </div>
-                      </div>
+                      )}
                     </div>
                   )
                 })}
