@@ -217,6 +217,16 @@ const Dashboard = () => {
     const newSet = new Set(expandedOrchestras);
     if (newSet.has(orchestraName)) {
       newSet.delete(orchestraName);
+      // Continuous cleanup: when collapsing an orchestra, collapse all its morceaux as well
+      const orchestraPartitions = partitionsByOrchestra[orchestraName] || [];
+      const newMorceauxSet = new Set(expandedMorceaux);
+      orchestraPartitions.forEach((p: any) => {
+        const morceauNom = p.morceaux?.nom;
+        if (morceauNom) {
+          newMorceauxSet.delete(morceauNom);
+        }
+      });
+      setExpandedMorceaux(newMorceauxSet);
     } else {
       newSet.add(orchestraName);
     }
@@ -263,6 +273,13 @@ const Dashboard = () => {
     const newSet = new Set(expandedEventTypes);
     if (newSet.has(type)) {
       newSet.delete(type);
+      // Continuous cleanup: when collapsing an event type, collapse all its practical info boxes
+      const typeEvents = eventsByType[type] || [];
+      const newInfoSet = new Set(expandedPracticalInfo);
+      typeEvents.forEach((ev: any) => {
+        newInfoSet.delete(ev.id);
+      });
+      setExpandedPracticalInfo(newInfoSet);
     } else {
       newSet.add(type);
     }
@@ -339,6 +356,7 @@ const Dashboard = () => {
 
   const collapseAllEvents = () => {
     setExpandedEventTypes(new Set());
+    setExpandedPracticalInfo(new Set());
   };
 
   const expandAllOrchestras = () => {
@@ -347,6 +365,7 @@ const Dashboard = () => {
 
   const collapseAllOrchestras = () => {
     setExpandedOrchestras(new Set());
+    setExpandedMorceaux(new Set());
   };
 
   const getEventTypeStyles = (eventType: string) => {
