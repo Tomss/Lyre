@@ -1,7 +1,7 @@
 import pool from '../db';
 import { sendMail } from './emailSender';
 
-const LOGO_URL = 'https://res.cloudinary.com/dr2sbjrms/image/upload/v1774629447/lyre-uploads/ll5sutyvmfrocohfv3yd.png';
+const LOGO_URL = 'https://test.lalyre.fr/uploads/site/logo_lyre.png';
 
 export const sendActivationEmail = async (
     email: string, 

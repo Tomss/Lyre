@@ -5,14 +5,6 @@ import crypto from 'crypto';
 
 import fs from 'fs';
 import path from 'path';
-import { v2 as cloudinary } from 'cloudinary';
-
-// Configuration Cloudinary explicite
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET
-});
 import multer from 'multer';
 import { PDFDocument } from 'pdf-lib';
 import { fileURLToPath } from 'url';
@@ -143,36 +135,14 @@ router.post('/batch-split', tempUpload.single('file'), async (req, res) => {
                 
                 const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
                 const newFilename = `${uniqueSuffix}.pdf`;
-                let finalFilePath = '';
                 
-                if (process.env.CLOUDINARY_CLOUD_NAME) {
-                    // Upload stream to Cloudinary directly from memory Buffer
-                    const buffer = Buffer.from(newPdfBytes);
-                    finalFilePath = await new Promise<string>((resolve, reject) => {
-                        const uploadStream = cloudinary.uploader.upload_stream(
-                            {
-                                folder: 'lyre-uploads',
-                                resource_type: 'auto',
-                                public_id: `${uniqueSuffix}`,
-                                format: 'pdf'
-                            },
-                            (error, result) => {
-                                if (error) return reject(error);
-                                resolve(result!.secure_url);
-                            }
-                        );
-                        uploadStream.end(buffer);
-                    });
-                } else {
-                    // Save new PDF to disk fallback
-                    const localUploadDir = path.join(__dirname, '../../uploads');
-                    if (!fs.existsSync(localUploadDir)) {
-                        fs.mkdirSync(localUploadDir, { recursive: true });
-                    }
-                    const savePath = path.join(localUploadDir, newFilename);
-                    fs.writeFileSync(savePath, newPdfBytes);
-                    finalFilePath = `/uploads/${newFilename}`;
+                const localUploadDir = path.join(__dirname, '../../uploads');
+                if (!fs.existsSync(localUploadDir)) {
+                    fs.mkdirSync(localUploadDir, { recursive: true });
                 }
+                const savePath = path.join(localUploadDir, newFilename);
+                fs.writeFileSync(savePath, newPdfBytes);
+                const finalFilePath = `/uploads/${newFilename}`;
 
                 for (const inst of insts) {
                     if (inst.instrument_id === '_IGNORE_') continue;

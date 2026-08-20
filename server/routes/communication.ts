@@ -9,7 +9,7 @@ const router = Router();
 
 router.use(authenticateToken);
 
-const LOGO_URL = 'https://res.cloudinary.com/dr2sbjrms/image/upload/v1774629447/lyre-uploads/ll5sutyvmfrocohfv3yd.png';
+const LOGO_URL = 'https://test.lalyre.fr/uploads/site/logo_lyre.png';
 
 const formatFrenchDate = (dateVal: any) => {
   if (!dateVal) return '';

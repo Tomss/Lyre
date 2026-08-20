@@ -1,35 +1,16 @@
 import { Router } from 'express';
 import multer from 'multer';
-import { v2 as cloudinary } from 'cloudinary';
-import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import { authenticateToken } from '../middleware/auth';
 import path from 'path';
 import fs from 'fs';
 
 const router = Router();
 
-// Configuration Cloudinary explicite
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET
-});
-
 // Ensure local uploads directory exists
 const localUploadDir = path.join(__dirname, '../../uploads');
 if (!fs.existsSync(localUploadDir)) {
     fs.mkdirSync(localUploadDir, { recursive: true });
 }
-
-const useCloudinary = !!process.env.CLOUDINARY_CLOUD_NAME;
-
-const cloudinaryStorage = useCloudinary ? new CloudinaryStorage({
-    cloudinary: cloudinary,
-    params: {
-        folder: 'lyre-uploads',
-        resource_type: 'auto',
-    } as any
-}) : null;
 
 const localStorage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -38,13 +19,14 @@ const localStorage = multer.diskStorage({
     filename: (req, file, cb) => {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
         const ext = path.extname(file.originalname);
-        cb(null, file.fieldname + '-' + uniqueSuffix + ext);
+        const sanitizedBaseName = path.basename(file.originalname, ext).replace(/[^a-zA-Z0-9_-]/g, '_');
+        cb(null, `${sanitizedBaseName}-${uniqueSuffix}${ext}`);
     }
 });
 
 const upload = multer({
-    storage: (useCloudinary ? cloudinaryStorage : localStorage) as any,
-    limits: { fileSize: 50 * 1024 * 1024 } // 50MB
+    storage: localStorage,
+    limits: { fileSize: 100 * 1024 * 1024 } // 100MB
 });
 
 // Route POST pour uploader un fichier (protégée)
@@ -53,7 +35,7 @@ router.post('/', authenticateToken, (req, res) => {
         if (err) {
             console.error('[Upload Error]', err);
             return res.status(500).json({ 
-                message: 'Erreur lors de l\'envoi du fichier à Cloudinary.',
+                message: 'Erreur lors de l\'enregistrement du fichier sur le serveur.',
                 error: err.message
             });
         }
@@ -63,7 +45,7 @@ router.post('/', authenticateToken, (req, res) => {
         }
 
         try {
-            const filePath = useCloudinary ? req.file.path : `/uploads/${req.file.filename}`;
+            const filePath = `/uploads/${req.file.filename}`;
             res.status(200).json({
                 message: 'Fichier uploadé avec succès',
                 filePath: filePath
