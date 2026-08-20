@@ -330,9 +330,9 @@ const HomeAgendaSection = () => {
                         onMouseLeave={handleMouseLeave}
                     >
                         {events.map((event) => (
-                            <div key={event.id} className="w-[300px] md:w-[350px] shrink-0 group relative h-[460px]">
-                                {/* Dark Glass Card - Teal / Emerald Theme */}
-                                <div className="h-full bg-slate-800/50 backdrop-blur-sm rounded-[2rem] border border-white/10 shadow-xl shadow-black/30 hover:shadow-2xl hover:shadow-teal-900/30 hover:bg-slate-800/80 hover:border-teal-500/40 transition-all duration-300 overflow-hidden flex flex-col relative group hover:-translate-y-2">
+                            <div key={event.id} className="w-[300px] md:w-[350px] shrink-0 group relative h-[460px] transform-gpu">
+                                {/* Dark Card - Teal / Emerald Theme */}
+                                <div className="h-full bg-slate-800/95 rounded-[2rem] border border-white/10 shadow-xl shadow-black/30 hover:shadow-2xl hover:shadow-teal-900/30 hover:bg-slate-800 hover:border-teal-500/40 transition-all duration-300 overflow-hidden flex flex-col relative group hover:-translate-y-2">
 
                                     {/* Click Overlay (avoids text selection/dragging issues) */}
                                     <div 
@@ -349,6 +349,8 @@ const HomeAgendaSection = () => {
                                             <img
                                                 src={event.image_url}
                                                 alt={event.title}
+                                                loading="lazy"
+                                                decoding="async"
                                                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-90 group-hover:opacity-100 pointer-events-none"
                                             />
                                         ) : (
@@ -359,7 +361,7 @@ const HomeAgendaSection = () => {
 
                                         {/* Date Badge - Dark Theme / Teal Adaptation */}
                                         <div className="absolute top-4 right-4 z-20">
-                                            <div className="bg-slate-900/80 backdrop-blur-md pl-4 pr-1 py-1 rounded-full flex items-center gap-3 shadow-lg border border-white/10 group-hover:border-teal-500/50 transition-colors">
+                                            <div className="bg-slate-900/95 pl-4 pr-1 py-1 rounded-full flex items-center gap-3 shadow-lg border border-white/10 group-hover:border-teal-500/50 transition-colors">
                                                 <span className="text-xs font-bold uppercase text-teal-300 tracking-wider">
                                                     {new Date(event.event_date).toLocaleDateString('fr-FR', { month: 'short' }).replace('.', '')}
                                                 </span>
@@ -371,7 +373,7 @@ const HomeAgendaSection = () => {
 
                                         {/* Type Badge */}
                                         <div className="absolute bottom-4 left-4 z-20">
-                                            <span className="px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-white text-xs font-bold uppercase tracking-wide shadow-sm flex items-center gap-2">
+                                            <span className="px-3 py-1.5 rounded-full bg-slate-900/90 border border-white/10 text-white text-xs font-bold uppercase tracking-wide shadow-sm flex items-center gap-2">
                                                 <div className={`w-1.5 h-1.5 rounded-full shadow-[0_0_5px_currentColor] ${
                                                     event.event_type === 'concert' ? 'bg-emerald-400 text-emerald-400' : 
                                                     event.event_type === 'divers' ? 'bg-purple-400 text-purple-400' : 'bg-blue-400 text-blue-400'

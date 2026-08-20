@@ -276,9 +276,9 @@ const HomeNewsSection = () => {
                     {news.map((item) => (
                         <div
                             key={item.id}
-                            className="w-[300px] md:w-[350px] shrink-0 group relative h-[460px]" // Standardized size
+                            className="w-[300px] md:w-[350px] shrink-0 group relative h-[460px] transform-gpu"
                         >
-                            <div className="h-full bg-gradient-to-br from-teal-50/80 to-cyan-50/50 rounded-[2rem] shadow-lg shadow-teal-900/5 border border-teal-100/50 hover:border-teal-300/50 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:shadow-teal-100/60 overflow-hidden flex flex-col relative group">
+                            <div className="h-full bg-gradient-to-br from-teal-50/90 to-cyan-50/70 rounded-[2rem] shadow-lg shadow-teal-900/5 border border-teal-100/50 hover:border-teal-300/50 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:shadow-teal-100/60 overflow-hidden flex flex-col relative group">
                                 {/* Border Gradient Trick */}
                                 <div className="absolute inset-0 rounded-[2rem] p-[2px] bg-gradient-to-br from-teal-100 to-cyan-100/30 -z-10 opacity-60 group-hover:opacity-100 transition-opacity duration-500"></div>
 
@@ -297,6 +297,8 @@ const HomeNewsSection = () => {
                                         <img
                                             src={item.image_url.startsWith('http') ? item.image_url : `${BASE_URL}${item.image_url}`}
                                             alt={item.title}
+                                            loading="lazy"
+                                            decoding="async"
                                             className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-1000 pointer-events-none"
                                         />
                                     ) : (
@@ -308,7 +310,7 @@ const HomeNewsSection = () => {
 
                                     {/* Date Badge */}
                                     <div className="absolute top-4 left-4 z-20">
-                                        <div className="bg-white/95 backdrop-blur-md pr-4 pl-1 py-1 rounded-full flex items-center gap-3 shadow-lg shadow-teal-900/10 border border-white/60 group-hover:scale-105 transition-transform">
+                                        <div className="bg-white/95 pr-4 pl-1 py-1 rounded-full flex items-center gap-3 shadow-lg shadow-teal-900/10 border border-white/60 group-hover:scale-105 transition-transform">
                                             <div className="bg-gradient-to-br from-teal-500 to-cyan-500 text-white rounded-full w-10 h-10 flex flex-col items-center justify-center shadow-md shadow-teal-500/20">
                                                 <span className="text-sm font-black leading-none">{new Date(item.published_at).getDate()}</span>
                                             </div>
