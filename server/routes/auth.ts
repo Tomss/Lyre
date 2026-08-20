@@ -186,4 +186,47 @@ router.post('/activate', async (req, res) => {
   }
 });
 
+// POST /api/auth/request-password-reset - Demande autonome de réinitialisation de mot de passe
+router.post('/request-password-reset', async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ message: 'Veuillez saisir votre adresse e-mail.' });
+  }
+
+  try {
+    const [userRows] = await pool.query<any[]>(`
+      SELECT u.id, u.email, p.first_name 
+      FROM users u 
+      JOIN profiles p ON u.id = p.id 
+      WHERE u.email = ?
+    `, [email]);
+
+    if (userRows.length === 0) {
+      // Return success message to prevent user enumeration
+      return res.json({ message: 'Si un compte existe avec cette adresse e-mail, vous recevrez un lien de réinitialisation.' });
+    }
+
+    const user = userRows[0];
+    const crypto = await import('crypto');
+    const token = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + 48);
+
+    await pool.query('UPDATE users SET activation_token = ?, token_expires_at = ? WHERE id = ?', [
+      token,
+      expiresAt,
+      user.id
+    ]);
+
+    const { sendActivationEmail } = await import('../utils/email');
+    await sendActivationEmail(user.email, user.first_name, token, true, req);
+
+    return res.json({ message: 'Si un compte existe avec cette adresse e-mail, vous recevrez un lien de réinitialisation.' });
+  } catch (error) {
+    console.error('[Auth] Password reset request error:', error);
+    return res.status(500).json({ message: 'Erreur lors de la demande de réinitialisation.' });
+  }
+});
+
 export default router;
