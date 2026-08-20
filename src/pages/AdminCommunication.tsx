@@ -343,40 +343,15 @@ const AdminCommunication = () => {
   useEffect(() => {
     if (!token || !showWizard) return;
 
-    if (commType === 'event') {
-      if (!selectedEventId) return;
-
-      const fetchEventRecipients = async () => {
-        setLoadingRecipients(true);
-        try {
-          const response = await fetch(`${API_URL}/communication/recipients/${selectedEventId}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-          });
-          if (!response.ok) throw new Error('Erreur lors du calcul des destinataires');
-          const data = await response.json();
-          setRecipients(data || []);
-          setSelectedUserIds((data || []).map((r: Recipient) => r.id));
-        } catch (err: any) {
-          showNotification(err.message, 'error');
-        } finally {
-          setLoadingRecipients(false);
-        }
-      };
-
-      fetchEventRecipients();
-
-      const selectedEv = events.find(e => e.id === selectedEventId);
-      if (selectedEv) {
-        const formattedDate = new Date(selectedEv.event_date).toLocaleDateString('fr-FR', {
-          day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
-        });
-        const prefix = selectedEv.event_type === 'concert' ? 'Convocation Concert' : (selectedEv.event_type === 'repetition' ? 'Rappel Répétition' : 'Rappel Événement');
-        setCustomSubject(`[La Lyre] ${prefix} : ${selectedEv.title} (${formattedDate})`);
+    if (commType === 'event' || commType === 'schedule') {
+      if (selectedScheduleEventIds.length === 0) {
+        setRecipients([]);
+        setSelectedUserIds([]);
+        setCustomSubject(commType === 'schedule' ? '[La Lyre] Planning & Prochaines Échéances' : '[La Lyre] Communication Événement');
+        return;
       }
 
-    } else if (commType === 'schedule') {
-      // Planning Mode -> Fetch recipients for selectedScheduleEventIds
-      const fetchScheduleRecipients = async () => {
+      const fetchMultiRecipients = async () => {
         setLoadingRecipients(true);
         try {
           const response = await fetch(`${API_URL}/communication/recipients-multi`, {
@@ -387,11 +362,26 @@ const AdminCommunication = () => {
             },
             body: JSON.stringify({ eventIds: selectedScheduleEventIds })
           });
-          if (!response.ok) throw new Error('Erreur lors du calcul des destinataires du planning');
+          if (!response.ok) throw new Error('Erreur lors du calcul des destinataires');
           const data = await response.json();
           setRecipients(data || []);
           setSelectedUserIds((data || []).map((r: Recipient) => r.id));
-          setCustomSubject('[La Lyre] Planning & Prochaines Échéances');
+
+          const selectedEvs = events.filter(e => selectedScheduleEventIds.includes(e.id));
+          if (commType === 'event') {
+            if (selectedEvs.length === 1) {
+              const ev = selectedEvs[0];
+              const formattedDate = new Date(ev.event_date).toLocaleDateString('fr-FR', {
+                day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
+              });
+              const prefix = ev.event_type === 'concert' ? 'Convocation Concert' : (ev.event_type === 'repetition' ? 'Rappel Répétition' : 'Rappel Événement');
+              setCustomSubject(`[La Lyre] ${prefix} : ${ev.title} (${formattedDate})`);
+            } else if (selectedEvs.length > 1) {
+              setCustomSubject(`[La Lyre] Communication Événements (${selectedEvs.length} retenus)`);
+            }
+          } else {
+            setCustomSubject('[La Lyre] Planning & Prochaines Échéances');
+          }
         } catch (err: any) {
           showNotification(err.message, 'error');
         } finally {
@@ -399,7 +389,7 @@ const AdminCommunication = () => {
         }
       };
 
-      fetchScheduleRecipients();
+      fetchMultiRecipients();
 
     } else {
       // Free comm -> Fetch all members
@@ -1177,7 +1167,7 @@ const AdminCommunication = () => {
                         ) : filteredUpcomingEvents.length === 0 ? (
                           <div className="py-12 text-center text-slate-400 text-sm">Aucun événement correspondant trouvé.</div>
                         ) : (
-                          <div className="space-y-2.5 max-h-[380px] overflow-y-auto pr-1">
+                          <div className="space-y-2.5 max-h-[520px] overflow-y-auto pr-1">
                             {filteredUpcomingEvents.map(ev => {
                               const isChecked = selectedScheduleEventIds.includes(ev.id);
                               return (
