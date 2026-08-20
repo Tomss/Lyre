@@ -616,7 +616,9 @@ const AdminCommunication = () => {
 
   const formatEventDate = (dateString: string) => {
     if (!dateString) return '';
-    return new Date(dateString).toLocaleDateString('fr-FR', {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString;
+    const formatted = date.toLocaleDateString('fr-FR', {
       weekday: 'long',
       day: 'numeric',
       month: 'long',
@@ -624,6 +626,7 @@ const AdminCommunication = () => {
       hour: '2-digit',
       minute: '2-digit'
     });
+    return formatted.charAt(0).toUpperCase() + formatted.slice(1);
   };
 
   return (
@@ -1683,7 +1686,7 @@ const AdminCommunication = () => {
                   <h4 className="font-bold text-slate-800 text-base">Aperçu du mail avant envoi final</h4>
 
                   <div className="border border-slate-200 rounded-3xl overflow-hidden shadow-lg bg-slate-100 text-slate-800 text-xs p-6">
-                    <div className="max-w-xl mx-auto bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200">
+                    <div className="max-w-3xl mx-auto bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200">
                       
                       <div className="bg-white p-6 text-center border-b-2 border-indigo-600">
                         <img 

@@ -10,6 +10,21 @@ router.use(authenticateToken);
 
 const LOGO_URL = 'https://res.cloudinary.com/dr2sbjrms/image/upload/v1774629447/lyre-uploads/ll5sutyvmfrocohfv3yd.png';
 
+const formatFrenchDate = (dateVal: any) => {
+  if (!dateVal) return '';
+  const d = new Date(dateVal);
+  if (isNaN(d.getTime())) return String(dateVal);
+  const formatted = d.toLocaleDateString('fr-FR', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+  return formatted.charAt(0).toUpperCase() + formatted.slice(1);
+};
+
 // Helper function to check if user has access to communication module
 const hasCommunicationAccess = (req: any) => {
   const user = req.user;
@@ -254,8 +269,7 @@ router.post('/send', async (req, res) => {
       const placeholders = targetIds.map(() => '?').join(',');
       const [eventRows]: any = await pool.query(`
         SELECT 
-          e.id, e.title, e.description, e.event_type, 
-          DATE_FORMAT(e.event_date, '%d/%m/%Y à %H:%i') as formatted_date,
+          e.id, e.title, e.description, e.event_type, e.event_date,
           e.location, e.practical_info,
           JSON_ARRAYAGG(o.name) AS orchestra_names
         FROM events e
@@ -270,8 +284,11 @@ router.post('/send', async (req, res) => {
         return res.status(404).json({ message: 'Événement non trouvé.' });
       }
 
-      scheduleEvents = eventRows;
-      event = eventRows[0];
+      scheduleEvents = (eventRows || []).map((row: any) => ({
+        ...row,
+        formatted_date: formatFrenchDate(row.event_date)
+      }));
+      event = scheduleEvents[0];
 
       const [orchestras]: any = await pool.query(`
         SELECT DISTINCT orchestra_id FROM event_orchestras WHERE event_id IN (${placeholders})
@@ -292,14 +309,13 @@ router.post('/send', async (req, res) => {
       orchestraTag = (event.orchestra_names || []).filter(Boolean).join(', ') || 'Tous les ensembles';
 
     } else if (type === 'schedule') {
-      // TYPE 3: PLANNING / PROGRAMME ÉCHÉANCIER
+      // TYPE 3: PLANNING / PROGRAMME AGENDA
       if (selectedEventIds && Array.isArray(selectedEventIds) && selectedEventIds.length > 0) {
         const placeholders = selectedEventIds.map(() => '?').join(',');
         const [eventRows]: any = await pool.query(`
           SELECT 
-            e.id, e.title, e.description, e.event_type, 
-            DATE_FORMAT(e.event_date, '%d/%m/%Y à %H:%i') as formatted_date,
-            e.event_date, e.location, e.practical_info,
+            e.id, e.title, e.description, e.event_type, e.event_date,
+            e.location, e.practical_info,
             JSON_ARRAYAGG(o.name) AS orchestra_names
           FROM events e
           LEFT JOIN event_orchestras eo ON e.id = eo.event_id
@@ -309,7 +325,10 @@ router.post('/send', async (req, res) => {
           ORDER BY e.event_date ASC
         `, selectedEventIds);
 
-        scheduleEvents = eventRows || [];
+        scheduleEvents = (eventRows || []).map((row: any) => ({
+          ...row,
+          formatted_date: formatFrenchDate(row.event_date)
+        }));
       }
 
       const [allRecipients]: any = await pool.query(`
@@ -348,7 +367,7 @@ router.post('/send', async (req, res) => {
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
     const subject = customSubject || (
       type === 'event' ? `Rappel : ${event.title}` : (
-        type === 'schedule' ? '[La Lyre] Planning & Prochaines Échéances' : 'Information - La Lyre'
+        type === 'schedule' ? '[La Lyre] Planning & Agenda' : 'Information - La Lyre'
       )
     );
     
@@ -358,20 +377,20 @@ router.post('/send', async (req, res) => {
     let messageToSave = freeMessageContent;
     if (type === 'event' && event) {
       messageToSave = `
-        <div style="background-color: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; margin: 10px 0;">
-          <h3 style="margin: 0 0 10px 0; font-size: 16px; font-weight: 800; color: #0f172a;">${event.title}</h3>
-          <p style="margin: 4px 0; font-size: 13px; color: #334155;">📅 <strong>Date :</strong> ${event.formatted_date}</p>
-          ${event.location ? `<p style="margin: 4px 0; font-size: 13px; color: #334155;">📍 <strong>Lieu :</strong> ${event.location}</p>` : ''}
-          <p style="margin: 4px 0; font-size: 13px; color: #334155;">🎷 <strong>Ensemble(s) :</strong> ${orchestraTag}</p>
-          ${event.description ? `<div style="margin-top: 12px; font-size: 13px; color: #334155; line-height: 1.6;"><strong>Description / Programme :</strong><br/>${formatMessageBody(event.description)}</div>` : ''}
-          ${event.practical_info ? `<div style="margin-top: 12px; background-color: #eff6ff; border: 1px solid #bfdbfe; padding: 12px; border-radius: 10px; font-size: 12px; color: #1e3a8a;"><strong>ℹ️ Informations pratiques :</strong><br/>${formatMessageBody(event.practical_info)}</div>` : ''}
+        <div style="background-color: #f8fafc; padding: 24px; border-radius: 16px; border: 1px solid #e2e8f0; margin: 16px 0;">
+          <h3 style="margin: 0 0 10px 0; font-size: 18px; font-weight: 800; color: #0f172a;">${event.title}</h3>
+          <p style="margin: 5px 0; font-size: 13px; color: #334155;">📅 <strong>Date :</strong> ${event.formatted_date}</p>
+          ${event.location ? `<p style="margin: 5px 0; font-size: 13px; color: #334155;">📍 <strong>Lieu :</strong> ${event.location}</p>` : ''}
+          <p style="margin: 5px 0; font-size: 13px; color: #334155;">🎷 <strong>Ensemble(s) :</strong> ${orchestraTag}</p>
+          ${event.description ? `<div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid #e2e8f0; font-size: 13px; color: #334155; line-height: 1.6;"><strong>Description / Programme :</strong><br/>${formatMessageBody(event.description)}</div>` : ''}
+          ${event.practical_info ? `<div style="margin-top: 14px; background-color: #eff6ff; border: 1px solid #bfdbfe; padding: 14px; border-radius: 12px; font-size: 12px; color: #1e3a8a;"><strong>ℹ️ Informations pratiques :</strong><br/>${formatMessageBody(event.practical_info)}</div>` : ''}
         </div>
-        ${customNote ? `<div style="margin-top: 12px; background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 14px; border-radius: 10px; font-size: 13px; color: #1e293b;"><strong>Note du responsable :</strong><br/>${formatMessageBody(customNote)}</div>` : ''}
+        ${customNote ? `<div style="margin-top: 14px; background-color: #f5f3ff; border: 1px solid #ddd6fe; padding: 16px; border-radius: 14px; font-size: 13px; color: #4c1d95;"><strong>Note du responsable :</strong><br/>${formatMessageBody(customNote)}</div>` : ''}
       `.trim();
     } else if (type === 'schedule') {
       let timelineHtml = `
-        <div style="margin: 20px 0;">
-          <h3 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 800; color: #0f172a; border-bottom: 2px solid #4f46e5; padding-bottom: 8px;">
+        <div style="margin: 24px 0;">
+          <h3 style="margin: 0 0 18px 0; font-size: 17px; font-weight: 800; color: #0f172a; border-bottom: 2px solid #4f46e5; padding-bottom: 10px;">
             📅 Programme & Prochaines Échéances (${scheduleEvents.length} événements)
           </h3>
       `;
@@ -379,20 +398,20 @@ router.post('/send', async (req, res) => {
       for (const ev of scheduleEvents) {
         const orchsText = (ev.orchestra_names || []).filter(Boolean).join(', ');
         timelineHtml += `
-          <div style="background-color: #ffffff; border: 1px solid #e2e8f0; border-left: 4px solid #4f46e5; border-radius: 12px; padding: 16px; margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
-            <div style="margin-bottom: 6px;">
-              <span style="background-color: #e0e7ff; color: #3730a3; font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 9999px; display: inline-block; margin-right: 6px;">
+          <div style="background-color: #ffffff; border: 1px solid #e2e8f0; border-left: 5px solid #4f46e5; border-radius: 14px; padding: 18px; margin-bottom: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.02);">
+            <div style="margin-bottom: 8px;">
+              <span style="background-color: #e0e7ff; color: #3730a3; font-size: 11px; font-weight: 800; padding: 4px 12px; border-radius: 9999px; display: inline-block; margin-right: 8px;">
                 📅 ${ev.formatted_date}
               </span>
-              <span style="background-color: #f1f5f9; color: #475569; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 9999px; display: inline-block;">
+              <span style="background-color: #f1f5f9; color: #475569; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 9999px; display: inline-block; text-transform: uppercase;">
                 ${ev.event_type === 'concert' ? 'Concert' : (ev.event_type === 'repetition' ? 'Répétition' : 'Événement')}
               </span>
             </div>
-            <h4 style="margin: 6px 0; font-size: 16px; font-weight: 800; color: #0f172a;">${ev.title}</h4>
-            ${ev.location ? `<p style="margin: 2px 0; font-size: 12px; color: #475569;">📍 <strong>Lieu :</strong> ${ev.location}</p>` : ''}
-            ${orchsText ? `<p style="margin: 2px 0; font-size: 12px; color: #475569;">🎷 <strong>Ensemble(s) :</strong> ${orchsText}</p>` : ''}
-            ${ev.description ? `<p style="margin: 8px 0 0 0; font-size: 12px; color: #334155; line-height: 1.5;">${formatMessageBody(ev.description)}</p>` : ''}
-            ${ev.practical_info ? `<div style="margin-top: 8px; background-color: #eff6ff; border: 1px solid #bfdbfe; padding: 8px 12px; border-radius: 8px; font-size: 11px; color: #1e3a8a;"><strong>ℹ️ Infos pratiques :</strong> ${formatMessageBody(ev.practical_info)}</div>` : ''}
+            <h4 style="margin: 8px 0 6px 0; font-size: 17px; font-weight: 800; color: #0f172a;">${ev.title}</h4>
+            ${ev.location ? `<p style="margin: 4px 0; font-size: 13px; color: #475569;">📍 <strong>Lieu :</strong> ${ev.location}</p>` : ''}
+            ${orchsText ? `<p style="margin: 4px 0; font-size: 13px; color: #475569;">🎷 <strong>Ensemble(s) :</strong> ${orchsText}</p>` : ''}
+            ${ev.description ? `<div style="margin-top: 10px; font-size: 13px; color: #334155; line-height: 1.6;">${formatMessageBody(ev.description)}</div>` : ''}
+            ${ev.practical_info ? `<div style="margin-top: 10px; background-color: #eff6ff; border: 1px solid #bfdbfe; padding: 12px 14px; border-radius: 10px; font-size: 12px; color: #1e3a8a;"><strong>ℹ️ Infos pratiques :</strong> ${formatMessageBody(ev.practical_info)}</div>` : ''}
           </div>
         `;
       }
@@ -415,16 +434,16 @@ router.post('/send', async (req, res) => {
           <title>${subject}</title>
         </head>
         <body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #1e293b;">
-          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f8fafc; padding: 30px 10px;">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f8fafc; padding: 30px 15px;">
             <tr>
               <td align="center">
-                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05); border: 1px solid #e2e8f0;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width: 820px; width: 100%; background-color: #ffffff; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08); border: 1px solid #e2e8f0;">
                   
                   <!-- Real Logo & Clean Header -->
                   <tr>
-                    <td style="background-color: #ffffff; padding: 26px 30px; text-align: center; border-bottom: 2px solid #4f46e5;">
-                      <img src="${LOGO_URL}" alt="La Lyre" style="height: 54px; width: auto; max-width: 180px; margin-bottom: 6px; display: inline-block; object-fit: contain;" />
-                      <h1 style="margin: 0; color: #0f172a; font-size: 20px; font-weight: 800; letter-spacing: -0.3px;">
+                    <td style="background-color: #ffffff; padding: 28px 36px; text-align: center; border-bottom: 3px solid #4f46e5;">
+                      <img src="${LOGO_URL}" alt="La Lyre" style="height: 56px; width: auto; max-width: 200px; margin-bottom: 6px; display: inline-block; object-fit: contain;" />
+                      <h1 style="margin: 0; color: #0f172a; font-size: 22px; font-weight: 800; letter-spacing: -0.3px;">
                         La Lyre
                       </h1>
                       <p style="margin: 2px 0 0 0; color: #64748b; font-size: 12px; font-weight: 600;">
@@ -435,72 +454,72 @@ router.post('/send', async (req, res) => {
 
                   <!-- Email Content Body -->
                   <tr>
-                    <td style="padding: 32px 28px; background-color: #ffffff;">
+                    <td style="padding: 36px 36px; background-color: #ffffff;">
                       ${isTest ? `
                         <div style="background-color: #fef3c7; border: 1px solid #f59e0b; color: #92400e; padding: 10px 16px; border-radius: 10px; font-size: 12px; font-weight: bold; margin-bottom: 20px; text-align: center;">
                           ⚠️ EMAIL DE TEST (Envoi d'essai restreint)
                         </div>
                       ` : ''}
 
-                      <p style="font-size: 15px; font-weight: 700; color: #0f172a; margin-top: 0; margin-bottom: 18px;">
+                      <p style="font-size: 16px; font-weight: 700; color: #0f172a; margin-top: 0; margin-bottom: 20px;">
                         Bonjour ${recipient.firstName},
                       </p>
 
                       ${type === 'event' && event ? `
-                        <div style="background-color: #f8fafc; padding: 20px; border-radius: 12px; margin: 18px 0; border: 1px solid #e2e8f0;">
-                          <span style="display: inline-block; background-color: #e0e7ff; color: #3730a3; font-size: 10px; font-weight: 800; padding: 3px 10px; border-radius: 9999px; text-transform: uppercase; margin-bottom: 8px;">
+                        <div style="background-color: #f8fafc; padding: 24px; border-radius: 16px; margin: 20px 0; border: 1px solid #e2e8f0;">
+                          <span style="display: inline-block; background-color: #e0e7ff; color: #3730a3; font-size: 11px; font-weight: 800; padding: 4px 12px; border-radius: 9999px; text-transform: uppercase; margin-bottom: 10px;">
                             ${event.event_type === 'concert' ? 'Concert' : (event.event_type === 'repetition' ? 'Répétition' : 'Événement')}
                           </span>
-                          <h2 style="margin: 4px 0 12px 0; font-size: 18px; font-weight: 800; color: #0f172a;">${event.title}</h2>
+                          <h2 style="margin: 6px 0 14px 0; font-size: 20px; font-weight: 800; color: #0f172a;">${event.title}</h2>
                           
                           <table style="width: 100%; border-collapse: collapse; font-size: 13px; color: #334155;">
                             <tr>
-                              <td style="padding: 5px 0; font-weight: 700; width: 100px; color: #64748b;">📅 Date :</td>
-                              <td style="padding: 5px 0; color: #0f172a; font-weight: 700;">${event.formatted_date}</td>
+                              <td style="padding: 6px 0; font-weight: 700; width: 110px; color: #64748b;">📅 Date :</td>
+                              <td style="padding: 6px 0; color: #0f172a; font-weight: 700;">${event.formatted_date}</td>
                             </tr>
                             ${event.location ? `
                             <tr>
-                              <td style="padding: 5px 0; font-weight: 700; color: #64748b;">📍 Lieu :</td>
-                              <td style="padding: 5px 0; color: #0f172a;">${event.location}</td>
+                              <td style="padding: 6px 0; font-weight: 700; color: #64748b;">📍 Lieu :</td>
+                              <td style="padding: 6px 0; color: #0f172a;">${event.location}</td>
                             </tr>
                             ` : ''}
                             <tr>
-                              <td style="padding: 5px 0; font-weight: 700; color: #64748b;">🎷 Ensemble :</td>
-                              <td style="padding: 5px 0; color: #0f172a;">${orchestraTag}</td>
+                              <td style="padding: 6px 0; font-weight: 700; color: #64748b;">🎷 Ensemble(s) :</td>
+                              <td style="padding: 6px 0; color: #0f172a;">${orchestraTag}</td>
                             </tr>
                           </table>
+
+                          ${event.description ? `
+                            <div style="margin-top: 16px; padding-top: 14px; border-top: 1px solid #e2e8f0;">
+                              <h4 style="margin: 0 0 6px 0; font-size: 13px; font-weight: 800; color: #0f172a;">Description / Programme :</h4>
+                              <div style="font-size: 13px; color: #334155; line-height: 1.6;">${formatMessageBody(event.description)}</div>
+                            </div>
+                          ` : ''}
+
+                          ${event.practical_info ? `
+                            <div style="margin-top: 16px; background-color: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 14px 16px;">
+                              <h4 style="margin: 0 0 6px 0; font-size: 12px; font-weight: 800; color: #1e40af;">ℹ️ Informations pratiques :</h4>
+                              <div style="font-size: 12px; color: #1e3a8a; line-height: 1.5;">${formatMessageBody(event.practical_info)}</div>
+                            </div>
+                          ` : ''}
                         </div>
 
-                        ${event.description ? `
-                          <div style="margin-bottom: 18px;">
-                            <h4 style="margin: 0 0 4px 0; font-size: 13px; font-weight: 700; color: #0f172a;">Description :</h4>
-                            <p style="margin: 0; font-size: 13px; line-height: 1.6; color: #334155;">${event.description}</p>
-                          </div>
-                        ` : ''}
-
-                        ${event.practical_info ? `
-                          <div style="background-color: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 14px; margin-bottom: 18px;">
-                            <h4 style="margin: 0 0 4px 0; font-size: 12px; font-weight: 700; color: #1e40af;">ℹ️ Informations pratiques :</h4>
-                            <p style="margin: 0; font-size: 12px; color: #1e3a8a; line-height: 1.5;">${event.practical_info}</p>
-                          </div>
-                        ` : ''}
-
                         ${customNote ? `
-                          <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; margin-bottom: 20px;">
-                            <h4 style="margin: 0 0 6px 0; font-size: 12px; font-weight: 700; color: #0f172a;">Note du responsable :</h4>
-                            <div style="font-size: 13px; color: #1e293b; line-height: 1.6;">${formatMessageBody(customNote)}</div>
+                          <div style="background-color: #f5f3ff; border: 1px solid #ddd6fe; border-radius: 14px; padding: 16px 18px; margin-bottom: 24px;">
+                            <h4 style="margin: 0 0 6px 0; font-size: 13px; font-weight: 800; color: #4c1d95;">Note du responsable :</h4>
+                            <div style="font-size: 13px; color: #3b0764; line-height: 1.6;">${formatMessageBody(customNote)}</div>
                           </div>
                         ` : ''}
                       ` : `
                         <!-- Communication libre ou Planning -->
-                        <div style="background-color: #f8fafc; padding: 22px; border-radius: 12px; border: 1px solid #e2e8f0; margin: 18px 0; font-size: 14px; line-height: 1.7; color: #1e293b;">
+                        <div style="background-color: #ffffff; padding: 0; margin: 18px 0; font-size: 14px; line-height: 1.7; color: #1e293b;">
                           ${messageToSave}
                         </div>
                       `}
 
                       <!-- Clean Indigo Theme Action Button -->
-                      <div style="text-align: center; margin: 32px 0 12px 0;">
-                        <a href="${frontendUrl}/dashboard" style="background-color: #4f46e5; color: #ffffff; font-weight: 700; font-size: 13px; text-decoration: none; padding: 13px 26px; border-radius: 12px; display: inline-block; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);">
+                      <div style="text-align: center; margin: 36px 0 16px 0;">
+                        <a href="${frontendUrl}/dashboard" style="background-color: #4f46e5; color: #ffffff; font-weight: 800; font-size: 14px; text-decoration: none; padding: 14px 28px; border-radius: 12px; display: inline-block; box-shadow: 0 4px 14px rgba(79, 70, 229, 0.25);">
                           Accéder à mon Espace Membre
                         </a>
                       </div>
@@ -509,8 +528,8 @@ router.post('/send', async (req, res) => {
 
                   <!-- Footer -->
                   <tr>
-                    <td style="background-color: #f8fafc; padding: 18px 28px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 11px; color: #64748b;">
-                      <p style="margin: 0 0 2px 0; font-weight: 700; color: #334155;">La Lyre &bull; Espace Membre</p>
+                    <td style="background-color: #f8fafc; padding: 20px 36px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 11px; color: #64748b;">
+                      <p style="margin: 0; font-weight: 700; color: #475569;">La Lyre &bull; Espace Membre</p>
                     </td>
                   </tr>
 
