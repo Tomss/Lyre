@@ -6,7 +6,9 @@ import {
   Loader2, 
   X, 
   CheckCircle2, 
-  KeyRound 
+  KeyRound,
+  Lock,
+  Mail
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { API_URL } from '../config';
@@ -78,11 +80,14 @@ const Connexion = () => {
   };
 
   return (
-    <div className="pt-10 pb-24 bg-slate-50 min-h-[calc(100vh-140px)] flex items-center justify-center px-4 sm:px-6">
+    <div className="min-h-[calc(100vh-140px)] bg-gradient-to-b from-slate-50 via-teal-50/20 to-slate-50 relative overflow-hidden flex items-center justify-center py-12 px-4 sm:px-6">
       
-      <div className="w-full max-w-md">
+      {/* Subtle Ambient Teal Glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-teal-200/30 rounded-full blur-3xl pointer-events-none" />
+
+      <div className="w-full max-w-md relative z-10">
         
-        {/* Title Header */}
+        {/* Title Header (Clean, no extra text) */}
         <div className="text-center mb-8">
           <h1 className="font-extrabold text-3xl sm:text-4xl text-slate-900 tracking-tight mb-2">
             Espace Membre
@@ -92,25 +97,32 @@ const Connexion = () => {
           </p>
         </div>
 
-        {/* Main Card */}
-        <div className="bg-white shadow-xl shadow-slate-200/70 rounded-3xl border border-slate-100 p-8 sm:p-10 transition-all">
-          <form onSubmit={handleLogin} className="space-y-6">
+        {/* Modern Card with Accent Bar */}
+        <div className="bg-white/90 backdrop-blur-xl shadow-2xl shadow-teal-900/5 rounded-3xl border border-slate-200/80 p-8 sm:p-10 relative overflow-hidden transition-all">
+          <div className="h-1.5 w-full bg-gradient-to-r from-teal-500 via-teal-600 to-slate-800 absolute top-0 left-0 right-0" />
+
+          <form onSubmit={handleLogin} className="space-y-6 pt-1">
             
             {/* Email Field */}
             <div>
               <label htmlFor="email" className="block text-sm font-bold text-slate-800 mb-2">
                 Adresse e-mail
               </label>
-              <input
-                id="email"
-                type="email"
-                placeholder="votre@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                autoComplete="email"
-                className="w-full px-4 py-3.5 bg-white border border-slate-200 rounded-xl text-slate-900 text-sm font-medium placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all shadow-sm"
-              />
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                  <Mail className="w-4 h-4" />
+                </div>
+                <input
+                  id="email"
+                  type="email"
+                  placeholder="votre@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  autoComplete="email"
+                  className="w-full pl-10 pr-4 py-3.5 bg-slate-50/60 border border-slate-200 rounded-xl text-slate-900 text-sm font-medium placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 focus:bg-white transition-all shadow-sm"
+                />
+              </div>
             </div>
 
             {/* Password Field */}
@@ -133,6 +145,9 @@ const Connexion = () => {
               </div>
 
               <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                  <Lock className="w-4 h-4" />
+                </div>
                 <input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
@@ -141,7 +156,7 @@ const Connexion = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   autoComplete="current-password"
-                  className="w-full pl-4 pr-11 py-3.5 bg-white border border-slate-200 rounded-xl text-slate-900 text-sm font-medium placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all shadow-sm"
+                  className="w-full pl-10 pr-11 py-3.5 bg-slate-50/60 border border-slate-200 rounded-xl text-slate-900 text-sm font-medium placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 focus:bg-white transition-all shadow-sm"
                 />
                 <button
                   type="button"
@@ -162,11 +177,11 @@ const Connexion = () => {
               </div>
             )}
 
-            {/* Submit Button (Teal Theme) */}
+            {/* Submit Button */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3.5 px-6 rounded-xl shadow-lg shadow-teal-600/25 hover:shadow-teal-600/35 hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-sm"
+              className="w-full bg-teal-600 hover:bg-teal-700 active:scale-[0.99] text-white font-bold py-3.5 px-6 rounded-xl shadow-lg shadow-teal-600/20 hover:shadow-teal-600/30 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-sm"
             >
               {loading ? (
                 <>

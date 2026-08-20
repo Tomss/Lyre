@@ -7,6 +7,7 @@ const Footer = () => {
   const containerClass = isFullWidthPage 
     ? "w-full px-4 sm:px-10 lg:px-16" 
     : "container mx-auto px-4 sm:px-6 lg:px-8";
+
   const quickLinks = [
     { path: '/', label: 'Accueil' },
     { path: '/school', label: 'L\'école' },
@@ -22,57 +23,51 @@ const Footer = () => {
   ];
 
   return (
-    <footer className="bg-dark text-white">
-      <div className={`${containerClass} py-12`}>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <footer className="bg-slate-900 text-white border-t border-slate-800">
+      <div className={`${containerClass} py-6`}>
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+          
           {/* Column 1: School Info */}
-          <div className="space-y-6">
-            <Link to="/" className="inline-block transition-transform hover:scale-105">
-              <span className="font-semibold text-lg text-white">
-                École de Musique La Lyre
-              </span>
-            </Link>
+          <div className="flex items-center gap-3">
+            <span className="font-bold text-sm text-slate-200">
+              École de Musique La Lyre
+            </span>
           </div>
 
           {/* Column 2: Quick Links */}
-          <div className="space-y-4">
-            <h3 className="font-semibold text-lg">Liens rapides</h3>
-            <ul className="space-y-2">
-              {quickLinks.map((link) => (
-                <li key={link.path}>
-                  <Link
-                    to={link.path}
-                    className="text-gray-300 hover:text-accent transition-colors duration-300"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+          <ul className="flex items-center flex-wrap gap-4 text-xs font-medium">
+            {quickLinks.map((link) => (
+              <li key={link.path}>
+                <Link
+                  to={link.path}
+                  className="text-slate-400 hover:text-teal-400 transition-colors"
+                >
+                  {link.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
 
           {/* Column 3: Social Media */}
-          <div className="space-y-4">
-            <h3 className="font-semibold text-lg">Suivez-nous</h3>
-            <div className="flex space-x-4">
-              {socialLinks.map((social) => (
-                <a
-                  key={social.label}
-                  href={social.href}
-                  className="p-2 bg-gray-700 hover:bg-accent rounded-full transition-all duration-300 hover:-translate-y-1"
-                  aria-label={social.label}
-                >
-                  <social.icon className="h-5 w-5" />
-                </a>
-              ))}
-            </div>
+          <div className="flex items-center space-x-2">
+            {socialLinks.map((social) => (
+              <a
+                key={social.label}
+                href={social.href}
+                className="p-1.5 bg-slate-800 hover:bg-teal-600 rounded-lg text-slate-300 hover:text-white transition-all"
+                aria-label={social.label}
+              >
+                <social.icon className="h-4 w-4" />
+              </a>
+            ))}
           </div>
+
         </div>
 
         {/* Copyright */}
-        <div className="mt-12 pt-8 border-t border-gray-700 text-center">
-          <p className="text-gray-400 text-sm">
-            © 2025 École de Musique La Lyre. Tous droits réservés.
+        <div className="mt-4 pt-3 border-t border-slate-800/80 text-center">
+          <p className="text-slate-500 text-[11px]">
+            © {new Date().getFullYear()} École de Musique La Lyre. Tous droits réservés.
           </p>
         </div>
       </div>
