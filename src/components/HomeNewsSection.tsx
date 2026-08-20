@@ -225,7 +225,7 @@ const HomeNewsSection = () => {
             {/* Background Accents - Teal/Blue Theme */}
             <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-teal-400 to-transparent opacity-50"></div>
 
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8 mb-12 relative z-10">
+            <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 mb-12 relative z-10">
                 <div className="text-center">
                     <h2 className="font-bold text-3xl md:text-5xl text-slate-900 mb-4">
                         Nos Actualités

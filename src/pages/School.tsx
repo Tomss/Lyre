@@ -288,7 +288,7 @@ const School = () => {
 
       {/* 2. Feature Grid (following immediately) */}
       <section id="activites" className="scroll-mt-20 py-20 bg-white relative">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="font-bold text-4xl md:text-5xl text-slate-800 mb-6">L'École c'est aussi...</h2>
             <div className="h-1 w-24 bg-teal-500 rounded-full mx-auto"></div>

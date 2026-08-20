@@ -84,7 +84,7 @@ const PageHero: React.FC<PageHeroProps> = ({ title, subtitle, backgroundImage, a
             )}
             <div className="absolute inset-0 bg-gradient-to-b from-slate-950/60 via-slate-900/80 to-slate-900/95 z-[1] pointer-events-none" />
 
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10 pt-20">
+            <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10 pt-20">
 
                 <div className="flex flex-col items-center mb-12 lg:mb-16">
                     <h1 className="font-black text-5xl md:text-7xl text-white mb-6 drop-shadow-2xl tracking-tight animate-fade-in-up">

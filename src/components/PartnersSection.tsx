@@ -41,7 +41,7 @@ const PartnersSection = () => {
             <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-100/50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-teal-100/50 rounded-full blur-2xl translate-y-1/3 -translate-x-1/4"></div>
 
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 <div className="text-center max-w-3xl mx-auto mb-16">
                     <h2 className="font-bold text-3xl md:text-4xl text-slate-800 mb-4 tracking-tight">
                         Nos Partenaires

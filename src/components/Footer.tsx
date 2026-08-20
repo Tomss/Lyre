@@ -3,10 +3,7 @@ import { Facebook, Instagram, Youtube } from 'lucide-react';
 
 const Footer = () => {
   const location = useLocation();
-  const isFullWidthPage = location.pathname === '/dashboard' || location.pathname.startsWith('/admin');
-  const containerClass = isFullWidthPage 
-    ? "w-full px-4 sm:px-10 lg:px-16" 
-    : "container mx-auto px-4 sm:px-6 lg:px-8";
+  const containerClass = "w-full px-4 sm:px-8 lg:px-12";
 
   const quickLinks = [
     { path: '/', label: 'Accueil' },

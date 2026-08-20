@@ -113,7 +113,7 @@ const HistoryTimeline = () => {
 
     return (
         <section className="py-12 bg-white overflow-hidden relative">
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center mb-10">
                     <h2 className="font-bold text-3xl md:text-5xl text-slate-800 mb-4">Notre Histoire</h2>
                     <p className="text-slate-600 max-w-2xl mx-auto">De la "Cécilienne" à La Lyre d'aujourd'hui, voyagez à travers plus d'un siècle de passion musicale.</p>

@@ -110,7 +110,7 @@ const Events = () => {
         style={{
           backgroundImage: `linear-gradient(rgba(15, 23, 42, 0.7), rgba(15, 23, 42, 0.7)), url("${pageHeaders['events'] || "https://images.pexels.com/photos/1327430/pexels-photo-1327430.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop"}")`
         }}>
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center animate-fade-in relative z-10">
             <h1 className="font-black text-4xl md:text-5xl text-white mb-6 drop-shadow-2xl tracking-tight">
               Nos Événements
@@ -133,7 +133,7 @@ const Events = () => {
       {/* --- Contenu Principal --- */}
       {loading ? (
         <section className="py-16 bg-slate-50">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center">
               <div className="inline-flex items-center space-x-4 bg-white rounded-2xl p-8 shadow-xl border border-slate-100">
                 <div className="animate-spin rounded-full h-12 w-12 border-4 border-teal-100 border-t-teal-500"></div>

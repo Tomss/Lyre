@@ -82,7 +82,7 @@ const Contact = () => {
       <section id="localisation" className="scroll-mt-20 py-24 bg-slate-50 relative overflow-hidden">
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, black 1px, transparent 0)', backgroundSize: '32px 32px' }}></div>
         
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
           {/* Section Title */}
           <div className="max-w-4xl mx-auto text-center mb-16">
             <h2 className="font-bold text-3xl md:text-5xl text-slate-900 mb-6 relative inline-block">

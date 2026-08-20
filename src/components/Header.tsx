@@ -154,10 +154,7 @@ const Header = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isUserMenuOpen]);
 
-  const isFullWidthPage = location.pathname === '/dashboard' || location.pathname.startsWith('/admin');
-  const containerClass = isFullWidthPage 
-    ? "w-full px-4 sm:px-10 lg:px-16" 
-    : "container mx-auto px-4 sm:px-6 lg:px-8";
+  const containerClass = "w-full px-4 sm:px-8 lg:px-12";
 
   return (
     <header className={`sticky top-0 left-0 right-0 z-50 transition-transform duration-200 ease-out will-change-transform ${isVisible ? 'translate-y-0' : '-translate-y-full'
