@@ -553,8 +553,8 @@ const AdminCommunication = () => {
         },
         body: JSON.stringify({
           type: commType,
-          eventId: commType === 'event' ? selectedEventId : null,
-          selectedEventIds: commType === 'schedule' ? selectedScheduleEventIds : [],
+          eventId: (commType === 'event' || commType === 'schedule') ? (selectedScheduleEventIds[0] || null) : null,
+          selectedEventIds: (commType === 'event' || commType === 'schedule') ? selectedScheduleEventIds : [],
           customSubject,
           freeMessageContent,
           customNote,
@@ -1814,9 +1814,8 @@ const AdminCommunication = () => {
                 <button
                   onClick={() => setWizardStep(prev => prev + 1)}
                   disabled={
-                    (wizardStep === 2 && commType === 'event' && !selectedEventId) ||
-                    (wizardStep === 2 && commType === 'schedule' && selectedScheduleEventIds.length === 0) ||
-                    (wizardStep === 2 && commType === 'free' && !isTestMode && selectedUserIds.length === 0) ||
+                    (wizardStep === 2 && (commType === 'event' || commType === 'schedule') && (selectedScheduleEventIds.length === 0 || selectedUserIds.length === 0)) ||
+                    (wizardStep === 2 && commType === 'free' && selectedUserIds.length === 0) ||
                     (wizardStep === 3 && !customSubject)
                   }
                   className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition-colors shadow-sm disabled:opacity-50 flex items-center gap-1.5"
