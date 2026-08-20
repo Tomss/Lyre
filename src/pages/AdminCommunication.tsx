@@ -248,11 +248,25 @@ const AdminCommunication = () => {
       const data: EventItem[] = await response.json();
       setEvents(data || []);
       setSelectedEventId('');
-      setSelectedScheduleEventIds([]);
+      if (commType === 'schedule') {
+        setSelectedScheduleEventIds((data || []).map(e => e.id));
+      } else {
+        setSelectedScheduleEventIds([]);
+      }
     } catch (err: any) {
       showNotification(err.message, 'error');
     } finally {
       setLoadingEvents(false);
+    }
+  };
+
+  const handleSelectCommType = (type: 'event' | 'schedule' | 'free') => {
+    setCommType(type);
+    setShowMusicianDetails(false);
+    if (type === 'schedule') {
+      setSelectedScheduleEventIds(events.map(e => e.id));
+    } else if (type === 'event') {
+      setSelectedScheduleEventIds([]);
     }
   };
 
@@ -1036,7 +1050,7 @@ const AdminCommunication = () => {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {/* Option 1: Event */}
                     <div 
-                      onClick={() => setCommType('event')}
+                      onClick={() => handleSelectCommType('event')}
                       className={`p-6 rounded-3xl border-2 transition-all cursor-pointer text-left flex flex-col justify-between space-y-6 ${
                         commType === 'event' 
                           ? 'border-indigo-600 bg-indigo-50/40 ring-4 ring-indigo-600/10' 
@@ -1057,9 +1071,9 @@ const AdminCommunication = () => {
                       </span>
                     </div>
 
-                    {/* Option 2: Schedule / Planning (NEW!) */}
+                    {/* Option 2: Schedule / Planning */}
                     <div 
-                      onClick={() => setCommType('schedule')}
+                      onClick={() => handleSelectCommType('schedule')}
                       className={`p-6 rounded-3xl border-2 transition-all cursor-pointer text-left flex flex-col justify-between space-y-6 ${
                         commType === 'schedule' 
                           ? 'border-teal-600 bg-teal-50/40 ring-4 ring-teal-600/10' 
@@ -1070,7 +1084,7 @@ const AdminCommunication = () => {
                         <ListOrdered size={26} />
                       </div>
                       <div>
-                        <h5 className="font-extrabold text-slate-900 text-base">Planning / Échéancier</h5>
+                        <h5 className="font-extrabold text-slate-900 text-base">Planning / Agenda</h5>
                         <p className="text-xs text-slate-500 mt-2 leading-relaxed">
                           Sélectionnez plusieurs événements à venir pour générer un mail de planning chronologique visuel et épuré.
                         </p>
@@ -1082,7 +1096,7 @@ const AdminCommunication = () => {
 
                     {/* Option 3: Free */}
                     <div 
-                      onClick={() => setCommType('free')}
+                      onClick={() => handleSelectCommType('free')}
                       className={`p-6 rounded-3xl border-2 transition-all cursor-pointer text-left flex flex-col justify-between space-y-6 ${
                         commType === 'free' 
                           ? 'border-purple-600 bg-purple-50/40 ring-4 ring-purple-600/10' 
