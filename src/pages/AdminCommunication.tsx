@@ -776,7 +776,7 @@ const AdminCommunication = () => {
               </div>
               <div>
                 <h1 className="text-2xl md:text-3xl font-black text-slate-800">
-                  Administration Communication
+                  Gestion de la communication
                 </h1>
                 <p className="text-sm text-slate-500 font-medium">
                   Rappels d'événements, plannings chronologiques et convocations par email
