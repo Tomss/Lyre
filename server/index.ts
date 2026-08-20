@@ -294,7 +294,7 @@ app.use('/api/communication', communicationRouter);
 
 
 // Serve static frontend in production
-const distPath = path.join(__dirname, '../dist');
+const distPath = path.resolve(process.cwd(), 'dist');
 app.use(express.static(distPath));
 
 app.get('/', (req, res) => {
