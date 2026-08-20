@@ -247,11 +247,8 @@ const AdminCommunication = () => {
       if (!response.ok) throw new Error('Erreur lors du chargement des événements');
       const data: EventItem[] = await response.json();
       setEvents(data || []);
-      if (data && data.length > 0) {
-        setSelectedEventId(data[0].id);
-        // By default check all events for schedule mode
-        setSelectedScheduleEventIds(data.map(e => e.id));
-      }
+      setSelectedEventId('');
+      setSelectedScheduleEventIds([]);
     } catch (err: any) {
       showNotification(err.message, 'error');
     } finally {
@@ -1012,7 +1009,7 @@ const AdminCommunication = () => {
       {/* POP-UP WIZARD MODAL */}
       {showWizard && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-3xl max-w-5xl w-full shadow-2xl border border-slate-100 my-4 overflow-hidden flex flex-col max-h-[92vh]">
+          <div className="bg-white rounded-3xl max-w-5xl w-full h-[88vh] shadow-2xl border border-slate-100 my-2 overflow-hidden flex flex-col">
             
             {/* Modal Header */}
             <div className="bg-slate-900 text-white px-8 py-5 flex items-center justify-between">
@@ -1122,38 +1119,6 @@ const AdminCommunication = () => {
               {/* STEP 2: TARGET & SELECTION */}
               {wizardStep === 2 && (
                 <div className="space-y-6">
-                  
-                  {/* Mode Banner */}
-                  <div className="flex items-center justify-between bg-slate-50 p-4 rounded-2xl border border-slate-200">
-                    <div>
-                      <h5 className="font-bold text-slate-800 text-sm">Mode d'envoi</h5>
-                      <p className="text-xs text-slate-500">
-                        {isTestMode ? "Actuellement en Mode Test (envoi restreint)" : "Envoi réel à la sélection"}
-                      </p>
-                    </div>
-
-                    <div 
-                      onClick={() => setIsTestMode(!isTestMode)}
-                      className={`flex items-center gap-2 px-3.5 py-2 rounded-xl cursor-pointer transition-all border ${
-                        isTestMode ? 'bg-amber-100 border-amber-300 text-amber-900' : 'bg-white border-slate-200 text-slate-700'
-                      }`}
-                    >
-                      <Sparkles size={16} className={isTestMode ? 'text-amber-600 animate-pulse' : 'text-slate-400'} />
-                      <span className="text-xs font-bold">Activer Mode Test</span>
-                      <div className={`w-8 h-4 rounded-full p-0.5 transition-colors ${isTestMode ? 'bg-amber-500' : 'bg-slate-300'}`}>
-                        <div className={`w-3 h-3 rounded-full bg-white transition-transform ${isTestMode ? 'translate-x-4' : 'translate-x-0'}`} />
-                      </div>
-                    </div>
-                  </div>
-
-                  {isTestMode && (
-                    <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-xs text-amber-900 flex items-start gap-3">
-                      <ShieldAlert size={20} className="text-amber-600 flex-shrink-0 mt-0.5" />
-                      <div>
-                        <strong>Mode Test Activé :</strong> Seuls les membres cochés recevront le mail d'essai. Utile pour vérifier l'affichage du mail sur votre adresse.
-                      </div>
-                    </div>
-                  )}
 
                   {(commType === 'event' || commType === 'schedule') ? (
                     /* EVENT & SCHEDULE MULTI-SELECTION TARGETING */
@@ -1163,7 +1128,7 @@ const AdminCommunication = () => {
                       <div>
                         <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
                           <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-500">
-                            1. Sélectionner le ou les événements cibles ({selectedScheduleEventIds.length} retenu{selectedScheduleEventIds.length > 1 ? 's' : ''})
+                            1. Sélectionner le ou les événements ({selectedScheduleEventIds.length} retenu{selectedScheduleEventIds.length > 1 ? 's' : ''})
                           </label>
 
                           <div className="flex items-center gap-2.5 flex-wrap">
@@ -1212,7 +1177,7 @@ const AdminCommunication = () => {
                         ) : filteredUpcomingEvents.length === 0 ? (
                           <div className="py-12 text-center text-slate-400 text-sm">Aucun événement correspondant trouvé.</div>
                         ) : (
-                          <div className="space-y-2.5 max-h-60 overflow-y-auto pr-1">
+                          <div className="space-y-2.5 max-h-[380px] overflow-y-auto pr-1">
                             {filteredUpcomingEvents.map(ev => {
                               const isChecked = selectedScheduleEventIds.includes(ev.id);
                               return (
@@ -1266,15 +1231,12 @@ const AdminCommunication = () => {
 
                       {/* Recipient Summary & Collapsible Musician Details */}
                       <div className="space-y-4 pt-4 border-t border-slate-200">
-                        <div className="bg-indigo-50/80 border border-indigo-200 rounded-2xl p-4 text-xs text-indigo-900 space-y-2.5">
+                        <div className="bg-indigo-50/80 border border-indigo-200 rounded-2xl p-4 text-xs text-indigo-900 space-y-2">
                           <div className="flex items-center justify-between flex-wrap gap-2">
                             <div className="flex items-center gap-2.5">
                               <Users size={20} className="text-indigo-600 flex-shrink-0" />
                               <span className="font-medium">
-                                Événement(s) retenu(s) : <strong>{selectedScheduleEventIds.length}</strong>
-                                {targetedOrchestraNames.length > 0 && (
-                                  <> • Orchestre(s) : <strong>{targetedOrchestraNames.join(', ')}</strong></>
-                                )}
+                                Orchestre(s) : <strong>{targetedOrchestraNames.length > 0 ? targetedOrchestraNames.join(', ') : 'Aucun événement sélectionné'}</strong>
                               </span>
                             </div>
                             <span className="font-black bg-indigo-600 text-white px-3 py-1 rounded-full text-xs flex-shrink-0">
@@ -1282,20 +1244,21 @@ const AdminCommunication = () => {
                             </span>
                           </div>
 
-                          <div className="flex items-center justify-between pt-2 border-t border-indigo-200/60 text-[11px] text-indigo-800 flex-wrap gap-2">
-                            <span className="italic">💡 Par défaut, tous les musiciens des événements sélectionnés sont cochés.</span>
-                            <button
-                              type="button"
-                              onClick={() => setShowMusicianDetails(!showMusicianDetails)}
-                              className="font-bold text-indigo-700 hover:text-indigo-900 underline flex items-center gap-1 cursor-pointer"
-                            >
-                              {showMusicianDetails ? (
-                                <><span>▲ Masquer la liste des musiciens</span></>
-                              ) : (
-                                <><span>👁️ Déplier / Personnaliser la liste des musiciens ({recipients.length})</span></>
-                              )}
-                            </button>
-                          </div>
+                          {recipients.length > 0 && (
+                            <div className="flex items-center justify-end pt-1 border-t border-indigo-200/60 text-[11px] text-indigo-800">
+                              <button
+                                type="button"
+                                onClick={() => setShowMusicianDetails(!showMusicianDetails)}
+                                className="font-bold text-indigo-700 hover:text-indigo-900 underline flex items-center gap-1 cursor-pointer"
+                              >
+                                {showMusicianDetails ? (
+                                  <><span>▲ Masquer la liste des musiciens</span></>
+                                ) : (
+                                  <><span>👁️ Déplier / Personnaliser la liste des musiciens ({recipients.length})</span></>
+                                )}
+                              </button>
+                            </div>
+                          )}
                         </div>
 
                         {/* Collapsible Musician List */}
