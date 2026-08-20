@@ -28,7 +28,7 @@ import NewsArchive from './pages/NewsArchive';
 
 function App() {
   const location = useLocation();
-  const isFullWidthPage = location.pathname === '/dashboard' || location.pathname.startsWith('/admin');
+  const isFullWidthPage = location.pathname === '/dashboard' || location.pathname.startsWith('/admin') || location.pathname === '/connexion' || location.pathname === '/activer-compte';
   const wrapperClass = isFullWidthPage ? "max-w-none" : "max-w-[2560px]";
 
   return (
