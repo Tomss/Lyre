@@ -277,8 +277,12 @@ const AdminCommunication = () => {
     setShowMusicianDetails(false);
     if (type === 'schedule') {
       setSelectedScheduleEventIds(events.map(e => e.id));
+      setCustomSubject('[La Lyre] Programme / Planning');
     } else if (type === 'event') {
       setSelectedScheduleEventIds([]);
+      setCustomSubject('[La Lyre] Programme / Planning');
+    } else {
+      setCustomSubject('[La Lyre] Communication');
     }
   };
 
@@ -1806,7 +1810,7 @@ const AdminCommunication = () => {
 
                       <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-1.5 text-xs text-slate-600">
                         <p><strong>Destinataires retenus :</strong> {selectedUserIds.length} membre(s)</p>
-                        <p><strong>Objet du mail :</strong> {customSubject || '(Aucun objet)'}</p>
+                        <p><strong>Objet du mail :</strong> {customSubject || ((commType === 'event' || commType === 'schedule') ? '[La Lyre] Programme / Planning' : '[La Lyre] Communication')}</p>
                       </div>
 
                     </div>

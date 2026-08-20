@@ -366,9 +366,7 @@ router.post('/send', async (req, res) => {
 
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
     const subject = customSubject || (
-      type === 'event' ? `Rappel : ${event.title}` : (
-        type === 'schedule' ? '[La Lyre] Planning & Agenda' : 'Information - La Lyre'
-      )
+      (type === 'event' || type === 'schedule') ? '[La Lyre] Programme / Planning' : '[La Lyre] Communication'
     );
     
     // Store full name + email in recipient list JSON so searching by Name/Surname works!
