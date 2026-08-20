@@ -541,7 +541,7 @@ router.post('/send', async (req, res) => {
             'Authorization': `Bearer ${resendApiKey}`
           },
           body: JSON.stringify({
-            from: 'La Lyre <communication@lalyre.fr>',
+            from: 'La Lyre - Communication <communication@lalyre.fr>',
             to: [recipient.email],
             subject: subject,
             html: htmlContent

@@ -8,7 +8,7 @@ export const sendActivationEmail = async (email: string, firstName: string, toke
     const activationLink = `${frontendUrl}/activer-compte?token=${token}`;
     const resendApiKey = process.env.RESEND_API_KEY;
 
-    const subject = isReset ? 'La Lyre - Réinitialisation de votre mot de passe' : 'La Lyre - Accès à votre Espace Membre';
+    const subject = isReset ? '[La Lyre] Réinitialisation de votre mot de passe' : '[La Lyre] Accès à votre Espace Membre';
     const title = isReset ? 'Demande de réinitialisation' : 'Accès à votre espace membre';
     const introText = isReset 
         ? `Vous avez demandé à réinitialiser votre mot de passe pour votre espace membre sur le site de <strong>La Lyre</strong>.`
@@ -103,7 +103,7 @@ export const sendActivationEmail = async (email: string, firstName: string, toke
                 'Authorization': `Bearer ${resendApiKey}`
             },
             body: JSON.stringify({
-                from: 'Association La Lyre <communication@lalyre.fr>',
+                from: 'La Lyre - Communication <communication@lalyre.fr>',
                 to: [email],
                 subject: subject,
                 html: htmlContent
