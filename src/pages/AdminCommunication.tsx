@@ -104,8 +104,8 @@ const AdminCommunication = () => {
   const [showWizard, setShowWizard] = useState(false);
   const [wizardStep, setWizardStep] = useState<number>(1);
   
-  // Communication config ('event' | 'free' | 'schedule')
-  const [commType, setCommType] = useState<'event' | 'free' | 'schedule'>('event');
+  // Communication config ('event' | 'free')
+  const [commType, setCommType] = useState<'event' | 'free'>('event');
   const [events, setEvents] = useState<EventItem[]>([]);
   const [selectedEventId, setSelectedEventId] = useState<string>('');
   const [selectedScheduleEventIds, setSelectedScheduleEventIds] = useState<string[]>([]);
@@ -272,14 +272,11 @@ const AdminCommunication = () => {
     }
   };
 
-  const handleSelectCommType = (type: 'event' | 'schedule' | 'free') => {
+  const handleSelectCommType = (type: 'event' | 'free') => {
     setCommType(type);
     setShowMusicianDetails(false);
-    if (type === 'schedule') {
-      setSelectedScheduleEventIds(events.map(e => e.id));
-      setCustomSubject('[La Lyre] Programme / Planning');
-    } else if (type === 'event') {
-      setSelectedScheduleEventIds([]);
+    setSelectedScheduleEventIds([]);
+    if (type === 'event') {
       setCustomSubject('[La Lyre] Programme / Planning');
     } else {
       setCustomSubject('[La Lyre] Communication');
@@ -377,7 +374,7 @@ const AdminCommunication = () => {
       if (selectedScheduleEventIds.length === 0) {
         setRecipients([]);
         setSelectedUserIds([]);
-        setCustomSubject(commType === 'schedule' ? '[La Lyre] Planning & Prochaines Échéances' : '[La Lyre] Communication Événement');
+        setCustomSubject('[La Lyre] Programme / Planning');
         return;
       }
 
@@ -396,22 +393,7 @@ const AdminCommunication = () => {
           const data = await response.json();
           setRecipients(data || []);
           setSelectedUserIds((data || []).map((r: Recipient) => r.id));
-
-          const selectedEvs = events.filter(e => selectedScheduleEventIds.includes(e.id));
-          if (commType === 'event') {
-            if (selectedEvs.length === 1) {
-              const ev = selectedEvs[0];
-              const formattedDate = new Date(ev.event_date).toLocaleDateString('fr-FR', {
-                day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
-              });
-              const prefix = ev.event_type === 'concert' ? 'Convocation Concert' : (ev.event_type === 'repetition' ? 'Rappel Répétition' : 'Rappel Événement');
-              setCustomSubject(`[La Lyre] ${prefix} : ${ev.title} (${formattedDate})`);
-            } else if (selectedEvs.length > 1) {
-              setCustomSubject(`[La Lyre] Communication Événements (${selectedEvs.length} retenus)`);
-            }
-          } else {
-            setCustomSubject('[La Lyre] Planning & Prochaines Échéances');
-          }
+          setCustomSubject('[La Lyre] Programme / Planning');
         } catch (err: any) {
           showNotification(err.message, 'error');
         } finally {
@@ -1069,13 +1051,13 @@ const AdminCommunication = () => {
             {/* Modal Body */}
             <div className="p-8 flex-1 min-h-0 flex flex-col overflow-hidden">
 
-              {/* STEP 1: Choose Type (3 OPTIONS) */}
+              {/* STEP 1: Choose Type (2 OPTIONS) */}
               {wizardStep === 1 && (
                 <div className="space-y-6 overflow-y-auto flex-1 pr-1">
                   <h4 className="font-extrabold text-slate-800 text-lg">Quel type de communication souhaitez-vous envoyer ?</h4>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {/* Option 1: Event */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Option 1: Événement(s) & Planning */}
                     <div 
                       onClick={() => handleSelectCommType('event')}
                       className={`p-6 rounded-3xl border-2 transition-all cursor-pointer text-left flex flex-col justify-between space-y-6 ${
@@ -1088,40 +1070,17 @@ const AdminCommunication = () => {
                         <Calendar size={26} />
                       </div>
                       <div>
-                        <h5 className="font-extrabold text-slate-900 text-base">Liée à un Événement</h5>
+                        <h5 className="font-extrabold text-slate-900 text-base">1. Événement(s) & Planning</h5>
                         <p className="text-xs text-slate-500 mt-2 leading-relaxed">
-                          Rappel de répétition, convocation concert ou détails d'organisation ciblés sur un événement.
+                          Transmettre des informations, convocations ou le programme pour un ou plusieurs événements à venir.
                         </p>
                       </div>
                       <span className="text-xs font-extrabold text-indigo-600 flex items-center">
-                        Choisir l'événement <ChevronRight size={16} className="ml-1" />
+                        Choisir les événements <ChevronRight size={16} className="ml-1" />
                       </span>
                     </div>
 
-                    {/* Option 2: Schedule / Planning */}
-                    <div 
-                      onClick={() => handleSelectCommType('schedule')}
-                      className={`p-6 rounded-3xl border-2 transition-all cursor-pointer text-left flex flex-col justify-between space-y-6 ${
-                        commType === 'schedule' 
-                          ? 'border-teal-600 bg-teal-50/40 ring-4 ring-teal-600/10' 
-                          : 'border-gray-200 hover:border-gray-300 bg-white'
-                      }`}
-                    >
-                      <div className="w-12 h-12 rounded-2xl bg-teal-100 text-teal-600 flex items-center justify-center font-bold">
-                        <ListOrdered size={26} />
-                      </div>
-                      <div>
-                        <h5 className="font-extrabold text-slate-900 text-base">Planning / Agenda</h5>
-                        <p className="text-xs text-slate-500 mt-2 leading-relaxed">
-                          Sélectionnez plusieurs événements à venir pour générer un mail de planning chronologique visuel et épuré.
-                        </p>
-                      </div>
-                      <span className="text-xs font-extrabold text-teal-600 flex items-center">
-                        Composer le planning <ChevronRight size={16} className="ml-1" />
-                      </span>
-                    </div>
-
-                    {/* Option 3: Free */}
+                    {/* Option 2: Communication Libre */}
                     <div 
                       onClick={() => handleSelectCommType('free')}
                       className={`p-6 rounded-3xl border-2 transition-all cursor-pointer text-left flex flex-col justify-between space-y-6 ${
@@ -1134,9 +1093,9 @@ const AdminCommunication = () => {
                         <FileText size={26} />
                       </div>
                       <div>
-                        <h5 className="font-extrabold text-slate-900 text-base">Communication Libre</h5>
+                        <h5 className="font-extrabold text-slate-900 text-base">2. Communication Libre</h5>
                         <p className="text-xs text-slate-500 mt-2 leading-relaxed">
-                          Annonce générale, note d'information ou message personnalisé pour des orchestres ou membres spécifiques.
+                          Annonce générale, note d'information ou message personnalisé ciblé par groupe(s) ou par membre(s).
                         </p>
                       </div>
                       <span className="text-xs font-extrabold text-purple-600 flex items-center">
