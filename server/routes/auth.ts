@@ -156,6 +156,19 @@ router.post('/activate', async (req, res) => {
       return res.status(400).json({ message: "Le lien d'activation a expiré." });
     }
 
+    // Password Policy Validation
+    const isMinLength = password.length >= 8;
+    const hasUppercase = /[A-Z]/.test(password);
+    const hasLowercase = /[a-z]/.test(password);
+    const hasDigit = /[0-9]/.test(password);
+    const hasSpecialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/.test(password);
+
+    if (!isMinLength || !hasUppercase || !hasLowercase || !hasDigit || !hasSpecialChar) {
+      return res.status(400).json({ 
+        message: 'Le mot de passe ne respecte pas les exigences de sécurité : au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial.' 
+      });
+    }
+
     // Hash the new password
     const salt = await bcrypt.genSalt(10);
     const password_hash = await bcrypt.hash(password, salt);
