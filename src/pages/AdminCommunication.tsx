@@ -193,19 +193,31 @@ const AdminCommunication = () => {
 
   // Synchronize editor innerHTML when step changes to step 3 in free mode
   useEffect(() => {
-    if (wizardStep === 3 && commType === 'free' && editorRef.current) {
-      if (editorRef.current.innerHTML !== freeMessageContent) {
-        editorRef.current.innerHTML = freeMessageContent || '';
+    if (wizardStep === 3 && editorRef.current) {
+      const currentContent = commType === 'free' ? freeMessageContent : customNote;
+      if (editorRef.current.innerHTML !== currentContent) {
+        editorRef.current.innerHTML = currentContent || '';
       }
     }
   }, [wizardStep, commType]);
+
+  const syncEditorContent = () => {
+    if (editorRef.current) {
+      const content = editorRef.current.innerHTML;
+      if (commType === 'free') {
+        setFreeMessageContent(content);
+      } else {
+        setCustomNote(content);
+      }
+    }
+  };
 
   // Execute Rich Text formatting commands (WYSIWYG Word-like behavior)
   const execFormat = (command: string, value: string | undefined = undefined) => {
     if (editorRef.current) {
       editorRef.current.focus();
       document.execCommand(command, false, value);
-      setFreeMessageContent(editorRef.current.innerHTML);
+      syncEditorContent();
     }
   };
 
@@ -213,7 +225,7 @@ const AdminCommunication = () => {
     if (editorRef.current) {
       editorRef.current.focus();
       document.execCommand('insertText', false, emoji);
-      setFreeMessageContent(editorRef.current.innerHTML);
+      syncEditorContent();
     }
     setShowEmojiPicker(false);
   };
@@ -465,6 +477,14 @@ const AdminCommunication = () => {
         .filter(Boolean)
     )
   ).sort();
+
+  // Unique members belonging to selected orchestras/groups (without duplicates)
+  const freeSelectedMembers = recipients
+    .filter(r => (r.userOrchestras || []).some(orch => selectedOrchestraNames.includes(orch)))
+    .sort((a, b) => 
+      a.lastName.localeCompare(b.lastName, 'fr', { sensitivity: 'base' }) || 
+      a.firstName.localeCompare(b.firstName, 'fr', { sensitivity: 'base' })
+    );
 
   // Filter upcoming events based on search and orchestra filter
   const filteredUpcomingEvents = events.filter(e => {
@@ -1330,345 +1350,330 @@ const AdminCommunication = () => {
                     </div>
                   ) : (
                     /* FREE COMMUNICATION TARGETING */
-                    <div className="space-y-6">
-                      <div className="flex items-center p-1 bg-slate-100 rounded-2xl gap-1">
-                        <button
-                          type="button"
-                          onClick={() => setFreeTargetMode('orchestras')}
-                          className={`flex-1 py-3 px-4 rounded-xl text-xs font-extrabold transition-all flex items-center justify-center gap-2 ${
-                            freeTargetMode === 'orchestras'
-                              ? 'bg-white text-indigo-600 shadow-md shadow-indigo-100/50'
-                              : 'text-slate-500 hover:text-slate-800'
-                          }`}
-                        >
-                          <Filter size={16} />
-                          <span>1. Cibler par Orchestre(s)</span>
-                        </button>
+                    <div className="flex flex-col flex-1 min-h-0 overflow-hidden space-y-4">
+                      {/* Mode Selector Tabs */}
+                      <div className="flex-shrink-0">
+                        <div className="flex items-center p-1 bg-slate-100 rounded-2xl gap-1">
+                          <button
+                            type="button"
+                            onClick={() => setFreeTargetMode('orchestras')}
+                            className={`flex-1 py-2.5 px-4 rounded-xl text-xs font-extrabold transition-all flex items-center justify-center gap-2 ${
+                              freeTargetMode === 'orchestras'
+                                ? 'bg-white text-indigo-600 shadow-md shadow-indigo-100/50'
+                                : 'text-slate-500 hover:text-slate-800'
+                            }`}
+                          >
+                            <Filter size={16} />
+                            <span>1. Cibler par Groupe(s)</span>
+                          </button>
 
-                        <button
-                          type="button"
-                          onClick={() => setFreeTargetMode('members')}
-                          className={`flex-1 py-3 px-4 rounded-xl text-xs font-extrabold transition-all flex items-center justify-center gap-2 ${
-                            freeTargetMode === 'members'
-                              ? 'bg-white text-indigo-600 shadow-md shadow-indigo-100/50'
-                              : 'text-slate-500 hover:text-slate-800'
-                          }`}
-                        >
-                          <Users size={16} />
-                          <span>2. Sélectionner par Membre(s) direct(s)</span>
-                        </button>
-                      </div>
-
-                      <div className="bg-purple-50 border border-purple-200 rounded-2xl p-4 text-xs text-purple-900 flex items-center justify-between">
-                        <div className="flex items-center gap-2.5">
-                          <FileText size={20} className="text-purple-600" />
-                          <span>
-                            {freeTargetMode === 'orchestras' 
-                              ? "Cochez un ou plusieurs orchestres pour déplier et retenir tous leurs musiciens."
-                              : "Cochez directement les membres auxquels vous souhaitez envoyer le message."}
-                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setFreeTargetMode('members')}
+                            className={`flex-1 py-2.5 px-4 rounded-xl text-xs font-extrabold transition-all flex items-center justify-center gap-2 ${
+                              freeTargetMode === 'members'
+                                ? 'bg-white text-indigo-600 shadow-md shadow-indigo-100/50'
+                                : 'text-slate-500 hover:text-slate-800'
+                            }`}
+                          >
+                            <Users size={16} />
+                            <span>2. Sélectionner par Membre(s) direct(s)</span>
+                          </button>
                         </div>
-                        <span className="font-black bg-purple-600 text-white px-3 py-1 rounded-full text-xs flex-shrink-0">
-                          {selectedUserIds.length} destinataire(s) retenu(s)
-                        </span>
                       </div>
 
                       {freeTargetMode === 'orchestras' ? (
-                        <div className="space-y-4">
-                          <div className="flex items-center justify-between">
+                        <div className="flex flex-col flex-1 min-h-0 overflow-hidden space-y-3">
+                          {/* Header & Quick Actions */}
+                          <div className="flex-shrink-0 flex items-center justify-between">
                             <span className="text-xs font-extrabold uppercase tracking-wider text-slate-500">
-                              Sélectionner les orchestres ({availableOrchestraNames.length})
+                              Sélectionner les groupes ({availableOrchestraNames.length})
                             </span>
                             <div className="flex items-center gap-2 text-xs">
-                              <button onClick={selectAllOrchestras} className="font-bold text-indigo-600 hover:underline">Tous les orchestres</button>
+                              <button type="button" onClick={selectAllOrchestras} className="font-bold text-indigo-600 hover:underline">Tous les groupes</button>
                               <span className="text-slate-300">•</span>
-                              <button onClick={deselectAllOrchestras} className="font-bold text-slate-500 hover:underline">Aucun orchestre</button>
+                              <button type="button" onClick={deselectAllOrchestras} className="font-bold text-slate-500 hover:underline">Aucun groupe</button>
                             </div>
                           </div>
 
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            {availableOrchestraNames.map(orchName => {
-                              const isChecked = selectedOrchestraNames.includes(orchName);
-                              const membersOfOrch = recipients.filter(r => (r.userOrchestras || []).includes(orchName));
+                          {/* Groups List (Internal scrollable container) */}
+                          <div className="flex-1 min-h-0 overflow-y-auto pr-1">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                              {availableOrchestraNames.map(orchName => {
+                                const isChecked = selectedOrchestraNames.includes(orchName);
+                                const membersOfOrch = recipients.filter(r => (r.userOrchestras || []).includes(orchName));
 
-                              return (
-                                <div 
-                                  key={orchName}
-                                  onClick={() => toggleOrchestraSelection(orchName)}
-                                  className={`p-4 rounded-2xl border cursor-pointer transition-all flex items-center justify-between ${
-                                    isChecked 
-                                      ? 'bg-indigo-50/70 border-indigo-600 ring-2 ring-indigo-600/20' 
-                                      : 'bg-white border-slate-200 hover:bg-slate-50'
-                                  }`}
-                                >
-                                  <div className="flex items-center gap-3">
-                                    <input 
-                                      type="checkbox"
-                                      checked={isChecked}
-                                      onChange={() => {}}
-                                      className="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500"
-                                    />
-                                    <div>
-                                      <h6 className="font-bold text-slate-800 text-sm">{orchName}</h6>
-                                      <p className="text-xs text-slate-500">{membersOfOrch.length} membre(s)</p>
-                                    </div>
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-
-                          {selectedOrchestraNames.length > 0 && (
-                            <div className="pt-4 border-t border-slate-200 space-y-3">
-                              <h5 className="text-xs font-extrabold uppercase tracking-wider text-slate-500">
-                                Musiciens dépliés ({selectedUserIds.length} membres cochés par défaut)
-                              </h5>
-
-                              <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
-                                {selectedOrchestraNames.map(orchName => {
-                                  const orchMembers = recipients
-                                    .filter(r => (r.userOrchestras || []).includes(orchName))
-                                    .sort((a, b) => 
-                                      a.lastName.localeCompare(b.lastName, 'fr', { sensitivity: 'base' }) || 
-                                      a.firstName.localeCompare(b.firstName, 'fr', { sensitivity: 'base' })
-                                    );
-
-                                  return (
-                                    <div key={orchName} className="bg-slate-50 rounded-2xl p-4 border border-slate-200 space-y-2">
-                                      <div className="flex items-center justify-between border-b border-slate-200 pb-2">
-                                        <span className="font-bold text-slate-800 text-xs">Ensemble : {orchName}</span>
-                                        <span className="text-[11px] text-slate-500">{orchMembers.length} membre(s)</span>
-                                      </div>
-
-                                      <div className="space-y-1.5">
-                                        {orchMembers.map(m => {
-                                          const isMemberChecked = selectedUserIds.includes(m.id);
-                                          return (
-                                            <div 
-                                              key={m.id}
-                                              onClick={() => toggleUserSelection(m.id)}
-                                              className={`p-2.5 rounded-xl border flex items-center justify-between text-xs cursor-pointer transition-colors ${
-                                                isMemberChecked ? 'bg-white border-indigo-200 shadow-sm' : 'bg-slate-100/70 border-slate-200 opacity-60'
-                                              }`}
-                                            >
-                                              <div className="flex items-center gap-3">
-                                                <input 
-                                                  type="checkbox"
-                                                  checked={isMemberChecked}
-                                                  onChange={() => {}}
-                                                  className="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500"
-                                                />
-                                                <span className="font-bold text-slate-900">{m.lastName.toUpperCase()} <span className="font-semibold text-slate-700">{m.firstName}</span></span>
-                                                <span className="text-slate-400">{m.email}</span>
-                                              </div>
-                                            </div>
-                                          );
-                                        })}
-                                      </div>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="space-y-3">
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs font-extrabold uppercase tracking-wider text-slate-500">
-                              Membres de La Lyre ({filteredRecipients.length})
-                            </span>
-                            <div className="flex items-center gap-2 text-xs">
-                              <button onClick={selectAllFiltered} className="font-bold text-indigo-600 hover:underline">Tout cocher</button>
-                              <span className="text-slate-300">•</span>
-                              <button onClick={deselectAll} className="font-bold text-slate-500 hover:underline">Tout décocher</button>
-                            </div>
-                          </div>
-
-                          <div className="relative">
-                            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                            <input
-                              type="text"
-                              placeholder="Rechercher un membre par nom, prénom, email..."
-                              value={memberSearchTerm}
-                              onChange={(e) => setMemberSearchTerm(e.target.value)}
-                              className="w-full pl-9 pr-3.5 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none"
-                            />
-                          </div>
-
-                          {loadingRecipients ? (
-                            <div className="py-12 text-center text-slate-400 text-xs">Chargement des membres...</div>
-                          ) : filteredRecipients.length === 0 ? (
-                            <div className="py-12 text-center text-slate-400 text-xs">Aucun membre trouvé.</div>
-                          ) : (
-                            <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
-                              {filteredRecipients.map(r => {
-                                const isChecked = selectedUserIds.includes(r.id);
                                 return (
-                                  <div
-                                    key={r.id}
-                                    onClick={() => toggleUserSelection(r.id)}
-                                    className={`p-3 rounded-xl border flex items-center justify-between text-xs cursor-pointer transition-colors ${
-                                      isChecked ? 'bg-indigo-50/60 border-indigo-300' : 'bg-white border-slate-200 hover:bg-slate-50'
+                                  <div 
+                                    key={orchName}
+                                    onClick={() => toggleOrchestraSelection(orchName)}
+                                    className={`p-3.5 rounded-2xl border cursor-pointer transition-all flex items-center justify-between ${
+                                      isChecked 
+                                        ? 'bg-indigo-50/70 border-indigo-600 ring-2 ring-indigo-600/20' 
+                                        : 'bg-white border-slate-200 hover:bg-slate-50'
                                     }`}
                                   >
                                     <div className="flex items-center gap-3">
-                                      <input
+                                      <input 
                                         type="checkbox"
                                         checked={isChecked}
                                         onChange={() => {}}
-                                        className="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500"
+                                        className="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer"
                                       />
-                                      <span className="font-bold text-slate-900 text-sm">{r.lastName.toUpperCase()} <span className="font-semibold text-slate-700">{r.firstName}</span></span>
-                                      <span className="text-slate-400 text-xs">{r.email}</span>
+                                      <div>
+                                        <h6 className="font-bold text-slate-800 text-sm">{orchName}</h6>
+                                        <p className="text-xs text-slate-500">{membersOfOrch.length} membre(s)</p>
+                                      </div>
+                                    </div>
+
+                                    <div className={`w-5 h-5 rounded-full border flex items-center justify-center flex-shrink-0 ${
+                                      isChecked ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-slate-300'
+                                    }`}>
+                                      {isChecked && <Check size={12} className="stroke-[3]" />}
                                     </div>
                                   </div>
                                 );
                               })}
                             </div>
-                          )}
+                          </div>
+
+                          {/* Recipient Summary & Collapsible Musician Details */}
+                          <div className="flex-shrink-0 pt-3 border-t border-slate-200 space-y-3">
+                            <div className="bg-purple-50/80 border border-purple-200 rounded-2xl p-3.5 text-xs text-purple-900 space-y-2">
+                              <div className="flex items-center justify-between flex-wrap gap-2">
+                                <div className="flex items-center gap-2.5">
+                                  <Users size={20} className="text-purple-600 flex-shrink-0" />
+                                  <span className="font-medium">
+                                    Groupe(s) : <strong>{selectedOrchestraNames.length > 0 ? selectedOrchestraNames.join(', ') : 'Aucun groupe sélectionné'}</strong>
+                                  </span>
+                                </div>
+                                <span className="font-black bg-purple-600 text-white px-3 py-1 rounded-full text-xs flex-shrink-0">
+                                  {selectedUserIds.length} / {recipients.length} membre(s) sélectionné(s)
+                                </span>
+                              </div>
+
+                              {selectedUserIds.length > 0 && (
+                                <div className="flex items-center justify-end pt-1 border-t border-purple-200/60 text-[11px] text-purple-800">
+                                  <button
+                                    type="button"
+                                    onClick={() => setShowMusicianDetails(!showMusicianDetails)}
+                                    className="font-bold text-purple-700 hover:text-purple-900 underline flex items-center gap-1 cursor-pointer"
+                                  >
+                                    {showMusicianDetails ? (
+                                      <span>▲ Masquer la liste des musiciens</span>
+                                    ) : (
+                                      <span>👁️ Déplier / Personnaliser la liste des musiciens ({selectedUserIds.length})</span>
+                                    )}
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Collapsible Musician List (Deduplicated across selected groups!) */}
+                            {showMusicianDetails && (
+                              <div className="space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                                <div className="flex items-center justify-between flex-wrap gap-2">
+                                  <span className="text-xs font-extrabold uppercase tracking-wider text-slate-500">
+                                    Musiciens des groupes retenus ({freeSelectedMembers.length} sans doublon)
+                                  </span>
+                                  <div className="flex items-center gap-3 text-xs">
+                                    <button type="button" onClick={() => setSelectedUserIds(freeSelectedMembers.map(m => m.id))} className="font-bold text-purple-600 hover:underline">Tout cocher</button>
+                                    <span className="text-slate-300">•</span>
+                                    <button type="button" onClick={() => setSelectedUserIds([])} className="font-bold text-slate-500 hover:underline">Tout décocher</button>
+                                  </div>
+                                </div>
+
+                                <div className="relative">
+                                  <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                                  <input
+                                    type="text"
+                                    placeholder="Rechercher un membre par nom, prénom..."
+                                    value={memberSearchTerm}
+                                    onChange={(e) => setMemberSearchTerm(e.target.value)}
+                                    className="w-full pl-8 pr-3 py-1.5 text-xs bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none"
+                                  />
+                                </div>
+
+                                <div className="space-y-2 max-h-44 overflow-y-auto pr-1">
+                                  {freeSelectedMembers
+                                    .filter(m => `${m.lastName} ${m.firstName} ${m.email}`.toLowerCase().includes(memberSearchTerm.toLowerCase()))
+                                    .map(m => {
+                                      const isChecked = selectedUserIds.includes(m.id);
+                                      return (
+                                        <div 
+                                          key={m.id} 
+                                          onClick={() => toggleUserSelection(m.id)}
+                                          className={`p-3 rounded-xl border flex items-center justify-between text-xs cursor-pointer transition-colors ${
+                                            isChecked ? 'bg-purple-50/60 border-purple-300 shadow-xs' : 'bg-white border-slate-200 hover:bg-slate-50 opacity-60'
+                                          }`}
+                                        >
+                                          <div className="flex items-center gap-3">
+                                            <input
+                                              type="checkbox"
+                                              checked={isChecked}
+                                              onChange={() => {}}
+                                              className="w-4 h-4 text-purple-600 rounded border-slate-300 focus:ring-purple-500 cursor-pointer"
+                                            />
+                                            <div>
+                                              <span className="font-bold text-slate-900 text-sm">{m.lastName.toUpperCase()} <span className="font-semibold text-slate-700">{m.firstName}</span></span>
+                                              <span className="text-slate-400 text-xs ml-2">({(m.userOrchestras || []).join(', ')})</span>
+                                            </div>
+                                          </div>
+                                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
+                                            isChecked ? 'bg-purple-100 text-purple-800' : 'bg-slate-100 text-slate-500'
+                                          }`}>
+                                            {isChecked ? 'Retenu' : 'Exclu'}
+                                          </span>
+                                        </div>
+                                      );
+                                    })}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ) : (
+                        /* DIRECT MEMBERS TARGETING */
+                        <div className="flex flex-col flex-1 min-h-0 overflow-hidden space-y-3">
+                          <div className="flex-shrink-0 flex items-center justify-between flex-wrap gap-2">
+                            <span className="text-xs font-extrabold uppercase tracking-wider text-slate-500">
+                              Membres de La Lyre ({filteredRecipients.length})
+                            </span>
+                            <div className="flex items-center gap-3 text-xs">
+                              <button type="button" onClick={selectAllFiltered} className="font-bold text-purple-600 hover:underline">Tout cocher</button>
+                              <span className="text-slate-300">•</span>
+                              <button type="button" onClick={deselectAll} className="font-bold text-slate-500 hover:underline">Tout décocher</button>
+                            </div>
+                          </div>
+
+                          <div className="flex-shrink-0 relative">
+                            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                            <input
+                              type="text"
+                              placeholder="Rechercher un membre par nom, prénom, email..."
+                              value={memberSearchTerm}
+                              onChange={(e) => setMemberSearchTerm(e.target.value)}
+                              className="w-full pl-8 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none"
+                            />
+                          </div>
+
+                          <div className="flex-1 min-h-0 overflow-y-auto pr-1 space-y-2">
+                            {filteredRecipients.map(r => {
+                              const isChecked = selectedUserIds.includes(r.id);
+                              return (
+                                <div
+                                  key={r.id}
+                                  onClick={() => toggleUserSelection(r.id)}
+                                  className={`p-3 rounded-xl border flex items-center justify-between text-xs cursor-pointer transition-colors ${
+                                    isChecked ? 'bg-purple-50/60 border-purple-300 shadow-xs' : 'bg-white border-slate-200 hover:bg-slate-50 opacity-60'
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <input
+                                      type="checkbox"
+                                      checked={isChecked}
+                                      onChange={() => {}}
+                                      className="w-4 h-4 text-purple-600 rounded border-slate-300 focus:ring-purple-500 cursor-pointer"
+                                    />
+                                    <div>
+                                      <span className="font-bold text-slate-900 text-sm">{r.lastName.toUpperCase()} <span className="font-semibold text-slate-700">{r.firstName}</span></span>
+                                      <span className="text-slate-400 text-xs ml-2">{r.email}</span>
+                                    </div>
+                                  </div>
+                                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
+                                    isChecked ? 'bg-purple-100 text-purple-800' : 'bg-slate-100 text-slate-500'
+                                  }`}>
+                                    {isChecked ? 'Retenu' : 'Exclu'}
+                                  </span>
+                                </div>
+                              );
+                            })}
+                          </div>
                         </div>
                       )}
-
                     </div>
                   )}
 
                 </div>
               )}
 
-              {/* STEP 3: MESSAGE CONTENT & NOTES */}
+              {/* STEP 3: MESSAGE CONTENT & NOTES (UNIFIED RICH TEXT TOOLBAR ACROSS ALL MODES) */}
               {wizardStep === 3 && (
-                <div className="space-y-6 overflow-y-auto flex-1 pr-1">
-                  {commType === 'event' ? (
-                    <div className="space-y-5">
-                      <div>
-                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
-                          Objet du Mail
-                        </label>
-                        <input
-                          type="text"
-                          value={customSubject}
-                          onChange={(e) => setCustomSubject(e.target.value)}
-                          className="w-full px-4 py-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 font-medium text-slate-800 outline-none"
-                        />
-                      </div>
+                <div className="space-y-5 overflow-y-auto flex-1 pr-1">
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
+                      Objet du Mail
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Objet de la communication..."
+                      value={customSubject}
+                      onChange={(e) => setCustomSubject(e.target.value)}
+                      className="w-full px-4 py-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 font-medium text-slate-800 outline-none"
+                    />
+                  </div>
 
-                      <div>
-                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
-                          Note d'organisation du responsable (Optionnel)
-                        </label>
-                        <textarea
-                          rows={4}
-                          placeholder="Ex: Arrivée requise 15 minutes en avance avec votre tenue de concert..."
-                          value={customNote}
-                          onChange={(e) => setCustomNote(e.target.value)}
-                          className="w-full px-4 py-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 text-slate-800 outline-none"
-                        />
-                      </div>
-                    </div>
-                  ) : commType === 'schedule' ? (
-                    /* PLANNING INTRO NOTE */
-                    <div className="space-y-5">
-                      <div>
-                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
-                          Objet du Mail
-                        </label>
-                        <input
-                          type="text"
-                          value={customSubject}
-                          onChange={(e) => setCustomSubject(e.target.value)}
-                          className="w-full px-4 py-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 font-medium text-slate-800 outline-none"
-                        />
-                      </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+                      {commType === 'event' 
+                        ? "Note d'organisation du responsable (Optionnel)" 
+                        : (commType === 'schedule' 
+                          ? "Message d'introduction du planning (Optionnel)" 
+                          : "Corps du message")}
+                    </label>
 
-                      <div>
-                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
-                          Message d'introduction du planning (Optionnel)
-                        </label>
-                        <textarea
-                          rows={4}
-                          placeholder="Ex: Bonjour à tous, voici le récapitulatif chronologique des prochaines répétitions et concerts..."
-                          value={customNote}
-                          onChange={(e) => setCustomNote(e.target.value)}
-                          className="w-full px-4 py-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 text-slate-800 outline-none"
-                        />
-                      </div>
-                    </div>
-                  ) : (
-                    /* FREE COMMUNICATION WITH WORD TOOLBAR */
-                    <div className="space-y-5">
-                      <div>
-                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
-                          Objet du message
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="Objet de la communication..."
-                          value={customSubject}
-                          onChange={(e) => setCustomSubject(e.target.value)}
-                          className="w-full px-4 py-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 font-medium text-slate-800 outline-none"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
-                          Corps du message
-                        </label>
-                        
-                        <div className="border border-slate-200 rounded-2xl overflow-hidden bg-white shadow-sm focus-within:ring-2 focus-within:ring-indigo-500 transition-all">
-                          <div className="bg-slate-50 border-b border-slate-200 px-3 py-2.5 flex items-center justify-between flex-wrap gap-3">
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                              <button type="button" onClick={() => execFormat('bold')} title="Gras" className="p-2 hover:bg-slate-200 rounded-lg text-slate-800 font-extrabold text-xs transition-colors"><Bold size={16} /></button>
-                              <button type="button" onClick={() => execFormat('italic')} title="Italique" className="p-2 hover:bg-slate-200 rounded-lg text-slate-800 italic text-xs transition-colors"><Italic size={16} /></button>
-                              <button type="button" onClick={() => execFormat('underline')} title="Souligné" className="p-2 hover:bg-slate-200 rounded-lg text-slate-800 underline text-xs transition-colors"><Underline size={16} /></button>
-                              <div className="w-[1px] h-4 bg-slate-300 mx-0.5" />
-                              <select onChange={(e) => execFormat('fontSize', e.target.value)} defaultValue="3" className="px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 outline-none cursor-pointer">
-                                <option value="2">Petite</option>
-                                <option value="3">Normale</option>
-                                <option value="5">Grande</option>
-                                <option value="6">Très grande</option>
-                              </select>
-                              <div className="w-[1px] h-4 bg-slate-300 mx-0.5" />
-                              <div className="flex items-center gap-1">
-                                <span className="text-[11px] font-bold text-slate-500">Couleur :</span>
-                                {TEXT_COLORS.map(c => (
-                                  <button key={c.color} type="button" onClick={() => execFormat('foreColor', c.color)} className="w-4 h-4 rounded-full border border-slate-300 hover:scale-125 transition-transform" style={{ backgroundColor: c.color }} />
+                    <div className="border border-slate-200 rounded-2xl overflow-hidden bg-white shadow-sm focus-within:ring-2 focus-within:ring-indigo-500 transition-all">
+                      <div className="bg-slate-50 border-b border-slate-200 px-3 py-2.5 flex items-center justify-between flex-wrap gap-3">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <button type="button" onClick={() => execFormat('bold')} title="Gras" className="p-2 hover:bg-slate-200 rounded-lg text-slate-800 font-extrabold text-xs transition-colors"><Bold size={16} /></button>
+                          <button type="button" onClick={() => execFormat('italic')} title="Italique" className="p-2 hover:bg-slate-200 rounded-lg text-slate-800 italic text-xs transition-colors"><Italic size={16} /></button>
+                          <button type="button" onClick={() => execFormat('underline')} title="Souligné" className="p-2 hover:bg-slate-200 rounded-lg text-slate-800 underline text-xs transition-colors"><Underline size={16} /></button>
+                          <div className="w-[1px] h-4 bg-slate-300 mx-0.5" />
+                          <select onChange={(e) => execFormat('fontSize', e.target.value)} defaultValue="3" className="px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 outline-none cursor-pointer">
+                            <option value="2">Petite</option>
+                            <option value="3">Normale</option>
+                            <option value="5">Grande</option>
+                            <option value="6">Très grande</option>
+                          </select>
+                          <div className="w-[1px] h-4 bg-slate-300 mx-0.5" />
+                          <div className="flex items-center gap-1">
+                            <span className="text-[11px] font-bold text-slate-500">Couleur :</span>
+                            {TEXT_COLORS.map(c => (
+                              <button key={c.color} type="button" onClick={() => execFormat('foreColor', c.color)} className="w-4 h-4 rounded-full border border-slate-300 hover:scale-125 transition-transform" style={{ backgroundColor: c.color }} />
+                            ))}
+                          </div>
+                        </div>
+                        <div className="relative" ref={emojiPickerRef}>
+                          <button type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-900 rounded-xl text-xs font-bold transition-all">
+                            <Smile size={16} className="text-amber-600" />
+                            <span>Smileys</span>
+                          </button>
+                          {showEmojiPicker && (
+                            <div className="absolute right-0 top-full mt-2 z-50 bg-white border border-slate-200 rounded-2xl shadow-2xl p-3 w-80 space-y-3">
+                              <div className="flex items-center gap-1 border-b border-slate-100 pb-2">
+                                {EMOJI_CATEGORIES.map((cat, idx) => (
+                                  <button key={cat.name} type="button" onClick={() => setActiveEmojiCategory(idx)} className={`p-1.5 rounded-lg text-sm ${activeEmojiCategory === idx ? 'bg-indigo-100 text-indigo-800' : 'hover:bg-slate-100'}`}>{cat.icon}</button>
+                                ))}
+                              </div>
+                              <div className="grid grid-cols-6 gap-1 max-h-40 overflow-y-auto">
+                                {EMOJI_CATEGORIES[activeEmojiCategory].emojis.map((emoji, i) => (
+                                  <button key={i} type="button" onClick={() => insertEmojiAtCursor(emoji)} className="p-2 text-xl hover:bg-slate-100 rounded-xl">{emoji}</button>
                                 ))}
                               </div>
                             </div>
-                            <div className="relative" ref={emojiPickerRef}>
-                              <button type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-900 rounded-xl text-xs font-bold transition-all">
-                                <Smile size={16} className="text-amber-600" />
-                                <span>Smileys</span>
-                              </button>
-                              {showEmojiPicker && (
-                                <div className="absolute right-0 top-full mt-2 z-50 bg-white border border-slate-200 rounded-2xl shadow-2xl p-3 w-80 space-y-3">
-                                  <div className="flex items-center gap-1 border-b border-slate-100 pb-2">
-                                    {EMOJI_CATEGORIES.map((cat, idx) => (
-                                      <button key={cat.name} type="button" onClick={() => setActiveEmojiCategory(idx)} className={`p-1.5 rounded-lg text-sm ${activeEmojiCategory === idx ? 'bg-indigo-100 text-indigo-800' : 'hover:bg-slate-100'}`}>{cat.icon}</button>
-                                    ))}
-                                  </div>
-                                  <div className="grid grid-cols-6 gap-1 max-h-40 overflow-y-auto">
-                                    {EMOJI_CATEGORIES[activeEmojiCategory].emojis.map((emoji, i) => (
-                                      <button key={i} type="button" onClick={() => insertEmojiAtCursor(emoji)} className="p-2 text-xl hover:bg-slate-100 rounded-xl">{emoji}</button>
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                          <div
-                            ref={editorRef}
-                            contentEditable
-                            suppressContentEditableWarning
-                            onInput={(e) => setFreeMessageContent(e.currentTarget.innerHTML)}
-                            onBlur={(e) => setFreeMessageContent(e.currentTarget.innerHTML)}
-                            className="w-full min-h-[220px] max-h-[350px] p-4 text-sm bg-white focus:outline-none text-slate-800 leading-relaxed overflow-y-auto"
-                          />
+                          )}
                         </div>
                       </div>
+
+                      <div
+                        ref={editorRef}
+                        contentEditable
+                        onInput={() => syncEditorContent()}
+                        onBlur={() => syncEditorContent()}
+                        className="w-full min-h-[200px] max-h-[320px] p-4 text-sm bg-white focus:outline-none text-slate-800 leading-relaxed overflow-y-auto"
+                      />
                     </div>
-                  )}
+                  </div>
                 </div>
               )}
 
