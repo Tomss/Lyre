@@ -1686,7 +1686,7 @@ const AdminCommunication = () => {
                   <h4 className="font-bold text-slate-800 text-base">Aperçu du mail avant envoi final</h4>
 
                   <div className="border border-slate-200 rounded-3xl overflow-hidden shadow-lg bg-slate-100 text-slate-800 text-xs p-6">
-                    <div className="max-w-3xl mx-auto bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200">
+                    <div className="w-full mx-auto bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200">
                       
                       <div className="bg-white p-6 text-center border-b-2 border-indigo-600">
                         <img 
@@ -1707,14 +1707,14 @@ const AdminCommunication = () => {
 
                         <p className="font-bold text-slate-800 text-sm">Bonjour [Prénom],</p>
 
+                        {customNote && (
+                          <div className="bg-purple-50/80 border border-purple-200 p-4 rounded-2xl text-xs text-purple-950">
+                            <div className="text-purple-950 font-medium leading-relaxed" dangerouslySetInnerHTML={{ __html: customNote }} />
+                          </div>
+                        )}
+
                         {(commType === 'event' || commType === 'schedule') && selectedScheduleEvents.length > 0 ? (
                           <div className="space-y-4">
-                            {customNote && (
-                              <div className="bg-indigo-50/70 border border-indigo-200 p-4 rounded-2xl text-xs text-indigo-950 space-y-1">
-                                <strong className="font-bold text-indigo-900">Note du responsable :</strong>
-                                <p className="text-indigo-900/90 whitespace-pre-line leading-relaxed">{customNote}</p>
-                              </div>
-                            )}
 
                             {selectedScheduleEvents.length === 1 ? (
                               /* SINGLE EVENT PREVIEW CARD */
