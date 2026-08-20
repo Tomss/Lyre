@@ -293,8 +293,12 @@ app.use('/api/history', historyRouter);
 app.use('/api/communication', communicationRouter);
 
 
+// Serve static frontend in production
+const distPath = path.join(__dirname, '../dist');
+app.use(express.static(distPath));
+
 app.get('/', (req, res) => {
-  res.send('Hello from Lyre Backend!');
+  res.sendFile(path.join(distPath, 'index.html'));
 });
 
 app.get('/api/test-db', async (req, res) => {
@@ -327,6 +331,11 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
     error: err.toString(),
     stack: process.env.NODE_ENV !== 'production' ? err.stack : undefined
   });
+});
+
+// Wildcard fallback for React Router SPA routes
+app.get('*', (req, res) => {
+  res.sendFile(path.join(distPath, 'index.html'));
 });
 
 app.listen(port, () => {

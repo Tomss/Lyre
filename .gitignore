@@ -23,6 +23,7 @@ dist-ssr
 *.sln
 *.sw?
 .env
+*.sql
 batch_migrate.bat
 # Migration and sync scripts
 server/migrate_*.ts
