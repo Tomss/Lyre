@@ -334,7 +334,10 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 });
 
 // Wildcard fallback for React Router SPA routes
-app.get('*', (req, res) => {
+app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
+  if (req.path.startsWith('/api')) {
+    return next();
+  }
   res.sendFile(path.join(distPath, 'index.html'));
 });
 
