@@ -27,6 +27,7 @@ import partnersRouter from './routes/partners';
 import newsRouter from './routes/news';
 import historyRouter from './routes/history';
 import communicationRouter from './routes/communication';
+import contactRouter from './routes/contact';
 
 dotenv.config();
 
@@ -291,6 +292,7 @@ app.use('/api/partners', partnersRouter);
 app.use('/api/news', newsRouter);
 app.use('/api/history', historyRouter);
 app.use('/api/communication', communicationRouter);
+app.use('/api/contact', contactRouter);
 
 
 // Serve static frontend in production

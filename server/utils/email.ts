@@ -116,3 +116,123 @@ export const sendActivationEmail = async (
 
     return result.success;
 };
+
+export const sendContactNotificationEmail = async ({
+  name,
+  email,
+  phone,
+  subject,
+  message,
+}: {
+  name: string;
+  email: string;
+  phone?: string;
+  subject: string;
+  message: string;
+  req?: any;
+}) => {
+  const mailSubject = `[La Lyre] Nouveau message : ${subject || 'Demande de contact'}`;
+  
+  const formattedDate = new Date().toLocaleString('fr-FR', {
+    timeZone: 'Europe/Paris',
+    dateStyle: 'full',
+    timeStyle: 'short'
+  });
+
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html lang="fr">
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>${mailSubject}</title>
+    </head>
+    <body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #1e293b; width: 100%;">
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="width: 100%; background-color: #f8fafc; margin: 0; padding: 24px 0;">
+        <tr>
+          <td align="center">
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
+              
+              <!-- Header -->
+              <tr>
+                <td style="background-color: #0f172a; padding: 24px 32px; text-align: center; border-bottom: 3px solid #0d9488;">
+                  <img src="${LOGO_URL}" alt="La Lyre" style="height: 48px; width: auto; margin-bottom: 8px; display: inline-block; object-fit: contain;" />
+                  <h1 style="margin: 0; color: #ffffff; font-size: 20px; font-weight: 800;">
+                    Nouveau Message de Contact
+                  </h1>
+                  <p style="margin: 4px 0 0 0; color: #94a3b8; font-size: 12px; font-weight: 600;">
+                    Formulaire du site web
+                  </p>
+                </td>
+              </tr>
+
+              <!-- Body -->
+              <tr>
+                <td style="padding: 32px 32px; background-color: #ffffff;">
+                  
+                  <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
+                    <p style="margin: 0 0 8px 0; font-size: 12px; font-weight: 700; text-transform: uppercase; color: #166534; letter-spacing: 0.5px;">Coordonnées du visiteur</p>
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="font-size: 14px; line-height: 1.6; color: #1e293b;">
+                      <tr>
+                        <td style="padding: 4px 0; font-weight: 700; width: 110px;">Nom / Prénom :</td>
+                        <td style="padding: 4px 0;">${name}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 4px 0; font-weight: 700;">E-mail :</td>
+                        <td style="padding: 4px 0;"><a href="mailto:${email}" style="color: #0d9488; font-weight: 700; text-decoration: underline;">${email}</a></td>
+                      </tr>
+                      ${phone ? `
+                      <tr>
+                        <td style="padding: 4px 0; font-weight: 700;">Téléphone :</td>
+                        <td style="padding: 4px 0;"><a href="tel:${phone}" style="color: #0f172a; font-weight: 600; text-decoration: none;">${phone}</a></td>
+                      </tr>
+                      ` : ''}
+                      <tr>
+                        <td style="padding: 4px 0; font-weight: 700;">Sujet :</td>
+                        <td style="padding: 4px 0;"><span style="background-color: #0d9488; color: #ffffff; padding: 2px 10px; border-radius: 6px; font-size: 12px; font-weight: 700;">${subject}</span></td>
+                      </tr>
+                    </table>
+                  </div>
+
+                  <!-- Message Box -->
+                  <div style="margin-bottom: 24px;">
+                    <p style="margin: 0 0 8px 0; font-size: 13px; font-weight: 700; text-transform: uppercase; color: #475569;">Message transmis :</p>
+                    <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; font-size: 14px; line-height: 1.7; color: #0f172a; white-space: pre-wrap;">${message}</div>
+                  </div>
+
+                  <!-- Reply Action Button -->
+                  <div style="text-align: center; margin-top: 32px; margin-bottom: 12px;">
+                    <a href="mailto:${email}?subject=Re: ${encodeURIComponent(subject)}" style="background-color: #0d9488; color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 12px; font-weight: 800; font-size: 14px; display: inline-block; box-shadow: 0 4px 14px rgba(13, 148, 136, 0.3);">
+                      Répondre directement à ${name}
+                    </a>
+                  </div>
+                  <p style="text-align: center; margin: 8px 0 0 0; font-size: 11px; color: #94a3b8;">
+                    (Ou cliquez simplement sur "Répondre" dans votre logiciel de messagerie)
+                  </p>
+
+                </td>
+              </tr>
+
+              <!-- Footer -->
+              <tr>
+                <td style="background-color: #f1f5f9; padding: 16px 32px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 11px; color: #64748b;">
+                  <p style="margin: 0;">Message reçu le ${formattedDate} via le formulaire de contact du site de La Lyre.</p>
+                </td>
+              </tr>
+
+            </table>
+          </td>
+        </tr>
+      </table>
+    </body>
+    </html>
+  `;
+
+  return await sendMail({
+    from: 'La Lyre - Formulaire de Contact <communication@lalyre.fr>',
+    to: 'direction@lalyre.fr',
+    replyTo: `${name} <${email}>`,
+    subject: mailSubject,
+    html: htmlContent
+  });
+};

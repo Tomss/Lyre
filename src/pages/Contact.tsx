@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { MapPin, Mail, Clock, Send, MessageSquare, CheckCircle, AlertCircle, Heart, ChevronDown } from 'lucide-react';
 import PageHero from '../components/PageHero';
-import { BASE_URL } from '../config';
+import { BASE_URL, API_URL } from '../config';
 
 interface FormData {
   name: string;
@@ -27,6 +27,10 @@ const Contact = () => {
     message: ''
   });
 
+  // Anti-Spam Protections (Honeypot & Time-Delta)
+  const [website, setWebsite] = useState('');
+  const [formTime] = useState(() => Date.now());
+
   const [formStatus, setFormStatus] = useState<FormStatus>({
     type: 'idle',
     message: ''
@@ -39,21 +43,39 @@ const Contact = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setFormStatus({ type: 'loading', message: 'Envoi en cours...' });
+    setFormStatus({ type: 'loading', message: 'Envoi du message...' });
 
-    // Simulation d'envoi (remplacer par vraie logique d'envoi)
-    setTimeout(() => {
-      setFormStatus({
-        type: 'success',
-        message: 'Votre message a été envoyé avec succès ! Nous vous répondrons dans les plus brefs délais.'
+    try {
+      const response = await fetch(`${API_URL}/contact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...formData,
+          website,
+          formTime
+        })
       });
-      setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
 
-      // Réinitialiser le statut après 5 secondes
-      setTimeout(() => {
-        setFormStatus({ type: 'idle', message: '' });
-      }, 5000);
-    }, 2000);
+      const data = await response.json();
+
+      if (response.ok) {
+        setFormStatus({
+          type: 'success',
+          message: data.message || 'Votre message a été envoyé avec succès ! Nous vous répondrons dans les plus brefs délais.'
+        });
+        setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
+      } else {
+        setFormStatus({
+          type: 'error',
+          message: data.message || 'Une erreur est survenue lors de l\'envoi.'
+        });
+      }
+    } catch (err) {
+      setFormStatus({
+        type: 'error',
+        message: 'Une erreur réseau est survenue. Veuillez vérifier votre connexion.'
+      });
+    }
   };
 
   const subjectOptions = [
@@ -78,7 +100,7 @@ const Contact = () => {
         ]}
       />
 
-      {/* Section Localisation */}
+      {/* Localisation & Informations de Contact */}
       <section id="localisation" className="scroll-mt-20 py-24 bg-slate-50 relative overflow-hidden">
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, black 1px, transparent 0)', backgroundSize: '32px 32px' }}></div>
         
@@ -87,21 +109,19 @@ const Contact = () => {
           <div className="max-w-4xl mx-auto text-center mb-16">
             <h2 className="font-bold text-3xl md:text-5xl text-slate-900 mb-6 relative inline-block">
               Où nous trouver ?
-              <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-16 h-1 bg-cyan-500 rounded-full"></div>
+              <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-16 h-1 bg-teal-500 rounded-full"></div>
             </h2>
           </div>
 
-          <div className="max-w-6xl mx-auto">
-            <div className="bg-white rounded-[3rem] shadow-2xl overflow-hidden border border-slate-100">
-              <div className="grid grid-cols-1 lg:grid-cols-2">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            {/* Infobox */}
+            <div className="lg:col-span-5 space-y-8">
+              <div className="bg-white rounded-3xl p-8 lg:p-10 shadow-xl shadow-slate-200/50 border border-slate-100 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-teal-50 rounded-full blur-2xl -mr-10 -mt-10"></div>
                 
-                {/* Infos localisation */}
-                <div className="p-12 md:p-16 flex flex-col justify-center space-y-8 bg-white">
-                  <div className="space-y-4">
-                    <div className="inline-flex items-center space-x-2 px-4 py-2 bg-rose-50 rounded-full border border-rose-100 text-rose-600">
-                      <MapPin className="h-4 w-4" />
-                      <span className="text-[10px] font-black uppercase tracking-widest">Localisation</span>
-                    </div>
+                <div className="relative z-10 space-y-8">
+                  <div>
+                    <span className="text-xs font-bold uppercase tracking-widest text-teal-600 mb-2 block">Informations utiles</span>
                     
                     <div className="py-2 flex items-center space-x-4">
                       {(settings?.header_logo_url || settings?.site_logo_url) && (
@@ -134,54 +154,66 @@ const Contact = () => {
                         <Mail className="h-6 w-6 text-cyan-600" />
                       </div>
                       <div>
-                        <p className="font-bold text-slate-800">Email direct</p>
-                        <p className="text-slate-600 text-teal-600 font-medium">contact@lalyre.fr</p>
+                        <p className="font-bold text-slate-800">Adresse e-mail</p>
+                        <a href="mailto:direction@lalyre.fr" className="text-teal-600 hover:underline font-semibold">
+                          direction@lalyre.fr
+                        </a>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start space-x-4">
+                      <div className="bg-slate-50 p-3 rounded-xl">
+                        <Clock className="h-6 w-6 text-emerald-600" />
+                      </div>
+                      <div>
+                        <p className="font-bold text-slate-800">Horaires d'ouverture</p>
+                        <p className="text-slate-600 text-sm">Du Lundi au Vendredi <br /> De 14h00 à 19h00</p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="pt-4">
+                  <div className="pt-4 border-t border-slate-100">
                     <a 
                       href="https://www.google.com/maps/dir/?api=1&destination=1+bis+Rue+Jean+Jaurès,+52600+Chalindrey" 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="inline-flex items-center space-x-3 bg-slate-900 text-white font-bold py-4 px-8 rounded-2xl hover:bg-teal-600 transition-all duration-300 hover:shadow-xl hover:shadow-teal-900/20"
+                      className="inline-flex items-center space-x-2 text-sm font-bold text-teal-600 hover:text-teal-800 transition-colors"
                     >
-                      <span>Obtenir l'itinéraire</span>
-                      <Send className="h-4 w-4 rotate-45" />
+                      <span>Obtenir l'itinéraire sur Google Maps</span>
+                      <MapPin className="h-4 w-4" />
                     </a>
                   </div>
                 </div>
-
-                {/* Carte interactive */}
-                <div className="h-[500px] lg:h-auto relative bg-slate-100">
-                   <iframe
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2679.1303867055723!2d5.437683976865664!3d47.80558897453488!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47ed2fe83730b387%3A0x880981517cf0a7cd!2sLyre%20Cheminote%20et%20Municipale!5e0!3m2!1sfr!2sfr!4v1711230000000!5m2!1sfr!2sfr"
-                    width="100%"
-                    height="100%"
-                    style={{ border: 0 }}
-                    allowFullScreen
-                    loading="lazy"
-                    referrerPolicy="no-referrer-when-downgrade"
-                    title="Localisation de La Lyre - Chalindrey"
-                    className="w-full h-full grayscale-[0.3] hover:grayscale-0 transition-all duration-1000"
-                  ></iframe>
-                </div>
               </div>
+            </div>
+
+            {/* Google Map Container */}
+            <div className="lg:col-span-7 h-[450px] lg:h-[520px] rounded-3xl overflow-hidden shadow-2xl border border-slate-200/60 relative group">
+              <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2666.8617540263625!2d5.4410943!3d47.8080347!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47d25e0e03c4f74d%3A0xd653556bfd31e9c5!2s1%20bis%20Rue%20Jean%20Jaur%C3%A8s%2C%2052600%20Chalindrey!5e0!3m2!1sfr!2sfr!4v1710000000000!5m2!1sfr!2sfr"
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Localisation de La Lyre - Chalindrey"
+                className="w-full h-full grayscale-[0.3] hover:grayscale-0 transition-all duration-1000"
+              ></iframe>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Section Formulaire */}
+      {/* Formulaire de Contact */}
       <section id="formulaire" className="scroll-mt-20 py-24 bg-white relative overflow-hidden">
-        {/* Decorative background elements */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full pointer-events-none">
+        {/* Background Glow Elements */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-7xl h-full pointer-events-none">
           <div className="absolute top-1/4 -left-20 w-96 h-96 bg-teal-50 rounded-full blur-3xl opacity-60"></div>
           <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-cyan-50 rounded-full blur-3xl opacity-60"></div>
         </div>
 
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           {/* Section Title */}
           <div className="max-w-4xl mx-auto text-center mb-20">
             <h2 className="font-bold text-3xl md:text-5xl text-slate-900 mb-6 relative inline-block">
@@ -209,7 +241,7 @@ const Contact = () => {
                   <div className="grid grid-cols-1 gap-4">
                     {[
                       { icon: CheckCircle, title: "Inscriptions", text: "Ouvertes toute l'année", color: "text-teal-500", bg: "bg-teal-50" },
-                      { icon: Clock, title: "Réduction", text: "Réponse garantie sous 48h", color: "text-cyan-500", bg: "bg-cyan-50" },
+                      { icon: Clock, title: "Réactivité", text: "Réponse sous 48h", color: "text-cyan-500", bg: "bg-cyan-50" },
                       { icon: Heart, title: "Bienveillance", text: "Manifestations et portes ouvertes", color: "text-rose-500", bg: "bg-rose-50" }
                     ].map((item, i) => (
                       <div key={i} className="group flex items-center space-x-4 p-4 rounded-2xl bg-white border border-slate-100 hover:border-teal-200 hover:shadow-lg hover:shadow-teal-900/5 transition-all duration-500">
@@ -229,13 +261,25 @@ const Contact = () => {
               {/* Formulaire de Contact Premium */}
               <div className="lg:col-span-8">
                 <div className="h-full bg-white rounded-[2.5rem] p-10 lg:p-14 shadow-[0_40px_80px_-15px_rgba(15,23,42,0.08)] border border-slate-100 relative group overflow-hidden">
-                  {/* Glass shimmer effect */}
                   <div className="absolute -top-[100%] -left-[100%] w-[300%] h-[300%] bg-[conic-gradient(from_0deg,transparent,rgba(20,184,166,0.03),transparent)] animate-[spin_20s_linear_infinite] pointer-events-none"></div>
                   
                   <form onSubmit={handleSubmit} className="relative z-10 space-y-8">
+                    
+                    {/* Honeypot Anti-Spam Hidden Field */}
+                    <input
+                      type="text"
+                      name="website"
+                      value={website}
+                      onChange={(e) => setWebsite(e.target.value)}
+                      tabIndex={-1}
+                      autoComplete="off"
+                      aria-hidden="true"
+                      className="hidden opacity-0 pointer-events-none absolute left-[-9999px] top-[-9999px]"
+                    />
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                       <div className="space-y-3 group/field">
-                        <label className="text-[11px] font-bold uppercase tracking-widest text-slate-400 ml-1 transition-colors group-focus-within/field:text-teal-600">Nom Complet</label>
+                        <label className="text-[11px] font-bold uppercase tracking-widest text-slate-400 ml-1 transition-colors group-focus-within/field:text-teal-600">Nom Complet *</label>
                         <div className="relative">
                           <input
                             type="text"
@@ -248,8 +292,9 @@ const Contact = () => {
                           />
                         </div>
                       </div>
+
                       <div className="space-y-3 group/field">
-                        <label className="text-[11px] font-bold uppercase tracking-widest text-slate-400 ml-1 transition-colors group-focus-within/field:text-teal-600">Email Professionnel</label>
+                        <label className="text-[11px] font-bold uppercase tracking-widest text-slate-400 ml-1 transition-colors group-focus-within/field:text-teal-600">Votre Adresse Email *</label>
                         <div className="relative">
                           <input
                             type="email"
@@ -278,8 +323,9 @@ const Contact = () => {
                           />
                         </div>
                       </div>
+
                       <div className="space-y-3 group/field">
-                        <label className="text-[11px] font-bold uppercase tracking-widest text-slate-400 ml-1 transition-colors group-focus-within/field:text-teal-600">Objet de la demande</label>
+                        <label className="text-[11px] font-bold uppercase tracking-widest text-slate-400 ml-1 transition-colors group-focus-within/field:text-teal-600">Objet de la demande *</label>
                         <div className="relative">
                           <select
                             name="subject"
@@ -301,7 +347,7 @@ const Contact = () => {
                     </div>
 
                     <div className="space-y-3 group/field">
-                      <label className="text-[11px] font-bold uppercase tracking-widest text-slate-400 ml-1 transition-colors group-focus-within/field:text-teal-600">Votre Message</label>
+                      <label className="text-[11px] font-bold uppercase tracking-widest text-slate-400 ml-1 transition-colors group-focus-within/field:text-teal-600">Votre Message *</label>
                       <textarea
                         name="message"
                         value={formData.message}
@@ -330,7 +376,7 @@ const Contact = () => {
                       <button
                         type="submit"
                         disabled={formStatus.type === 'loading'}
-                        className="w-full inline-flex items-center justify-center space-x-3 bg-slate-900 text-white font-bold py-5 px-8 rounded-2xl hover:bg-teal-600 transition-all duration-300 hover:shadow-xl hover:shadow-teal-900/20 disabled:opacity-50"
+                        className="w-full inline-flex items-center justify-center space-x-3 bg-slate-900 text-white font-bold py-5 px-8 rounded-2xl hover:bg-teal-600 transition-all duration-300 hover:shadow-xl hover:shadow-teal-900/20 disabled:opacity-50 cursor-pointer"
                       >
                         {formStatus.type === 'loading' ? (
                           <div className="animate-spin rounded-full h-5 w-5 border-2 border-white/30 border-t-white"></div>
