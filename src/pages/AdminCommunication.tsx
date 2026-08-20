@@ -132,6 +132,8 @@ const AdminCommunication = () => {
   // Search & Filter states
   const [memberSearchTerm, setMemberSearchTerm] = useState('');
   const [eventSearchTerm, setEventSearchTerm] = useState('');
+  const [eventOrchestraFilter, setEventOrchestraFilter] = useState<string>('all');
+  const [showMusicianDetails, setShowMusicianDetails] = useState<boolean>(false);
   const [historySearchTerm, setHistorySearchTerm] = useState('');
   const [historyTypeFilter, setHistoryTypeFilter] = useState<'all' | 'free' | 'event' | 'schedule' | 'test'>('all');
   const [historyDateFilter, setHistoryDateFilter] = useState<'all' | '7days' | '30days' | 'thisYear'>('all');
@@ -333,6 +335,8 @@ const AdminCommunication = () => {
     setSelectedOrchestraNames([]);
     setSelectedUserIds([]);
     setSelectedScheduleEventIds([]);
+    setShowMusicianDetails(false);
+    setEventOrchestraFilter('all');
     setShowEmojiPicker(false);
     setShowWizard(true);
     fetchUpcomingEvents();
@@ -446,10 +450,27 @@ const AdminCommunication = () => {
       a.firstName.localeCompare(b.firstName, 'fr', { sensitivity: 'base' })
     );
 
-  // Filter upcoming events based on search
-  const filteredUpcomingEvents = events.filter(e => 
-    `${e.title} ${e.location} ${e.event_type}`.toLowerCase().includes(eventSearchTerm.toLowerCase())
-  );
+  // Available unique orchestra names across upcoming events
+  const allEventOrchestraNames = Array.from(
+    new Set(events.flatMap(e => (e.orchestras || []).map(o => o.name)).filter(Boolean))
+  ).sort();
+
+  // Orchestra names targeted by currently selected events
+  const targetedOrchestraNames = Array.from(
+    new Set(
+      events
+        .filter(e => selectedScheduleEventIds.includes(e.id))
+        .flatMap(e => (e.orchestras || []).map(o => o.name))
+        .filter(Boolean)
+    )
+  ).sort();
+
+  // Filter upcoming events based on search and orchestra filter
+  const filteredUpcomingEvents = events.filter(e => {
+    const matchesSearch = `${e.title} ${e.location} ${e.event_type}`.toLowerCase().includes(eventSearchTerm.toLowerCase());
+    const matchesOrchestra = eventOrchestraFilter === 'all' || (e.orchestras || []).some(o => o.name === eventOrchestraFilter);
+    return matchesSearch && matchesOrchestra;
+  });
 
   // Filter history based on type, date, and search term
   const filteredHistory = history.filter(item => {
@@ -1134,33 +1155,65 @@ const AdminCommunication = () => {
                     </div>
                   )}
 
-                  {commType === 'schedule' ? (
-                    /* PLANNING / MULTI-EVENT MODE TARGETING */
+                  {(commType === 'event' || commType === 'schedule') ? (
+                    /* EVENT & SCHEDULE MULTI-SELECTION TARGETING */
                     <div className="space-y-6">
                       
-                      {/* Event Multi-Selection */}
+                      {/* Header with Search & Orchestra Filter */}
                       <div>
-                        <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+                        <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
                           <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-500">
-                            1. Sélectionner les événements à inclure au planning ({selectedScheduleEventIds.length} retenus)
+                            1. Sélectionner le ou les événements cibles ({selectedScheduleEventIds.length} retenu{selectedScheduleEventIds.length > 1 ? 's' : ''})
                           </label>
 
-                          <div className="flex items-center gap-2 text-xs">
-                            <button type="button" onClick={() => setSelectedScheduleEventIds(events.map(e => e.id))} className="font-bold text-teal-600 hover:underline">Tous les événements</button>
-                            <span className="text-slate-300">•</span>
-                            <button type="button" onClick={() => setSelectedScheduleEventIds(events.slice(0, 3).map(e => e.id))} className="font-bold text-indigo-600 hover:underline">3 prochains</button>
-                            <span className="text-slate-300">•</span>
-                            <button type="button" onClick={() => setSelectedScheduleEventIds([])} className="font-bold text-slate-500 hover:underline">Aucun</button>
+                          <div className="flex items-center gap-2.5 flex-wrap">
+                            {/* Orchestra Filter */}
+                            {allEventOrchestraNames.length > 0 && (
+                              <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl text-xs">
+                                <Filter size={14} className="text-slate-400" />
+                                <select
+                                  value={eventOrchestraFilter}
+                                  onChange={(e) => setEventOrchestraFilter(e.target.value)}
+                                  className="bg-transparent text-xs font-bold text-slate-700 outline-none cursor-pointer"
+                                >
+                                  <option value="all">Tous les orchestres ({events.length})</option>
+                                  {allEventOrchestraNames.map(orch => (
+                                    <option key={orch} value={orch}>{orch}</option>
+                                  ))}
+                                </select>
+                              </div>
+                            )}
+
+                            {/* Event Search Input */}
+                            <div className="relative w-48">
+                              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                              <input
+                                type="text"
+                                placeholder="Chercher un événement..."
+                                value={eventSearchTerm}
+                                onChange={(e) => setEventSearchTerm(e.target.value)}
+                                className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none font-medium"
+                              />
+                            </div>
+
+                            {/* Quick selection links */}
+                            <div className="flex items-center gap-2 text-xs">
+                              <button type="button" onClick={() => setSelectedScheduleEventIds(filteredUpcomingEvents.map(e => e.id))} className="font-bold text-indigo-600 hover:underline">Tous les filtrés</button>
+                              <span className="text-slate-300">•</span>
+                              <button type="button" onClick={() => setSelectedScheduleEventIds(filteredUpcomingEvents.slice(0, 3).map(e => e.id))} className="font-bold text-teal-600 hover:underline">3 prochains</button>
+                              <span className="text-slate-300">•</span>
+                              <button type="button" onClick={() => setSelectedScheduleEventIds([])} className="font-bold text-slate-500 hover:underline">Aucun</button>
+                            </div>
                           </div>
                         </div>
 
                         {loadingEvents ? (
                           <div className="py-12 text-center text-slate-400 text-sm">Chargement des événements...</div>
-                        ) : events.length === 0 ? (
-                          <div className="py-12 text-center text-slate-400 text-sm">Aucun événement à venir trouvé.</div>
+                        ) : filteredUpcomingEvents.length === 0 ? (
+                          <div className="py-12 text-center text-slate-400 text-sm">Aucun événement correspondant trouvé.</div>
                         ) : (
-                          <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
-                            {events.map(ev => {
+                          <div className="space-y-2.5 max-h-60 overflow-y-auto pr-1">
+                            {filteredUpcomingEvents.map(ev => {
                               const isChecked = selectedScheduleEventIds.includes(ev.id);
                               return (
                                 <div
@@ -1168,7 +1221,7 @@ const AdminCommunication = () => {
                                   onClick={() => toggleScheduleEventSelection(ev.id)}
                                   className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-4 ${
                                     isChecked 
-                                      ? 'bg-teal-50/70 border-teal-600 ring-2 ring-teal-600/20' 
+                                      ? 'bg-indigo-50/80 border-indigo-600 ring-2 ring-indigo-600/20' 
                                       : 'bg-white border-slate-200 hover:bg-slate-50'
                                   }`}
                                 >
@@ -1177,7 +1230,7 @@ const AdminCommunication = () => {
                                       type="checkbox"
                                       checked={isChecked}
                                       onChange={() => {}}
-                                      className="w-4 h-4 text-teal-600 rounded border-slate-300 focus:ring-teal-500 cursor-pointer"
+                                      className="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer"
                                     />
                                     <div>
                                       <div className="flex items-center gap-2 mb-1 flex-wrap">
@@ -1198,130 +1251,11 @@ const AdminCommunication = () => {
                                       </p>
                                     </div>
                                   </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
 
-                      {/* Recipient Musicians for selected events */}
-                      <div className="space-y-4 pt-4 border-t border-slate-200">
-                        <div className="bg-teal-50 border border-teal-200 rounded-2xl p-4 text-xs text-teal-900 flex items-center justify-between flex-wrap gap-2">
-                          <div className="flex items-center gap-2.5">
-                            <Users size={20} className="text-teal-600 flex-shrink-0" />
-                            <span>Musiciens ciblés par les {selectedScheduleEventIds.length} événements du planning</span>
-                          </div>
-                          <span className="font-black bg-teal-600 text-white px-3 py-1 rounded-full text-xs flex-shrink-0">
-                            {selectedUserIds.length} / {recipients.length} membre(s) retenu(s)
-                          </span>
-                        </div>
-
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs font-extrabold uppercase tracking-wider text-slate-500">
-                              2. Musiciens de la sélection ({recipients.length})
-                            </span>
-                            <div className="flex items-center gap-2 text-xs">
-                              <button type="button" onClick={() => setSelectedUserIds(recipients.map(r => r.id))} className="font-bold text-teal-600 hover:underline">Tout cocher</button>
-                              <span className="text-slate-300">•</span>
-                              <button type="button" onClick={() => setSelectedUserIds([])} className="font-bold text-slate-500 hover:underline">Tout décocher</button>
-                            </div>
-                          </div>
-
-                          <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-                            {filteredRecipients.map(r => {
-                              const isChecked = selectedUserIds.includes(r.id);
-                              return (
-                                <div 
-                                  key={r.id} 
-                                  onClick={() => toggleUserSelection(r.id)}
-                                  className={`p-3 rounded-xl border flex items-center justify-between text-xs cursor-pointer transition-colors ${
-                                    isChecked ? 'bg-teal-50/60 border-teal-300 shadow-xs' : 'bg-white border-slate-200 hover:bg-slate-50 opacity-60'
-                                  }`}
-                                >
-                                  <div className="flex items-center gap-3">
-                                    <input
-                                      type="checkbox"
-                                      checked={isChecked}
-                                      onChange={() => {}}
-                                      className="w-4 h-4 text-teal-600 rounded border-slate-300 focus:ring-teal-500 cursor-pointer"
-                                    />
-                                    <div>
-                                      <span className="font-bold text-slate-900 text-sm">{r.lastName.toUpperCase()} <span className="font-semibold text-slate-700">{r.firstName}</span></span>
-                                      <span className="text-slate-400 text-xs ml-2">{r.email}</span>
-                                    </div>
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      </div>
-
-                    </div>
-                  ) : commType === 'event' ? (
-                    /* Event Mode Targeting */
-                    <div className="space-y-6">
-                      <div>
-                        <div className="flex items-center justify-between mb-4">
-                          <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-500">
-                            1. Sélectionner l'Événement Cible
-                          </label>
-
-                          <div className="relative w-64">
-                            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                            <input
-                              type="text"
-                              placeholder="Chercher un événement..."
-                              value={eventSearchTerm}
-                              onChange={(e) => setEventSearchTerm(e.target.value)}
-                              className="w-full pl-9 pr-3.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none"
-                            />
-                          </div>
-                        </div>
-
-                        {loadingEvents ? (
-                          <div className="py-12 text-center text-slate-400 text-sm">Chargement des événements...</div>
-                        ) : filteredUpcomingEvents.length === 0 ? (
-                          <div className="py-12 text-center text-slate-400 text-sm">Aucun événement à venir trouvé.</div>
-                        ) : (
-                          <div className="space-y-3 max-h-56 overflow-y-auto pr-1">
-                            {filteredUpcomingEvents.map(ev => {
-                              const isSelected = ev.id === selectedEventId;
-                              return (
-                                <div
-                                  key={ev.id}
-                                  onClick={() => setSelectedEventId(ev.id)}
-                                  className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-4 ${
-                                    isSelected 
-                                      ? 'bg-indigo-50/70 border-indigo-600 ring-2 ring-indigo-600/20' 
-                                      : 'bg-white border-slate-200 hover:bg-slate-50'
-                                  }`}
-                                >
-                                  <div>
-                                    <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                                      <span className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full ${
-                                        ev.event_type === 'concert' ? 'bg-amber-100 text-amber-800' : 'bg-indigo-100 text-indigo-800'
-                                      }`}>
-                                        {ev.event_type === 'concert' ? 'Concert' : (ev.event_type === 'repetition' ? 'Répétition' : 'Événement')}
-                                      </span>
-                                      {(ev.orchestras || []).map(o => (
-                                        <span key={o.id} className="text-[10px] font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full">
-                                          {o.name}
-                                        </span>
-                                      ))}
-                                    </div>
-                                    <h5 className="font-bold text-slate-900 text-base">{ev.title}</h5>
-                                    <p className="text-xs text-slate-500 mt-1">
-                                      📅 {formatEventDate(ev.event_date)} {ev.location ? `• 📍 ${ev.location}` : ''}
-                                    </p>
-                                  </div>
-                                  
-                                  <div className={`w-6 h-6 rounded-full border flex items-center justify-center flex-shrink-0 ${
-                                    isSelected ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-slate-300'
+                                  <div className={`w-5 h-5 rounded-full border flex items-center justify-center flex-shrink-0 ${
+                                    isChecked ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-slate-300'
                                   }`}>
-                                    {isSelected && <Check size={14} className="stroke-[3]" />}
+                                    {isChecked && <Check size={12} className="stroke-[3]" />}
                                   </div>
                                 </div>
                               );
@@ -1330,67 +1264,101 @@ const AdminCommunication = () => {
                         )}
                       </div>
 
-                      {selectedEvent && (
-                        <div className="space-y-4 pt-4 border-t border-slate-200">
-                          <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-4 text-xs text-indigo-900 flex items-center justify-between flex-wrap gap-2">
+                      {/* Recipient Summary & Collapsible Musician Details */}
+                      <div className="space-y-4 pt-4 border-t border-slate-200">
+                        <div className="bg-indigo-50/80 border border-indigo-200 rounded-2xl p-4 text-xs text-indigo-900 space-y-2.5">
+                          <div className="flex items-center justify-between flex-wrap gap-2">
                             <div className="flex items-center gap-2.5">
                               <Users size={20} className="text-indigo-600 flex-shrink-0" />
-                              <span>Musiciens ciblés par l'événement : <strong>{selectedEvent.title}</strong> ({(selectedEvent.orchestras || []).map(o => o.name).join(', ')})</span>
+                              <span className="font-medium">
+                                Événement(s) retenu(s) : <strong>{selectedScheduleEventIds.length}</strong>
+                                {targetedOrchestraNames.length > 0 && (
+                                  <> • Orchestre(s) : <strong>{targetedOrchestraNames.join(', ')}</strong></>
+                                )}
+                              </span>
                             </div>
                             <span className="font-black bg-indigo-600 text-white px-3 py-1 rounded-full text-xs flex-shrink-0">
-                              {selectedUserIds.length} / {recipients.length} membre(s) retenu(s)
+                              {selectedUserIds.length} / {recipients.length} membre(s) sélectionné(s)
                             </span>
                           </div>
 
-                          <div className="space-y-2">
-                            <div className="flex items-center justify-between">
+                          <div className="flex items-center justify-between pt-2 border-t border-indigo-200/60 text-[11px] text-indigo-800 flex-wrap gap-2">
+                            <span className="italic">💡 Par défaut, tous les musiciens des événements sélectionnés sont cochés.</span>
+                            <button
+                              type="button"
+                              onClick={() => setShowMusicianDetails(!showMusicianDetails)}
+                              className="font-bold text-indigo-700 hover:text-indigo-900 underline flex items-center gap-1 cursor-pointer"
+                            >
+                              {showMusicianDetails ? (
+                                <><span>▲ Masquer la liste des musiciens</span></>
+                              ) : (
+                                <><span>👁️ Déplier / Personnaliser la liste des musiciens ({recipients.length})</span></>
+                              )}
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Collapsible Musician List */}
+                        {showMusicianDetails && (
+                          <div className="space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                            <div className="flex items-center justify-between flex-wrap gap-2">
                               <span className="text-xs font-extrabold uppercase tracking-wider text-slate-500">
-                                2. Musiciens de l'événement ({recipients.length})
+                                Musiciens de la sélection ({recipients.length})
                               </span>
-                              <div className="flex items-center gap-2 text-xs">
+                              <div className="flex items-center gap-3 text-xs">
                                 <button type="button" onClick={() => setSelectedUserIds(recipients.map(r => r.id))} className="font-bold text-indigo-600 hover:underline">Tout cocher</button>
                                 <span className="text-slate-300">•</span>
                                 <button type="button" onClick={() => setSelectedUserIds([])} className="font-bold text-slate-500 hover:underline">Tout décocher</button>
                               </div>
                             </div>
 
+                            {/* Search Filter for Members */}
+                            <div className="relative">
+                              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                              <input
+                                type="text"
+                                placeholder="Rechercher un membre..."
+                                value={memberSearchTerm}
+                                onChange={(e) => setMemberSearchTerm(e.target.value)}
+                                className="w-full pl-8 pr-3 py-1.5 text-xs bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none"
+                              />
+                            </div>
+
                             <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
-                              {[...recipients]
-                                .sort((a, b) => a.lastName.localeCompare(b.lastName, 'fr', { sensitivity: 'base' }) || a.firstName.localeCompare(b.firstName, 'fr', { sensitivity: 'base' }))
-                                .map(r => {
-                                  const isChecked = selectedUserIds.includes(r.id);
-                                  return (
-                                    <div 
-                                      key={r.id} 
-                                      onClick={() => toggleUserSelection(r.id)}
-                                      className={`p-3 rounded-xl border flex items-center justify-between text-xs cursor-pointer transition-colors ${
-                                        isChecked ? 'bg-indigo-50/60 border-indigo-300 shadow-xs' : 'bg-white border-slate-200 hover:bg-slate-50 opacity-60'
-                                      }`}
-                                    >
-                                      <div className="flex items-center gap-3">
-                                        <input
-                                          type="checkbox"
-                                          checked={isChecked}
-                                          onChange={() => {}}
-                                          className="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer"
-                                        />
-                                        <div>
-                                          <span className="font-bold text-slate-900 text-sm">{r.lastName.toUpperCase()} <span className="font-semibold text-slate-700">{r.firstName}</span></span>
-                                          <span className="text-slate-400 text-xs ml-2">{r.email}</span>
-                                        </div>
+                              {filteredRecipients.map(r => {
+                                const isChecked = selectedUserIds.includes(r.id);
+                                return (
+                                  <div 
+                                    key={r.id} 
+                                    onClick={() => toggleUserSelection(r.id)}
+                                    className={`p-3 rounded-xl border flex items-center justify-between text-xs cursor-pointer transition-colors ${
+                                      isChecked ? 'bg-indigo-50/60 border-indigo-300 shadow-xs' : 'bg-white border-slate-200 hover:bg-slate-50 opacity-60'
+                                    }`}
+                                  >
+                                    <div className="flex items-center gap-3">
+                                      <input
+                                        type="checkbox"
+                                        checked={isChecked}
+                                        onChange={() => {}}
+                                        className="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer"
+                                      />
+                                      <div>
+                                        <span className="font-bold text-slate-900 text-sm">{r.lastName.toUpperCase()} <span className="font-semibold text-slate-700">{r.firstName}</span></span>
+                                        <span className="text-slate-400 text-xs ml-2">{r.email}</span>
                                       </div>
-                                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
-                                        isChecked ? 'bg-indigo-100 text-indigo-800' : 'bg-slate-100 text-slate-500'
-                                      }`}>
-                                        {isChecked ? 'Retenu' : 'Exclu'}
-                                      </span>
                                     </div>
-                                  );
-                                })}
+                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
+                                      isChecked ? 'bg-indigo-100 text-indigo-800' : 'bg-slate-100 text-slate-500'
+                                    }`}>
+                                      {isChecked ? 'Retenu' : 'Exclu'}
+                                    </span>
+                                  </div>
+                                );
+                              })}
                             </div>
                           </div>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
                   ) : (
                     /* FREE COMMUNICATION TARGETING */

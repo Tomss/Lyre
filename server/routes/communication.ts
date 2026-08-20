@@ -243,10 +243,15 @@ router.post('/send', async (req, res) => {
     let orchestraTag = 'Tous les membres';
 
     if (type === 'event') {
-      if (!eventId) {
+      const targetIds = (selectedEventIds && Array.isArray(selectedEventIds) && selectedEventIds.length > 0)
+        ? selectedEventIds
+        : (eventId ? [eventId] : []);
+
+      if (targetIds.length === 0) {
         return res.status(400).json({ message: 'L\'événement cible est requis pour une communication liée à un événement.' });
       }
 
+      const placeholders = targetIds.map(() => '?').join(',');
       const [eventRows]: any = await pool.query(`
         SELECT 
           e.id, e.title, e.description, e.event_type, 
@@ -256,29 +261,31 @@ router.post('/send', async (req, res) => {
         FROM events e
         LEFT JOIN event_orchestras eo ON e.id = eo.event_id
         LEFT JOIN orchestras o ON eo.orchestra_id = o.id
-        WHERE e.id = ?
+        WHERE e.id IN (${placeholders})
         GROUP BY e.id, e.title, e.description, e.event_type, e.event_date, e.location, e.practical_info
-      `, [eventId]);
+        ORDER BY e.event_date ASC
+      `, targetIds);
 
       if (!eventRows || eventRows.length === 0) {
         return res.status(404).json({ message: 'Événement non trouvé.' });
       }
 
+      scheduleEvents = eventRows;
       event = eventRows[0];
 
       const [orchestras]: any = await pool.query(`
-        SELECT orchestra_id FROM event_orchestras WHERE event_id = ?
-      `, [eventId]);
+        SELECT DISTINCT orchestra_id FROM event_orchestras WHERE event_id IN (${placeholders})
+      `, targetIds);
       const orchestraIds = orchestras.map((o: any) => o.orchestra_id);
 
       if (orchestraIds.length > 0) {
-        const placeholders = orchestraIds.map(() => '?').join(',');
+        const orchPlaceholders = orchestraIds.map(() => '?').join(',');
         const [allRecipients]: any = await pool.query(`
           SELECT DISTINCT u.id, u.email, p.first_name AS firstName, p.last_name AS lastName
           FROM users u
           JOIN profiles p ON u.id = p.id
           JOIN user_orchestras uo ON p.id = uo.user_id
-          WHERE uo.orchestra_id IN (${placeholders}) AND p.status != 'Inactive'
+          WHERE uo.orchestra_id IN (${orchPlaceholders}) AND p.status != 'Inactive'
         `, orchestraIds);
         finalRecipients = allRecipients;
       }
