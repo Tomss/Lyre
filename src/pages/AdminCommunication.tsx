@@ -1026,11 +1026,11 @@ const AdminCommunication = () => {
             </div>
 
             {/* Modal Body */}
-            <div className="p-8 overflow-y-auto flex-1 space-y-6">
+            <div className="p-8 flex-1 min-h-0 flex flex-col overflow-hidden">
 
               {/* STEP 1: Choose Type (3 OPTIONS) */}
               {wizardStep === 1 && (
-                <div className="space-y-6">
+                <div className="space-y-6 overflow-y-auto flex-1 pr-1">
                   <h4 className="font-extrabold text-slate-800 text-lg">Quel type de communication souhaitez-vous envoyer ?</h4>
                   
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -1108,15 +1108,15 @@ const AdminCommunication = () => {
 
               {/* STEP 2: TARGET & SELECTION */}
               {wizardStep === 2 && (
-                <div className="space-y-6">
+                <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
 
                   {(commType === 'event' || commType === 'schedule') ? (
                     /* EVENT & SCHEDULE MULTI-SELECTION TARGETING */
-                    <div className="space-y-6">
+                    <div className="flex flex-col flex-1 min-h-0 overflow-hidden space-y-3">
                       
                       {/* Header with Search & Orchestra Filter */}
-                      <div>
-                        <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+                      <div className="flex-shrink-0">
+                        <div className="flex items-center justify-between mb-2 flex-wrap gap-3">
                           <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-500">
                             1. Sélectionner le ou les événements ({selectedScheduleEventIds.length} retenu{selectedScheduleEventIds.length > 1 ? 's' : ''})
                           </label>
@@ -1161,67 +1161,68 @@ const AdminCommunication = () => {
                             </div>
                           </div>
                         </div>
+                      </div>
 
+                      {/* Events List Container (The ONLY scrollable container!) */}
+                      <div className="flex-1 min-h-0 overflow-y-auto pr-1 space-y-2.5">
                         {loadingEvents ? (
                           <div className="py-12 text-center text-slate-400 text-sm">Chargement des événements...</div>
                         ) : filteredUpcomingEvents.length === 0 ? (
                           <div className="py-12 text-center text-slate-400 text-sm">Aucun événement correspondant trouvé.</div>
                         ) : (
-                          <div className="space-y-2.5 max-h-[520px] overflow-y-auto pr-1">
-                            {filteredUpcomingEvents.map(ev => {
-                              const isChecked = selectedScheduleEventIds.includes(ev.id);
-                              return (
-                                <div
-                                  key={ev.id}
-                                  onClick={() => toggleScheduleEventSelection(ev.id)}
-                                  className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-4 ${
-                                    isChecked 
-                                      ? 'bg-indigo-50/80 border-indigo-600 ring-2 ring-indigo-600/20' 
-                                      : 'bg-white border-slate-200 hover:bg-slate-50'
-                                  }`}
-                                >
-                                  <div className="flex items-center gap-3">
-                                    <input 
-                                      type="checkbox"
-                                      checked={isChecked}
-                                      onChange={() => {}}
-                                      className="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer"
-                                    />
-                                    <div>
-                                      <div className="flex items-center gap-2 mb-1 flex-wrap">
-                                        <span className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full ${
-                                          ev.event_type === 'concert' ? 'bg-amber-100 text-amber-800' : 'bg-indigo-100 text-indigo-800'
-                                        }`}>
-                                          {ev.event_type === 'concert' ? 'Concert' : (ev.event_type === 'repetition' ? 'Répétition' : 'Événement')}
+                          filteredUpcomingEvents.map(ev => {
+                            const isChecked = selectedScheduleEventIds.includes(ev.id);
+                            return (
+                              <div
+                                key={ev.id}
+                                onClick={() => toggleScheduleEventSelection(ev.id)}
+                                className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-4 ${
+                                  isChecked 
+                                    ? 'bg-indigo-50/80 border-indigo-600 ring-2 ring-indigo-600/20' 
+                                    : 'bg-white border-slate-200 hover:bg-slate-50'
+                                }`}
+                              >
+                                <div className="flex items-center gap-3">
+                                  <input 
+                                    type="checkbox"
+                                    checked={isChecked}
+                                    onChange={() => {}}
+                                    className="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer"
+                                  />
+                                  <div>
+                                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                      <span className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full ${
+                                        ev.event_type === 'concert' ? 'bg-amber-100 text-amber-800' : 'bg-indigo-100 text-indigo-800'
+                                      }`}>
+                                        {ev.event_type === 'concert' ? 'Concert' : (ev.event_type === 'repetition' ? 'Répétition' : 'Événement')}
+                                      </span>
+                                      {(ev.orchestras || []).map(o => (
+                                        <span key={o.id} className="text-[10px] font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full">
+                                          {o.name}
                                         </span>
-                                        {(ev.orchestras || []).map(o => (
-                                          <span key={o.id} className="text-[10px] font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full">
-                                            {o.name}
-                                          </span>
-                                        ))}
-                                      </div>
-                                      <h5 className="font-bold text-slate-900 text-sm">{ev.title}</h5>
-                                      <p className="text-xs text-slate-500">
-                                        📅 {formatEventDate(ev.event_date)} {ev.location ? `• 📍 ${ev.location}` : ''}
-                                      </p>
+                                      ))}
                                     </div>
-                                  </div>
-
-                                  <div className={`w-5 h-5 rounded-full border flex items-center justify-center flex-shrink-0 ${
-                                    isChecked ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-slate-300'
-                                  }`}>
-                                    {isChecked && <Check size={12} className="stroke-[3]" />}
+                                    <h5 className="font-bold text-slate-900 text-sm">{ev.title}</h5>
+                                    <p className="text-xs text-slate-500">
+                                      📅 {formatEventDate(ev.event_date)} {ev.location ? `• 📍 ${ev.location}` : ''}
+                                    </p>
                                   </div>
                                 </div>
-                              );
-                            })}
-                          </div>
+
+                                <div className={`w-5 h-5 rounded-full border flex items-center justify-center flex-shrink-0 ${
+                                  isChecked ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-slate-300'
+                                }`}>
+                                  {isChecked && <Check size={12} className="stroke-[3]" />}
+                                </div>
+                              </div>
+                            );
+                          })
                         )}
                       </div>
 
                       {/* Recipient Summary & Collapsible Musician Details */}
-                      <div className="space-y-4 pt-4 border-t border-slate-200">
-                        <div className="bg-indigo-50/80 border border-indigo-200 rounded-2xl p-4 text-xs text-indigo-900 space-y-2">
+                      <div className="flex-shrink-0 pt-3 border-t border-slate-200 space-y-3">
+                        <div className="bg-indigo-50/80 border border-indigo-200 rounded-2xl p-3.5 text-xs text-indigo-900 space-y-2">
                           <div className="flex items-center justify-between flex-wrap gap-2">
                             <div className="flex items-center gap-2.5">
                               <Users size={20} className="text-indigo-600 flex-shrink-0" />
@@ -1523,7 +1524,7 @@ const AdminCommunication = () => {
 
               {/* STEP 3: MESSAGE CONTENT & NOTES */}
               {wizardStep === 3 && (
-                <div className="space-y-6">
+                <div className="space-y-6 overflow-y-auto flex-1 pr-1">
                   {commType === 'event' ? (
                     <div className="space-y-5">
                       <div>
@@ -1659,7 +1660,7 @@ const AdminCommunication = () => {
 
               {/* STEP 4: Live Preview & Send */}
               {wizardStep === 4 && (
-                <div className="space-y-4">
+                <div className="space-y-4 overflow-y-auto flex-1 pr-1">
                   <h4 className="font-bold text-slate-800 text-base">Aperçu du mail avant envoi final</h4>
 
                   <div className="border border-slate-200 rounded-3xl overflow-hidden shadow-lg bg-slate-100 text-slate-800 text-xs p-6">
