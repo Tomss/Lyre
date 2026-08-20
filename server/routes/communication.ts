@@ -3,6 +3,7 @@ import { authenticateToken } from '../middleware/auth';
 import pool from '../db';
 import crypto from 'crypto';
 import { logActivity } from '../utils/activity';
+import { sendMail } from '../utils/emailSender';
 
 const router = Router();
 
@@ -533,31 +534,17 @@ router.post('/send', async (req, res) => {
         </html>
       `;
 
-      try {
-        const response = await fetch('https://api.resend.com/emails', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${resendApiKey}`
-          },
-          body: JSON.stringify({
-            from: 'La Lyre - Communication <communication@lalyre.fr>',
-            to: [recipient.email],
-            subject: subject,
-            html: htmlContent
-          })
-        });
+      const sendResult = await sendMail({
+        from: 'La Lyre - Communication <communication@lalyre.fr>',
+        to: recipient.email,
+        subject,
+        html: htmlContent
+      });
 
-        if (response.ok) {
-          successCount++;
-        } else {
-          failCount++;
-          const errData = await response.json();
-          console.error(`[Resend Error for ${recipient.email}]:`, errData);
-        }
-      } catch (e) {
+      if (sendResult.success) {
+        successCount++;
+      } else {
         failCount++;
-        console.error(`[Fetch Error for ${recipient.email}]:`, e);
       }
     }
 

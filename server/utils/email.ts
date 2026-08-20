@@ -1,4 +1,5 @@
 import pool from '../db';
+import { sendMail } from './emailSender';
 
 const LOGO_URL = 'https://res.cloudinary.com/dr2sbjrms/image/upload/v1774629447/lyre-uploads/ll5sutyvmfrocohfv3yd.png';
 
@@ -6,7 +7,6 @@ export const sendActivationEmail = async (email: string, firstName: string, toke
     // Le lien frontend où l'utilisateur créera son mot de passe
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
     const activationLink = `${frontendUrl}/activer-compte?token=${token}`;
-    const resendApiKey = process.env.RESEND_API_KEY;
 
     const subject = isReset ? '[La Lyre] Réinitialisation de votre mot de passe' : '[La Lyre] Accès à votre Espace Membre';
     const title = isReset ? 'Demande de réinitialisation' : 'Accès à votre espace membre';
@@ -14,16 +14,6 @@ export const sendActivationEmail = async (email: string, firstName: string, toke
         ? `Vous avez demandé à réinitialiser votre mot de passe pour votre espace membre sur le site de <strong>La Lyre</strong>.`
         : `Vous recevez ce message pour accéder à votre espace membre sur le site de <strong>La Lyre</strong>.`;
     const actionText = isReset ? 'Réinitialiser mon mot de passe' : 'Activer mon espace membre';
-
-    console.log(`[Email Debug] API Key présente: ${!!resendApiKey}`);
-    if (resendApiKey) {
-        console.log(`[Email Debug] Début de la clé: ${resendApiKey.substring(0, 10)}...`);
-    }
-
-    if (!resendApiKey || resendApiKey === 'votre_cle_resend_ici') {
-        console.error('[Email] Erreur : RESEND_API_KEY est manquante ou invalide.');
-        return false;
-    }
 
     const htmlContent = `
         <!DOCTYPE html>
@@ -94,33 +84,12 @@ export const sendActivationEmail = async (email: string, firstName: string, toke
         </html>
     `;
 
-    try {
-        console.log(`[Email] Envoi via Resend API à ${email}...`);
-        const response = await fetch('https://api.resend.com/emails', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${resendApiKey}`
-            },
-            body: JSON.stringify({
-                from: 'La Lyre - Communication <communication@lalyre.fr>',
-                to: [email],
-                subject: subject,
-                html: htmlContent
-            })
-        });
+    const result = await sendMail({
+      from: 'La Lyre - Communication <communication@lalyre.fr>',
+      to: email,
+      subject,
+      html: htmlContent
+    });
 
-        if (response.ok) {
-            const data = await response.json();
-            console.log(`[Email] Succès ! ID: ${data.id}`);
-            return true;
-        } else {
-            const errorData = await response.json();
-            console.error('[Email] Échec de l\'envoi via API Resend:', errorData);
-            return false;
-        }
-    } catch (error) {
-        console.error('[Email] Erreur critique lors de l\'envoi:', error);
-        return false;
-    }
+    return result.success;
 };
