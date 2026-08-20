@@ -1685,80 +1685,86 @@ const AdminCommunication = () => {
 
                         <p className="font-bold text-slate-800 text-sm">Bonjour [Prénom],</p>
 
-                        {commType === 'schedule' ? (
-                          /* PLANNING TIMELINE PREVIEW */
+                        {(commType === 'event' || commType === 'schedule') && selectedScheduleEvents.length > 0 ? (
                           <div className="space-y-4">
                             {customNote && (
-                              <p className="text-sm text-slate-800 leading-relaxed">{customNote}</p>
-                            )}
-
-                            <div className="space-y-3">
-                              <h5 className="font-black text-slate-900 text-sm border-b border-indigo-500 pb-2 flex items-center gap-2">
-                                <Calendar size={18} className="text-indigo-600" />
-                                📅 Programme & Prochaines Échéances ({selectedScheduleEvents.length} événements)
-                              </h5>
-
-                              {selectedScheduleEvents.map(ev => (
-                                <div key={ev.id} className="bg-slate-50 border-l-4 border-indigo-600 rounded-2xl p-4 border border-slate-200 space-y-1.5">
-                                  <div className="flex items-center justify-between flex-wrap gap-2">
-                                    <span className="bg-indigo-100 text-indigo-900 text-[11px] font-extrabold px-2.5 py-0.5 rounded-full">
-                                      📅 {formatEventDate(ev.event_date)}
-                                    </span>
-                                    <span className="bg-slate-200 text-slate-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
-                                      {ev.event_type === 'concert' ? 'Concert' : (ev.event_type === 'repetition' ? 'Répétition' : 'Événement')}
-                                    </span>
-                                  </div>
-                                  <h6 className="font-black text-slate-900 text-sm">{ev.title}</h6>
-                                  {ev.location && <p className="text-xs text-slate-600">📍 <strong>Lieu :</strong> {ev.location}</p>}
-                                  {(ev.orchestras || []).length > 0 && (
-                                    <p className="text-xs text-slate-600">🎷 <strong>Ensemble(s) :</strong> {(ev.orchestras || []).map(o => o.name).join(', ')}</p>
-                                  )}
-                                  {ev.description && <p className="text-xs text-slate-600 pt-1 leading-relaxed">{ev.description}</p>}
-                                  {ev.practical_info && (
-                                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-2.5 text-[11px] text-blue-900 mt-1">
-                                      <strong>ℹ️ Infos pratiques :</strong> {ev.practical_info}
-                                    </div>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        ) : commType === 'event' && selectedEvent ? (
-                          <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-3">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span className="inline-block bg-indigo-100 text-indigo-800 text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full">
-                                {selectedEvent.event_type === 'concert' ? 'Concert' : (selectedEvent.event_type === 'repetition' ? 'Répétition' : 'Événement')}
-                              </span>
-                              {(selectedEvent.orchestras || []).map(o => (
-                                <span key={o.id} className="text-[10px] font-bold bg-slate-200/70 text-slate-700 px-2 py-0.5 rounded-full">
-                                  {o.name}
-                                </span>
-                              ))}
-                            </div>
-
-                            <h5 className="font-black text-slate-900 text-base">{selectedEvent.title}</h5>
-
-                            <div className="space-y-1 text-xs text-slate-700 pt-1">
-                              <p>📅 <strong>Date :</strong> {formatEventDate(selectedEvent.event_date)}</p>
-                              {selectedEvent.location && <p>📍 <strong>Lieu :</strong> {selectedEvent.location}</p>}
-                              {(selectedEvent.orchestras || []).length > 0 && (
-                                <p>🎷 <strong>Ensemble(s) :</strong> {(selectedEvent.orchestras || []).map(o => o.name).join(', ')}</p>
-                              )}
-                            </div>
-
-                            {selectedEvent.description && (
-                              <div className="pt-2 border-t border-slate-200/80">
-                                <h6 className="font-bold text-slate-900 text-xs mb-1">Description / Programme :</h6>
-                                <p className="text-xs text-slate-600 leading-relaxed whitespace-pre-line">{selectedEvent.description}</p>
+                              <div className="bg-indigo-50/70 border border-indigo-200 p-4 rounded-2xl text-xs text-indigo-950 space-y-1">
+                                <strong className="font-bold text-indigo-900">Note du responsable :</strong>
+                                <p className="text-indigo-900/90 whitespace-pre-line leading-relaxed">{customNote}</p>
                               </div>
                             )}
 
-                            {selectedEvent.practical_info && (
-                              <div className="bg-blue-50 border border-blue-200 rounded-xl p-3.5 text-xs text-blue-900 mt-2">
-                                <h6 className="font-bold text-blue-950 mb-1 flex items-center gap-1.5">
-                                  <span>ℹ️ Informations pratiques :</span>
-                                </h6>
-                                <p className="text-blue-900/90 leading-relaxed font-normal whitespace-pre-line">{selectedEvent.practical_info}</p>
+                            {selectedScheduleEvents.length === 1 ? (
+                              /* SINGLE EVENT PREVIEW CARD */
+                              <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-3">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="inline-block bg-indigo-100 text-indigo-800 text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full">
+                                    {selectedScheduleEvents[0].event_type === 'concert' ? 'Concert' : (selectedScheduleEvents[0].event_type === 'repetition' ? 'Répétition' : 'Événement')}
+                                  </span>
+                                  {(selectedScheduleEvents[0].orchestras || []).map(o => (
+                                    <span key={o.id} className="text-[10px] font-bold bg-slate-200/70 text-slate-700 px-2 py-0.5 rounded-full">
+                                      {o.name}
+                                    </span>
+                                  ))}
+                                </div>
+
+                                <h5 className="font-black text-slate-900 text-base">{selectedScheduleEvents[0].title}</h5>
+
+                                <div className="space-y-1 text-xs text-slate-700 pt-1">
+                                  <p>📅 <strong>Date :</strong> {formatEventDate(selectedScheduleEvents[0].event_date)}</p>
+                                  {selectedScheduleEvents[0].location && <p>📍 <strong>Lieu :</strong> {selectedScheduleEvents[0].location}</p>}
+                                  {(selectedScheduleEvents[0].orchestras || []).length > 0 && (
+                                    <p>🎷 <strong>Ensemble(s) :</strong> {(selectedScheduleEvents[0].orchestras || []).map(o => o.name).join(', ')}</p>
+                                  )}
+                                </div>
+
+                                {selectedScheduleEvents[0].description && (
+                                  <div className="pt-2 border-t border-slate-200/80">
+                                    <h6 className="font-bold text-slate-900 text-xs mb-1">Description / Programme :</h6>
+                                    <p className="text-xs text-slate-600 leading-relaxed whitespace-pre-line">{selectedScheduleEvents[0].description}</p>
+                                  </div>
+                                )}
+
+                                {selectedScheduleEvents[0].practical_info && (
+                                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-3.5 text-xs text-blue-900 mt-2">
+                                    <h6 className="font-bold text-blue-950 mb-1 flex items-center gap-1.5">
+                                      <span>ℹ️ Informations pratiques :</span>
+                                    </h6>
+                                    <p className="text-blue-900/90 leading-relaxed font-normal whitespace-pre-line">{selectedScheduleEvents[0].practical_info}</p>
+                                  </div>
+                                )}
+                              </div>
+                            ) : (
+                              /* MULTI-EVENT TIMELINE PREVIEW CARD */
+                              <div className="space-y-3">
+                                <h5 className="font-black text-slate-900 text-sm border-b border-indigo-500 pb-2 flex items-center gap-2">
+                                  <Calendar size={18} className="text-indigo-600" />
+                                  📅 Programme & Prochaines Échéances ({selectedScheduleEvents.length} événements)
+                                </h5>
+
+                                {selectedScheduleEvents.map(ev => (
+                                  <div key={ev.id} className="bg-slate-50 border-l-4 border-indigo-600 rounded-2xl p-4 border border-slate-200 space-y-1.5">
+                                    <div className="flex items-center justify-between flex-wrap gap-2">
+                                      <span className="bg-indigo-100 text-indigo-900 text-[11px] font-extrabold px-2.5 py-0.5 rounded-full">
+                                        📅 {formatEventDate(ev.event_date)}
+                                      </span>
+                                      <span className="bg-slate-200 text-slate-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
+                                        {ev.event_type === 'concert' ? 'Concert' : (ev.event_type === 'repetition' ? 'Répétition' : 'Événement')}
+                                      </span>
+                                    </div>
+                                    <h6 className="font-black text-slate-900 text-sm">{ev.title}</h6>
+                                    {ev.location && <p className="text-xs text-slate-600">📍 <strong>Lieu :</strong> {ev.location}</p>}
+                                    {(ev.orchestras || []).length > 0 && (
+                                      <p className="text-xs text-slate-600">🎷 <strong>Ensemble(s) :</strong> {(ev.orchestras || []).map(o => o.name).join(', ')}</p>
+                                    )}
+                                    {ev.description && <p className="text-xs text-slate-600 pt-1 leading-relaxed">{ev.description}</p>}
+                                    {ev.practical_info && (
+                                      <div className="bg-blue-50 border border-blue-200 rounded-xl p-2.5 text-[11px] text-blue-900 mt-1">
+                                        <strong>ℹ️ Infos pratiques :</strong> {ev.practical_info}
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
                               </div>
                             )}
                           </div>
@@ -1769,13 +1775,6 @@ const AdminCommunication = () => {
                           />
                         )}
 
-                        {customNote && commType !== 'schedule' && (
-                          <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs italic text-slate-700">
-                            <strong>Note du responsable :</strong>
-                            <div className="mt-1 font-normal not-italic" dangerouslySetInnerHTML={{ __html: customNote }} />
-                          </div>
-                        )}
-
                         <div className="text-center pt-4">
                           <span className="inline-block bg-indigo-600 text-white font-extrabold text-xs px-6 py-3 rounded-xl shadow-sm">
                             Accéder à mon Espace Membre
@@ -1783,15 +1782,12 @@ const AdminCommunication = () => {
                         </div>
                       </div>
 
-                      <div className="bg-slate-50 p-3 text-center text-[10px] text-slate-400 border-t border-slate-100">
-                        La Lyre &bull; Espace Membre
+                      <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-1.5 text-xs text-slate-600">
+                        <p><strong>Destinataires retenus :</strong> {selectedUserIds.length} membre(s)</p>
+                        <p><strong>Objet du mail :</strong> {customSubject || '(Aucun objet)'}</p>
                       </div>
-                    </div>
-                  </div>
 
-                  <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs text-slate-700 space-y-1.5">
-                    <p><strong>Destinataires retenus :</strong> {selectedUserIds.length} membre(s)</p>
-                    <p><strong>Objet du mail :</strong> {customSubject}</p>
+                    </div>
                   </div>
                 </div>
               )}
@@ -1834,7 +1830,7 @@ const AdminCommunication = () => {
                   ) : (
                     <>
                       <Send size={14} />
-                      <span>Confirmer & Envoyer via Resend</span>
+                      <span>Confirmer & Envoyer</span>
                     </>
                   )}
                 </button>
