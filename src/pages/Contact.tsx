@@ -161,16 +161,7 @@ const Contact = () => {
                       </div>
                     </div>
 
-                    <div className="flex items-start space-x-4">
-                      <div className="bg-slate-50 p-3 rounded-xl">
-                        <Clock className="h-6 w-6 text-emerald-600" />
-                      </div>
-                      <div>
-                        <p className="font-bold text-slate-800">Horaires d'ouverture</p>
-                        <p className="text-slate-600 text-sm">Du Lundi au Vendredi <br /> De 14h00 à 19h00</p>
-                      </div>
                     </div>
-                  </div>
 
                   <div className="pt-4 border-t border-slate-100">
                     <a 
