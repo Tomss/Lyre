@@ -3,9 +3,32 @@ import { sendMail } from './emailSender';
 
 const LOGO_URL = 'https://res.cloudinary.com/dr2sbjrms/image/upload/v1774629447/lyre-uploads/ll5sutyvmfrocohfv3yd.png';
 
-export const sendActivationEmail = async (email: string, firstName: string, token: string, isReset: boolean = false) => {
-    // Le lien frontend où l'utilisateur créera son mot de passe
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+export const sendActivationEmail = async (
+    email: string, 
+    firstName: string, 
+    token: string, 
+    isReset: boolean = false,
+    req?: any
+) => {
+    // Dynamic fail-safe frontend URL detection
+    let frontendUrl: string | undefined = process.env.FRONTEND_URL;
+    if (!frontendUrl && req) {
+      const origin = req.headers?.origin;
+      if (typeof origin === 'string') {
+        frontendUrl = origin;
+      } else if (typeof req.headers?.referer === 'string') {
+        try {
+          frontendUrl = new URL(req.headers.referer).origin;
+        } catch (e) {
+          // ignore
+        }
+      }
+    }
+    if (!frontendUrl) {
+      frontendUrl = 'http://localhost:5173';
+    }
+    frontendUrl = frontendUrl.replace(/\/$/, '');
+
     const activationLink = `${frontendUrl}/activer-compte?token=${token}`;
 
     const subject = isReset ? '[La Lyre] Réinitialisation de votre mot de passe' : '[La Lyre] Accès à votre Espace Membre';

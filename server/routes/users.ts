@@ -294,7 +294,7 @@ router.post('/:id/invite', async (req, res) => {
         
         // Send Email
         console.log(`[API] Tentative d'envoi d'email à: ${user.email} (type: ${isReset ? 'reset' : 'activation'})`);
-        const emailSent = await sendActivationEmail(user.email, user.first_name, token, isReset);
+        const emailSent = await sendActivationEmail(user.email, user.first_name, token, isReset, req);
 
         if (!emailSent) {
              await connection.rollback();

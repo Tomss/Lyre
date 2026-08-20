@@ -360,12 +360,23 @@ router.post('/send', async (req, res) => {
       return res.status(400).json({ message: 'Aucun destinataire sélectionné ou éligible.' });
     }
 
-    const resendApiKey = process.env.RESEND_API_KEY;
-    if (!resendApiKey) {
-      return res.status(500).json({ message: 'Clé d\'API Resend non configurée sur le serveur.' });
+    let frontendUrl: string | undefined = process.env.FRONTEND_URL;
+    if (!frontendUrl && req) {
+      const origin = req.headers?.origin;
+      if (typeof origin === 'string') {
+        frontendUrl = origin;
+      } else if (typeof req.headers?.referer === 'string') {
+        try {
+          frontendUrl = new URL(req.headers.referer).origin;
+        } catch (e) {
+          // ignore
+        }
+      }
     }
-
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    if (!frontendUrl) {
+      frontendUrl = 'http://localhost:5173';
+    }
+    frontendUrl = frontendUrl.replace(/\/$/, '');
     const subject = customSubject || (
       (type === 'event' || type === 'schedule') ? '[La Lyre] Programme / Planning' : '[La Lyre] Communication'
     );
