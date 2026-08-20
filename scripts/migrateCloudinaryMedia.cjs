@@ -55,7 +55,7 @@ function downloadFile(url, destPath) {
 
 async function runMigration() {
   console.log('====================================================');
-  console.log('🚀 DÉBUT DU RAPATRIEMENT DES MÉDIAS CLOUDINARY VERS LE VPS');
+  console.log('🚀 DÉBUT DU RAPATRIEMENT COMPLET DES MÉDIAS (CLOUDINARY & EXTERNES)');
   console.log('====================================================');
 
   let connection;
@@ -85,7 +85,7 @@ async function runMigration() {
       console.warn('⚠️ Échec du téléchargement du logo par défaut:', err.message);
     }
 
-    // 2. Scan DB tables for Cloudinary URLs
+    // 2. Scan DB tables for Cloudinary or External URLs (http/https)
     const targets = [
       { table: 'site_settings', primaryKey: 'setting_key', columns: ['setting_value'] },
       { table: 'page_headers', primaryKey: 'page_slug', columns: ['image_url'] },
@@ -95,12 +95,15 @@ async function runMigration() {
       { table: 'events', primaryKey: 'id', columns: ['image_url'] },
       { table: 'partitions', primaryKey: 'id', columns: ['file_path'] },
       { table: 'profiles', primaryKey: 'id', columns: ['avatar_url'] },
-      { table: 'orchestras', primaryKey: 'id', columns: ['photo_url'] }
+      { table: 'orchestras', primaryKey: 'id', columns: ['photo_url'] },
+      { table: 'news', primaryKey: 'id', columns: ['image_url'] },
+      { table: 'partners', primaryKey: 'id', columns: ['logo_url'] },
+      { table: 'instruments', primaryKey: 'id', columns: ['photo_url'] }
     ];
 
     let totalMigrated = 0;
 
-    console.log('\n[2/3] Analyse des tables de la base de données...');
+    console.log('\n[2/3] Analyse approfondie des tables de la base de données...');
 
     for (const t of targets) {
       try {
@@ -108,17 +111,19 @@ async function runMigration() {
         for (const row of rows) {
           for (const col of t.columns) {
             const val = row[col];
-            if (val && typeof val === 'string' && val.includes('res.cloudinary.com')) {
-              console.log(`\nFound Cloudinary URL in ${t.table}.${col} (ID: ${row[t.primaryKey]}):`);
+            if (val && typeof val === 'string' && (val.startsWith('http://') || val.startsWith('https://'))) {
+              console.log(`\nFound External/Cloudinary URL in ${t.table}.${col} (ID: ${row[t.primaryKey]}):`);
               console.log(` -> ${val}`);
 
               try {
                 // Extract filename & extension
                 const urlParts = val.split('/');
                 let originalFileName = urlParts[urlParts.length - 1].split('?')[0];
-                const ext = path.extname(originalFileName) || '.png';
+                let ext = path.extname(originalFileName) || '.jpg';
+                if (ext.length > 5) ext = '.jpg';
+                
                 const baseName = path.basename(originalFileName, ext).replace(/[^a-zA-Z0-9_-]/g, '_');
-                const uniqueName = `migrated-${Date.now()}-${baseName}${ext}`;
+                const uniqueName = `migrated-${Date.now()}-${Math.round(Math.random() * 1000)}-${baseName}${ext}`;
                 const localDest = path.join(MIGRATED_DIR, uniqueName);
 
                 await downloadFile(val, localDest);
@@ -143,7 +148,7 @@ async function runMigration() {
     }
 
     console.log('\n====================================================');
-    console.log(`🎉 MIGRATION TERMINÉE ! ${totalMigrated} fichier(s) rapatrié(s) sur le disque VPS.`);
+    console.log(`🎉 MIGRATION COMPLÈTE TERMINÉE ! ${totalMigrated} fichier(s) rapatrié(s) sur le disque VPS.`);
     console.log('====================================================');
 
   } catch (err) {
