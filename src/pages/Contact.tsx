@@ -111,9 +111,9 @@ const Contact = () => {
                           className="h-12 lg:h-16 w-auto object-contain flex-shrink-0" 
                         />
                       )}
-                      <h3 className="font-bold text-2xl text-teal-800 leading-tight">
-                        Lyre Municipale <br /> 
-                        <span className="text-slate-500">de Chalindrey</span>
+                      <h3 className="font-bold text-2xl text-slate-900 leading-tight">
+                        La Lyre <br /> 
+                        <span className="text-teal-600 font-extrabold">- Chalindrey</span>
                       </h3>
                     </div>
                   </div>
@@ -163,7 +163,7 @@ const Contact = () => {
                     allowFullScreen
                     loading="lazy"
                     referrerPolicy="no-referrer-when-downgrade"
-                    title="Localisation de la Lyre Cheminote et Municipale de Chalindrey"
+                    title="Localisation de La Lyre - Chalindrey"
                     className="w-full h-full grayscale-[0.3] hover:grayscale-0 transition-all duration-1000"
                   ></iframe>
                 </div>

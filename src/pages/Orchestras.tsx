@@ -185,26 +185,26 @@ const Orchestras = () => {
 
                     {/* 2. Visual Sticky Nav for Other Orchestras */}
                     {orchestras.length > 1 && (
-                        <div className={`sticky z-40 bg-white/95 backdrop-blur-xl border-y border-slate-200 shadow-md transform transition-all duration-300 ${isVisible ? 'top-[64px] lg:top-[80px]' : 'top-0'}`}>
-                            <div className="container mx-auto px-4 py-3">
-                                <div className="flex items-center justify-center gap-6 md:gap-8 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
-                                    <span className="text-xs font-bold text-slate-400 uppercase tracking-widest hidden md:block shrink-0">
-                                        Découvrir aussi
+                        <div className={`sticky z-40 bg-white/95 backdrop-blur-xl border-y border-slate-200 shadow-sm transform transition-all duration-300 ${isVisible ? 'top-[64px] lg:top-[80px]' : 'top-0'}`}>
+                            <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-2.5">
+                                <div className="flex items-center justify-center flex-wrap gap-2.5 sm:gap-4">
+                                    <span className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider hidden md:inline-block mr-1">
+                                        Nos ensembles :
                                     </span>
                                     {orchestras.slice(1).map((orch) => (
                                         <a
                                             key={orch.id}
                                             href={`#${orch.id}`}
-                                            className="group flex items-center gap-3 pr-4 pl-2 py-1.5 rounded-full bg-slate-50 border border-slate-200 hover:bg-teal-50 hover:border-teal-200 transition-all duration-300 shrink-0"
+                                            className="group flex items-center gap-2 pr-3 pl-1.5 py-1 rounded-full bg-slate-50 border border-slate-200/80 hover:bg-teal-50 hover:border-teal-300 transition-all duration-200 shadow-xs"
                                         >
-                                            <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-sm group-hover:scale-110 transition-transform duration-300">
+                                            <div className="relative w-7 h-7 rounded-full overflow-hidden border border-white shadow-xs group-hover:scale-105 transition-transform">
                                                  <img
                                                     src={orch.photo_url?.startsWith('http') ? orch.photo_url : (orch.photo_url ? `${BASE_URL}${orch.photo_url}` : "https://via.placeholder.com/150")}
                                                     alt={orch.name}
                                                     className="w-full h-full object-cover"
                                                 />
                                             </div>
-                                            <span className="text-sm font-semibold text-slate-700 group-hover:text-teal-700 whitespace-nowrap">
+                                            <span className="text-xs font-bold text-slate-700 group-hover:text-teal-700 whitespace-nowrap">
                                                 {orch.name}
                                             </span>
                                         </a>
@@ -216,7 +216,7 @@ const Orchestras = () => {
 
                     {/* 3. Other Orchestras List */}
                     <section className="bg-slate-50 py-24 pb-48">
-                        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
                             <div className="space-y-48">
                                 {orchestras.slice(1).map((orch, index) => {
                                     const isEven = index % 2 === 0;
