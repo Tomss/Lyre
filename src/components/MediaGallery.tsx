@@ -31,6 +31,7 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({ media, isOpen, onClose }) =
   const [isImageLoaded, setIsImageLoaded] = useState(false);
 
   const activeThumbRef = useRef<HTMLButtonElement | null>(null);
+  const stripRef = useRef<HTMLDivElement | null>(null);
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
 
@@ -68,16 +69,32 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({ media, isOpen, onClose }) =
     }
   }, [currentIndex, isOpen, displayFiles]);
 
-  // Auto-scroll active thumbnail into center view
+  // 🎯 Auto-center active thumbnail smoothly like Google Photos / LightGallery
   useEffect(() => {
-    if (activeThumbRef.current) {
-      activeThumbRef.current.scrollIntoView({
-        behavior: 'smooth',
-        block: 'nearest',
-        inline: 'center'
-      });
+    if (!isOpen) return;
+    const scrollActiveIntoCenter = () => {
+      if (stripRef.current && activeThumbRef.current) {
+        const strip = stripRef.current;
+        const thumb = activeThumbRef.current;
+        const targetScrollLeft = thumb.offsetLeft - (strip.clientWidth / 2) + (thumb.clientWidth / 2);
+        strip.scrollTo({
+          left: Math.max(0, targetScrollLeft),
+          behavior: 'smooth'
+        });
+      }
+    };
+    scrollActiveIntoCenter();
+    const timer = setTimeout(scrollActiveIntoCenter, 60);
+    return () => clearTimeout(timer);
+  }, [currentIndex, isOpen]);
+
+  const handleStripWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+    if (stripRef.current) {
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+        stripRef.current.scrollLeft += e.deltaY * 1.2;
+      }
     }
-  }, [currentIndex]);
+  };
 
   // Reset state when modal opens
   useEffect(() => {
@@ -256,10 +273,16 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({ media, isOpen, onClose }) =
         )}
       </main>
 
-      {/* 3. THUMBNAIL STRIP - Dedicated Bottom Bar with Modern Lightbox Styling */}
+      {/* 3. THUMBNAIL STRIP - Dedicated Bottom Bar with Modern Centered Lightbox Carousel */}
       {displayFiles.length > 1 && (
-        <footer className="h-24 md:h-28 flex-shrink-0 bg-slate-950/90 border-t border-white/10 px-4 md:px-8 py-3 flex items-center justify-center z-30">
-          <div className="w-full max-w-5xl flex items-center space-x-3 overflow-x-auto py-1 no-scrollbar justify-start md:justify-center">
+        <footer className="h-24 md:h-28 flex-shrink-0 bg-slate-950/95 backdrop-blur-md border-t border-white/10 px-4 md:px-8 py-3 flex items-center justify-center z-30 select-none">
+          <div 
+            ref={stripRef}
+            onWheel={handleStripWheel}
+            className="w-full max-w-6xl flex items-center space-x-3 overflow-x-auto py-2 no-scrollbar scroll-smooth"
+          >
+            {/* Centering spacer */}
+            <div className="flex-shrink-0 w-[40vw] max-w-[240px]" />
             {displayFiles.map((file, index) => {
               const isSelected = index === currentIndex;
 
@@ -272,10 +295,10 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({ media, isOpen, onClose }) =
                     setIsZoomed(false);
                     setCurrentIndex(index);
                   }}
-                  className={`relative flex-shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-xl overflow-hidden border-2 transition-all duration-200 cursor-pointer ${
+                  className={`relative flex-shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-xl overflow-hidden border-2 transition-all duration-300 transform cursor-pointer ${
                     isSelected 
-                      ? 'border-teal-400 ring-2 ring-teal-400/50 scale-105 shadow-lg shadow-teal-500/30 z-10' 
-                      : 'border-white/15 opacity-50 hover:opacity-90 hover:border-white/40'
+                      ? 'border-teal-400 ring-4 ring-teal-400/40 scale-110 -translate-y-1 shadow-xl shadow-teal-500/30 z-10 opacity-100' 
+                      : 'border-white/15 opacity-40 hover:opacity-85 hover:border-white/40 hover:scale-105'
                   }`}
                   title={file.file_name}
                 >
@@ -285,16 +308,23 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({ media, isOpen, onClose }) =
                       alt="" 
                       loading="lazy" 
                       decoding="async" 
-                      className="w-full h-full object-cover" 
+                      className="w-full h-full object-cover pointer-events-none" 
                     />
                   ) : file.file_type === 'pdf' ? (
                     <div className="w-full h-full flex items-center justify-center bg-rose-600 text-white"><FileText size={20} /></div>
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-teal-600 text-white"><Music size={20} /></div>
                   )}
+                  {isSelected && (
+                    <span className="absolute bottom-1 right-1 bg-black/80 backdrop-blur-sm text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow">
+                      {index + 1}
+                    </span>
+                  )}
                 </button>
               );
             })}
+            {/* Centering spacer */}
+            <div className="flex-shrink-0 w-[40vw] max-w-[240px]" />
           </div>
         </footer>
       )}
