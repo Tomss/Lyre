@@ -93,7 +93,7 @@ const Contact = () => {
       <PageHero
         title={<span><span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-emerald-400 to-cyan-500">Contactez</span>-nous</span>}
         subtitle="Une question ? Envie de nous rejoindre ? Prenons contact pour votre projet musical."
-        backgroundImage={pageHeaders['contact'] || "https://images.pexels.com/photos/1407322/pexels-photo-1407322.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop"}
+        backgroundImage={pageHeaders['contact'] || "/contact-banner.webp"}
         anchors={[
           { label: "Où nous trouver ?", targetId: "localisation", icon: MapPin, color: "cyan" },
           { label: "Nous écrire", targetId: "formulaire", icon: MessageSquare, color: "teal" }

@@ -41,7 +41,7 @@ const NewsArchive = () => {
             <PageHero
                 title={<span>Toutes les <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-emerald-400 to-cyan-500">Actualités</span></span>}
                 subtitle="Retrouvez l'intégralité des articles et des annonces de La Lyre."
-                backgroundImage={pageHeaders['school'] || "https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&q=80&w=1920"}
+                backgroundImage={pageHeaders['school'] || "/school-banner.webp"}
                 anchors={[]}
             />
 

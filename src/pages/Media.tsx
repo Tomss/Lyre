@@ -164,7 +164,7 @@ const Media = () => {
       <PageHero
         title={<span>Galerie <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-emerald-400 to-cyan-500">Multimédia</span></span>}
         subtitle="Revivez les moments forts de La Lyre : albums, enregistrements et souvenirs."
-        backgroundImage={pageHeaders['media'] || "https://images.pexels.com/photos/164743/pexels-photo-164743.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop"}
+        backgroundImage={pageHeaders['media'] || "/media-banner.webp"}
         anchors={[
           { label: "Médiathèque", targetId: "mediatheque", icon: Image, color: "teal" },
           { label: "Contribuer", targetId: "contribuer", icon: Camera, color: "rose" }

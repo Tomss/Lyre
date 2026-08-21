@@ -124,7 +124,7 @@ const Orchestras = () => {
             <PageHero
                 title={<span>Nos <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-emerald-400 to-cyan-500">Orchestres</span></span>}
                 subtitle="Découvrez nos différents ensembles et rejoignez celui qui vous correspond."
-                backgroundImage={pageHeaders['orchestres'] || "https://images.pexels.com/photos/165971/pexels-photo-165971.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"}
+                backgroundImage={pageHeaders['orchestres'] || "/orchestras-banner.webp"}
                 anchors={orchestras.map((orch, index) => ({
                     label: orch.name,
                     targetId: orch.id,

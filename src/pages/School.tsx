@@ -69,7 +69,7 @@ const School = () => {
       <PageHero
         title={<span>L'école de <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-emerald-400 to-cyan-500">Musique</span></span>}
         subtitle="Formation musicale, instrumentale et pratique collective pour tous les âges."
-        backgroundImage={pageHeaders['school'] || "https://images.pexels.com/photos/1407322/pexels-photo-1407322.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop"}
+        backgroundImage={pageHeaders['school'] || "/school-banner.webp"}
         anchors={[
           { label: "Notre École", targetId: "presentation", icon: SchoolIcon, color: "teal" },
           { label: "Nos Classes & Professeurs", targetId: "classes", icon: Users, color: "emerald" },
