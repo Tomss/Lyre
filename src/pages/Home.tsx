@@ -8,19 +8,24 @@ import HomeNewsSection from '../components/HomeNewsSection';
 import HomeAgendaSection from '../components/HomeAgendaSection';
 import { API_URL, BASE_URL } from '../config';
 
+const CAROUSEL_CACHE_KEY = 'lyre_cached_carousel_v1';
+
 const Home = () => {
-  // Fallback images
-  const defaultImages = [
-    'https://images.pexels.com/photos/3721941/pexels-photo-3721941.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop',
-    'https://images.pexels.com/photos/1246437/pexels-photo-1246437.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop',
-    'https://images.pexels.com/photos/1407322/pexels-photo-1407322.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop',
-    'https://images.pexels.com/photos/1751731/pexels-photo-1751731.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop',
-    'https://images.pexels.com/photos/1327430/pexels-photo-1327430.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop'
-  ];
+  // Read cached real carousel images for instant frame-0 rendering with 0 stock photos
+  const [backgroundImages, setBackgroundImages] = React.useState<string[]>(() => {
+    try {
+      const cached = localStorage.getItem(CAROUSEL_CACHE_KEY);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {
+      // Ignore parse errors
+    }
+    return [];
+  });
 
   const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
-  const [backgroundImages, setBackgroundImages] = React.useState<string[]>(defaultImages);
-
   const { settings } = useTheme();
 
   useEffect(() => {
@@ -29,10 +34,14 @@ const Home = () => {
         const response = await fetch(`${API_URL}/carousel`);
         if (response.ok) {
           const data = await response.json();
-          if (data.length > 0) {
-            setBackgroundImages(data.map((item: any) => 
+          if (Array.isArray(data) && data.length > 0) {
+            const urls = data.map((item: any) => 
                item.image_url.startsWith('http') ? item.image_url : `${BASE_URL}${item.image_url}`
-            ));
+            );
+            setBackgroundImages(urls);
+            try {
+              localStorage.setItem(CAROUSEL_CACHE_KEY, JSON.stringify(urls));
+            } catch (e) {}
           }
         }
       } catch (error) {
