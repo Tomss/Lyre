@@ -29,21 +29,24 @@ async function run() {
     }
   }
 
-  // Always ensure bundled assets in public/ are present in uploads/
+  // Always ensure all bundled assets in public/ are present in uploads/ volume
   const publicDir = path.join(process.cwd(), 'public');
   if (fs.existsSync(publicDir)) {
-    for (const f of ['carousel-1.webp', 'carousel-2.webp', 'carousel-3.webp', 'carousel-4.webp', 'hero-banner.webp']) {
-      const src = path.join(publicDir, f);
-      const dst = path.join(uploadsDir, f);
-      try {
-        if (fs.existsSync(src)) {
-          fs.copyFileSync(src, dst);
-          console.log(`[WebP Auto-Migrator] Copied ${f} to uploads.`);
+    const publicFiles = fs.readdirSync(publicDir);
+    for (const f of publicFiles) {
+      if (f.endsWith('.webp') || f.endsWith('.png') || f.endsWith('.jpg') || f.endsWith('.jpeg')) {
+        const src = path.join(publicDir, f);
+        const dst = path.join(uploadsDir, f);
+        try {
+          if (!fs.existsSync(dst)) {
+            fs.copyFileSync(src, dst);
+          }
+        } catch (e) {
+          console.error(`[WebP Auto-Migrator] Error copying ${f}:`, e.message);
         }
-      } catch (e) {
-        console.error(`[WebP Auto-Migrator] Error copying ${f}:`, e.message);
       }
     }
+    console.log('[WebP Auto-Migrator] All bundled assets synced to uploads volume.');
   }
 
   try {

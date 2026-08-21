@@ -297,8 +297,8 @@ app.use('/uploads', async (req, res, next) => {
     const stats = fs.statSync(actualFile);
     if (stats.isDirectory()) return next();
 
-    // If already a WebP (< 500KB), serve directly
-    if (ext === '.webp' && stats.size < 500 * 1024) {
+    // If already a WebP, serve directly
+    if (ext === '.webp') {
       res.setHeader('Content-Type', 'image/webp');
       res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
       return res.sendFile(path.resolve(actualFile));
