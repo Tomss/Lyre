@@ -317,7 +317,7 @@ app.use('/uploads', async (req, res, next) => {
     }
 
     // Convert large raw images to high-quality, lightweight 120KB WebP
-    await sharp(filePath)
+    await sharp(actualFile)
       .resize({ width: 1920, height: 1200, fit: 'inside', withoutEnlargement: true })
       .webp({ quality: 80, effort: 4 })
       .toFile(cachedFile);

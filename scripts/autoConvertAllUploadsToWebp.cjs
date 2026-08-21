@@ -63,21 +63,21 @@ async function run() {
       try { await conn.query('UPDATE media_files SET file_path = REPLACE(file_path, ?, ?) WHERE file_path LIKE ?', [oldFile, newFile, '%' + oldFile + '%']); } catch(e) {}
     }
 
-    // Ensure carousel images point to the 4 local WebP images
+    // Unconditionally ensure carousel images point to the 4 local WebP images from Railway
     try {
-      const [existingCarousel] = await conn.query('SELECT * FROM carousel_images');
-      const hasBadUrls = existingCarousel.some((c) => !c.image_url || c.image_url.includes('cloudinary') || c.image_url.includes('unsplash') || c.image_url.includes('pexels'));
-      if (existingCarousel.length < 4 || hasBadUrls) {
-        await conn.query('DELETE FROM carousel_images');
-        const carouselPhotos = ['/uploads/carousel-1.webp', '/uploads/carousel-2.webp', '/uploads/carousel-3.webp', '/uploads/carousel-4.webp'];
-        for (let i = 0; i < carouselPhotos.length; i++) {
-          const id = require('crypto').randomUUID();
-          await conn.query('INSERT INTO carousel_images (id, image_url, title, subtitle, sort_order, is_active) VALUES (?, ?, ?, ?, ?, ?)', [
-            id, carouselPhotos[i], '', '', i, 1
-          ]);
-        }
-        console.log('[WebP Auto-Migrator] Restored 4 carousel WebP images in database.');
+      await conn.query('DELETE FROM carousel_images');
+      const carouselPhotos = [
+        { id: '9bf2f528-6b7e-4e5d-835f-cb411f13eee1', url: '/uploads/carousel-1.webp', order: 0 },
+        { id: 'c524be45-5a8e-43c5-b1d8-5cd1d3141583', url: '/uploads/carousel-2.webp', order: 1 },
+        { id: '2a459382-8508-4f73-9139-efd1bce9e6dd', url: '/uploads/carousel-3.webp', order: 2 },
+        { id: '899e026c-fa1d-4c93-809b-90a5cd85530f', url: '/uploads/carousel-4.webp', order: 3 }
+      ];
+      for (const item of carouselPhotos) {
+        await conn.query('INSERT INTO carousel_images (id, image_url, title, subtitle, sort_order, is_active) VALUES (?, ?, ?, ?, ?, ?)', [
+          item.id, item.url, '', '', item.order, 1
+        ]);
       }
+      console.log('[WebP Auto-Migrator] Restored 4 carousel WebP images in database.');
     } catch (e) {
       console.error('[WebP Auto-Migrator] Carousel sync error:', e.message);
     }
