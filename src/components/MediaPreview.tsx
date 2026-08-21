@@ -39,11 +39,13 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({ files, mediaType, title, on
         <img 
           src={firstImage.file_path} 
           alt={firstImage.alt_text || 'Album cover'} 
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+          loading="lazy"
+          decoding="async"
+          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"></div>
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-200"></div>
         {imageCount > 1 && (
-          <div className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-md text-white text-xs font-medium px-2 py-1 rounded-lg">
+          <div className="absolute bottom-4 right-4 bg-slate-900/80 text-white text-xs font-medium px-2 py-1 rounded-lg">
             +{imageCount - 1} photo{imageCount > 2 ? 's' : ''}
           </div>
         )}
@@ -59,16 +61,16 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({ files, mediaType, title, on
         onClick={onClick}
       >
         <div className="absolute inset-0 flex flex-col items-center justify-center text-white p-6">
-          <div className="bg-white/20 backdrop-blur-md p-4 rounded-full mb-4 group-hover:scale-110 transition-transform duration-300">
+          <div className="bg-white/20 p-4 rounded-full mb-4 group-hover:scale-105 transition-transform duration-200">
             <Music className="h-10 w-10 text-white" />
           </div>
           <span className="font-semibold text-center line-clamp-2">
             {firstAudio.file_name}
           </span>
         </div>
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"></div>
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-200"></div>
         {audioCount > 1 && (
-          <div className="absolute bottom-4 right-4 bg-black/40 backdrop-blur-md text-white text-xs font-medium px-2 py-1 rounded-lg">
+          <div className="absolute bottom-4 right-4 bg-slate-900/80 text-white text-xs font-medium px-2 py-1 rounded-lg">
             {audioCount} pistes
           </div>
         )}
@@ -125,9 +127,11 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({ files, mediaType, title, on
         <img 
           src={firstImage.file_path} 
           alt={firstImage.alt_text || 'Media preview'} 
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+          loading="lazy"
+          decoding="async"
+          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"></div>
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-200"></div>
       </div>
     );
   }

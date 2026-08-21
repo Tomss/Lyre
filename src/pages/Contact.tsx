@@ -251,8 +251,8 @@ const Contact = () => {
 
               {/* Formulaire de Contact Premium */}
               <div className="lg:col-span-8">
-                <div className="h-full bg-white rounded-[2.5rem] p-10 lg:p-14 shadow-[0_40px_80px_-15px_rgba(15,23,42,0.08)] border border-slate-100 relative group overflow-hidden">
-                  <div className="absolute -top-[100%] -left-[100%] w-[300%] h-[300%] bg-[conic-gradient(from_0deg,transparent,rgba(20,184,166,0.03),transparent)] animate-[spin_20s_linear_infinite] pointer-events-none"></div>
+                <div className="h-full bg-white rounded-[2.5rem] p-10 lg:p-14 shadow-xl shadow-slate-200/50 border border-slate-100 relative group overflow-hidden">
+                  <div className="absolute top-0 right-0 w-96 h-96 bg-[radial-gradient(circle,rgba(204,251,241,0.3)_0%,transparent_70%)] pointer-events-none -mr-20 -mt-20"></div>
                   
                   <form onSubmit={handleSubmit} className="relative z-10 space-y-8">
                     
