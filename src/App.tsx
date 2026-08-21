@@ -1,9 +1,10 @@
 // src/App.tsx
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
+import Lenis from 'lenis';
 
 // Direct import for the critical landing page for instant first paint
 import Home from './pages/Home';
@@ -40,8 +41,38 @@ const PageFallback = () => (
 
 function App() {
   const location = useLocation();
-  const isFullWidthPage = location.pathname === '/dashboard' || location.pathname.startsWith('/admin') || location.pathname === '/connexion' || location.pathname === '/activer-compte';
+  const isAdminOrDashboard = location.pathname.startsWith('/admin') || location.pathname === '/dashboard';
+  const isFullWidthPage = isAdminOrDashboard || location.pathname === '/connexion' || location.pathname === '/activer-compte';
   const wrapperClass = isFullWidthPage ? "max-w-none" : "max-w-[2560px]";
+
+  // Global Cinematic Smooth Scrolling for all showcase public pages
+  useEffect(() => {
+    // Disable on admin dashboards for 100% native table and drag-and-drop performance
+    if (isAdminOrDashboard) return;
+
+    const lenis = new Lenis({
+      duration: 1.0,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      orientation: 'vertical',
+      gestureOrientation: 'vertical',
+      smoothWheel: true,
+      wheelMultiplier: 1.0,
+      touchMultiplier: 1.0,
+    });
+
+    let rafId: number;
+    function raf(time: number) {
+      lenis.raf(time);
+      rafId = requestAnimationFrame(raf);
+    }
+
+    rafId = requestAnimationFrame(raf);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      lenis.destroy();
+    };
+  }, [isAdminOrDashboard]);
 
   return (
     <div className="min-h-screen bg-white">

@@ -157,7 +157,7 @@ const Orchestras = () => {
                                     <div className="prose prose-lg text-slate-600 max-w-none clearfix">
                                         {/* Image (Floated Left) */}
                                         <div className="float-none md:float-left w-full md:w-1/2 lg:w-5/12 mr-0 md:mr-16 lg:mr-24 mb-12 lg:mb-16 relative">
-                                            <div className="absolute inset-0 bg-teal-500 blur-3xl opacity-20 transform -rotate-12 rounded-full"></div>
+                                            <div className="absolute inset-0 bg-[radial-gradient(circle,rgba(20,184,166,0.15)_0%,transparent_70%)] pointer-events-none transform -rotate-12 rounded-full"></div>
                                             {/* Unified PhotoStack Component */}
                                             <PhotoStack
                                                 photos={orchestras[0].photos && orchestras[0].photos.length > 0 ? orchestras[0].photos : [{ id: 'default', photo_url: orchestras[0].photo_url || "", display_order: 0 }]}
@@ -227,7 +227,7 @@ const Orchestras = () => {
                                                 {/* Image (Multi-Photos Interactive Stack) */}
                                                 <div className="w-full md:w-1/2 group perspective-1000">
                                                     <div className="relative w-full max-w-[500px] mx-auto">
-                                                        <div className={`absolute -inset-4 bg-gradient-to-tr ${isEven ? 'from-indigo-500 to-purple-500' : 'from-blue-500 to-cyan-500'} rounded-2xl opacity-20 blur-xl group-hover:opacity-40 transition-opacity`}></div>
+                                                        <div className={`absolute -inset-4 ${isEven ? 'bg-[radial-gradient(circle,rgba(99,102,241,0.15)_0%,transparent_70%)]' : 'bg-[radial-gradient(circle,rgba(6,182,212,0.15)_0%,transparent_70%)]'} pointer-events-none rounded-2xl group-hover:opacity-100 transition-opacity`}></div>
 
                                                         {/* Unified PhotoStack Component */}
                                                         <PhotoStack

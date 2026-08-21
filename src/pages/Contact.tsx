@@ -117,7 +117,7 @@ const Contact = () => {
             {/* Infobox */}
             <div className="lg:col-span-5 space-y-8">
               <div className="bg-white rounded-3xl p-8 lg:p-10 shadow-xl shadow-slate-200/50 border border-slate-100 relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-teal-50 rounded-full blur-2xl -mr-10 -mt-10"></div>
+                <div className="absolute top-0 right-0 w-32 h-32 bg-[radial-gradient(circle,rgba(204,251,241,0.6)_0%,transparent_70%)] pointer-events-none -mr-6 -mt-6"></div>
                 
                 <div className="relative z-10 space-y-8">
                   <div>
@@ -198,10 +198,10 @@ const Contact = () => {
 
       {/* Formulaire de Contact */}
       <section id="formulaire" className="scroll-mt-20 py-24 bg-white relative overflow-hidden">
-        {/* Background Glow Elements */}
+        {/* Background Glow Elements - Zero GPU Cost Radial Gradients */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-7xl h-full pointer-events-none">
-          <div className="absolute top-1/4 -left-20 w-96 h-96 bg-teal-50 rounded-full blur-3xl opacity-60"></div>
-          <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-cyan-50 rounded-full blur-3xl opacity-60"></div>
+          <div className="absolute top-1/4 -left-20 w-96 h-96 bg-[radial-gradient(circle,rgba(204,251,241,0.4)_0%,transparent_70%)]"></div>
+          <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-[radial-gradient(circle,rgba(207,250,254,0.4)_0%,transparent_70%)]"></div>
         </div>
 
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">

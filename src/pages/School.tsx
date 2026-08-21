@@ -82,9 +82,9 @@ const School = () => {
 
       {/* Main Content: Notre École Section */}
       <section id="presentation" className="scroll-mt-20 py-24 bg-white relative overflow-hidden">
-        {/* Soft Background Accents */}
-        <div className="absolute top-0 right-0 -translate-y-1/4 translate-x-1/4 w-[500px] h-[500px] bg-teal-50/30 rounded-full blur-[100px] pointer-events-none"></div>
-        <div className="absolute bottom-0 left-0 translate-y-1/4 -translate-x-1/4 w-[400px] h-[400px] bg-cyan-50/30 rounded-full blur-[80px] pointer-events-none"></div>
+        {/* Soft Background Accents - Zero GPU Cost Radial Gradients */}
+        <div className="absolute top-0 right-0 -translate-y-1/4 translate-x-1/4 w-[500px] h-[500px] bg-[radial-gradient(circle,rgba(204,251,241,0.4)_0%,transparent_70%)] pointer-events-none"></div>
+        <div className="absolute bottom-0 left-0 translate-y-1/4 -translate-x-1/4 w-[400px] h-[400px] bg-[radial-gradient(circle,rgba(207,250,254,0.4)_0%,transparent_70%)] pointer-events-none"></div>
 
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div className="max-w-4xl mx-auto text-center mb-16 animate-on-scroll">
@@ -98,8 +98,8 @@ const School = () => {
                {/* Site Logo - Subtle Animation */}
                <div className="lg:w-1/3 flex justify-center order-2 lg:order-1">
                  <div className="relative group/logo">
-                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[130%] h-[130%] bg-teal-500/5 rounded-full blur-[60px]"></div>
-                   <div className="relative animate-float">
+                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[130%] h-[130%] bg-[radial-gradient(circle,rgba(13,148,136,0.1)_0%,transparent_70%)] pointer-events-none"></div>
+                   <div className="relative">
                        <img 
                         src={settings.secondary_logo_url?.startsWith('http') ? settings.secondary_logo_url : (settings.secondary_logo_url ? `${BASE_URL}${settings.secondary_logo_url}` : (settings.site_logo_url?.startsWith('http') ? settings.site_logo_url : (settings.site_logo_url ? `${BASE_URL}${settings.site_logo_url}` : "/lyre-logo.png")))} 
                         alt="Logo de La Lyre" 
