@@ -13,8 +13,23 @@ interface Orchestra {
 
 import { API_URL, BASE_URL } from '../config';
 
+const SmoothImage = ({ src, alt, className = '' }: { src: string, alt: string, className?: string }) => {
+    const [isLoaded, setIsLoaded] = useState(false);
+    return (
+        <div className="relative w-full h-full bg-slate-800 overflow-hidden">
+            <img
+                src={src}
+                alt={alt}
+                loading="lazy"
+                decoding="async"
+                onLoad={() => setIsLoaded(true)}
+                className={`${className} transition-opacity duration-500 ease-out ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+            />
+        </div>
+    );
+};
+
 const PhotoStack = ({ photos, altPrefix, height = "h-[400px] md:h-[500px]" }: { photos: { id: string; photo_url: string; display_order: number }[], altPrefix: string, height?: string }) => {
-    // Local state to manage the stack order. We clone the props to mutable state.
     const [stack, setStack] = useState(photos);
 
     useEffect(() => {
@@ -22,7 +37,7 @@ const PhotoStack = ({ photos, altPrefix, height = "h-[400px] md:h-[500px]" }: { 
     }, [photos]);
 
     const bringToFront = (index: number) => {
-        if (index === 0) return; // Already front
+        if (index === 0) return;
         const newStack = [...stack];
         const [movedPhoto] = newStack.splice(index, 1);
         newStack.unshift(movedPhoto);
@@ -33,12 +48,11 @@ const PhotoStack = ({ photos, altPrefix, height = "h-[400px] md:h-[500px]" }: { 
 
     if (photos.length === 1) {
         return (
-            /* Single Photo Fallback */
-            <div className={`relative rounded-2xl overflow-hidden shadow-2xl border-[6px] border-white ${height}`}>
-                <img
+            <div className={`relative rounded-2xl overflow-hidden shadow-xl border-4 border-white ${height}`}>
+                <SmoothImage
                     src={photos[0].photo_url.startsWith('http') ? photos[0].photo_url : `${BASE_URL}${photos[0].photo_url}`}
                     alt={altPrefix}
-                    className="w-full h-full object-cover transform hover:scale-[1.01] transition-transform duration-700"
+                    className="w-full h-full object-cover"
                 />
             </div>
         );
@@ -56,12 +70,10 @@ const PhotoStack = ({ photos, altPrefix, height = "h-[400px] md:h-[500px]" }: { 
                     }}
                     onClick={() => bringToFront(i)}
                 >
-                    <div className="relative rounded-2xl overflow-hidden shadow-xl border-4 border-white h-full bg-slate-200">
-                        <img
+                    <div className="relative rounded-2xl overflow-hidden shadow-xl border-4 border-white h-full bg-slate-800">
+                        <SmoothImage
                             src={photo.photo_url.startsWith('http') ? photo.photo_url : `${BASE_URL}${photo.photo_url}`}
                             alt={`${altPrefix} - ${photo.display_order}`}
-                            loading="lazy"
-                            decoding="async"
                             className="w-full h-full object-cover"
                         />
                     </div>

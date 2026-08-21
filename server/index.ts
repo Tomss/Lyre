@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
+import fs from 'fs';
+import sharp from 'sharp';
 import pool from './db';
 
 // Routers
@@ -265,6 +267,58 @@ app.use((req, res, next) => {
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+// Automatic Next.js / Apple style WebP Image Optimizer Middleware for /uploads
+app.use('/uploads', async (req, res, next) => {
+  if (req.method !== 'GET') return next();
+  try {
+    const rawPath = req.path.replace(/^\//, '');
+    const filePath = path.join(process.cwd(), 'uploads', decodeURIComponent(rawPath));
+    const ext = path.extname(filePath).toLowerCase();
+
+    // If not an image (e.g. PDF, audio, video), pass to static handler
+    if (!['.jpg', '.jpeg', '.png', '.webp', '.avif'].includes(ext)) {
+      return next();
+    }
+
+    if (!fs.existsSync(filePath)) {
+      return next();
+    }
+
+    const stats = fs.statSync(filePath);
+    if (stats.isDirectory()) return next();
+
+    // If already a small WebP (< 300KB), let static handler serve directly
+    if (ext === '.webp' && stats.size < 300 * 1024) {
+      return next();
+    }
+
+    const cacheDir = path.join(process.cwd(), 'uploads', '.optimized');
+    if (!fs.existsSync(cacheDir)) fs.mkdirSync(cacheDir, { recursive: true });
+
+    const safeBaseName = path.basename(filePath, ext).replace(/[^a-zA-Z0-9_-]/g, '_');
+    const cachedFile = path.join(cacheDir, `${safeBaseName}_${stats.size}.webp`);
+
+    if (fs.existsSync(cachedFile)) {
+      res.setHeader('Content-Type', 'image/webp');
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      return res.sendFile(cachedFile);
+    }
+
+    // Convert large raw images to high-quality, lightweight 120KB WebP
+    await sharp(filePath)
+      .resize({ width: 1920, height: 1200, fit: 'inside', withoutEnlargement: true })
+      .webp({ quality: 80, effort: 4 })
+      .toFile(cachedFile);
+
+    res.setHeader('Content-Type', 'image/webp');
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    return res.sendFile(cachedFile);
+  } catch (err) {
+    console.error('Error optimizing image on the fly:', err);
+    next();
+  }
+});
 
 // Serve static files from the 'uploads' directory with 1-year immutable browser caching
 app.use('/uploads', express.static('uploads', {
