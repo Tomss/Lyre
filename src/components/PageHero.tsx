@@ -70,23 +70,25 @@ const PageHero: React.FC<PageHeroProps> = ({ title, subtitle, backgroundImage, a
     };
 
     return (
-        <section className="relative min-h-screen flex items-center justify-center bg-slate-900 overflow-hidden">
+        <section className="relative h-[calc(100vh-80px)] min-h-[560px] flex items-center justify-center bg-slate-900 overflow-hidden">
             {/* Optimized High-Priority Hero Background Image */}
             {backgroundImage && (
-                <img
-                    src={backgroundImage}
-                    alt=""
-                    loading="eager"
-                    decoding="async"
-                    fetchPriority="high"
-                    className="absolute inset-0 w-full h-full object-cover pointer-events-none z-0"
-                />
+                <div className="absolute inset-0">
+                    <img
+                        src={backgroundImage}
+                        alt=""
+                        loading="eager"
+                        decoding="async"
+                        fetchPriority="high"
+                        className="absolute inset-0 w-full h-full object-cover pointer-events-none z-0"
+                    />
+                    <div className="absolute inset-0 bg-slate-950/60 z-1 pointer-events-none" />
+                </div>
             )}
-            <div className="absolute inset-0 bg-gradient-to-b from-slate-950/60 via-slate-900/80 to-slate-900/95 z-[1] pointer-events-none" />
 
-            <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10 pt-20">
+            <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10 pt-10">
 
-                <div className="flex flex-col items-center mb-12 lg:mb-16">
+                <div className="flex flex-col items-center mb-10 lg:mb-14">
                     <h1 className="font-black text-5xl md:text-7xl text-white mb-6 drop-shadow-2xl tracking-tight animate-fade-in-up">
                         {title}
                     </h1>
@@ -100,7 +102,7 @@ const PageHero: React.FC<PageHeroProps> = ({ title, subtitle, backgroundImage, a
 
                 {/* Navigation Anchors */}
                 {anchors.length > 0 && (
-                    <div className="inline-flex flex-col sm:flex-row gap-6 animate-fade-in-up delay-300 justify-center flex-wrap">
+                    <div className="inline-flex flex-col sm:flex-row gap-4 animate-fade-in-up delay-300 justify-center flex-wrap">
                         {anchors.map((anchor, index) => {
                             const colors = getColorClasses(anchor.color || 'white');
                             const Icon = anchor.icon;
@@ -109,13 +111,12 @@ const PageHero: React.FC<PageHeroProps> = ({ title, subtitle, backgroundImage, a
                                 <button
                                     key={index}
                                     onClick={() => scrollToSection(anchor.targetId)}
-                                    className={`group relative px-8 py-4 rounded-full bg-black/20 backdrop-blur-md text-white border transition-all duration-300 shadow-xl overflow-hidden hover:scale-105 ${colors.button}`}
+                                    className={`group relative px-7 py-3.5 rounded-full bg-slate-900/80 text-white border border-white/20 transition-colors duration-200 shadow-lg overflow-hidden hover:bg-slate-800 ${colors.button}`}
                                 >
-                                    <span className="relative z-10 flex items-center font-bold">
-                                        {Icon && <Icon className={`mr-3 h-5 w-5 transition-colors ${colors.icon}`} />}
+                                    <span className="relative z-10 flex items-center font-bold text-sm sm:text-base">
+                                        {Icon && <Icon className={`mr-2.5 h-4 w-4 sm:h-5 sm:w-5 transition-colors ${colors.icon}`} />}
                                         {anchor.label}
                                     </span>
-                                    <div className={`absolute inset-0 bg-gradient-to-r ${colors.gradient} to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300`}></div>
                                 </button>
                             );
                         })}
@@ -125,7 +126,7 @@ const PageHero: React.FC<PageHeroProps> = ({ title, subtitle, backgroundImage, a
 
             {/* Scroll Indicator */}
             {anchors.length > 0 && (
-                <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce text-white/50 cursor-pointer hover:text-white transition-colors" onClick={() => scrollToSection(anchors[0].targetId)}>
+                <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 text-white/50 cursor-pointer hover:text-white transition-colors" onClick={() => scrollToSection(anchors[0].targetId)}>
                     <ArrowRight className="h-6 w-6 rotate-90" />
                 </div>
             )}

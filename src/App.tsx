@@ -48,7 +48,13 @@ function App() {
   // Global Cinematic Smooth Scrolling for all showcase public pages
   useEffect(() => {
     // Disable on admin dashboards for 100% native table and drag-and-drop performance
-    if (isAdminOrDashboard) return;
+    if (isAdminOrDashboard) {
+      if ((window as any).__lenis) {
+        (window as any).__lenis.destroy();
+        (window as any).__lenis = null;
+      }
+      return;
+    }
 
     const lenis = new Lenis({
       lerp: 0.09,
@@ -59,6 +65,8 @@ function App() {
       touchMultiplier: 1.0,
       autoResize: true,
     });
+
+    (window as any).__lenis = lenis;
 
     let rafId: number;
     function raf(time: number) {
@@ -71,8 +79,19 @@ function App() {
     return () => {
       cancelAnimationFrame(rafId);
       lenis.destroy();
+      (window as any).__lenis = null;
     };
   }, [isAdminOrDashboard]);
+
+  // Sync scroll and bounds on every route change
+  useEffect(() => {
+    if ((window as any).__lenis) {
+      (window as any).__lenis.scrollTo(0, { immediate: true });
+      setTimeout(() => {
+        if ((window as any).__lenis) (window as any).__lenis.resize();
+      }, 100);
+    }
+  }, [location.pathname]);
 
   return (
     <div className="min-h-screen bg-white">

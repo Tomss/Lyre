@@ -45,21 +45,18 @@ const PhotoStack = ({ photos, altPrefix, height = "h-[400px] md:h-[500px]" }: { 
     }
 
     return (
-        <div className={`relative ${height} w-full perspective-1000`}>
-            {stack.slice(0, 3).map((photo, i) => (
+        <div className={`relative ${height} w-full`}>
+            {stack.slice(0, 2).map((photo, i) => (
                 <div
                     key={photo.id}
-                    className={`absolute top-0 left-0 w-full h-full transition-all duration-500 ease-out ${i === 0 ? 'z-30 cursor-default' : 'z-20 cursor-pointer hover:translate-y-[-5px]'}`}
+                    className={`absolute top-0 left-0 w-full h-full ${i === 0 ? 'z-20 cursor-default' : 'z-10 cursor-pointer'}`}
                     style={{
-                        transform: i === 0
-                            ? 'rotate(0deg) scale(1)'
-                            : `rotate(${i * 6 * (i % 2 === 0 ? 1 : -1)}deg) translateX(${i * 35}px) translateY(${i * 10}px) scale(${1 - i * 0.05})`,
-                        zIndex: 30 - i * 10,
-                        opacity: 1 - i * 0.1
+                        transform: i === 0 ? 'none' : 'rotate(3deg) translate(8px, 8px)',
+                        opacity: i === 0 ? 1 : 0.8
                     }}
                     onClick={() => bringToFront(i)}
                 >
-                    <div className="relative rounded-2xl overflow-hidden shadow-2xl border-[6px] border-white h-full bg-slate-200">
+                    <div className="relative rounded-2xl overflow-hidden shadow-xl border-4 border-white h-full bg-slate-200">
                         <img
                             src={photo.photo_url.startsWith('http') ? photo.photo_url : `${BASE_URL}${photo.photo_url}`}
                             alt={`${altPrefix} - ${photo.display_order}`}
@@ -67,10 +64,6 @@ const PhotoStack = ({ photos, altPrefix, height = "h-[400px] md:h-[500px]" }: { 
                             decoding="async"
                             className="w-full h-full object-cover"
                         />
-                        {/* Visual cue for background photos */}
-                        {i > 0 && (
-                            <div className="absolute inset-0 bg-black/10 hover:bg-transparent transition-colors duration-300"></div>
-                        )}
                     </div>
                 </div>
             ))}
@@ -78,27 +71,21 @@ const PhotoStack = ({ photos, altPrefix, height = "h-[400px] md:h-[500px]" }: { 
     );
 };
 
+const ORCHESTRAS_CACHE_KEY = 'lyre_cached_orchestras_v1';
+
 const Orchestras = () => {
     const { pageHeaders } = useTheme();
-    const [orchestras, setOrchestras] = useState<Orchestra[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [isVisible, setIsVisible] = useState(true);
-    const [lastScrollY, setLastScrollY] = useState(0);
-
-    useEffect(() => {
-        const handleScroll = () => {
-            const currentScrollY = window.scrollY;
-            if (currentScrollY > lastScrollY && currentScrollY > 100) {
-                setIsVisible(false);
-            } else {
-                setIsVisible(true);
+    const [orchestras, setOrchestras] = useState<Orchestra[]>(() => {
+        try {
+            const cached = localStorage.getItem(ORCHESTRAS_CACHE_KEY);
+            if (cached) {
+                const parsed = JSON.parse(cached);
+                if (Array.isArray(parsed) && parsed.length > 0) return parsed;
             }
-            setLastScrollY(currentScrollY);
-        };
-
-        window.addEventListener('scroll', handleScroll, { passive: true });
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, [lastScrollY]);
+        } catch (e) {}
+        return [];
+    });
+    const [loading, setLoading] = useState(() => orchestras.length === 0);
 
     useEffect(() => {
         const fetchOrchestras = async () => {
@@ -107,6 +94,9 @@ const Orchestras = () => {
                 if (response.ok) {
                     const data = await response.json();
                     setOrchestras(data);
+                    try {
+                        localStorage.setItem(ORCHESTRAS_CACHE_KEY, JSON.stringify(data));
+                    } catch (e) {}
                 }
             } catch (error) {
                 console.error('Error fetching orchestras:', error);
@@ -133,7 +123,7 @@ const Orchestras = () => {
                 }))}
             />
 
-            {loading ? (
+            {loading && orchestras.length === 0 ? (
                 <div className="flex justify-center items-center py-32">
                     <div className="animate-spin rounded-full h-16 w-16 border-4 border-teal-500 border-t-transparent"></div>
                 </div>
@@ -185,7 +175,7 @@ const Orchestras = () => {
 
                     {/* 2. Visual Sticky Nav for Other Orchestras */}
                     {orchestras.length > 1 && (
-                        <div className={`sticky z-40 bg-white/95 backdrop-blur-xl border-y border-slate-200 shadow-sm transform transition-all duration-300 ${isVisible ? 'top-[64px] lg:top-[80px]' : 'top-0'}`}>
+                        <div className="sticky z-40 bg-white border-y border-slate-200 shadow-sm top-[64px] lg:top-[80px]">
                             <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-2.5">
                                 <div className="flex items-center justify-center flex-wrap gap-2.5 sm:gap-4">
                                     <span className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider hidden md:inline-block mr-1">
@@ -195,12 +185,14 @@ const Orchestras = () => {
                                         <a
                                             key={orch.id}
                                             href={`#${orch.id}`}
-                                            className="group flex items-center gap-2 pr-3 pl-1.5 py-1 rounded-full bg-slate-50 border border-slate-200/80 hover:bg-teal-50 hover:border-teal-300 transition-all duration-200 shadow-xs"
+                                            className="group flex items-center gap-2 pr-3 pl-1.5 py-1 rounded-full bg-slate-50 border border-slate-200/80 hover:bg-teal-50 hover:border-teal-300 transition-colors duration-150 shadow-xs"
                                         >
                                             <div className="relative w-7 h-7 rounded-full overflow-hidden border border-white shadow-xs group-hover:scale-105 transition-transform">
                                                  <img
                                                     src={orch.photo_url?.startsWith('http') ? orch.photo_url : (orch.photo_url ? `${BASE_URL}${orch.photo_url}` : "https://via.placeholder.com/150")}
                                                     alt={orch.name}
+                                                    loading="lazy"
+                                                    decoding="async"
                                                     className="w-full h-full object-cover"
                                                 />
                                             </div>

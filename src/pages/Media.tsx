@@ -28,10 +28,21 @@ interface MediaItem {
   media_files: MediaFile[];
 }
 
+const MEDIA_CACHE_KEY = 'lyre_cached_media_items_v1';
+
 const Media = () => {
   const { pageHeaders } = useTheme();
-  const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [mediaItems, setMediaItems] = useState<MediaItem[]>(() => {
+    try {
+      const cached = localStorage.getItem(MEDIA_CACHE_KEY);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {}
+    return [];
+  });
+  const [loading, setLoading] = useState(() => mediaItems.length === 0);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState('all');
   const [selectedPeriod, setSelectedPeriod] = useState<'all' | '6m' | '1y'>('all');
@@ -46,7 +57,6 @@ const Media = () => {
 
   // Récupérer tous les médias publiés
   const fetchMedia = async () => {
-    setLoading(true);
     try {
       const response = await fetch(`${API_URL}/public-media`, {
         method: 'GET',
@@ -58,11 +68,15 @@ const Media = () => {
       if (response.ok) {
         const data = await response.json();
         setMediaItems(data || []);
+        try {
+          localStorage.setItem(MEDIA_CACHE_KEY, JSON.stringify(data));
+        } catch (e) {}
       }
     } catch (err) {
       console.error('Erreur lors de la récupération des médias:', err);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {

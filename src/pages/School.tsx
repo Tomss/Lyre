@@ -28,10 +28,21 @@ const getInstrumentConfig = (name: string) => {
   return { color: 'cyan' };
 };
 
+const INSTRUMENTS_CACHE_KEY = 'lyre_cached_school_instruments_v1';
+
 const School = () => {
   const { settings, pageHeaders } = useTheme();
-  const [instruments, setInstruments] = useState<Instrument[]>([]);
-  const [instrumentsLoading, setInstrumentsLoading] = useState(true);
+  const [instruments, setInstruments] = useState<Instrument[]>(() => {
+    try {
+      const cached = localStorage.getItem(INSTRUMENTS_CACHE_KEY);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {}
+    return [];
+  });
+  const [instrumentsLoading, setInstrumentsLoading] = useState(() => instruments.length === 0);
   const [selectedInstrument, setSelectedInstrument] = useState<Instrument | null>(null);
 
   useEffect(() => {
@@ -52,6 +63,9 @@ const School = () => {
         if (response.ok) {
           const data = await response.json();
           setInstruments(data || []);
+          try {
+            localStorage.setItem(INSTRUMENTS_CACHE_KEY, JSON.stringify(data));
+          } catch (e) {}
         }
       } catch (err) {
         console.error('Erreur lors de la récupération des instruments:', err);
