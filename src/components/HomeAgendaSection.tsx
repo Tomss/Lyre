@@ -273,9 +273,9 @@ const HomeAgendaSection = React.memo(() => {
             <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 pointer-events-none"></div>
             <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-teal-500/50 to-transparent"></div>
 
-            {/* Ambient Background Glows - Adjusted to Teal/Emerald */}
-            <div className="absolute top-0 left-1/4 w-96 h-96 bg-teal-900/20 rounded-full blur-[100px] pointer-events-none"></div>
-            <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-900/20 rounded-full blur-[100px] pointer-events-none"></div>
+            {/* Ambient Background Glows - Zero GPU Cost Radial Gradients */}
+            <div className="absolute top-0 left-1/4 w-96 h-96 bg-[radial-gradient(circle,rgba(19,78,74,0.3)_0%,transparent_70%)] pointer-events-none"></div>
+            <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[radial-gradient(circle,rgba(6,95,70,0.3)_0%,transparent_70%)] pointer-events-none"></div>
 
             <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 mb-12 relative z-10">
                 <div className="text-center">
@@ -301,7 +301,7 @@ const HomeAgendaSection = React.memo(() => {
                         e.stopPropagation();
                         scrollManual('left');
                     }}
-                    className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 z-50 w-12 h-12 rounded-full bg-slate-800/90 backdrop-blur-md shadow-xl border border-white/20 text-teal-400 flex items-center justify-center hover:bg-teal-600 hover:text-white hover:border-teal-500 transition-all duration-200 cursor-pointer"
+                    className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 z-50 w-12 h-12 rounded-full bg-slate-800/90 shadow-xl border border-white/20 text-teal-400 flex items-center justify-center hover:bg-teal-600 hover:text-white hover:border-teal-500 transition-all duration-200 cursor-pointer"
                     aria-label="Précédent"
                     title="Précédent"
                 >
@@ -312,7 +312,7 @@ const HomeAgendaSection = React.memo(() => {
                         e.stopPropagation();
                         scrollManual('right');
                     }}
-                    className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 z-50 w-12 h-12 rounded-full bg-slate-800/90 backdrop-blur-md shadow-xl border border-white/20 text-teal-400 flex items-center justify-center hover:bg-teal-600 hover:text-white hover:border-teal-500 transition-all duration-200 cursor-pointer"
+                    className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 z-50 w-12 h-12 rounded-full bg-slate-800/90 shadow-xl border border-white/20 text-teal-400 flex items-center justify-center hover:bg-teal-600 hover:text-white hover:border-teal-500 transition-all duration-200 cursor-pointer"
                     aria-label="Suivant"
                     title="Suivant"
                 >
@@ -323,7 +323,7 @@ const HomeAgendaSection = React.memo(() => {
                 {events.length > 0 ? (
                     <div
                         ref={scrollRef}
-                        className={`flex gap-8 px-20 md:px-24 py-12 overflow-x-auto scroll-smooth no-scrollbar select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+                        className={`flex gap-8 px-20 md:px-24 py-12 overflow-x-auto no-scrollbar select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
                         onMouseDown={handleMouseDown}
                         onMouseUp={handleMouseUp}
                         onMouseMove={handleMouseMove}

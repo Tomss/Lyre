@@ -246,7 +246,7 @@ const HomeNewsSection = React.memo(() => {
                         e.stopPropagation();
                         scrollManual('left');
                     }}
-                    className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 z-50 w-12 h-12 rounded-full bg-white backdrop-blur shadow-xl border border-teal-100 text-teal-600 flex items-center justify-center hover:bg-teal-500 hover:text-white transition-all duration-200 cursor-pointer"
+                    className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 z-50 w-12 h-12 rounded-full bg-white shadow-xl border border-teal-100 text-teal-600 flex items-center justify-center hover:bg-teal-500 hover:text-white transition-all duration-200 cursor-pointer"
                     aria-label="Précédent"
                     title="Précédent"
                 >
@@ -257,7 +257,7 @@ const HomeNewsSection = React.memo(() => {
                         e.stopPropagation();
                         scrollManual('right');
                     }}
-                    className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 z-50 w-12 h-12 rounded-full bg-white backdrop-blur shadow-xl border border-teal-100 text-teal-600 flex items-center justify-center hover:bg-teal-500 hover:text-white transition-all duration-200 cursor-pointer"
+                    className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 z-50 w-12 h-12 rounded-full bg-white shadow-xl border border-teal-100 text-teal-600 flex items-center justify-center hover:bg-teal-500 hover:text-white transition-all duration-200 cursor-pointer"
                     aria-label="Suivant"
                     title="Suivant"
                 >
@@ -267,7 +267,7 @@ const HomeNewsSection = React.memo(() => {
                 {/* Scrollable Track - px-20 md:px-24 ensures 1st and last cards don't overlap arrows in initial/end states */}
                 <div
                     ref={scrollRef}
-                    className={`flex gap-8 px-20 md:px-24 py-12 overflow-x-auto scroll-smooth no-scrollbar select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+                    className={`flex gap-8 px-20 md:px-24 py-12 overflow-x-auto no-scrollbar select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
                     onMouseDown={handleMouseDown}
                     onMouseUp={handleMouseUp}
                     onMouseMove={handleMouseMove}
