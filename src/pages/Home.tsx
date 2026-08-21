@@ -7,10 +7,36 @@ import PartnersSection from '../components/PartnersSection';
 import HomeNewsSection from '../components/HomeNewsSection';
 import HomeAgendaSection from '../components/HomeAgendaSection';
 import { API_URL, BASE_URL } from '../config';
+import Lenis from 'lenis';
 
 const CAROUSEL_CACHE_KEY = 'lyre_cached_carousel_v1';
 
 const Home = () => {
+  // Initialize Lenis Cinematic Smooth Scroll on Homepage
+  useEffect(() => {
+    const lenis = new Lenis({
+      duration: 1.0,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      orientation: 'vertical',
+      gestureOrientation: 'vertical',
+      smoothWheel: true,
+      wheelMultiplier: 1.0,
+      touchMultiplier: 1.0,
+    });
+
+    let rafId: number;
+    function raf(time: number) {
+      lenis.raf(time);
+      rafId = requestAnimationFrame(raf);
+    }
+
+    rafId = requestAnimationFrame(raf);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      lenis.destroy();
+    };
+  }, []);
   // Read cached real carousel images for instant frame-0 rendering with 0 stock photos
   const [backgroundImages, setBackgroundImages] = React.useState<string[]>(() => {
     try {
