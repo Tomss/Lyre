@@ -58,16 +58,36 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({ media, isOpen, onClose }) =
     return `${BASE_URL}${cleanPath}`;
   };
 
-  // ⚡ FAST PRELOADING: Preload ONLY next image into memory
+  const mainImgRef = useRef<HTMLImageElement>(null);
+
+  // ⚡ ULTRA-FAST PRELOADING: Preload current, previous 2 and next 5 images into memory cache
   useEffect(() => {
     if (!isOpen || displayFiles.length <= 1) return;
-    const nextIndex = (currentIndex + 1) % displayFiles.length;
-    const nextFile = displayFiles[nextIndex];
-    if (nextFile && nextFile.file_type === 'image') {
-      const img = new Image();
-      img.src = getFileUrl(nextFile.file_path);
-    }
+    const preloadIndices = [
+      currentIndex,
+      (currentIndex + 1) % displayFiles.length,
+      (currentIndex + 2) % displayFiles.length,
+      (currentIndex + 3) % displayFiles.length,
+      (currentIndex + 4) % displayFiles.length,
+      (currentIndex + 5) % displayFiles.length,
+      (currentIndex - 1 + displayFiles.length) % displayFiles.length,
+      (currentIndex - 2 + displayFiles.length) % displayFiles.length,
+    ];
+    preloadIndices.forEach(idx => {
+      const file = displayFiles[idx];
+      if (file && file.file_type === 'image') {
+        const img = new Image();
+        img.src = getFileUrl(file.file_path);
+      }
+    });
   }, [currentIndex, isOpen, displayFiles]);
+
+  // Instant cache detection for main photo
+  useEffect(() => {
+    if (mainImgRef.current?.complete && mainImgRef.current.naturalWidth > 0) {
+      setIsImageLoaded(true);
+    }
+  }, [currentIndex, currentFile]);
 
   // 🎯 Auto-center active thumbnail smoothly like Google Photos / LightGallery
   useEffect(() => {
@@ -264,6 +284,7 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({ media, isOpen, onClose }) =
 
             {currentFile.file_type === 'image' ? (
               <img
+                ref={mainImgRef}
                 src={getFileUrl(currentFile.file_path)}
                 alt={currentFile.alt_text || media.title}
                 loading="eager"

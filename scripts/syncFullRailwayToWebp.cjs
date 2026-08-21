@@ -7,10 +7,14 @@ require('dotenv').config();
 
 async function downloadAndConvertToWebp(url, destFilename) {
   const uploadsDir = path.join(process.cwd(), 'uploads');
-  if (!fs.existsSync(uploadsDir)) fs.mkhirSync(uploadsDir, { recursive: true });
+  const publicDir = path.join(process.cwd(), 'public');
+  if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+  if (!fs.existsSync(publicDir)) fs.mkdirSync(publicDir, { recursive: true });
   const destPath = path.join(uploadsDir, destFilename);
+  const pubPath = path.join(publicDir, destFilename);
 
   if (fs.existsSync(destPath)) {
+    if (!fs.existsSync(pubPath)) fs.copyFileSync(destPath, pubPath);
     return '/uploads/' + destFilename;
   }
 
@@ -23,7 +27,8 @@ async function downloadAndConvertToWebp(url, destFilename) {
           redRes.on('end', async () => {
             try {
               const buf = Buffer.concat(chunks);
-              await sharp(buf).resize({ width: 1920, height: 1200, fit: 'inside', withoutEnlargement: true }).webp({ quality: 82, effort: 4 }).toFile(destPath);
+              await sharp(buf).resize({ width: 1600, height: 1200, fit: 'inside', withoutEnlargement: true }).webp({ quality: 80, effort: 4 }).toFile(destPath);
+              fs.copyFileSync(destPath, pubPath);
               console.log('Processed (redirect):', destFilename);
             } catch(e) {
               console.error('Sharp error (redirect)', destFilename, e.message);
@@ -37,7 +42,9 @@ async function downloadAndConvertToWebp(url, destFilename) {
       res.on('data', d => chunks.push(d));
       res.on('end', async () => {
         try {
-          await sharp(buf).resize({ width: 1920, height: 1200, fit: 'inside', withoutEnlargement: true }).webp({ quality: 82, effort: 4 }).toFile(destPath);
+          const buf = Buffer.concat(chunks);
+          await sharp(buf).resize({ width: 1600, height: 1200, fit: 'inside', withoutEnlargement: true }).webp({ quality: 80, effort: 4 }).toFile(destPath);
+          fs.copyFileSync(destPath, pubPath);
           console.log('Processed:', destFilename);
         } catch(e) {
           console.error('Sharp error', destFilename, e.message);
@@ -57,68 +64,35 @@ async function syncAll() {
     host: 'shortline.proxy.rlwy.net',
     port: 53715,
     user: 'root',
-    password: 'ZzOjAZKTGlNfBGxXzvrlEnAezyyMESBF',
+    password: 'ZzOjAZKTGlNfBGxXzvrlEnAezyyMESBf',
     database: 'railway'
   });
 
-  const [pageHeaders] = await railway.query('SELECT * FROM page_headers');
-  const [history] = await railway.query('SELECT * FROM history_events ORDER BY sort_order ASC, year ASC');
-  const [orchestras] = await railway.query('SELECT * FRM orchestras');
-  const [orchPhotos] = await railway.query('SELECT * FROM orchestra_photos ORDER BY orchestra_id, display_order');
+  const [mediaList] = await railway.query('SELECT * FROM media_items');
+  const [mediaFiles] = await railway.query('SELECT * FROM media_files');
 
   console.log('Railway data counts:');
-  console.log('- Page Headers:', pageHeaders.length);
-  console.log('- History Events:', history.length);
-  console.log('- Orchestras:', orchestras.length);
-  console.log('- Orchestra Photos:', orchPhotos.length);
+  console.log('- Media items:', mediaList.length);
+  console.log('- Media files:', mediaFiles.length);
+  console.log('Sample file:', mediaFiles[0]);
 
-  // 2. Download and convert page headers
-  console.log('\n2. Processing Page Headers...');
-  for (const header of pageHeaders) {
-    if (header.image_url && header.image_url.startsWith('http')) {
-      const filename = 'header-' + header.page_slug + '.webp';
-      header.local_url = await downloadAndConvertToWebp(header.image_url, filename);
-      const pubPath = path.join(process.cwd(), 'public', filename);
-      const uplPath = path.join(process.cwd(), 'uploads', filename);
-      if (fs.existsSync(uplPath)) fs.copyFileSync(uplPath, pubPath);
-    }
-  }
-
-  // 3. Download and convert history events
-  console.log('\n3. Processing History Events...');
-  for (const evt of history) {
-    if (evt.image_url && evt.image_url.startsWith('http')) {
-      const slug = (evt.year || 'evt').replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
-      const filename = 'history-' + slug + '-' + evt.id.slice(0, 8) + '.webp';
-      evt.local_url = await downloadAndConvertToWebp(evt.image_url, filename);
+  // 2. Download and convert media files
+  console.log('\n2. Processing Media Files (Albums, Photos)...');
+  for (let i = 0; i < mediaFiles.length; i++) {
+    const file = mediaFiles[i];
+    if (file.file_path && file.file_type === 'image' && file.file_path.startsWith('http')) {
+      const urlParts = file.file_path.split('/');
+      const rawName = urlParts[urlParts.length - 1].replace(/\.[^/.]+$/, '');
+      const filename = 'media_' + rawName + '.webp';
+      file.local_url = await downloadAndConvertToWebp(file.file_path, filename);
+      console.log(`[${i+1}/${mediaFiles.length}] Converted ${filename}`);
     } else {
-      evt.local_url = null;
+      file.local_url = file.file_path;
     }
   }
 
-  // 4. Download and convert orchestras
-  console.log('\v4. Processing Orchestras...');
-  for (const orch of orchestras) {
-    if (orch.photo_url && orch.photo_url.startsWith('http')) {
-      const slug = (orch.name || 'orch').replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
-      const filename = 'orchestra-' + slug + '-' + orch.id.slice(0, 8) + '.webp';
-      orch.local_url = await downloadAndConvertToWebp(orch.photo_url, filename);
-    } else {
-      orch.local_url = null;
-    }
-  }
-
-  // 5. Download and convert orchestra photos
-  console.log('\n5. Processing Orchestra Photos...');
-  for (const photo of orchPhotos) {
-    if (photo.photo_url && photo.photo_url.startsWith('http')) {
-      const filename = 'orchphoto-' + photo.orchestra_id.slice(0, 8) + '-' + photo.display_order + '-' + photo.id.slice(0, 8) + '.webp';
-      photo.local_url = await downloadAndConvertToWebp(photo.photo_url, filename);
-    }
-  }
-
-  // 6. Connect to local/OVH DB and update
-  console.log('\n6. Updating Local/OVH Database...');
+  // 3. Connect to local/OVH DB and update
+  console.log('\n3. Updating Local/OVH Database for Media & Media_Files...');
   const conn = await mysql.createConnection({
     host: process.env.DB_HOST || 'localhost',
     user: process.env.DB_USER || 'root',
@@ -126,54 +100,40 @@ async function syncAll() {
     database: process.env.DB_NAME
   });
 
-  // Page Headers
-  await conn.query('DELETE FROM page_headers');
-  for (const header of pageHeaders) {
-    await conn.query('INSERT INTO page_headers (page_slug, image_url, page_title) VALUES (?, ?, ?)', [
-      header.page_slug,
-      header.local_url || header.image_url,
-      header.page_title
+  await conn.query('DELETE FROM media_files');
+  await conn.query('DELETE FROM media_items');
+
+  for (const m of mediaList) {
+    await conn.query('INSERT INTO media_items (id, title, description, media_type, created_by, created_at, updated_at, is_featured, published, media_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [
+      m.id,
+      m.title,
+      m.description,
+      m.media_type,
+      m.created_by || '29cbd663-433a-45a7-9d30-85e4e4d8dd60',
+      m.created_at || new Date(),
+      m.updated_at || new Date(),
+      m.is_featured || m.is_highlight || 0,
+      m.published !== undefined ? m.published : (m.is_published !== undefined ? m.is_published : 1),
+      m.media_date || m.event_date || null
     ]);
   }
 
-  // History Events
-  await conn.query('DELETE FRM history_events');
-  for (const evt of history) {
-    await conn.query('INSERT INTO history_events (id, year, title, content, era, icon, image_url, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [
-      evt.id,
-      evt.year,
-      evt.title,
-      evt.content,
-      evt.era,
-      evt.icon,
-      evt.local_url,
-      evt.sort_order
+  for (const mf of mediaFiles) {
+    await conn.query('INSERT INTO media_files (id, media_item_id, file_name, file_path, file_type, file_size, mime_type, alt_text, sort_order, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [
+      mf.id,
+      mf.media_item_id || mf.media_id,
+      mf.file_name,
+      mf.local_url || mf.file_path,
+      mf.file_type,
+      mf.file_size || null,
+      mf.mime_type || null,
+      mf.alt_text || null,
+      mf.sort_order || 0,
+      mf.created_at || new Date()
     ]);
   }
 
-  // Orchestras
-  await conn.query('DELETE FROM orchestra_photos');
-  await conn.query('DELETE FROM orchestras');
-  for (const orch of orchestras) {
-    await conn.query('INSERT INTO orchestras (id, name, description, photo_url, display_order) VALUES (?, ?, ?, ?, ?)', [
-      orch.id,
-      orch.name,
-      orch.description,
-      orch.local_url,
-      orch.display_order
-    ]);
-  }
-
-  for (const photo of orchPhotos) {
-    await conn.query('INSERT INTO orchestra_photos (id, orchestra_id, photo_url, display_order) VALUES (?, ?, ?, ?)', [
-      photo.id,
-      photo.orchestra_id,
-      photo.local_url,
-      photo.display_order
-    ]);
-  }
-
-  console.log('\nALL TABLES AND IMAGES SUCCESSFULLY SYNCHRONIZED�AND CONVERTED TO WEBP!');
+  console.log('\nALL MEDIA AND ALBUMS SUCCESSFULLY SYNCHRONIZED AND CONVERTED TO WEBP!');
   await railway.end();
   await conn.end();
 }
