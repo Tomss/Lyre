@@ -11,7 +11,7 @@ interface NewsItem {
     published_at: string;
 }
 
-const HomeNewsSection = () => {
+const HomeNewsSection = React.memo(() => {
     const [news, setNews] = useState<NewsItem[]>([]);
     const [allNews, setAllNews] = useState<NewsItem[]>([]);
     const [loading, setLoading] = useState(true);
@@ -359,6 +359,6 @@ const HomeNewsSection = () => {
             </div>
         </section>
     );
-};
+});
 
 export default HomeNewsSection;

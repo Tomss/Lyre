@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { API_URL, BASE_URL } from '../config';
 import { ExternalLink, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -11,7 +11,7 @@ interface Partner {
     website_url: string;
 }
 
-const PartnersSection = () => {
+const PartnersSection = React.memo(() => {
     const [partners, setPartners] = useState<Partner[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -117,6 +117,6 @@ const PartnersSection = () => {
             </div>
         </section>
     );
-};
+});
 
 export default PartnersSection;

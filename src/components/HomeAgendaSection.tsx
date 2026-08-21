@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Calendar, Clock, MapPin, Music, ArrowRight, X } from 'lucide-react';
 
 import { API_URL } from '../config';
@@ -13,7 +13,7 @@ interface EventItem {
     event_type: 'concert' | 'repetition' | 'divers';
 }
 
-const HomeAgendaSection = () => {
+const HomeAgendaSection = React.memo(() => {
     const [events, setEvents] = useState<EventItem[]>([]);
     const [allEvents, setAllEvents] = useState<EventItem[]>([]);
     const [loading, setLoading] = useState(true);
@@ -428,6 +428,6 @@ const HomeAgendaSection = () => {
             </div>
         </section>
     );
-};
+});
 
 export default HomeAgendaSection;

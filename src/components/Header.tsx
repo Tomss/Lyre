@@ -15,25 +15,35 @@ const Header = () => {
   const { settings } = useTheme();
 
   useEffect(() => {
+    let ticking = false;
+
     const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      
-      if (isMobileMenuOpen) {
-        setIsVisible(true);
-        return;
-      }
+      if (ticking) return;
 
-      if (currentScrollY > lastScrollYRef.current && currentScrollY > 100) {
-        if (currentScrollY - lastScrollYRef.current > 15) {
-          setIsVisible(false);
-        }
-      } else {
-        if (lastScrollYRef.current - currentScrollY > 15 || currentScrollY <= 100) {
+      window.requestAnimationFrame(() => {
+        const currentScrollY = window.scrollY;
+
+        if (isMobileMenuOpen) {
           setIsVisible(true);
+          ticking = false;
+          return;
         }
-      }
 
-      lastScrollYRef.current = currentScrollY;
+        if (currentScrollY > lastScrollYRef.current && currentScrollY > 100) {
+          if (currentScrollY - lastScrollYRef.current > 20) {
+            setIsVisible(false);
+          }
+        } else {
+          if (lastScrollYRef.current - currentScrollY > 20 || currentScrollY <= 100) {
+            setIsVisible(true);
+          }
+        }
+
+        lastScrollYRef.current = currentScrollY;
+        ticking = false;
+      });
+
+      ticking = true;
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });

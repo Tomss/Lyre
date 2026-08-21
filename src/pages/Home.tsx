@@ -48,10 +48,28 @@ const Home = () => {
     fetchCarouselImages();
   }, []);
 
-  useEffect(() => {
-    if (backgroundImages.length === 0) return;
+  const [isHeroVisible, setIsHeroVisible] = React.useState(true);
 
-    // Carousel d'images de fond
+  // Pause carousel when out of view to save 100% CPU/GPU on scroll
+  useEffect(() => {
+    const heroEl = document.getElementById('accueil');
+    if (!heroEl) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsHeroVisible(entry.isIntersecting);
+      },
+      { threshold: 0.05 }
+    );
+
+    observer.observe(heroEl);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (backgroundImages.length === 0 || !isHeroVisible) return;
+
+    // Carousel d'images de fond (actif uniquement si visible à l'écran)
     const intervalTime = parseInt(settings.carousel_interval || '5000');
     const imageInterval = setInterval(() => {
       setCurrentImageIndex((prevIndex) => (prevIndex + 1) % backgroundImages.length);
@@ -60,7 +78,7 @@ const Home = () => {
     return () => {
       clearInterval(imageInterval);
     };
-  }, [backgroundImages, settings.carousel_interval]);
+  }, [backgroundImages, settings.carousel_interval, isHeroVisible]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
