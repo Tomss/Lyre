@@ -51,13 +51,13 @@ function App() {
     if (isAdminOrDashboard) return;
 
     const lenis = new Lenis({
-      duration: 1.0,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      lerp: 0.09,
       orientation: 'vertical',
       gestureOrientation: 'vertical',
       smoothWheel: true,
-      wheelMultiplier: 1.0,
+      wheelMultiplier: 0.9,
       touchMultiplier: 1.0,
+      autoResize: true,
     });
 
     let rafId: number;
