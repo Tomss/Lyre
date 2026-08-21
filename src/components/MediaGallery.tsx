@@ -96,14 +96,40 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({ media, isOpen, onClose }) =
     }
   };
 
-  // Reset state when modal opens
+  // Reset state and attach global keyboard navigation when modal opens
   useEffect(() => {
-    if (isOpen) {
-      setCurrentIndex(0);
-      setIsZoomed(false);
-      setIsImageLoaded(false);
-    }
-  }, [isOpen]);
+    if (!isOpen) return;
+
+    setCurrentIndex(0);
+    setIsZoomed(false);
+    setIsImageLoaded(false);
+
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      // Don't capture keys if user is typing in an input
+      const targetTag = (e.target as HTMLElement)?.tagName?.toLowerCase();
+      if (targetTag === 'input' || targetTag === 'textarea') return;
+
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        setIsImageLoaded(false);
+        setIsZoomed(false);
+        setCurrentIndex((prev) => (prev + 1) % displayFiles.length);
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        setIsImageLoaded(false);
+        setIsZoomed(false);
+        setCurrentIndex((prev) => (prev - 1 + displayFiles.length) % displayFiles.length);
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleGlobalKeyDown);
+    };
+  }, [isOpen, displayFiles.length, onClose]);
 
   if (!isOpen) return null;
 
@@ -117,12 +143,6 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({ media, isOpen, onClose }) =
     setIsImageLoaded(false);
     setIsZoomed(false);
     setCurrentIndex((prev) => (prev - 1 + displayFiles.length) % displayFiles.length);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'ArrowRight') nextFile();
-    if (e.key === 'ArrowLeft') prevFile();
-    if (e.key === 'Escape') onClose();
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -166,11 +186,9 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({ media, isOpen, onClose }) =
   return (
     <div 
       className="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-[100] flex flex-col justify-between overflow-hidden select-none outline-none"
-      onKeyDown={handleKeyDown}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
-      tabIndex={0}
     >
       {/* 1. HEADER BAR - Fixed Height & Non-overlapping */}
       <header className="h-16 flex-shrink-0 bg-slate-900/90 border-b border-white/10 px-4 md:px-8 flex items-center justify-between z-30">
