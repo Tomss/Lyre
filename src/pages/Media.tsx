@@ -198,23 +198,23 @@ const Media = () => {
                       />
                       
                       <div className="absolute top-4 left-4 z-20">
-                        <span className={`inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider text-white shadow-sm border border-white/20 backdrop-blur-md ${
-                            media.media_type === 'album' ? 'bg-teal-500/90' : 
-                            media.media_type === 'enregistrement' ? 'bg-sky-500/90' : 
-                            media.media_type === 'journal' ? 'bg-slate-500/90' : 
-                            'bg-indigo-500/90'
+                        <span className={`inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider text-white shadow-sm border border-white/20 ${
+                            media.media_type === 'album' ? 'bg-teal-600' : 
+                            media.media_type === 'enregistrement' ? 'bg-sky-600' : 
+                            media.media_type === 'journal' ? 'bg-slate-700' : 
+                            'bg-indigo-600'
                         }`}>
                           <TypeIcon className="h-3.5 w-3.5 mr-2 text-white" />
                           {getTypeLabel(media.media_type)}
                         </span>
                       </div>
 
-                      <div className="absolute top-4 right-4 bg-amber-400 text-white p-2 rounded-xl shadow-lg z-20 border-2 border-white/20 animate-pulse">
+                      <div className="absolute top-4 right-4 bg-amber-400 text-white p-2 rounded-xl shadow-lg z-20 border-2 border-white/20">
                         <Star className="h-4 w-4 fill-current" />
                       </div>
                       
                       <div className="absolute bottom-4 right-4 z-20">
-                        <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold bg-black/70 backdrop-blur-md text-white border border-white/10">
+                        <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900/90 text-white border border-white/10">
                             {media.media_files.length} {media.media_files.length > 1 ? 'fichiers' : 'fichier'}
                         </span>
                       </div>
@@ -436,11 +436,11 @@ const Media = () => {
                           
                           {/* Badge de Type - Modern Colored */}
                           <div className="absolute top-3 left-3 z-20">
-                            <span className={`inline-flex items-center px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider text-white shadow-sm border border-white/20 backdrop-blur-md ${
-                                media.media_type === 'album' ? 'bg-teal-500/90' : 
-                                media.media_type === 'enregistrement' ? 'bg-sky-500/90' : 
-                                media.media_type === 'journal' ? 'bg-slate-500/90' : 
-                                'bg-indigo-500/90'
+                            <span className={`inline-flex items-center px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider text-white shadow-sm border border-white/20 ${
+                                media.media_type === 'album' ? 'bg-teal-600' : 
+                                media.media_type === 'enregistrement' ? 'bg-sky-600' : 
+                                media.media_type === 'journal' ? 'bg-slate-700' : 
+                                'bg-indigo-600'
                             }`}>
                               <TypeIcon className="h-3 w-3 mr-1.5 text-white" />
                               {getTypeLabel(media.media_type)}
@@ -448,14 +448,14 @@ const Media = () => {
                           </div>
 
                           {!!media.is_featured && (
-                            <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-md text-amber-500 p-1.5 rounded-lg shadow-sm z-20 border border-white/20">
+                            <div className="absolute top-3 right-3 bg-white text-amber-500 p-1.5 rounded-lg shadow-sm z-20 border border-slate-200">
                               <Star className="h-3.5 w-3.5 fill-current" />
                             </div>
                           )}
 
                           {/* File count indicator */}
                           <div className="absolute bottom-3 right-3 z-20">
-                            <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold bg-black/60 backdrop-blur-md text-white border border-white/10">
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold bg-slate-900/90 text-white border border-white/10">
                                 {media.media_files.length} {media.media_files.length > 1 ? 'fichiers' : 'fichier'}
                             </span>
                           </div>

@@ -146,7 +146,7 @@ const Orchestras = () => {
                                 <div className="max-w-7xl mx-auto">
 
                                     {/* Title Section */}
-                                    <div className="mb-16 text-center animate-on-scroll">
+                                    <div className="mb-16 text-center">
                                         <h2 className="font-bold text-3xl md:text-5xl text-slate-900 mb-6 relative inline-block">
                                             {orchestras[0].name}
                                             <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-16 h-1 bg-teal-500 rounded-full"></div>

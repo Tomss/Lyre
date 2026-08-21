@@ -46,7 +46,7 @@ const TimelineCard = ({ item }: { item: HistoryEvent }) => {
             buttonStyle = "text-indigo-600 hover:text-indigo-800 font-semibold";
             break;
         case 'modern':
-            cardStyle = "bg-white/80 backdrop-blur-md border border-white/50 shadow-2xl shadow-teal-500/20 rounded-2xl text-slate-600";
+            cardStyle = "bg-white border border-teal-100 shadow-xl shadow-teal-500/10 rounded-2xl text-slate-600";
             dateStyle = "text-transparent bg-clip-text bg-gradient-to-r from-teal-500 to-cyan-600 font-bold text-xl mb-2 inline-block";
             buttonStyle = "text-teal-600 hover:text-teal-800 font-medium";
             break;

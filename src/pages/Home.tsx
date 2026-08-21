@@ -159,14 +159,14 @@ const Home = () => {
         <div className="absolute bottom-0 left-0 translate-y-1/4 -translate-x-1/4 w-[400px] h-[400px] bg-[radial-gradient(circle,rgba(207,250,254,0.4)_0%,transparent_70%)] pointer-events-none"></div>
 
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <div className="max-w-4xl mx-auto text-center mb-16 animate-on-scroll">
+            <div className="max-w-4xl mx-auto text-center mb-16">
               <h2 className="font-bold text-3xl md:text-5xl text-slate-900 mb-6 relative inline-block">
                 Qui sommes-nous ?
                 <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-16 h-1 bg-teal-500 rounded-full"></div>
               </h2>
             </div>
             
-            <div className="max-w-6xl mx-auto flex flex-col lg:flex-row items-center gap-12 lg:gap-20 animate-on-scroll">
+            <div className="max-w-6xl mx-auto flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
                {/* Site Logo - Subtle Animation */}
                <div className="lg:w-1/3 flex justify-center order-2 lg:order-1">
                  <div className="relative group/logo">
