@@ -9,6 +9,7 @@ import HomeAgendaSection from '../components/HomeAgendaSection';
 import { API_URL, BASE_URL } from '../config';
 
 const CAROUSEL_CACHE_KEY = 'lyre_cached_carousel_v1';
+const PRIMARY_HERO_IMAGE = 'https://res.cloudinary.com/dr2sbjrms/image/upload/v1773134661/lyre-uploads/zoyndadchtwuq2cttvtw.jpg';
 
 const Home = () => {
   // Read cached real carousel images for instant frame-0 rendering with 0 stock photos
@@ -22,7 +23,7 @@ const Home = () => {
     } catch (e) {
       // Ignore parse errors
     }
-    return [];
+    return [PRIMARY_HERO_IMAGE];
   });
 
   const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
