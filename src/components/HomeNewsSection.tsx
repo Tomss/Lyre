@@ -276,13 +276,10 @@ const HomeNewsSection = React.memo(() => {
                     {news.map((item) => (
                         <div
                             key={item.id}
-                            className="w-[300px] md:w-[350px] shrink-0 group relative h-[460px] transform-gpu"
+                            className="w-[300px] md:w-[350px] shrink-0 h-[450px]"
                         >
-                            <div className="h-full bg-gradient-to-br from-teal-50/90 to-cyan-50/70 rounded-[2rem] shadow-lg shadow-teal-900/5 border border-teal-100/50 hover:border-teal-300/50 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:shadow-teal-100/60 overflow-hidden flex flex-col relative group">
-                                {/* Border Gradient Trick */}
-                                <div className="absolute inset-0 rounded-[2rem] p-[2px] bg-gradient-to-br from-teal-100 to-cyan-100/30 -z-10 opacity-60 group-hover:opacity-100 transition-opacity duration-500"></div>
-
-                                {/* Click Overlay (avoids text selection/dragging issues) */}
+                            <div className="h-full bg-white rounded-3xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-teal-400 transition-all duration-200 overflow-hidden flex flex-col relative group">
+                                {/* Click Overlay */}
                                 <div 
                                     className="absolute inset-0 z-30 cursor-pointer" 
                                     onClick={() => {
@@ -291,18 +288,17 @@ const HomeNewsSection = React.memo(() => {
                                 ></div>
 
                                 {/* Image Section */}
-                                <div className="h-[200px] relative overflow-hidden bg-teal-100/30">
-                                    <div className="absolute inset-0 bg-gradient-to-t from-teal-900/60 via-teal-900/10 to-transparent opacity-60 group-hover:opacity-40 transition-opacity z-10"></div>
+                                <div className="h-[200px] relative overflow-hidden bg-slate-100 flex-shrink-0">
                                     {item.image_url ? (
                                         <img
                                             src={item.image_url.startsWith('http') ? item.image_url : `${BASE_URL}${item.image_url}`}
                                             alt={item.title}
                                             loading="lazy"
                                             decoding="async"
-                                            className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-1000 pointer-events-none"
+                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 pointer-events-none"
                                         />
                                     ) : (
-                                        <div className="w-full h-full flex flex-col items-center justify-center bg-teal-50/50 text-teal-300">
+                                        <div className="w-full h-full flex flex-col items-center justify-center bg-teal-50 text-teal-300">
                                             <Newspaper className="h-16 w-16 mb-4 opacity-50" />
                                             <span className="text-xs font-bold uppercase tracking-widest opacity-70">Actualité</span>
                                         </div>
@@ -310,36 +306,34 @@ const HomeNewsSection = React.memo(() => {
 
                                     {/* Date Badge */}
                                     <div className="absolute top-4 left-4 z-20">
-                                        <div className="bg-white/95 pr-4 pl-1 py-1 rounded-full flex items-center gap-3 shadow-lg shadow-teal-900/10 border border-white/60 group-hover:scale-105 transition-transform">
-                                            <div className="bg-gradient-to-br from-teal-500 to-cyan-500 text-white rounded-full w-10 h-10 flex flex-col items-center justify-center shadow-md shadow-teal-500/20">
-                                                <span className="text-sm font-black leading-none">{new Date(item.published_at).getDate()}</span>
-                                            </div>
-                                            <span className="text-xs font-bold uppercase text-teal-800 tracking-wider">
+                                        <div className="bg-white/95 px-3 py-1.5 rounded-full flex items-center gap-2 shadow-md border border-slate-100">
+                                            <span className="text-sm font-black text-teal-600 leading-none">{new Date(item.published_at).getDate()}</span>
+                                            <span className="text-xs font-bold uppercase text-slate-700 tracking-wider">
                                                 {new Date(item.published_at).toLocaleDateString('fr-FR', { month: 'short' }).replace('.', '')}
                                             </span>
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* Content Section (Transparent background to let gradient show through) */}
-                                <div className="p-8 flex flex-col flex-1 relative bg-transparent">
-                                    <h3 className="font-bold text-xl text-slate-800 mb-3 leading-tight group-hover:text-teal-700 transition-colors line-clamp-2">
+                                {/* Content Section */}
+                                <div className="p-6 flex flex-col flex-1 bg-white">
+                                    <h3 className="font-bold text-lg text-slate-900 mb-2 leading-snug group-hover:text-teal-600 transition-colors line-clamp-2">
                                         {item.title}
                                     </h3>
 
-                                    <p className="text-slate-600 text-sm leading-relaxed line-clamp-3 mb-6 font-medium">
+                                    <p className="text-slate-600 text-sm leading-relaxed line-clamp-3 mb-4 font-normal">
                                         {item.content}
                                     </p>
 
-                                    <div className="mt-auto flex items-center justify-between border-t border-teal-100 pt-4">
+                                    <div className="mt-auto flex items-center justify-between border-t border-slate-100 pt-4">
                                         <span className="text-xs font-bold text-teal-700 uppercase tracking-wide flex items-center">
                                             <CalendarDays className="w-4 h-4 mr-2 text-teal-600" />
                                             {new Date(item.published_at).toLocaleDateString('fr-FR', { year: 'numeric' })}
                                         </span>
 
-                                        <button className="w-10 h-10 rounded-full bg-white border border-teal-100 flex items-center justify-center text-teal-600 group-hover:bg-gradient-to-r group-hover:from-teal-500 group-hover:to-cyan-500 group-hover:text-white transition-all duration-300 shadow-sm group-hover:shadow-teal-200">
-                                            <ArrowRight className="w-5 h-5 transform group-hover:rotate-[-45deg] transition-transform duration-300" />
-                                        </button>
+                                        <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 group-hover:bg-teal-600 group-hover:text-white transition-colors">
+                                            <ArrowRight className="w-4 h-4" />
+                                        </div>
                                     </div>
                                 </div>
                             </div>

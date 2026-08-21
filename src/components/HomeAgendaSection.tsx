@@ -328,11 +328,10 @@ const HomeAgendaSection = React.memo(() => {
                         onMouseLeave={handleMouseLeave}
                     >
                         {events.map((event) => (
-                            <div key={event.id} className="w-[300px] md:w-[350px] shrink-0 group relative h-[460px] transform-gpu">
-                                {/* Dark Card - Teal / Emerald Theme */}
-                                <div className="h-full bg-slate-800/95 rounded-[2rem] border border-white/10 shadow-xl shadow-black/30 hover:shadow-2xl hover:shadow-teal-900/30 hover:bg-slate-800 hover:border-teal-500/40 transition-all duration-300 overflow-hidden flex flex-col relative group hover:-translate-y-2">
-
-                                    {/* Click Overlay (avoids text selection/dragging issues) */}
+                            <div key={event.id} className="w-[300px] md:w-[350px] shrink-0 h-[450px]">
+                                {/* Dark Card */}
+                                <div className="h-full bg-slate-800 rounded-3xl border border-slate-700 shadow-md hover:border-teal-500 transition-all duration-200 overflow-hidden flex flex-col relative group">
+                                    {/* Click Overlay */}
                                     <div 
                                         className="absolute inset-0 z-30 cursor-pointer" 
                                         onClick={() => {
@@ -341,63 +340,55 @@ const HomeAgendaSection = React.memo(() => {
                                     ></div>
 
                                     {/* Image / Header */}
-                                    <div className="h-[200px] relative overflow-hidden bg-slate-900/50 flex-shrink-0">
-                                        <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent opacity-80 z-10"></div>
+                                    <div className="h-[200px] relative overflow-hidden bg-slate-900 flex-shrink-0">
                                         {event.image_url ? (
                                             <img
                                                 src={event.image_url.startsWith('http') ? event.image_url : `${BASE_URL}${event.image_url}`}
                                                 alt={event.title}
                                                 loading="lazy"
                                                 decoding="async"
-                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100 pointer-events-none"
+                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 pointer-events-none"
                                             />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center opacity-30">
-                                                <Music className="h-20 w-20 text-teal-400" />
+                                                <Music className="h-16 w-16 text-teal-400" />
                                             </div>
                                         )}
 
-                                        {/* Date Badge - Dark Theme / Teal Adaptation */}
+                                        {/* Date Badge */}
                                         <div className="absolute top-4 right-4 z-20">
-                                            <div className="bg-slate-900/95 pl-4 pr-1 py-1 rounded-full flex items-center gap-3 shadow-lg border border-white/10 group-hover:border-teal-500/50 transition-colors">
-                                                <span className="text-xs font-bold uppercase text-teal-300 tracking-wider">
+                                            <div className="bg-slate-900/90 px-3 py-1.5 rounded-full flex items-center gap-2 shadow border border-slate-700">
+                                                <span className="text-xs font-bold uppercase text-teal-400 tracking-wider">
                                                     {new Date(event.event_date).toLocaleDateString('fr-FR', { month: 'short' }).replace('.', '')}
                                                 </span>
-                                                <div className="bg-gradient-to-br from-teal-500 to-emerald-500 text-white rounded-full w-10 h-10 flex flex-col items-center justify-center shadow-md shadow-teal-500/30">
-                                                    <span className="text-sm font-black leading-none">{new Date(event.event_date).getDate()}</span>
-                                                </div>
+                                                <span className="text-sm font-black text-white leading-none">
+                                                    {new Date(event.event_date).getDate()}
+                                                </span>
                                             </div>
                                         </div>
 
                                         {/* Type Badge */}
                                         <div className="absolute bottom-4 left-4 z-20">
-                                            <span className="px-3 py-1.5 rounded-full bg-slate-900/90 border border-white/10 text-white text-xs font-bold uppercase tracking-wide shadow-sm flex items-center gap-2">
-                                                <div className={`w-1.5 h-1.5 rounded-full shadow-[0_0_5px_currentColor] ${
-                                                    event.event_type === 'concert' ? 'bg-emerald-400 text-emerald-400' : 
-                                                    event.event_type === 'divers' ? 'bg-purple-400 text-purple-400' : 'bg-blue-400 text-blue-400'
-                                                }`}></div>
+                                            <span className="px-2.5 py-1 rounded-full bg-slate-900/90 border border-slate-700 text-white text-[11px] font-bold uppercase tracking-wider">
                                                 {event.event_type === 'divers' ? 'Divers' : event.event_type === 'concert' ? 'Concert' : event.event_type === 'repetition' ? 'Répétition' : 'Autre'}
                                             </span>
                                         </div>
                                     </div>
 
                                     {/* Body */}
-                                    <div className="p-8 flex-grow flex flex-col relative z-10">
-                                        <h3 className="font-bold text-xl text-white mb-3 group-hover:text-teal-300 transition-colors line-clamp-2 leading-tight">
+                                    <div className="p-6 flex-grow flex flex-col bg-slate-800">
+                                        <h3 className="font-bold text-lg text-white mb-2 group-hover:text-teal-400 transition-colors line-clamp-2 leading-snug">
                                             {event.title}
                                         </h3>
 
-                                        {/* Separator - Gradient Teal */}
-                                        <div className="h-px w-10 bg-gradient-to-r from-teal-500 to-transparent mb-4 opacity-50"></div>
-
-                                        <div className="space-y-4 mt-auto">
-                                            <div className="flex items-center text-slate-300 text-sm font-medium bg-white/5 p-2 rounded-xl border border-white/5 group-hover:border-teal-500/20 transition-colors">
-                                                <Clock className="w-4 h-4 mr-3 text-teal-400" />
+                                        <div className="space-y-2 mt-auto pt-4 border-t border-slate-700/60">
+                                            <div className="flex items-center text-slate-300 text-xs font-medium">
+                                                <Clock className="w-4 h-4 mr-2 text-teal-400" />
                                                 {new Date(event.event_date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
                                             </div>
-                                            <div className="flex items-center text-slate-300 text-sm font-medium bg-white/5 p-2 rounded-xl border border-white/5 group-hover:border-teal-500/20 transition-colors">
-                                                <MapPin className="w-4 h-4 mr-3 text-teal-400" />
-                                                <span className="truncate max-w-[280px]">{event.location || 'Lieu à définir'}</span>
+                                            <div className="flex items-center text-slate-300 text-xs font-medium">
+                                                <MapPin className="w-4 h-4 mr-2 text-teal-400" />
+                                                <span className="truncate max-w-[260px]">{event.location || 'Lieu à définir'}</span>
                                             </div>
                                         </div>
                                     </div>

@@ -99,23 +99,21 @@ const Home = () => {
     <div className="">
       {/* Hero Section - Optimisé Ultra-Wide (Style Samsung) */}
       <section id="accueil" className="relative h-[calc(100vh-80px)] flex items-center justify-center bg-slate-900 overflow-hidden">
-        {/* Images de fond avec structure Contenue pour Ultra-Wide */}
-        {backgroundImages.map((image, index) => (
-          <div
-            key={index}
-            className={`absolute inset-0 transition-opacity duration-1000 ${index === currentImageIndex ? 'opacity-100' : 'opacity-0'}`}
-          >
+        {/* Active Hero Background Image - Single GPU Layer */}
+        {backgroundImages.length > 0 && (
+          <div className="absolute inset-0">
             <img
-              src={image}
-              alt=""
-              loading={index === 0 ? 'eager' : 'lazy'}
+              key={backgroundImages[currentImageIndex]}
+              src={backgroundImages[currentImageIndex]}
+              alt="La Lyre"
+              loading="eager"
               decoding="async"
-              fetchPriority={index === 0 ? 'high' : 'low'}
-              className="absolute inset-0 w-full h-full object-cover z-0"
+              fetchPriority="high"
+              className="absolute inset-0 w-full h-full object-cover z-0 transition-opacity duration-700 opacity-100"
             />
-            <div className="absolute inset-0 bg-slate-950/40 z-1" />
+            <div className="absolute inset-0 bg-slate-950/50 z-1" />
           </div>
-        ))}
+        )}
         
         <div className="w-full max-w-[2560px] mx-auto px-4 sm:px-10 lg:px-20 relative z-10 flex flex-col items-start justify-end pb-32 md:pb-48 h-full">
             {/* Main Title */}
