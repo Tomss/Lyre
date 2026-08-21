@@ -28,7 +28,24 @@ async function run() {
       console.error(`[WebP Auto-Migrator] Error converting ${file}:`, e.message);
     }
   }
-  if (replacements.length === 0) return;
+
+  // Always ensure bundled assets in public/ are present in uploads/
+  const publicDir = path.join(process.cwd(), 'public');
+  if (fs.existsSync(publicDir)) {
+    for (const f of ['carousel-1.webp', 'carousel-2.webp', 'carousel-3.webp', 'carousel-4.webp', 'hero-banner.webp']) {
+      const src = path.join(publicDir, f);
+      const dst = path.join(uploadsDir, f);
+      try {
+        if (fs.existsSync(src)) {
+          fs.copyFileSync(src, dst);
+          console.log(`[WebP Auto-Migrator] Copied ${f} to uploads.`);
+        }
+      } catch (e) {
+        console.error(`[WebP Auto-Migrator] Error copying ${f}:`, e.message);
+      }
+    }
+  }
+
   try {
     const conn = await mysql.createConnection({
       host: process.env.DB_HOST || 'localhost',
@@ -37,16 +54,20 @@ async function run() {
       database: process.env.DB_NAME,
       port: process.env.DB_PORT ? parseInt(process.env.DB_PORT) : 3306
     });
+
     for (const { oldFile, newFile } of replacements) {
       try { await conn.query('UPDATE orchestras SET photo_url = REPLACE(photo_url, ?, ?) WHERE photo_url LIKE ?', [oldFile, newFile, '%' + oldFile + '%']); } catch(e) {}
       try { await conn.query('UPDATE orchestra_photos SET photo_url = REPLACE(photo_url, ?, ?) WHERE photo_url LIKE ?', [oldFile, newFile, '%' + oldFile + '%']); } catch(e) {}
       try { await conn.query('UPDATE news SET image_url = REPLACE(image_url, ?, ?) WHERE image_url LIKE ?', [oldFile, newFile, '%' + oldFile + '%']); } catch(e) {}
       try { await conn.query('UPDATE instruments SET photo_url = REPLACE(photo_url, ?, ?) WHERE photo_url LIKE ?', [oldFile, newFile, '%' + oldFile + '%']); } catch(e) {}
       try { await conn.query('UPDATE media_files SET file_path = REPLACE(file_path, ?, ?) WHERE file_path LIKE ?', [oldFile, newFile, '%' + oldFile + '%']); } catch(e) {}
+    }
+
     // Ensure carousel images point to the 4 local WebP images
     try {
-      const [existingCarousel] = await conn.query('SELECT * FROM carousel_images WHERE image_url LIKE "%carousel%"');
-      if (existingCarousel.length < 4) {
+      const [existingCarousel] = await conn.query('SELECT * FROM carousel_images');
+      const hasBadUrls = existingCarousel.some((c) => !c.image_url || c.image_url.includes('cloudinary') || c.image_url.includes('unsplash') || c.image_url.includes('pexels'));
+      if (existingCarousel.length < 4 || hasBadUrls) {
         await conn.query('DELETE FROM carousel_images');
         const carouselPhotos = ['/uploads/carousel-1.webp', '/uploads/carousel-2.webp', '/uploads/carousel-3.webp', '/uploads/carousel-4.webp'];
         for (let i = 0; i < carouselPhotos.length; i++) {
@@ -55,7 +76,7 @@ async function run() {
             id, carouselPhotos[i], '', '', i, 1
           ]);
         }
-        console.log('[WebP Auto-Migrator] Restored 4 carousel WebP images.');
+        console.log('[WebP Auto-Migrator] Restored 4 carousel WebP images in database.');
       }
     } catch (e) {
       console.error('[WebP Auto-Migrator] Carousel sync error:', e.message);

@@ -281,16 +281,27 @@ app.use('/uploads', async (req, res, next) => {
       return next();
     }
 
-    if (!fs.existsSync(filePath)) {
-      return next();
+    let actualFile = filePath;
+    if (!fs.existsSync(actualFile)) {
+      const publicFallback = path.join(process.cwd(), 'public', decodeURIComponent(rawPath));
+      const distFallback = path.join(process.cwd(), 'dist', decodeURIComponent(rawPath));
+      if (fs.existsSync(publicFallback)) {
+        actualFile = publicFallback;
+      } else if (fs.existsSync(distFallback)) {
+        actualFile = distFallback;
+      } else {
+        return next();
+      }
     }
 
-    const stats = fs.statSync(filePath);
+    const stats = fs.statSync(actualFile);
     if (stats.isDirectory()) return next();
 
-    // If already a small WebP (< 300KB), let static handler serve directly
-    if (ext === '.webp' && stats.size < 300 * 1024) {
-      return next();
+    // If already a WebP (< 500KB), serve directly
+    if (ext === '.webp' && stats.size < 500 * 1024) {
+      res.setHeader('Content-Type', 'image/webp');
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      return res.sendFile(path.resolve(actualFile));
     }
 
     const cacheDir = path.join(process.cwd(), 'uploads', '.optimized');
