@@ -43,7 +43,24 @@ async function run() {
       try { await conn.query('UPDATE news SET image_url = REPLACE(image_url, ?, ?) WHERE image_url LIKE ?', [oldFile, newFile, '%' + oldFile + '%']); } catch(e) {}
       try { await conn.query('UPDATE instruments SET photo_url = REPLACE(photo_url, ?, ?) WHERE photo_url LIKE ?', [oldFile, newFile, '%' + oldFile + '%']); } catch(e) {}
       try { await conn.query('UPDATE media_files SET file_path = REPLACE(file_path, ?, ?) WHERE file_path LIKE ?', [oldFile, newFile, '%' + oldFile + '%']); } catch(e) {}
+    // Ensure carousel images point to the 4 local WebP images
+    try {
+      const [existingCarousel] = await conn.query('SELECT * FROM carousel_images WHERE image_url LIKE "%carousel%"');
+      if (existingCarousel.length < 4) {
+        await conn.query('DELETE FROM carousel_images');
+        const carouselPhotos = ['/uploads/carousel-1.webp', '/uploads/carousel-2.webp', '/uploads/carousel-3.webp', '/uploads/carousel-4.webp'];
+        for (let i = 0; i < carouselPhotos.length; i++) {
+          const id = require('crypto').randomUUID();
+          await conn.query('INSERT INTO carousel_images (id, image_url, title, subtitle, sort_order, is_active) VALUES (?, ?, ?, ?, ?, ?)', [
+            id, carouselPhotos[i], '', '', i, 1
+          ]);
+        }
+        console.log('[WebP Auto-Migrator] Restored 4 carousel WebP images.');
+      }
+    } catch (e) {
+      console.error('[WebP Auto-Migrator] Carousel sync error:', e.message);
     }
+
     console.log('[WebP Auto-Migrator] Database tables updated successfully.');
     await conn.end();
   } catch (err) {
