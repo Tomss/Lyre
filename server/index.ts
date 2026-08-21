@@ -266,8 +266,15 @@ app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-// Serve static files from the 'uploads' directory with 7-day browser caching
-app.use('/uploads', express.static('uploads', { maxAge: '7d', etag: true }));
+// Serve static files from the 'uploads' directory with 1-year immutable browser caching
+app.use('/uploads', express.static('uploads', {
+  maxAge: '1y',
+  immutable: true,
+  etag: true,
+  setHeaders: (res) => {
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+  }
+}));
 
 // API Routes
 app.use('/api/auth', authRouter);

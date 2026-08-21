@@ -134,11 +134,30 @@ const generatePalette = (baseHex: string, rootName: string) => {
     }
 };
 
+const SETTINGS_CACHE_KEY = 'lyre_cached_settings_v1';
+const HEADERS_CACHE_KEY = 'lyre_cached_headers_v1';
+
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { logout } = useAuth();
-    const [settings, setSettings] = useState<ThemeSettings>(defaultSettings);
-    const [pageHeaders, setPageHeaders] = useState<Record<string, string>>({});
-    const [loading, setLoading] = useState(true);
+
+    // Instant frame-0 hydration from localStorage
+    const [settings, setSettings] = useState<ThemeSettings>(() => {
+        try {
+            const cached = localStorage.getItem(SETTINGS_CACHE_KEY);
+            if (cached) return { ...defaultSettings, ...JSON.parse(cached) };
+        } catch (e) {}
+        return defaultSettings;
+    });
+
+    const [pageHeaders, setPageHeaders] = useState<Record<string, string>>(() => {
+        try {
+            const cached = localStorage.getItem(HEADERS_CACHE_KEY);
+            if (cached) return JSON.parse(cached);
+        } catch (e) {}
+        return {};
+    });
+
+    const [loading, setLoading] = useState(false);
 
     const fetchSettings = async () => {
         try {
@@ -149,6 +168,9 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             // Merge with defaults
             const newSettings = { ...defaultSettings, ...data };
             setSettings(newSettings);
+            try {
+                localStorage.setItem(SETTINGS_CACHE_KEY, JSON.stringify(newSettings));
+            } catch (e) {}
 
             // Apply to DOM
             if (newSettings.theme_primary_color) {
@@ -169,6 +191,17 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             if (response.ok) {
                 const data = await response.json();
                 setPageHeaders(data);
+                try {
+                    localStorage.setItem(HEADERS_CACHE_KEY, JSON.stringify(data));
+                } catch (e) {}
+
+                // Preload all page header images into browser memory cache for instant page switches
+                Object.values(data).forEach((url: any) => {
+                    if (typeof url === 'string' && url.length > 0) {
+                        const img = new Image();
+                        img.src = url;
+                    }
+                });
             }
         } catch (error) {
             console.error('Error loading page headers:', error);
@@ -176,12 +209,8 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
 
     useEffect(() => {
-        const loadAll = async () => {
-            setLoading(true);
-            await Promise.all([fetchSettings(), fetchPageHeaders()]);
-            setLoading(false);
-        };
-        loadAll();
+        fetchSettings();
+        fetchPageHeaders();
     }, []);
 
     const updateSettings = async (newSettings: Partial<ThemeSettings>) => {

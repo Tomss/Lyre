@@ -8,6 +8,38 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Instant Frame-0 Image Pre-Hydration -->
+    <script>
+      (function() {
+        try {
+          var c = localStorage.getItem('lyre_cached_carousel_v1');
+          if (c) {
+            var arr = JSON.parse(c);
+            if (Array.isArray(arr) && arr.length > 0 && arr[0]) {
+              var l = document.createElement('link');
+              l.rel = 'preload';
+              l.as = 'image';
+              l.href = arr[0];
+              l.fetchPriority = 'high';
+              document.head.appendChild(l);
+            }
+          }
+          var h = localStorage.getItem('lyre_cached_headers_v1');
+          if (h) {
+            var headers = JSON.parse(h);
+            Object.values(headers).forEach(function(url) {
+              if (url) {
+                var l2 = document.createElement('link');
+                l2.rel = 'prefetch';
+                l2.as = 'image';
+                l2.href = url;
+                document.head.appendChild(l2);
+              }
+            });
+          }
+        } catch(e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
