@@ -84,23 +84,6 @@ const Home = () => {
     };
   }, [backgroundImages, settings.carousel_interval, isHeroVisible]);
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('animate-fade-in-up');
-          }
-        });
-      },
-      { threshold: 0.1 }
-    );
-
-    const elements = document.querySelectorAll('.animate-on-scroll');
-    elements.forEach((el) => observer.observe(el));
-
-    return () => observer.disconnect();
-  }, []);
 
   // Preload carousel images for instant smooth transitions
   useEffect(() => {

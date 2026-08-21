@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Calendar, Clock, MapPin, Music, ArrowRight, X } from 'lucide-react';
 
-import { API_URL } from '../config';
+import { API_URL, BASE_URL } from '../config';
 
 interface EventItem {
     id: string;
@@ -269,8 +269,6 @@ const HomeAgendaSection = React.memo(() => {
                 </div>
             )}
 
-            {/* Background Texture & Decoration (Matches 'Classes & Profs' style) */}
-            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 pointer-events-none"></div>
             <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-teal-500/50 to-transparent"></div>
 
             {/* Ambient Background Glows - Zero GPU Cost Radial Gradients */}
@@ -347,11 +345,11 @@ const HomeAgendaSection = React.memo(() => {
                                         <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent opacity-80 z-10"></div>
                                         {event.image_url ? (
                                             <img
-                                                src={event.image_url}
+                                                src={event.image_url.startsWith('http') ? event.image_url : `${BASE_URL}${event.image_url}`}
                                                 alt={event.title}
                                                 loading="lazy"
                                                 decoding="async"
-                                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-90 group-hover:opacity-100 pointer-events-none"
+                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100 pointer-events-none"
                                             />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center opacity-30">
