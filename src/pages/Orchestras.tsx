@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { Music } from 'lucide-react';
 import PageHero from '../components/PageHero';
@@ -12,6 +12,31 @@ interface Orchestra {
 }
 
 import { API_URL, BASE_URL } from '../config';
+
+const SmoothFadeImage = ({ src, alt, className = '' }: { src: string; alt: string; className?: string }) => {
+    const [loaded, setLoaded] = useState(false);
+    const imgRef = useRef<HTMLImageElement>(null);
+
+    useEffect(() => {
+        if (imgRef.current?.complete && imgRef.current.naturalWidth > 0) {
+            setLoaded(true);
+        }
+    }, [src]);
+
+    return (
+        <div className="relative w-full h-full bg-slate-900/5 overflow-hidden">
+            <img
+                ref={imgRef}
+                src={src}
+                alt={alt}
+                loading="lazy"
+                decoding="async"
+                onLoad={() => setLoaded(true)}
+                className={`${className} transition-opacity duration-300 ease-out ${loaded ? 'opacity-100' : 'opacity-0'}`}
+            />
+        </div>
+    );
+};
 
 const PhotoStack = ({ photos, altPrefix, height = "h-[400px] md:h-[500px]" }: { photos: { id: string; photo_url: string; display_order: number }[], altPrefix: string, height?: string }) => {
     const [stack, setStack] = useState(photos);
@@ -33,11 +58,9 @@ const PhotoStack = ({ photos, altPrefix, height = "h-[400px] md:h-[500px]" }: { 
     if (photos.length === 1) {
         return (
             <div className={`relative rounded-2xl overflow-hidden shadow-xl border-4 border-white ${height} bg-slate-100`}>
-                <img
+                <SmoothFadeImage
                     src={photos[0].photo_url.startsWith('http') ? photos[0].photo_url : `${BASE_URL}${photos[0].photo_url}`}
                     alt={altPrefix}
-                    loading="lazy"
-                    decoding="async"
                     className="w-full h-full object-cover"
                 />
             </div>
@@ -57,11 +80,9 @@ const PhotoStack = ({ photos, altPrefix, height = "h-[400px] md:h-[500px]" }: { 
                     onClick={() => bringToFront(i)}
                 >
                     <div className="relative rounded-2xl overflow-hidden shadow-xl border-4 border-white h-full bg-slate-100">
-                        <img
+                        <SmoothFadeImage
                             src={photo.photo_url.startsWith('http') ? photo.photo_url : `${BASE_URL}${photo.photo_url}`}
                             alt={`${altPrefix} - ${photo.display_order}`}
-                            loading="lazy"
-                            decoding="async"
                             className="w-full h-full object-cover"
                         />
                     </div>

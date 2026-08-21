@@ -256,14 +256,12 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({ media, isOpen, onClose }) =
         )}
       </main>
 
-      {/* 3. THUMBNAIL STRIP - Dedicated Bottom Bar with Clear Height & Spacing */}
+      {/* 3. THUMBNAIL STRIP - Dedicated Bottom Bar with Modern Lightbox Styling */}
       {displayFiles.length > 1 && (
-        <footer className="h-24 md:h-28 flex-shrink-0 bg-slate-900 border-t border-white/10 px-4 md:px-8 py-3 flex items-center justify-center z-30">
+        <footer className="h-24 md:h-28 flex-shrink-0 bg-slate-950/90 border-t border-white/10 px-4 md:px-8 py-3 flex items-center justify-center z-30">
           <div className="w-full max-w-5xl flex items-center space-x-3 overflow-x-auto py-1 no-scrollbar justify-start md:justify-center">
             {displayFiles.map((file, index) => {
               const isSelected = index === currentIndex;
-              // Virtualization window: render actual image tag ONLY for nearby thumbnails to keep DOM lightweight & ultra-fast
-              const isNear = Math.abs(index - currentIndex) <= 8;
 
               return (
                 <button
@@ -277,24 +275,18 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({ media, isOpen, onClose }) =
                   className={`relative flex-shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-xl overflow-hidden border-2 transition-all duration-200 cursor-pointer ${
                     isSelected 
                       ? 'border-teal-400 ring-2 ring-teal-400/50 scale-105 shadow-lg shadow-teal-500/30 z-10' 
-                      : 'border-white/15 opacity-40 hover:opacity-90 hover:border-white/40'
+                      : 'border-white/15 opacity-50 hover:opacity-90 hover:border-white/40'
                   }`}
                   title={file.file_name}
                 >
                   {file.file_type === 'image' ? (
-                    isNear ? (
-                      <img 
-                        src={getFileUrl(file.file_path)} 
-                        alt="" 
-                        loading="lazy" 
-                        decoding="async" 
-                        className="w-full h-full object-cover" 
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-slate-800 flex items-center justify-center text-slate-500 text-xs font-bold">
-                        {index + 1}
-                      </div>
-                    )
+                    <img 
+                      src={getFileUrl(file.file_path)} 
+                      alt="" 
+                      loading="lazy" 
+                      decoding="async" 
+                      className="w-full h-full object-cover" 
+                    />
                   ) : file.file_type === 'pdf' ? (
                     <div className="w-full h-full flex items-center justify-center bg-rose-600 text-white"><FileText size={20} /></div>
                   ) : (
