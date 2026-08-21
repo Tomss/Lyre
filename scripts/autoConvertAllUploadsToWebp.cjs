@@ -52,8 +52,25 @@ async function run() {
       user: process.env.DB_USER || 'root',
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      port: process.env.DB_PORT ? parseInt(process.env.DB_PORT) : 3306
+      port: process.env.DB_PORT ? parseInt(process.env.DB_PORT) : 3306,
+      multipleStatements: true
     });
+
+    // Check if database needs full Railway data import (history, headers, orchestras, etc.)
+    try {
+      const [historyRows] = await conn.query('SELECT COUNT(*) as count FROM history_events');
+      if (historyRows[0].count < 15) {
+        const dumpFile = path.join(process.cwd(), 'scripts', 'migrated_railway_dump.sql');
+        if (fs.existsSync(dumpFile)) {
+          console.log('[WebP Auto-Migrator] Importing full Railway dataset into MySQL...');
+          const dumpSql = fs.readFileSync(dumpFile, 'utf8');
+          await conn.query(dumpSql);
+          console.log('[WebP Auto-Migrator] Full Railway dataset imported successfully.');
+        }
+      }
+    } catch (e) {
+      console.error('[WebP Auto-Migrator] Dump import check error:', e.message);
+    }
 
     for (const { oldFile, newFile } of replacements) {
       try { await conn.query('UPDATE orchestras SET photo_url = REPLACE(photo_url, ?, ?) WHERE photo_url LIKE ?', [oldFile, newFile, '%' + oldFile + '%']); } catch(e) {}
@@ -61,25 +78,6 @@ async function run() {
       try { await conn.query('UPDATE news SET image_url = REPLACE(image_url, ?, ?) WHERE image_url LIKE ?', [oldFile, newFile, '%' + oldFile + '%']); } catch(e) {}
       try { await conn.query('UPDATE instruments SET photo_url = REPLACE(photo_url, ?, ?) WHERE photo_url LIKE ?', [oldFile, newFile, '%' + oldFile + '%']); } catch(e) {}
       try { await conn.query('UPDATE media_files SET file_path = REPLACE(file_path, ?, ?) WHERE file_path LIKE ?', [oldFile, newFile, '%' + oldFile + '%']); } catch(e) {}
-    }
-
-    // Unconditionally ensure carousel images point to the 4 local WebP images from Railway
-    try {
-      await conn.query('DELETE FROM carousel_images');
-      const carouselPhotos = [
-        { id: '9bf2f528-6b7e-4e5d-835f-cb411f13eee1', url: '/uploads/carousel-1.webp', order: 0 },
-        { id: 'c524be45-5a8e-43c5-b1d8-5cd1d3141583', url: '/uploads/carousel-2.webp', order: 1 },
-        { id: '2a459382-8508-4f73-9139-efd1bce9e6dd', url: '/uploads/carousel-3.webp', order: 2 },
-        { id: '899e026c-fa1d-4c93-809b-90a5cd85530f', url: '/uploads/carousel-4.webp', order: 3 }
-      ];
-      for (const item of carouselPhotos) {
-        await conn.query('INSERT INTO carousel_images (id, image_url, title, subtitle, sort_order, is_active) VALUES (?, ?, ?, ?, ?, ?)', [
-          item.id, item.url, '', '', item.order, 1
-        ]);
-      }
-      console.log('[WebP Auto-Migrator] Restored 4 carousel WebP images in database.');
-    } catch (e) {
-      console.error('[WebP Auto-Migrator] Carousel sync error:', e.message);
     }
 
     console.log('[WebP Auto-Migrator] Database tables updated successfully.');
