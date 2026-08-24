@@ -665,11 +665,11 @@ const AdminCommunication = () => {
 
       {/* Communication Detail Modal */}
       {selectedHistoryItem && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[90] flex justify-center items-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-3xl max-w-3xl w-full shadow-2xl border border-slate-100 overflow-hidden flex flex-col max-h-[90vh] animate-in fade-in zoom-in duration-200">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[90] flex justify-center items-center p-4 overflow-y-auto" data-lenis-prevent>
+          <div className="bg-white rounded-3xl max-w-3xl w-full shadow-2xl border border-slate-100 overflow-hidden flex flex-col max-h-[90vh] animate-in fade-in zoom-in duration-200" data-lenis-prevent>
             
             {/* Modal Header */}
-            <div className="bg-slate-900 text-white px-8 py-5 flex items-center justify-between">
+            <div className="bg-slate-900 text-white px-8 py-5 flex items-center justify-between flex-shrink-0">
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white">
                   <Mail size={22} />
@@ -685,14 +685,14 @@ const AdminCommunication = () => {
               </div>
               <button 
                 onClick={() => setSelectedHistoryItem(null)}
-                className="text-slate-400 hover:text-white p-2 rounded-xl hover:bg-slate-800 transition-colors"
+                className="text-slate-400 hover:text-white p-2 rounded-xl hover:bg-slate-800 transition-colors cursor-pointer"
               >
                 <X size={20} />
               </button>
             </div>
 
             {/* Modal Content Body */}
-            <div className="p-8 overflow-y-auto flex-1 space-y-6">
+            <div className="p-8 overflow-y-auto flex-1 space-y-6" data-lenis-prevent>
               
               {/* Badges & Overview */}
               <div className="flex flex-wrap items-center gap-2">
@@ -740,6 +740,7 @@ const AdminCommunication = () => {
                 </label>
                 <div 
                   className="bg-slate-50 p-5 rounded-2xl border border-slate-200 text-slate-800 text-sm leading-relaxed max-h-64 overflow-y-auto"
+                  data-lenis-prevent
                   dangerouslySetInnerHTML={{ __html: selectedHistoryItem.message_content || '<p className="italic text-slate-400">Contenu non archivé pour ce test antérieur</p>' }}
                 />
               </div>
@@ -750,7 +751,7 @@ const AdminCommunication = () => {
                   Liste des destinataires ({selectedHistoryItem.recipient_count})
                 </label>
                 
-                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 max-h-52 overflow-y-auto space-y-2 text-xs">
+                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 max-h-52 overflow-y-auto space-y-2 text-xs" data-lenis-prevent>
                   {Array.isArray(selectedHistoryItem.recipients_list) && selectedHistoryItem.recipients_list.length > 0 ? (
                     selectedHistoryItem.recipients_list.map((rec, idx) => {
                       const recStr = String(rec || '');
@@ -1021,8 +1022,8 @@ const AdminCommunication = () => {
 
       {/* POP-UP WIZARD MODAL */}
       {showWizard && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-3xl max-w-5xl w-full h-[88vh] shadow-2xl border border-slate-100 my-2 overflow-hidden flex flex-col">
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto" data-lenis-prevent>
+          <div className="bg-white rounded-3xl max-w-5xl w-full h-[88vh] shadow-2xl border border-slate-100 my-2 overflow-hidden flex flex-col" data-lenis-prevent>
             
             {/* Modal Header */}
             <div className="bg-slate-900 text-white px-8 py-5 flex items-center justify-between">
