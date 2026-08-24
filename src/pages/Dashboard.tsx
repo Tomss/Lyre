@@ -922,7 +922,7 @@ const Dashboard = () => {
                   const partitionsByMorceau = groupPartitionsByMorceau(partitions);
                   const isOrchestraExpanded = expandedOrchestras.has(orchestraName);
                   return (
-                    <div key={orchestraName} className="bg-white/40 backdrop-blur-md rounded-2xl shadow-sm border border-white/60 overflow-hidden transition-colors duration-200 hover:shadow-md [overflow-anchor:none]">
+                    <div key={orchestraName} className="bg-white rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden transition-colors duration-200 hover:shadow-md [overflow-anchor:none]">
                       <button 
                         onClick={(e) => toggleOrchestra(orchestraName, e)} 
                         className="w-full flex items-center justify-between p-5 bg-gradient-to-r from-purple-50 to-white hover:opacity-90 transition-colors cursor-pointer"

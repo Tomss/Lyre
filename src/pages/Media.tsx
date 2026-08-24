@@ -277,7 +277,7 @@ const Media = () => {
           {mediaItems.length > 0 && (
             <div className="mb-16 relative z-10">
               <div className="w-full">
-                <div className="bg-white/70 backdrop-blur-xl rounded-[2.5rem] p-4 lg:p-6 shadow-2xl shadow-slate-200/50 border border-slate-100 space-y-6">
+                <div className="bg-white rounded-[2.5rem] p-4 lg:p-6 shadow-xl shadow-slate-200/50 border border-slate-100 space-y-6">
                   <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-6">
                     
                     {/* Filtres par Type */}
