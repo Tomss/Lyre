@@ -314,7 +314,7 @@ app.use('/uploads', async (req, res, next) => {
     }
 
     // Disk Cache Directory for resized variants
-    const cacheDir = path.join(process.cwd(), 'uploads', '.cache', `w_${requestedWidth || 'orig'}`);
+    const cacheDir = path.join(process.cwd(), 'uploads', 'cache', `w_${requestedWidth || 'orig'}`);
     if (!fs.existsSync(cacheDir)) fs.mkdirSync(cacheDir, { recursive: true });
 
     const baseName = path.basename(filePath, ext).replace(/[^a-zA-Z0-9_-]/g, '_');
@@ -324,7 +324,7 @@ app.use('/uploads', async (req, res, next) => {
     if (fs.existsSync(cachedFilePath)) {
       res.setHeader('Content-Type', targetFormat === 'avif' ? 'image/avif' : 'image/webp');
       res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-      return res.sendFile(path.resolve(cachedFilePath));
+      return res.sendFile(path.resolve(cachedFilePath), { dotfiles: 'allow' });
     }
 
     // Resize on-the-fly and save to cache
@@ -348,12 +348,12 @@ app.use('/uploads', async (req, res, next) => {
 
       res.setHeader('Content-Type', targetFormat === 'avif' ? 'image/avif' : 'image/webp');
       res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-      return res.sendFile(path.resolve(cachedFilePath));
+      return res.sendFile(path.resolve(cachedFilePath), { dotfiles: 'allow' });
     } catch (sharpErr) {
       console.warn('[Image Engine] Sharp caching error, serving original file directly:', sharpErr);
       res.setHeader('Content-Type', ext === '.png' ? 'image/png' : ext === '.jpg' || ext === '.jpeg' ? 'image/jpeg' : 'image/webp');
       res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-      return res.sendFile(path.resolve(actualFile));
+      return res.sendFile(path.resolve(actualFile), { dotfiles: 'allow' });
     }
   } catch (err) {
     console.error('Error in on-the-fly image engine:', err);
@@ -362,8 +362,8 @@ app.use('/uploads', async (req, res, next) => {
 });
 
 // Fallback static handlers for uploads, public, and dist assets
-app.use('/uploads', express.static(path.join(process.cwd(), 'uploads'), { maxAge: '1y', immutable: true }));
-app.use('/uploads', express.static(path.join(process.cwd(), 'public'), { maxAge: '1y', immutable: true }));
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads'), { maxAge: '1y', immutable: true, dotfiles: 'allow' }));
+app.use('/uploads', express.static(path.join(process.cwd(), 'public'), { maxAge: '1y', immutable: true, dotfiles: 'allow' }));
 
 // API Routes
 app.use('/api/auth', authRouter);
