@@ -50,7 +50,11 @@ const Home = () => {
               img.src = url;
             })));
 
-            setBackgroundImages(urls);
+            // Only update state if carousel URLs have actually changed to prevent DOM style flush
+            setBackgroundImages(prev => {
+              if (JSON.stringify(prev) === JSON.stringify(urls)) return prev;
+              return urls;
+            });
             try {
               localStorage.setItem(CAROUSEL_CACHE_KEY, JSON.stringify(urls));
             } catch (e) {}
@@ -100,13 +104,18 @@ const Home = () => {
     <div className="">
       {/* Hero Section - Optimisé Ultra-Wide (Style Samsung) */}
       <section id="accueil" className="relative h-[calc(100vh-80px)] flex items-center justify-center bg-slate-900 overflow-hidden">
-        {/* Active Hero Background Image - GPU CSS Layer */}
+        {/* Active Hero Background Image - Multi-Layer GPU Crossfade */}
         {backgroundImages.length > 0 && (
           <div className="absolute inset-0 bg-slate-900 pointer-events-none">
-            <div
-              className="absolute inset-0 w-full h-full bg-cover bg-center transition-opacity duration-700 opacity-100"
-              style={{ backgroundImage: `url("${backgroundImages[currentImageIndex]}")` }}
-            />
+            {backgroundImages.map((imgUrl, index) => (
+              <div
+                key={imgUrl}
+                className={`absolute inset-0 w-full h-full bg-cover bg-center transition-opacity duration-1000 ease-in-out ${
+                  index === currentImageIndex ? 'opacity-100 z-0' : 'opacity-0 pointer-events-none -z-10'
+                }`}
+                style={{ backgroundImage: `url("${imgUrl}")` }}
+              />
+            ))}
             <div className="absolute inset-0 bg-slate-950/50 z-1" />
           </div>
         )}
