@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Download, Music, FileText } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Download, Music, FileText, ExternalLink } from 'lucide-react';
 import { BASE_URL } from '../config';
 import { getOptimizedImageUrl, getImageSrcSet } from '../utils/image';
 
@@ -301,8 +301,23 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({ media, isOpen, onClose }) =
                 onClick={() => setIsZoomed(!isZoomed)}
               />
             ) : currentFile.file_type === 'pdf' ? (
-              <div className="w-full max-w-4xl h-[60vh] bg-white rounded-2xl overflow-hidden shadow-2xl border border-white/20">
-                <iframe src={`${getFileUrl(currentFile.file_path)}#toolbar=1&view=FitH`} className="w-full h-full border-none" title={currentFile.file_name} />
+              <div className="w-full max-w-5xl h-[76vh] bg-white rounded-2xl overflow-hidden shadow-2xl border border-white/20 flex flex-col">
+                <div className="bg-slate-900 text-white px-5 py-3 flex items-center justify-between border-b border-slate-800 flex-shrink-0">
+                  <div className="flex items-center space-x-2.5 overflow-hidden">
+                    <FileText size={18} className="text-rose-400 flex-shrink-0" />
+                    <span className="text-xs font-bold truncate max-w-md text-white">{currentFile.file_name}</span>
+                  </div>
+                  <a
+                    href={getFileUrl(currentFile.file_path)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-4 py-1.5 bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold rounded-xl transition-colors flex items-center gap-2 shadow-sm flex-shrink-0 cursor-pointer"
+                  >
+                    <ExternalLink size={14} />
+                    Ouvrir dans un nouvel onglet
+                  </a>
+                </div>
+                <iframe src={`${getFileUrl(currentFile.file_path)}#toolbar=1&view=FitH`} className="w-full flex-1 border-none" title={currentFile.file_name} />
               </div>
             ) : currentFile.file_type === 'video' ? (
               <video controls autoPlay src={getFileUrl(currentFile.file_path)} className="max-w-full max-h-[60vh] rounded-2xl shadow-2xl" />
