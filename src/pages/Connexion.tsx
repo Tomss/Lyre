@@ -127,22 +127,9 @@ const Connexion = () => {
 
             {/* Password Field */}
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <label htmlFor="password" className="block text-sm font-bold text-slate-800">
-                  Mot de passe
-                </label>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setResetEmail(email);
-                    setResetStatus(null);
-                    setShowResetModal(true);
-                  }}
-                  className="text-xs font-semibold text-teal-600 hover:text-teal-700 transition-colors"
-                >
-                  Mot de passe oublié ?
-                </button>
-              </div>
+              <label htmlFor="password" className="block text-sm font-bold text-slate-800 mb-2">
+                Mot de passe
+              </label>
 
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
@@ -160,11 +147,26 @@ const Connexion = () => {
                 />
                 <button
                   type="button"
+                  tabIndex={-1}
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
                   title={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+
+              <div className="flex justify-end mt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setResetEmail(email);
+                    setResetStatus(null);
+                    setShowResetModal(true);
+                  }}
+                  className="text-xs font-semibold text-teal-600 hover:text-teal-700 transition-colors cursor-pointer"
+                >
+                  Mot de passe oublié ?
                 </button>
               </div>
             </div>
