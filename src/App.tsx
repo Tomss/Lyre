@@ -45,10 +45,11 @@ function App() {
   const isFullWidthPage = isAdminOrDashboard || location.pathname === '/connexion' || location.pathname === '/activer-compte';
   const wrapperClass = isFullWidthPage ? "max-w-none" : "max-w-[2560px]";
 
-  // Global Ultra-Responsive Smooth Scrolling for ALL pages (Front Office & Back Office)
+  // Global Time-Based Smooth Scrolling for ALL pages (100% identical velocity & physics across all pages)
   useEffect(() => {
     const lenis = new Lenis({
-      lerp: 0.22,
+      duration: 0.7,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       orientation: 'vertical',
       gestureOrientation: 'vertical',
       smoothWheel: true,
