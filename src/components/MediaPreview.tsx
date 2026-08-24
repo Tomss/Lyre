@@ -134,9 +134,6 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({ files, mediaType, title, on
              <span className="block font-bold text-slate-800 text-sm line-clamp-2 px-2">
                {title || "Consulter le document"}
              </span>
-             <span className="inline-flex items-center text-[10px] font-black uppercase tracking-widest text-rose-500 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-2 group-hover:translate-y-0">
-               Cliquer pour lire
-             </span>
           </div>
         </div>
         

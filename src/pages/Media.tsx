@@ -151,24 +151,29 @@ const Media = () => {
   const featuredMedia = filteredMedia.filter(media => media.is_featured);
   const regularMedia = filteredMedia.filter(media => !media.is_featured);
 
+  const getPdfUrl = (media: MediaItem) => {
+    if (!media.media_files || media.media_files.length === 0) return null;
+    const pdfFile = media.media_files.find(f => {
+      if (!f.file_path) return false;
+      const clean = f.file_path.split('?')[0].toLowerCase();
+      return f.file_type === 'pdf' || clean.endsWith('.pdf');
+    });
+
+    if (pdfFile && pdfFile.file_path) {
+      return pdfFile.file_path.startsWith('http') 
+        ? pdfFile.file_path 
+        : `${BASE_URL}${pdfFile.file_path.startsWith('/') ? '' : '/'}${pdfFile.file_path}`;
+    }
+    return null;
+  };
+
   const openGallery = (media: MediaItem) => {
     if (media.media_files && media.media_files.length > 0) {
-      // 1. Chercher un fichier PDF dans la liste des fichiers
-      const pdfFile = media.media_files.find(f => 
-        f.file_type === 'pdf' || 
-        (f.file_path && f.file_path.toLowerCase().endsWith('.pdf'))
-      );
-
-      // Si le média contient un fichier PDF -> Ouverture immédiate dans un nouvel onglet !
-      if (pdfFile && pdfFile.file_path) {
-        const pdfUrl = pdfFile.file_path.startsWith('http') 
-          ? pdfFile.file_path 
-          : `${BASE_URL}${pdfFile.file_path.startsWith('/') ? '' : '/'}${pdfFile.file_path}`;
+      const pdfUrl = getPdfUrl(media);
+      if (pdfUrl) {
         window.open(pdfUrl, '_blank', 'noopener,noreferrer');
         return;
       }
-
-      // 2. Si le média contient des images (ou audios/vidéos) -> Ouverture dans la galerie modale (comme les albums) !
       setSelectedMedia(media);
       setIsGalleryOpen(true);
     }
@@ -215,8 +220,10 @@ const Media = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 relative z-10">
               {featuredMedia.map((media) => {
                 const TypeIcon = getTypeIcon(media.media_type);
-                return (
-                  <div key={media.id} onClick={() => openGallery(media)} className="group flex flex-col bg-white rounded-2xl border border-slate-100 overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-2 transition-all duration-500 cursor-pointer">
+                const pdfUrl = getPdfUrl(media);
+
+                const cardInner = (
+                  <>
                     {/* Section Image / Preview */}
                     <div className="relative aspect-video overflow-hidden bg-slate-50 w-full border-b border-slate-100/50">
                       <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 to-transparent z-10 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -271,6 +278,26 @@ const Media = () => {
                         </span>
                       </div>
                     </div>
+                  </>
+                );
+
+                return pdfUrl ? (
+                  <a
+                    key={media.id}
+                    href={pdfUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group flex flex-col bg-white rounded-2xl border border-slate-100 overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-2 transition-all duration-500 cursor-pointer block"
+                  >
+                    {cardInner}
+                  </a>
+                ) : (
+                  <div 
+                    key={media.id} 
+                    onClick={() => openGallery(media)} 
+                    className="group flex flex-col bg-white rounded-2xl border border-slate-100 overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-2 transition-all duration-500 cursor-pointer"
+                  >
+                    {cardInner}
                   </div>
                 );
               })}
@@ -453,8 +480,10 @@ const Media = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
                   {regularMedia.slice(0, visibleCount).map((media) => {
                     const TypeIcon = getTypeIcon(media.media_type);
-                    return (
-                      <div key={media.id} onClick={() => openGallery(media)} className="group flex flex-col bg-white rounded-2xl border border-slate-100 overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 cursor-pointer">
+                    const pdfUrl = getPdfUrl(media);
+
+                    const cardInner = (
+                      <>
                         {/* Section Image / Preview */}
                         <div className="relative aspect-[4/3] overflow-hidden bg-slate-50 w-full border-b border-slate-100/50">
                           <MediaPreview
@@ -507,6 +536,26 @@ const Media = () => {
                             </span>
                           </div>
                         </div>
+                      </>
+                    );
+
+                    return pdfUrl ? (
+                      <a
+                        key={media.id}
+                        href={pdfUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group flex flex-col bg-white rounded-2xl border border-slate-100 overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 cursor-pointer block"
+                      >
+                        {cardInner}
+                      </a>
+                    ) : (
+                      <div 
+                        key={media.id} 
+                        onClick={() => openGallery(media)} 
+                        className="group flex flex-col bg-white rounded-2xl border border-slate-100 overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+                      >
+                        {cardInner}
                       </div>
                     );
                   })}
