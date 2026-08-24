@@ -102,11 +102,6 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({ files, mediaType, title, on
           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-200"></div>
-        {firstPdf && (
-          <div className="absolute top-3 right-3 bg-rose-500 text-white text-[9px] font-black px-2 py-0.5 rounded shadow-md z-10 border border-white/20">
-            PDF
-          </div>
-        )}
       </div>
     );
   }
