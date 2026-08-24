@@ -130,11 +130,28 @@ const Orchestras = () => {
                 console.error('Error fetching orchestras:', error);
             } finally {
                 setLoading(false);
+                setTimeout(() => {
+                    if ((window as any).__lenis) {
+                        (window as any).__lenis.resize();
+                    }
+                }, 100);
             }
         };
 
         fetchOrchestras();
     }, []);
+
+    const scrollToSection = (id: string, e: React.MouseEvent) => {
+        e.preventDefault();
+        const element = document.getElementById(id);
+        if (element) {
+            if ((window as any).__lenis) {
+                (window as any).__lenis.scrollTo(element, { offset: -100 });
+            } else {
+                element.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+    };
 
     return (
         <div className="text-slate-900">
@@ -159,7 +176,7 @@ const Orchestras = () => {
                 <>
                     {/* 1. Highlight Section (First Orchestra) */}
                     {orchestras.length > 0 && (
-                        <section id={orchestras[0].id} className="py-24 bg-white relative overflow-hidden scroll-mt-20">
+                        <section id={orchestras[0].id} className="py-24 bg-white relative scroll-mt-20">
                             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                                 <div className="max-w-7xl mx-auto">
 
@@ -210,10 +227,10 @@ const Orchestras = () => {
                                         Nos ensembles :
                                     </span>
                                     {orchestras.slice(1).map((orch) => (
-                                        <a
+                                        <button
                                             key={orch.id}
-                                            href={`#${orch.id}`}
-                                            className="group flex items-center gap-2 pr-3 pl-1.5 py-1 rounded-full bg-slate-50 border border-slate-200/80 hover:bg-teal-50 hover:border-teal-300 transition-colors duration-150 shadow-xs"
+                                            onClick={(e) => scrollToSection(orch.id, e)}
+                                            className="group flex items-center gap-2 pr-3 pl-1.5 py-1 rounded-full bg-slate-50 border border-slate-200/80 hover:bg-teal-50 hover:border-teal-300 transition-colors duration-150 shadow-xs cursor-pointer"
                                         >
                                             <div className="relative w-7 h-7 rounded-full overflow-hidden border border-white shadow-xs group-hover:scale-105 transition-transform">
                                                  <img
@@ -227,7 +244,7 @@ const Orchestras = () => {
                                             <span className="text-xs font-bold text-slate-700 group-hover:text-teal-700 whitespace-nowrap">
                                                 {orch.name}
                                             </span>
-                                        </a>
+                                        </button>
                                     ))}
                                 </div>
                             </div>
