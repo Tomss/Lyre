@@ -409,6 +409,33 @@ app.get('/api/test-db', async (req, res) => {
   }
 });
 
+app.get('/api/db-status', async (req, res) => {
+  try {
+    const [items] = await pool.query('SELECT COUNT(*) as count FROM media_items');
+    const [files] = await pool.query('SELECT COUNT(*) as count FROM media_files');
+    const [orchestras] = await pool.query('SELECT COUNT(*) as count FROM orchestras');
+    const [orchPhotos] = await pool.query('SELECT COUNT(*) as count FROM orchestra_photos');
+    const [partners] = await pool.query('SELECT COUNT(*) as count FROM partners');
+    const [headers] = await pool.query('SELECT COUNT(*) as count FROM page_headers');
+    const [history] = await pool.query('SELECT COUNT(*) as count FROM history_events');
+    
+    res.json({
+      success: true,
+      timestamp: new Date().toISOString(),
+      database: process.env.DB_NAME,
+      media_items_count: (items as any)[0].count,
+      media_files_count: (files as any)[0].count,
+      orchestras_count: (orchestras as any)[0].count,
+      orchestra_photos_count: (orchPhotos as any)[0].count,
+      partners_count: (partners as any)[0].count,
+      page_headers_count: (headers as any)[0].count,
+      history_events_count: (history as any)[0].count
+    });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 import { addSseClient } from './utils/sse';
 
 // SSE Endpoint for real-time updates
