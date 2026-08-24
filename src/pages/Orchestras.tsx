@@ -218,38 +218,7 @@ const Orchestras = () => {
                         </section>
                     )}
 
-                    {/* 2. Visual Sticky Nav for Other Orchestras */}
-                    {orchestras.length > 1 && (
-                        <div className="sticky z-40 bg-white border-y border-slate-200 shadow-sm top-[64px] lg:top-[80px]">
-                            <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-2.5">
-                                <div className="flex items-center justify-center flex-wrap gap-2.5 sm:gap-4">
-                                    <span className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider hidden md:inline-block mr-1">
-                                        Nos ensembles :
-                                    </span>
-                                    {orchestras.slice(1).map((orch) => (
-                                        <button
-                                            key={orch.id}
-                                            onClick={(e) => scrollToSection(orch.id, e)}
-                                            className="group flex items-center gap-2 pr-3 pl-1.5 py-1 rounded-full bg-slate-50 border border-slate-200/80 hover:bg-teal-50 hover:border-teal-300 transition-colors duration-150 shadow-xs cursor-pointer"
-                                        >
-                                            <div className="relative w-7 h-7 rounded-full overflow-hidden border border-white shadow-xs group-hover:scale-105 transition-transform">
-                                                 <img
-                                                    src={orch.photo_url ? getOptimizedImageUrl(orch.photo_url, 80, 75) : "https://via.placeholder.com/150"}
-                                                    alt={orch.name}
-                                                    loading="lazy"
-                                                    decoding="async"
-                                                    className="w-full h-full object-cover"
-                                                />
-                                            </div>
-                                            <span className="text-xs font-bold text-slate-700 group-hover:text-teal-700 whitespace-nowrap">
-                                                {orch.name}
-                                            </span>
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    )}
+
 
                     {/* 3. Other Orchestras List */}
                     <section className="bg-slate-50 py-24 pb-48">
