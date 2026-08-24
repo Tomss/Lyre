@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import { BASE_URL } from '../config';
+import { API_URL, BASE_URL } from '../config';
 import { getOptimizedImageUrl, getImageSrcSet } from '../utils/image';
 
 type HistoryEra = 'vintage' | 'retro' | 'classic' | 'modern';
