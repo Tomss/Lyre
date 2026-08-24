@@ -45,15 +45,21 @@ function App() {
   const isFullWidthPage = isAdminOrDashboard || location.pathname === '/connexion' || location.pathname === '/activer-compte';
   const wrapperClass = isFullWidthPage ? "max-w-none" : "max-w-[2560px]";
 
-  // Global Time-Based Smooth Scrolling for ALL pages (100% identical velocity & physics across all pages)
+  // Global Resolution-Normalized Time-Based Smooth Scrolling for ALL pages
   useEffect(() => {
+    // Normalize scroll amplitude based on screen viewport height (1080p baseline)
+    const getNormalizedWheelMultiplier = () => {
+      const vh = window.innerHeight || 1080;
+      return Math.max(0.85, Math.min(1.35, vh / 1080));
+    };
+
     const lenis = new Lenis({
       duration: 0.7,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       orientation: 'vertical',
       gestureOrientation: 'vertical',
       smoothWheel: true,
-      wheelMultiplier: 1.0,
+      wheelMultiplier: getNormalizedWheelMultiplier(),
       touchMultiplier: 1.0,
       autoResize: true,
     });
