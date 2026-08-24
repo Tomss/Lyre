@@ -328,41 +328,42 @@ app.use('/uploads', async (req, res, next) => {
     }
 
     // Resize on-the-fly and save to cache
-    let pipeline = sharp(actualFile);
-    if (requestedWidth) {
-      pipeline = pipeline.resize({
-        width: requestedWidth,
-        fit: 'inside',
-        withoutEnlargement: true
-      });
+    try {
+      let pipeline = sharp(actualFile);
+      if (requestedWidth) {
+        pipeline = pipeline.resize({
+          width: requestedWidth,
+          fit: 'inside',
+          withoutEnlargement: true
+        });
+      }
+
+      if (targetFormat === 'avif') {
+        pipeline = pipeline.avif({ quality: requestedQuality, effort: 3 });
+      } else {
+        pipeline = pipeline.webp({ quality: requestedQuality, effort: 3 });
+      }
+
+      await pipeline.toFile(cachedFilePath);
+
+      res.setHeader('Content-Type', targetFormat === 'avif' ? 'image/avif' : 'image/webp');
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      return res.sendFile(path.resolve(cachedFilePath));
+    } catch (sharpErr) {
+      console.warn('[Image Engine] Sharp caching error, serving original file directly:', sharpErr);
+      res.setHeader('Content-Type', ext === '.png' ? 'image/png' : ext === '.jpg' || ext === '.jpeg' ? 'image/jpeg' : 'image/webp');
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      return res.sendFile(path.resolve(actualFile));
     }
-
-    if (targetFormat === 'avif') {
-      pipeline = pipeline.avif({ quality: requestedQuality, effort: 4 });
-    } else {
-      pipeline = pipeline.webp({ quality: requestedQuality, effort: 4 });
-    }
-
-    await pipeline.toFile(cachedFilePath);
-
-    res.setHeader('Content-Type', targetFormat === 'avif' ? 'image/avif' : 'image/webp');
-    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-    return res.sendFile(path.resolve(cachedFilePath));
   } catch (err) {
     console.error('Error in on-the-fly image engine:', err);
     next();
   }
 });
 
-// Serve static files with 1-year immutable browser caching fallback
-app.use('/uploads', express.static('uploads', {
-  maxAge: '1y',
-  immutable: true,
-  etag: true,
-  setHeaders: (res) => {
-    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-  }
-}));
+// Fallback static handlers for uploads, public, and dist assets
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads'), { maxAge: '1y', immutable: true }));
+app.use('/uploads', express.static(path.join(process.cwd(), 'public'), { maxAge: '1y', immutable: true }));
 
 // API Routes
 app.use('/api/auth', authRouter);
