@@ -443,7 +443,7 @@ const AdminMedia = () => {
         <div key={item.id} className={`p-4 flex flex-col md:flex-row md:items-center md:justify-between hover:bg-slate-50/80 transition-colors duration-200`}>
           <div className="flex items-center flex-1 mb-4 md:mb-0">
             <div className="w-40 h-24 bg-slate-100 rounded-xl mr-6 flex-shrink-0 flex items-center justify-center overflow-hidden border border-slate-200 shadow-inner group relative">
-              <MediaPreview files={item.files} mediaType={item.media_type} />
+              <MediaPreview files={item.files} mediaType={item.media_type} width={200} />
               <div className="absolute top-1 right-1">
                   {!!item.is_featured && <div className="bg-amber-100 text-amber-600 p-1 rounded-full border border-amber-200 shadow-sm"><Star size={12} fill="currentColor" /></div>}
               </div>

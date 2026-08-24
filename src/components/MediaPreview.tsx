@@ -16,9 +16,10 @@ interface MediaPreviewProps {
   title?: string;
   onClick?: () => void;
   className?: string;
+  width?: number;
 }
 
-const MediaPreview: React.FC<MediaPreviewProps> = ({ files, mediaType, title, onClick, className = '' }) => {
+const MediaPreview: React.FC<MediaPreviewProps> = ({ files, mediaType, title, onClick, className = '', width = 600 }) => {
   const imageFiles = files.filter(file => file.file_type === 'image');
   const audioFiles = files.filter(file => file.file_type === 'audio');
   const pdfFiles = files.filter(file => file.file_type === 'pdf');
@@ -38,7 +39,7 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({ files, mediaType, title, on
         onClick={onClick}
       >
         <img 
-          src={getOptimizedImageUrl(firstImage.file_path, 600, 80)} 
+          src={getOptimizedImageUrl(firstImage.file_path, width, 80)} 
           srcSet={getImageSrcSet(firstImage.file_path)}
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 400px"
           alt={firstImage.alt_text || 'Album cover'} 
@@ -128,7 +129,8 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({ files, mediaType, title, on
         onClick={onClick}
       >
         <img 
-          src={firstImage.file_path} 
+          src={getOptimizedImageUrl(firstImage.file_path, width, 80)} 
+          srcSet={getImageSrcSet(firstImage.file_path)}
           alt={firstImage.alt_text || 'Media preview'} 
           loading="lazy"
           decoding="async"

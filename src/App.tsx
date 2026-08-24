@@ -67,7 +67,14 @@ function App() {
 
     rafId = requestAnimationFrame(raf);
 
+    // Observe body height changes so Lenis recalculates instantly when data loads
+    const resizeObserver = new ResizeObserver(() => {
+      lenis.resize();
+    });
+    resizeObserver.observe(document.body);
+
     return () => {
+      resizeObserver.disconnect();
       cancelAnimationFrame(rafId);
       lenis.destroy();
       (window as any).__lenis = null;
