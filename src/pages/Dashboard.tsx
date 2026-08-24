@@ -387,7 +387,7 @@ const Dashboard = () => {
       <div className="w-full px-4 sm:px-10 lg:px-16 relative z-10">
         {/* Welcome & Global Actions Section */}
         <div className="mb-8 relative z-40">
-            <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/50 p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between relative group">
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200/60 p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between relative group">
                 
                 <div className="flex items-center space-x-6 mb-6 md:mb-0">
                     <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-4 rounded-2xl shadow-lg transform group-hover:rotate-6 transition-transform duration-300">
@@ -453,7 +453,7 @@ const Dashboard = () => {
         {/* Grid de Profil/Infos */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
           {/* Card: Mon Profil */}
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 group">
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200/60 p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 group">
             <div className="flex items-center gap-4 mb-6">
               <div className="w-12 h-12 rounded-2xl bg-teal-500/10 flex items-center justify-center text-teal-600 border border-teal-500/20 group-hover:scale-110 transition-transform duration-300">
                 <UserCircle className="h-7 w-7" />
@@ -496,7 +496,7 @@ const Dashboard = () => {
           </div>
 
           {/* Card: Mes Orchestres */}
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 group">
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200/60 p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 group">
             <div className="flex items-center gap-4 mb-6">
               <div className="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-600 border border-purple-500/20 group-hover:scale-110 transition-transform duration-300">
                 <Music2 className="h-7 w-7" />
@@ -527,7 +527,7 @@ const Dashboard = () => {
           </div>
 
           {/* Card: Mes Instruments */}
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 group">
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200/60 p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 group">
             <div className="flex items-center gap-4 mb-6">
               <div className="w-12 h-12 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-600 border border-amber-500/20 group-hover:scale-110 transition-transform duration-300">
                 <Music className="h-7 w-7" />
@@ -863,7 +863,7 @@ const Dashboard = () => {
           </div>
 
           {/* Section Partitions */}
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 p-6 [overflow-anchor:none]">
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200/60 p-6 [overflow-anchor:none]">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 text-dark border-b border-gray-100 pb-4">
               <h2 className="font-bold text-2xl flex items-center gap-3">
                 <Music2 className="h-7 w-7 text-purple-600" />
