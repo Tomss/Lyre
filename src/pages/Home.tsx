@@ -8,11 +8,13 @@ import HomeNewsSection from '../components/HomeNewsSection';
 import HomeAgendaSection from '../components/HomeAgendaSection';
 import { API_URL, BASE_URL } from '../config';
 
-const CAROUSEL_CACHE_KEY = 'lyre_cached_carousel_v1';
-const PRIMARY_HERO_IMAGE = '/hero-banner.webp';
+import { getOptimizedImageUrl } from '../utils/image';
+
+const CAROUSEL_CACHE_KEY = 'lyre_cached_carousel_v2';
+const PRIMARY_HERO_IMAGE = getOptimizedImageUrl('/hero-banner.webp', 1600, 85);
 
 const Home = () => {
-  // Read cached real carousel images for instant frame-0 rendering with 0 stock photos
+  // Read cached real carousel images for instant frame-0 rendering
   const [backgroundImages, setBackgroundImages] = React.useState<string[]>(() => {
     try {
       const cached = localStorage.getItem(CAROUSEL_CACHE_KEY);
@@ -37,7 +39,7 @@ const Home = () => {
           const data = await response.json();
           if (Array.isArray(data) && data.length > 0) {
             const urls = data.map((item: any) => 
-               item.image_url.startsWith('http') ? item.image_url : `${BASE_URL}${item.image_url}`
+               getOptimizedImageUrl(item.image_url, 1600, 85)
             );
             setBackgroundImages(urls);
             try {
