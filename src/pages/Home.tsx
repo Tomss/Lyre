@@ -41,6 +41,15 @@ const Home = () => {
             const urls = data.map((item: any) => 
                getOptimizedImageUrl(item.image_url, 1600, 85)
             );
+            
+            // Preload all carousel images in memory first so zero black blank flicker occurs on swap
+            await Promise.all(urls.map(url => new Promise((resolve) => {
+              const img = new Image();
+              img.onload = resolve;
+              img.onerror = resolve;
+              img.src = url;
+            })));
+
             setBackgroundImages(urls);
             try {
               localStorage.setItem(CAROUSEL_CACHE_KEY, JSON.stringify(urls));
@@ -87,26 +96,14 @@ const Home = () => {
     };
   }, [backgroundImages, settings.carousel_interval, isHeroVisible]);
 
-
-  // Preload carousel images for instant smooth transitions
-  useEffect(() => {
-    if (backgroundImages.length > 0) {
-      backgroundImages.forEach((src) => {
-        const img = new Image();
-        img.src = src;
-      });
-    }
-  }, [backgroundImages]);
-
   return (
     <div className="">
       {/* Hero Section - Optimisé Ultra-Wide (Style Samsung) */}
       <section id="accueil" className="relative h-[calc(100vh-80px)] flex items-center justify-center bg-slate-900 overflow-hidden">
         {/* Active Hero Background Image - Single GPU Layer */}
         {backgroundImages.length > 0 && (
-          <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-slate-900">
             <img
-              key={backgroundImages[currentImageIndex]}
               src={backgroundImages[currentImageIndex]}
               alt="La Lyre"
               loading="eager"
