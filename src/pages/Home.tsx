@@ -104,19 +104,22 @@ const Home = () => {
     <div className="">
       {/* Hero Section - Optimisé Ultra-Wide (Style Samsung) */}
       <section id="accueil" className="relative h-[calc(100vh-80px)] flex items-center justify-center bg-slate-900 overflow-hidden">
-        {/* Active Hero Background Image - Multi-Layer GPU Crossfade */}
+        {/* Active Hero Background Image - Horizontal GPU Slide Carousel */}
         {backgroundImages.length > 0 && (
-          <div className="absolute inset-0 bg-slate-900 pointer-events-none">
-            {backgroundImages.map((imgUrl, index) => (
-              <div
-                key={imgUrl}
-                className={`absolute inset-0 w-full h-full bg-cover bg-center transition-opacity duration-1000 ease-in-out ${
-                  index === currentImageIndex ? 'opacity-100 z-0' : 'opacity-0 pointer-events-none -z-10'
-                }`}
-                style={{ backgroundImage: `url("${imgUrl}")` }}
-              />
-            ))}
-            <div className="absolute inset-0 bg-slate-950/50 z-1" />
+          <div className="absolute inset-0 bg-slate-900 pointer-events-none overflow-hidden">
+            <div 
+              className="absolute inset-0 flex w-full h-full transition-transform duration-1000 ease-[cubic-bezier(0.25,1,0.5,1)] will-change-transform"
+              style={{ transform: `translate3d(-${currentImageIndex * 100}%, 0, 0)` }}
+            >
+              {backgroundImages.map((imgUrl) => (
+                <div
+                  key={imgUrl}
+                  className="relative min-w-full h-full bg-cover bg-center flex-shrink-0"
+                  style={{ backgroundImage: `url("${imgUrl}")` }}
+                />
+              ))}
+            </div>
+            <div className="absolute inset-0 bg-slate-950/50 z-1 pointer-events-none" />
           </div>
         )}
         
