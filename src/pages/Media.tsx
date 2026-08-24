@@ -28,7 +28,7 @@ interface MediaItem {
   media_files: MediaFile[];
 }
 
-const MEDIA_CACHE_KEY = 'lyre_cached_media_items_v1';
+const MEDIA_CACHE_KEY = 'lyre_cached_media_items_v3';
 
 const Media = () => {
   const { pageHeaders } = useTheme();
@@ -164,10 +164,10 @@ const Media = () => {
     return Array.isArray(files) ? files : [];
   };
 
-  const openGallery = (media: MediaItem) => {
-    if (!media) return;
+  const getPdfUrl = (media: MediaItem): string | null => {
+    if (!media) return null;
     const files = getMediaFiles(media);
-    if (files.length === 0) return;
+    if (!files || files.length === 0) return null;
 
     // 1. Chercher si ce média contient un fichier PDF
     const pdfFile = files.find(f => {
@@ -177,17 +177,28 @@ const Media = () => {
       return type === 'pdf' || path.endsWith('.pdf') || path.includes('.pdf') || type.includes('pdf');
     });
 
-    // 2. Si c'est un Lyrissimot (par nature un document PDF) ou qu'un fichier PDF est trouvé :
+    // 2. Si c'est un Lyrissimot ou qu'un fichier PDF est trouvé :
     const targetFile = pdfFile || (
       media.media_type === 'lyrissimot' ? files[0] : null
     );
 
     if (targetFile && targetFile.file_path) {
       const raw = targetFile.file_path;
-      const pdfUrl = (raw.startsWith('http') || raw.startsWith('blob:'))
+      return (raw.startsWith('http') || raw.startsWith('blob:'))
         ? raw
         : `${BASE_URL}${raw.startsWith('/') ? '' : '/'}${raw}`;
+    }
 
+    return null;
+  };
+
+  const openGallery = (media: MediaItem) => {
+    if (!media) return;
+    const files = getMediaFiles(media);
+    if (files.length === 0) return;
+
+    const pdfUrl = getPdfUrl(media);
+    if (pdfUrl) {
       window.open(pdfUrl, '_blank', 'noopener,noreferrer');
       return;
     }
@@ -246,12 +257,10 @@ const Media = () => {
               {featuredMedia.map((media) => {
                 const TypeIcon = getTypeIcon(media.media_type);
                 const files = getMediaFiles(media);
-                return (
-                  <div
-                    key={media.id}
-                    onClick={() => openGallery(media)}
-                    className="group flex flex-col bg-white rounded-2xl border border-slate-100 overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-2 transition-all duration-500 cursor-pointer text-left"
-                  >
+                const pdfUrl = getPdfUrl(media);
+
+                const cardInner = (
+                  <div className="flex flex-col h-full w-full">
                     {/* Section Image / Preview */}
                     <div className="relative aspect-video overflow-hidden bg-slate-50 w-full border-b border-slate-100/50">
                       <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 to-transparent z-10 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -306,6 +315,26 @@ const Media = () => {
                         </span>
                       </div>
                     </div>
+                  </div>
+                );
+
+                return pdfUrl ? (
+                  <a
+                    key={media.id}
+                    href={pdfUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group flex flex-col bg-white rounded-2xl border border-slate-100 overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-2 transition-all duration-500 cursor-pointer block text-left"
+                  >
+                    {cardInner}
+                  </a>
+                ) : (
+                  <div
+                    key={media.id}
+                    onClick={() => openGallery(media)}
+                    className="group flex flex-col bg-white rounded-2xl border border-slate-100 overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-2 transition-all duration-500 cursor-pointer text-left"
+                  >
+                    {cardInner}
                   </div>
                 );
               })}
@@ -489,8 +518,10 @@ const Media = () => {
                   {regularMedia.slice(0, visibleCount).map((media) => {
                     const TypeIcon = getTypeIcon(media.media_type);
                     const files = getMediaFiles(media);
-                    return (
-                      <div key={media.id} onClick={() => openGallery(media)} className="group flex flex-col bg-white rounded-2xl border border-slate-100 overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 cursor-pointer">
+                    const pdfUrl = getPdfUrl(media);
+
+                    const cardInner = (
+                      <>
                         {/* Section Image / Preview */}
                         <div className="relative aspect-[4/3] overflow-hidden bg-slate-50 w-full border-b border-slate-100/50">
                           <MediaPreview
@@ -528,7 +559,7 @@ const Media = () => {
                         </div>
 
                         {/* Contenu textuel */}
-                        <div className="p-5 flex flex-col flex-grow">
+                        <div className="p-5 flex flex-col flex-grow bg-white">
                           <h3 className="font-bold text-[15px] text-slate-800 line-clamp-2 mb-3 group-hover:text-teal-600 transition-colors leading-snug">
                             {media.title}
                           </h3>
@@ -543,6 +574,26 @@ const Media = () => {
                             </span>
                           </div>
                         </div>
+                      </>
+                    );
+
+                    return pdfUrl ? (
+                      <a
+                        key={media.id}
+                        href={pdfUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group flex flex-col bg-white rounded-2xl border border-slate-100 overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 cursor-pointer block text-left"
+                      >
+                        {cardInner}
+                      </a>
+                    ) : (
+                      <div
+                        key={media.id}
+                        onClick={() => openGallery(media)}
+                        className="group flex flex-col bg-white rounded-2xl border border-slate-100 overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 cursor-pointer text-left"
+                      >
+                        {cardInner}
                       </div>
                     );
                   })}

@@ -19,10 +19,38 @@ interface MediaPreviewProps {
   width?: number;
 }
 
-const MediaPreview: React.FC<MediaPreviewProps> = ({ files, mediaType, title, onClick, className = '', width = 600 }) => {
-  const imageFiles = files.filter(file => file.file_type === 'image');
-  const audioFiles = files.filter(file => file.file_type === 'audio');
-  const pdfFiles = files.filter(file => file.file_type === 'pdf');
+const MediaPreview: React.FC<MediaPreviewProps> = ({ files: rawFiles, mediaType, title, onClick, className = '', width = 600 }) => {
+  let files: MediaFile[] = [];
+  if (typeof rawFiles === 'string') {
+    try {
+      files = JSON.parse(rawFiles);
+    } catch (e) {
+      files = [];
+    }
+  } else if (Array.isArray(rawFiles)) {
+    files = rawFiles;
+  }
+
+  const imageFiles = files.filter(file => {
+    if (!file || !file.file_path) return false;
+    const type = (file.file_type || '').toLowerCase();
+    const path = file.file_path.toLowerCase();
+    return type === 'image' || path.endsWith('.jpg') || path.endsWith('.jpeg') || path.endsWith('.png') || path.endsWith('.webp') || path.endsWith('.avif');
+  });
+
+  const audioFiles = files.filter(file => {
+    if (!file || !file.file_path) return false;
+    const type = (file.file_type || '').toLowerCase();
+    const path = file.file_path.toLowerCase();
+    return type === 'audio' || path.endsWith('.mp3') || path.endsWith('.wav') || path.endsWith('.ogg');
+  });
+
+  const pdfFiles = files.filter(file => {
+    if (!file || !file.file_path) return false;
+    const type = (file.file_type || '').toLowerCase();
+    const path = file.file_path.toLowerCase();
+    return type === 'pdf' || path.endsWith('.pdf') || path.includes('.pdf') || type.includes('pdf');
+  });
 
   const firstImage = imageFiles[0];
   const firstAudio = audioFiles[0];
