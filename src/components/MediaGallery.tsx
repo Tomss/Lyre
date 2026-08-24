@@ -301,8 +301,19 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({ media, isOpen, onClose }) =
                 onClick={() => setIsZoomed(!isZoomed)}
               />
             ) : currentFile.file_type === 'pdf' ? (
-              <div className="w-full max-w-4xl h-[60vh] bg-white rounded-2xl overflow-hidden shadow-2xl border border-white/20">
-                <iframe src={`${getFileUrl(currentFile.file_path)}#toolbar=1&view=FitH`} className="w-full h-full border-none" title={currentFile.file_name} />
+              <div className="w-full max-w-5xl h-[80vh] bg-white rounded-2xl overflow-hidden shadow-2xl border border-white/20 flex flex-col">
+                <div className="bg-slate-900 px-4 py-2.5 flex items-center justify-between border-b border-white/10 flex-shrink-0">
+                  <span className="text-white text-xs font-semibold truncate max-w-md">{currentFile.file_name}</span>
+                  <a 
+                    href={getFileUrl(currentFile.file_path)} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-teal-500 hover:bg-teal-600 text-white rounded-lg text-xs font-bold transition-colors shadow"
+                  >
+                    <span>Ouvrir dans un nouvel onglet</span>
+                  </a>
+                </div>
+                <iframe src={`${getFileUrl(currentFile.file_path)}#toolbar=1&view=FitH`} className="w-full flex-grow border-none" title={currentFile.file_name} />
               </div>
             ) : currentFile.file_type === 'video' ? (
               <video controls autoPlay src={getFileUrl(currentFile.file_path)} className="max-w-full max-h-[60vh] rounded-2xl shadow-2xl" />

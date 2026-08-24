@@ -318,17 +318,7 @@ const Media = () => {
                   </div>
                 );
 
-                return pdfUrl ? (
-                  <a
-                    key={media.id}
-                    href={pdfUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group flex flex-col bg-white rounded-2xl border border-slate-100 overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-2 transition-all duration-500 cursor-pointer block text-left"
-                  >
-                    {cardInner}
-                  </a>
-                ) : (
+                return (
                   <div
                     key={media.id}
                     onClick={() => openGallery(media)}
@@ -577,17 +567,7 @@ const Media = () => {
                       </>
                     );
 
-                    return pdfUrl ? (
-                      <a
-                        key={media.id}
-                        href={pdfUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="group flex flex-col bg-white rounded-2xl border border-slate-100 overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 cursor-pointer block text-left"
-                      >
-                        {cardInner}
-                      </a>
-                    ) : (
+                    return (
                       <div
                         key={media.id}
                         onClick={() => openGallery(media)}
