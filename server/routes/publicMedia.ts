@@ -23,8 +23,23 @@ router.get('/', async (req, res) => {
       GROUP BY mi.id
       ORDER BY mi.media_date DESC, mi.created_at DESC;
     `;
-        const [mediaItems] = await pool.query(query);
-        res.json(mediaItems);
+        const [mediaItems]: any = await pool.query(query);
+        const normalized = (mediaItems || []).map((item: any) => {
+            let files = item.media_files || item.files || [];
+            if (typeof files === 'string') {
+                try {
+                    files = JSON.parse(files);
+                } catch (e) {
+                    files = [];
+                }
+            }
+            return {
+                ...item,
+                media_files: files,
+                files: files
+            };
+        });
+        res.json(normalized);
     } catch (error) {
         console.error('Error fetching public media:', error);
         res.status(500).json({ message: 'Erreur lors de la recuperation des medias.' });

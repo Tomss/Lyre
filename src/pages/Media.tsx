@@ -151,11 +151,26 @@ const Media = () => {
   const featuredMedia = filteredMedia.filter(media => media.is_featured);
   const regularMedia = filteredMedia.filter(media => !media.is_featured);
 
+  const getMediaFiles = (media: any): MediaFile[] => {
+    if (!media) return [];
+    let files = media.media_files || media.files;
+    if (typeof files === 'string') {
+      try {
+        files = JSON.parse(files);
+      } catch (e) {
+        files = [];
+      }
+    }
+    return Array.isArray(files) ? files : [];
+  };
+
   const openGallery = (media: MediaItem) => {
-    if (!media || !media.media_files || media.media_files.length === 0) return;
+    if (!media) return;
+    const files = getMediaFiles(media);
+    if (files.length === 0) return;
 
     // 1. Chercher si ce média contient un fichier PDF
-    const pdfFile = media.media_files.find(f => {
+    const pdfFile = files.find(f => {
       if (!f || !f.file_path) return false;
       const type = String(f.file_type || '').toLowerCase();
       const path = String(f.file_path || f.file_name || '').toLowerCase();
@@ -164,7 +179,7 @@ const Media = () => {
 
     // 2. Si c'est un Lyrissimot (par nature un document PDF) ou qu'un fichier PDF est trouvé :
     const targetFile = pdfFile || (
-      media.media_type === 'lyrissimot' ? media.media_files[0] : null
+      media.media_type === 'lyrissimot' ? files[0] : null
     );
 
     if (targetFile && targetFile.file_path) {
@@ -178,7 +193,11 @@ const Media = () => {
     }
 
     // 3. Sinon (images, photos d'albums, journaux scannés sous forme d'images) -> Ouverture dans la galerie modale en grand !
-    setSelectedMedia(media);
+    setSelectedMedia({
+      ...media,
+      media_files: files,
+      files: files
+    });
     setIsGalleryOpen(true);
   };
 
@@ -226,6 +245,7 @@ const Media = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 relative z-10">
               {featuredMedia.map((media) => {
                 const TypeIcon = getTypeIcon(media.media_type);
+                const files = getMediaFiles(media);
                 return (
                   <div
                     key={media.id}
@@ -236,7 +256,7 @@ const Media = () => {
                     <div className="relative aspect-video overflow-hidden bg-slate-50 w-full border-b border-slate-100/50">
                       <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 to-transparent z-10 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                       <MediaPreview
-                        files={media.media_files}
+                        files={files}
                         mediaType={media.media_type}
                         title={media.title}
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
@@ -260,7 +280,7 @@ const Media = () => {
                       
                       <div className="absolute bottom-4 right-4 z-20">
                         <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900/90 text-white border border-white/10">
-                            {media.media_files.length} {media.media_files.length > 1 ? 'fichiers' : 'fichier'}
+                            {files.length} {files.length > 1 ? 'fichiers' : 'fichier'}
                         </span>
                       </div>
                     </div>
@@ -468,12 +488,13 @@ const Media = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
                   {regularMedia.slice(0, visibleCount).map((media) => {
                     const TypeIcon = getTypeIcon(media.media_type);
+                    const files = getMediaFiles(media);
                     return (
                       <div key={media.id} onClick={() => openGallery(media)} className="group flex flex-col bg-white rounded-2xl border border-slate-100 overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 cursor-pointer">
                         {/* Section Image / Preview */}
                         <div className="relative aspect-[4/3] overflow-hidden bg-slate-50 w-full border-b border-slate-100/50">
                           <MediaPreview
-                            files={media.media_files}
+                            files={files}
                             mediaType={media.media_type}
                             title={media.title}
                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
@@ -501,7 +522,7 @@ const Media = () => {
                           {/* File count indicator */}
                           <div className="absolute bottom-3 right-3 z-20">
                             <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold bg-slate-900/90 text-white border border-white/10">
-                                {media.media_files.length} {media.media_files.length > 1 ? 'fichiers' : 'fichier'}
+                                {files.length} {files.length > 1 ? 'fichiers' : 'fichier'}
                             </span>
                           </div>
                         </div>
