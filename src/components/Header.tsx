@@ -175,12 +175,12 @@ const Header = () => {
           {/* Logo */}
           <Link to="/" className="flex-shrink-0 flex items-center space-x-3 group">
             {(settings?.header_logo_url || settings?.site_logo_url) ? (
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 h-10 lg:h-16">
                 <img 
                   src={getOptimizedImageUrl(settings.header_logo_url || settings.site_logo_url, 160, 85)} 
                   alt="La Lyre" 
                   loading="eager"
-                  decoding="async"
+                  decoding="sync"
                   // @ts-ignore
                   fetchPriority="high"
                   className="h-10 lg:h-16 w-auto object-contain transition-all duration-300 group-hover:scale-105" 
@@ -190,7 +190,7 @@ const Header = () => {
                 </span>
               </div>
             ) : (
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 h-10 lg:h-16">
                 <Music className="h-8 w-8 lg:h-10 lg:w-10 text-teal-600" />
               </div>
             )}

@@ -26,7 +26,8 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 // Default settings
 const defaultSettings: ThemeSettings = {
-    site_logo_url: '',
+    site_logo_url: '/lyre-logo.png',
+    header_logo_url: '/lyre-logo.png',
     theme_primary_color: '#0D9488', // Default Teal
     theme_secondary_color: '#0891B2', // Default Cyan
     carousel_interval: '5000',
