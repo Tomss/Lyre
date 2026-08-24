@@ -45,6 +45,21 @@ function App() {
   const isFullWidthPage = isAdminOrDashboard || location.pathname === '/connexion' || location.pathname === '/activer-compte';
   const wrapperClass = isFullWidthPage ? "max-w-none" : "max-w-[2560px]";
 
+  // Prefetch main route code modules during idle time for instant zero-delay navigation
+  useEffect(() => {
+    const prefetchRoutes = () => {
+      import('./pages/School');
+      import('./pages/Orchestras');
+      import('./pages/Media');
+      import('./pages/Contact');
+    };
+    if ('requestIdleCallback' in window) {
+      (window as any).requestIdleCallback(prefetchRoutes);
+    } else {
+      setTimeout(prefetchRoutes, 1500);
+    }
+  }, []);
+
   // Global Resolution-Normalized Time-Based Smooth Scrolling for ALL pages
   useEffect(() => {
     // Normalize scroll amplitude based on screen viewport height (1080p baseline)

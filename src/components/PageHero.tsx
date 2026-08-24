@@ -74,10 +74,15 @@ const PageHero: React.FC<PageHeroProps> = ({ title, subtitle, backgroundImage, a
         <section className="relative h-[calc(100vh-80px)] min-h-[560px] flex items-center justify-center bg-slate-900 overflow-hidden">
             {/* Optimized High-Priority Hero Background Image */}
             {backgroundImage && (
-                <div className="absolute inset-0 bg-slate-900 pointer-events-none">
-                    <div
-                        className="absolute inset-0 w-full h-full bg-cover bg-center pointer-events-none z-0"
-                        style={{ backgroundImage: `url("${getOptimizedImageUrl(backgroundImage, 2048, 92)}")` }}
+                <div className="absolute inset-0 bg-slate-900 pointer-events-none overflow-hidden">
+                    <img
+                        src={getOptimizedImageUrl(backgroundImage, 2048, 92)}
+                        alt=""
+                        loading="eager"
+                        decoding="sync"
+                        // @ts-ignore
+                        fetchPriority="high"
+                        className="absolute inset-0 w-full h-full object-cover pointer-events-none z-0"
                     />
                     <div className="absolute inset-0 bg-slate-950/60 z-1 pointer-events-none" />
                 </div>

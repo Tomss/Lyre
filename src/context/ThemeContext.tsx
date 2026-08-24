@@ -1,6 +1,7 @@
 import { API_URL } from '../config';
 import { useAuth } from './AuthContext';
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { getOptimizedImageUrl } from '../utils/image';
 
 
 interface ThemeSettings {
@@ -196,11 +197,17 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                 } catch (e) {}
 
                 // Preload all page header images into browser memory cache for instant page switches
-                Object.values(data).forEach((url: any) => {
-                    if (typeof url === 'string' && url.length > 0) {
-                        const img = new Image();
-                        img.src = url;
-                    }
+                const allHeaderUrls = [
+                    getOptimizedImageUrl('/school-banner.webp', 2048, 92),
+                    getOptimizedImageUrl('/orchestras-banner.webp', 2048, 92),
+                    getOptimizedImageUrl('/media-banner.webp', 2048, 92),
+                    getOptimizedImageUrl('/contact-banner.webp', 2048, 92),
+                    ...Object.values(data).map((url: any) => typeof url === 'string' ? getOptimizedImageUrl(url, 2048, 92) : '')
+                ].filter(Boolean);
+
+                allHeaderUrls.forEach((url: string) => {
+                    const img = new Image();
+                    img.src = url;
                 });
             }
         } catch (error) {
