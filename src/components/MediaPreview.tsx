@@ -85,8 +85,34 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({ files, mediaType, title, on
     );
   }
 
-  // Journaux & Lyrissimots : PDF (Design Premium Mockup)
-  if ((mediaType === 'journal' || mediaType === 'lyrissimot') && firstPdf) {
+  // 1. Si une image de couverture existe (uploadée par l'admin), on l'affiche en priorité !
+  if (firstImage) {
+    return (
+      <div 
+        className={`aspect-square w-full relative overflow-hidden group cursor-pointer ${className}`}
+        onClick={onClick}
+      >
+        <img 
+          src={getOptimizedImageUrl(firstImage.file_path, width, 80)} 
+          srcSet={getImageSrcSet(firstImage.file_path)}
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 400px"
+          alt={firstImage.alt_text || title || 'Media preview'} 
+          loading="lazy"
+          decoding="async"
+          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+        />
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-200"></div>
+        {firstPdf && (
+          <div className="absolute top-3 right-3 bg-rose-500 text-white text-[9px] font-black px-2 py-0.5 rounded shadow-md z-10 border border-white/20">
+            PDF
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // 2. Sinon, si aucun visuel n'a été fourni mais qu'un PDF est présent : Mockup PDF
+  if (firstPdf || mediaType === 'journal' || mediaType === 'lyrissimot') {
     return (
       <div 
         className={`aspect-square w-full relative overflow-hidden group cursor-pointer bg-white ${className}`}
@@ -120,26 +146,6 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({ files, mediaType, title, on
         </div>
         
         <div className="absolute inset-0 bg-gradient-to-t from-rose-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-      </div>
-    );
-  }
-
-  // Fallback / Journal avec Image
-  if (firstImage) {
-    return (
-      <div 
-        className={`aspect-square w-full relative overflow-hidden group cursor-pointer ${className}`}
-        onClick={onClick}
-      >
-        <img 
-          src={getOptimizedImageUrl(firstImage.file_path, width, 80)} 
-          srcSet={getImageSrcSet(firstImage.file_path)}
-          alt={firstImage.alt_text || 'Media preview'} 
-          loading="lazy"
-          decoding="async"
-          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-        />
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-200"></div>
       </div>
     );
   }
