@@ -3,13 +3,7 @@ import multer from 'multer';
 import { authenticateToken } from '../middleware/auth';
 import path from 'path';
 import fs from 'fs';
-
-let sharp: any = null;
-try {
-  sharp = require('sharp');
-} catch (e) {
-  console.warn('[Upload] sharp not available, saving raw uploaded files.');
-}
+import sharp from 'sharp';
 
 const router = Router();
 
@@ -19,30 +13,25 @@ if (!fs.existsSync(localUploadDir)) {
     fs.mkdirSync(localUploadDir, { recursive: true });
 }
 
-const localStorage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, localUploadDir);
-    },
-    filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-        const ext = path.extname(file.originalname);
-        const sanitizedBaseName = path.basename(file.originalname, ext).replace(/[^a-zA-Z0-9_-]/g, '_');
-        cb(null, `${sanitizedBaseName}-${uniqueSuffix}${ext}`);
-    }
-});
+// Ensure public directory exists for static bundle persistence
+const publicDir = path.join(process.cwd(), 'public');
+if (!fs.existsSync(publicDir)) {
+    fs.mkdirSync(publicDir, { recursive: true });
+}
 
+// Memory storage for ultra-fast processing without temporary file locking
 const upload = multer({
-    storage: localStorage,
-    limits: { fileSize: 100 * 1024 * 1024 } // 100MB limit
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 50 * 1024 * 1024 } // 50MB limit
 });
 
-// Route POST pour uploader un fichier (protégée) avec conversion WebP automatique pour les images
+// Route POST pour uploader un fichier (protégée) avec conversion WebP instantanée
 router.post('/', authenticateToken, (req, res) => {
     upload.single('file')(req, res, async (err) => {
         if (err) {
             console.error('[Upload Error]', err);
             return res.status(500).json({ 
-                message: 'Erreur lors de l\'enregistrement du fichier sur le serveur.',
+                message: 'Erreur lors du transfert du fichier.',
                 error: err.message
             });
         }
@@ -52,38 +41,43 @@ router.post('/', authenticateToken, (req, res) => {
         }
 
         try {
-            let finalFilename = req.file.filename;
+            const ext = path.extname(req.file.originalname).toLowerCase();
+            const sanitizedBaseName = path.basename(req.file.originalname, ext).replace(/[^a-zA-Z0-9_-]/g, '_');
+            const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e6);
 
-            // If file is an image (jpg, png, avif, gif, webp) and sharp is available, convert to optimized WebP
-            if (sharp && req.file.mimetype.startsWith('image/') && !req.file.filename.endsWith('.svg')) {
-                const webpFilename = `${path.parse(req.file.filename).name}.webp`;
-                const webpPath = path.join(localUploadDir, webpFilename);
+            let finalFilename = `${sanitizedBaseName}-${uniqueSuffix}${ext}`;
+            let targetPath = path.join(localUploadDir, finalFilename);
 
-                try {
-                    await sharp(req.file.path)
-                        .resize({ width: 1920, height: 1200, fit: 'inside', withoutEnlargement: true })
-                        .webp({ quality: 82, effort: 4 })
-                        .toFile(webpPath);
+            // If image (jpg, png, webp, avif, tiff...), convert to optimized WebP in milliseconds
+            if (req.file.mimetype.startsWith('image/') && !req.file.originalname.endsWith('.svg')) {
+                finalFilename = `${sanitizedBaseName}-${uniqueSuffix}.webp`;
+                targetPath = path.join(localUploadDir, finalFilename);
 
-                    // Delete uncompressed original file
-                    if (fs.existsSync(req.file.path) && req.file.path !== webpPath) {
-                        fs.unlinkSync(req.file.path);
-                    }
-                    finalFilename = webpFilename;
-                } catch (sharpErr) {
-                    console.error('[Sharp WebP Conversion Error]', sharpErr);
-                    // Keep original filename if sharp fails
-                }
+                await sharp(req.file.buffer)
+                    .resize({ width: 1920, height: 1200, fit: 'inside', withoutEnlargement: true })
+                    .webp({ quality: 82, effort: 3 })
+                    .toFile(targetPath);
+            } else {
+                // Non-image files (PDF, audio)
+                fs.writeFileSync(targetPath, req.file.buffer);
+            }
+
+            // Sync copy to public/ directory for persistent redeploys
+            try {
+                const publicPath = path.join(publicDir, finalFilename);
+                fs.copyFileSync(targetPath, publicPath);
+            } catch (e) {
+                // Ignore if public copy fails
             }
 
             const filePath = `/uploads/${finalFilename}`;
-            res.status(200).json({
+            return res.status(200).json({
                 message: 'Fichier uploadé avec succès',
                 filePath: filePath
             });
         } catch (error: any) {
-            console.error('[Upload Success Error]', error);
-            res.status(500).json({ message: 'Erreur lors de la réponse serveur.', error: error.message });
+            console.error('[Upload Processing Error]', error);
+            return res.status(500).json({ message: 'Erreur lors du traitement du fichier.', error: error.message });
         }
     });
 });

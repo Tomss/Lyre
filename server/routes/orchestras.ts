@@ -1,4 +1,4 @@
-﻿import { Router } from 'express';
+import { Router } from 'express';
 import { authenticateToken } from '../middleware/auth';
 import pool from '../db';
 import crypto from 'crypto';
@@ -38,25 +38,47 @@ router.post('/', async (req, res) => {
   if ((req as any).user.role !== 'Admin' && (!(req as any).user.managedModules || !(req as any).user.managedModules.includes('orchestras'))) {
     return res.status(403).json({ message: 'Acces refuse.' });
   }
-  const { name, description, photo_url } = req.body;
+  const { name, description, photo_url, photos } = req.body;
   if (!name) {
     return res.status(400).json({ message: "Le nom de l orchestre est requis." });
   }
+
+  const connection = await pool.getConnection();
   try {
-    const newOrchestra = {
-      id: crypto.randomUUID(),
-      name,
-      description: description || null,
-      photo_url: photo_url || null,
-      created_at: new Date(),
-    };
-    await pool.query(
+    await connection.beginTransaction();
+
+    const newOrchestraId = crypto.randomUUID();
+    const mainPhotoUrl = photo_url || (photos && photos.length > 0 ? (photos[0].url || photos[0].photo_url) : null);
+
+    await connection.query(
       'INSERT INTO orchestras (id, name, description, photo_url, created_at) VALUES (?, ?, ?, ?, ?)',
-      [newOrchestra.id, newOrchestra.name, newOrchestra.description, newOrchestra.photo_url, newOrchestra.created_at]
+      [newOrchestraId, name, description || null, mainPhotoUrl, new Date()]
     );
-    res.status(201).json({ message: 'Orchestre cree avec succes', orchestra: newOrchestra });
+
+    if (photos && Array.isArray(photos)) {
+      for (let i = 0; i < photos.length; i++) {
+        const photo = photos[i];
+        const pUrl = photo.url || photo.photo_url;
+        if (pUrl) {
+          await connection.query(
+            'INSERT INTO orchestra_photos (id, orchestra_id, photo_url, display_order) VALUES (UUID(), ?, ?, ?)',
+            [newOrchestraId, pUrl, i]
+          );
+        }
+      }
+    }
+
+    await connection.commit();
+    res.status(201).json({ 
+      message: 'Orchestre cree avec succes', 
+      orchestra: { id: newOrchestraId, name, description, photo_url: mainPhotoUrl } 
+    });
   } catch (error) {
+    await connection.rollback();
+    console.error('Error creating orchestra:', error);
     res.status(500).json({ message: 'Erreur lors de la creation de l orchestre.' });
+  } finally {
+    connection.release();
   }
 });
 

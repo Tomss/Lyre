@@ -374,10 +374,13 @@ const AdminOrchestras = () => {
 
                         <img 
                           src={orchestra.photo_url ? getOptimizedImageUrl(orchestra.photo_url, 160, 75) : 'https://via.placeholder.com/100x100'} 
-                          alt={orchestra.photo_url ? `Photo de ${orchestra.name}` : ''} 
+                          alt="" 
                           loading="lazy"
                           decoding="async"
-                          className="w-16 h-16 object-cover rounded-md mr-4 flex-shrink-0" 
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="%2394a3b8" stroke-width="1.5"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>';
+                          }}
+                          className="w-16 h-16 object-cover rounded-md mr-4 flex-shrink-0 bg-slate-100" 
                         />
                         <div className="flex-grow">
                           <p className="font-bold text-lg text-gray-800">{orchestra.name}</p>
@@ -424,10 +427,13 @@ const AdminOrchestras = () => {
                         <div key={index} className="relative group">
                           <img 
                             src={photo.url.startsWith('blob:') ? photo.url : getOptimizedImageUrl(photo.url, 200, 75)} 
-                            alt={`Photo ${index + 1}`} 
+                            alt="" 
                             loading="lazy"
                             decoding="async"
-                            className="w-full h-24 object-cover rounded-lg" 
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="%2394a3b8" stroke-width="1.5"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>';
+                            }}
+                            className="w-full h-24 object-cover rounded-lg bg-slate-100" 
                           />
                           <button
                             type="button"
