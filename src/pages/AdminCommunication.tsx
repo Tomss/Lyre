@@ -3,7 +3,7 @@ import {
   ArrowLeft, Mail, Send, History, Calendar, Users, CheckCircle, 
   AlertCircle, Search, Clock, MapPin, X, Sparkles, Filter, ChevronRight, Check, ShieldAlert, FileText,
   Bold, Italic, Underline, List, Smile, HelpCircle, Music,
-  AlignLeft, AlignCenter, AlignRight, Trash2, Eye, RefreshCw, ListOrdered
+  AlignLeft, AlignCenter, AlignRight, Trash2, Eye, RefreshCw, ListOrdered, Share2, MessageCircle, Lock
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Navigate, Link } from 'react-router-dom';
@@ -1101,6 +1101,52 @@ const AdminCommunication = () => {
                       </div>
                       <span className="text-xs font-extrabold text-purple-600 flex items-center">
                         Rédiger un message <ChevronRight size={16} className="ml-1" />
+                      </span>
+                    </div>
+
+                    {/* Option 3: Réseaux Sociaux (Grisé) */}
+                    <div 
+                      className="p-6 rounded-3xl border-2 border-slate-200 bg-slate-50/80 opacity-60 cursor-not-allowed text-left flex flex-col justify-between space-y-6 relative overflow-hidden"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="w-12 h-12 rounded-2xl bg-sky-100 text-sky-600 flex items-center justify-center font-bold">
+                          <Share2 size={26} />
+                        </div>
+                        <span className="px-3 py-1 bg-slate-200 text-slate-700 text-[10px] font-extrabold rounded-full flex items-center gap-1">
+                          <Lock size={12} /> Bientôt disponible
+                        </span>
+                      </div>
+                      <div>
+                        <h5 className="font-extrabold text-slate-700 text-base">3. Réseaux Sociaux</h5>
+                        <p className="text-xs text-slate-400 mt-2 leading-relaxed">
+                          Publication et diffusion automatique sur les pages Facebook, Instagram et réseaux sociaux de la Lyre.
+                        </p>
+                      </div>
+                      <span className="text-xs font-bold text-slate-400 flex items-center">
+                        Module en cours de développement
+                      </span>
+                    </div>
+
+                    {/* Option 4: Communication WhatsApp (Grisé) */}
+                    <div 
+                      className="p-6 rounded-3xl border-2 border-slate-200 bg-slate-50/80 opacity-60 cursor-not-allowed text-left flex flex-col justify-between space-y-6 relative overflow-hidden"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold">
+                          <MessageCircle size={26} />
+                        </div>
+                        <span className="px-3 py-1 bg-slate-200 text-slate-700 text-[10px] font-extrabold rounded-full flex items-center gap-1">
+                          <Lock size={12} /> Bientôt disponible
+                        </span>
+                      </div>
+                      <div>
+                        <h5 className="font-extrabold text-slate-700 text-base">4. Communication WhatsApp</h5>
+                        <p className="text-xs text-slate-400 mt-2 leading-relaxed">
+                          Envoi automatique de messages d'information et rappels instantanés sur les groupes WhatsApp de la Lyre.
+                        </p>
+                      </div>
+                      <span className="text-xs font-bold text-slate-400 flex items-center">
+                        Module en cours de développement
                       </span>
                     </div>
                   </div>
