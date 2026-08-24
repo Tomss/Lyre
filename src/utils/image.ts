@@ -23,8 +23,8 @@ export function getOptimizedImageUrl(
   return fullUrl;
 }
 
-export function getImageSrcSet(filePath: string | null | undefined): string {
-  if (!filePath || !filePath.includes('/uploads/')) return '';
+export function getImageSrcSet(filePath: string | null | undefined): string | undefined {
+  if (!filePath || !filePath.includes('/uploads/')) return undefined;
   const widths = [320, 640, 960, 1280, 1600];
   return widths.map(w => getOptimizedImageUrl(filePath, w) + ' ' + w + 'w').join(', ');
 }

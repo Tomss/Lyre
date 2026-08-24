@@ -20,14 +20,15 @@ export interface HistoryEvent {
 
 const TimelineCard = ({ item }: { item: HistoryEvent }) => {
     const [isExpanded, setIsExpanded] = useState(false);
-    const shouldTruncate = item.content.length > 200;
+    const content = item.content || '';
+    const shouldTruncate = content.length > 200;
 
     // Dynamic Styles based on Era
     let cardStyle = "";
     let dateStyle = "";
     let buttonStyle = "";
 
-    switch (item.era) {
+    switch (item.era || 'classic') {
         case 'vintage':
             cardStyle = "bg-[#f4e4bc] border-2 border-[#8b5a2b] shadow-[4px_4px_0px_0px_rgba(139,90,43,0.3)] font-serif text-[#5c3a1e]";
             dateStyle = "text-[#8b5a2b] font-bold font-serif tracking-widest border-b-2 border-[#8b5a2b] inline-block mb-2";
@@ -48,9 +49,13 @@ const TimelineCard = ({ item }: { item: HistoryEvent }) => {
             dateStyle = "text-transparent bg-clip-text bg-gradient-to-r from-teal-500 to-cyan-600 font-bold text-xl mb-2 inline-block";
             buttonStyle = "text-teal-600 hover:text-teal-800 font-medium";
             break;
+        default:
+            cardStyle = "bg-white border-t-4 border-indigo-600 shadow-xl font-sans text-slate-700";
+            dateStyle = "text-indigo-600 font-bold text-lg mb-2 block uppercase tracking-wide";
+            buttonStyle = "text-indigo-600 hover:text-indigo-800 font-semibold";
     }
 
-    const displayText = isExpanded ? item.content : item.content.slice(0, 200) + (shouldTruncate ? "..." : "");
+    const displayText = isExpanded ? content : content.slice(0, 200) + (shouldTruncate ? "..." : "");
 
     return (
         <div className={`p-5 md:p-6 relative ${cardStyle} transition-all duration-300 hover:scale-[1.01]`}>
