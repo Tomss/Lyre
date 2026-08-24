@@ -22,11 +22,14 @@ interface MediaPreviewProps {
 const MediaPreview: React.FC<MediaPreviewProps> = ({ files, mediaType, title, onClick, className = '', width = 600 }) => {
   const imageFiles = files.filter(file => file.file_type === 'image');
   const audioFiles = files.filter(file => file.file_type === 'audio');
-  const pdfFiles = files.filter(file => file.file_type === 'pdf');
+  const pdfFiles = files.filter(file => 
+    file.file_type === 'pdf' || 
+    (file.file_path && file.file_path.toLowerCase().includes('.pdf'))
+  );
 
   const firstImage = imageFiles[0];
   const firstAudio = audioFiles[0];
-  const firstPdf = pdfFiles[0];
+  const firstPdf = pdfFiles[0] || (mediaType === 'journal' || mediaType === 'lyrissimot' ? files[0] : undefined);
 
   const imageCount = imageFiles.length;
   const audioCount = audioFiles.length;

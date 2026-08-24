@@ -154,14 +154,22 @@ const Media = () => {
   const openGallery = (media: MediaItem) => {
     if (media.media_files && media.media_files.length > 0) {
       // Direct opening in new tab for PDF documents (Journaux, Lyrissimots, PDFs)
-      const pdfFile = media.media_files.find(f => f.file_type === 'pdf');
-      if (pdfFile) {
-        const pdfUrl = pdfFile.file_path.startsWith('http') 
-          ? pdfFile.file_path 
-          : `${BASE_URL}${pdfFile.file_path.startsWith('/') ? '' : '/'}${pdfFile.file_path}`;
-        window.open(pdfUrl, '_blank', 'noopener,noreferrer');
-        return;
+      const pdfFile = media.media_files.find(f => 
+        f.file_type === 'pdf' || 
+        (f.file_path && f.file_path.toLowerCase().includes('.pdf'))
+      );
+
+      if (pdfFile || media.media_type === 'lyrissimot' || media.media_type === 'journal') {
+        const fileToOpen = pdfFile || media.media_files[0];
+        if (fileToOpen && fileToOpen.file_path) {
+          const pdfUrl = fileToOpen.file_path.startsWith('http') 
+            ? fileToOpen.file_path 
+            : `${BASE_URL}${fileToOpen.file_path.startsWith('/') ? '' : '/'}${fileToOpen.file_path}`;
+          window.open(pdfUrl, '_blank', 'noopener,noreferrer');
+          return;
+        }
       }
+
       setSelectedMedia(media);
       setIsGalleryOpen(true);
     }
