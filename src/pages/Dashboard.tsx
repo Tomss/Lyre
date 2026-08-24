@@ -144,30 +144,42 @@ const Dashboard = () => {
     fetchDashboardData();
   }, [fetchDashboardData]);
 
-  // SSE Listener for real-time updates
+  // Robust real-time updates: 30s polling fallback + SSE with proper reconnection guard
   React.useEffect(() => {
     if (!token) return;
 
-    const eventSource = new EventSource(`${API_URL}/events-push`);
+    let isMounted = true;
+    let eventSource: EventSource | null = null;
 
-    eventSource.onmessage = (event) => {
-      if (event.data === 'update') {
-        console.log('[SSE] Mise à jour en temps réel reçue');
-        fetchDashboardData(true); // Mise à jour silencieuse
-      }
-    };
+    try {
+      eventSource = new EventSource(`${API_URL}/events-push`);
 
-    eventSource.onerror = (err) => {
-      console.error('[SSE] Erreur de connexion:', err);
-      eventSource.close();
-    };
+      eventSource.onmessage = (event) => {
+        if (isMounted && event.data === 'update') {
+          fetchDashboardData(true);
+        }
+      };
+
+      eventSource.onerror = () => {
+        if (eventSource) {
+          eventSource.close();
+        }
+      };
+    } catch (e) {}
+
+    // Polling fallback every 30 seconds to guarantee data freshness without CPU thrashing
+    const interval = setInterval(() => {
+      if (isMounted) fetchDashboardData(true);
+    }, 30000);
 
     return () => {
-      eventSource.close();
+      isMounted = false;
+      clearInterval(interval);
+      if (eventSource) {
+        eventSource.close();
+      }
     };
   }, [token, fetchDashboardData]);
-
-
 
   const formatDateMini = (dateString: string) => {
     if (!dateString) return '';
@@ -205,19 +217,10 @@ const Dashboard = () => {
     }, {} as Record<string, { partitions: any[], created_at: string }>);
   };
 
-  // Supprimé: redeclaré plus bas avec filtrage
-  /*
-  const partitionsByOrchestra = groupPartitionsByOrchestra(userPartitions);
-  */
-
-  const toggleOrchestra = (orchestraName: string, event?: React.MouseEvent) => {
-    const target = event?.currentTarget as HTMLElement | null;
-    const initialTop = target ? target.getBoundingClientRect().top : null;
-
+  const toggleOrchestra = (orchestraName: string) => {
     const newSet = new Set(expandedOrchestras);
     if (newSet.has(orchestraName)) {
       newSet.delete(orchestraName);
-      // Continuous cleanup: when collapsing an orchestra, collapse all its morceaux as well
       const orchestraPartitions = partitionsByOrchestra[orchestraName] || [];
       const newMorceauxSet = new Set(expandedMorceaux);
       orchestraPartitions.forEach((p: any) => {
@@ -231,22 +234,9 @@ const Dashboard = () => {
       newSet.add(orchestraName);
     }
     setExpandedOrchestras(newSet);
-
-    if (target && initialTop !== null) {
-      requestAnimationFrame(() => {
-        const newTop = target.getBoundingClientRect().top;
-        const diff = newTop - initialTop;
-        if (Math.abs(diff) > 1) {
-          window.scrollBy({ top: diff, behavior: 'instant' as ScrollBehavior });
-        }
-      });
-    }
   };
 
-  const toggleMorceau = (morceauName: string, event?: React.MouseEvent) => {
-    const target = event?.currentTarget as HTMLElement | null;
-    const initialTop = target ? target.getBoundingClientRect().top : null;
-
+  const toggleMorceau = (morceauName: string) => {
     const newSet = new Set(expandedMorceaux);
     if (newSet.has(morceauName)) {
       newSet.delete(morceauName);
@@ -254,26 +244,12 @@ const Dashboard = () => {
       newSet.add(morceauName);
     }
     setExpandedMorceaux(newSet);
-
-    if (target && initialTop !== null) {
-      requestAnimationFrame(() => {
-        const newTop = target.getBoundingClientRect().top;
-        const diff = newTop - initialTop;
-        if (Math.abs(diff) > 1) {
-          window.scrollBy({ top: diff, behavior: 'instant' as ScrollBehavior });
-        }
-      });
-    }
   };
 
-  const toggleEventType = (type: string, event?: React.MouseEvent) => {
-    const target = event?.currentTarget as HTMLElement | null;
-    const initialTop = target ? target.getBoundingClientRect().top : null;
-
+  const toggleEventType = (type: string) => {
     const newSet = new Set(expandedEventTypes);
     if (newSet.has(type)) {
       newSet.delete(type);
-      // Continuous cleanup: when collapsing an event type, collapse all its practical info boxes
       const typeEvents = eventsByType[type] || [];
       const newInfoSet = new Set(expandedPracticalInfo);
       typeEvents.forEach((ev: any) => {
@@ -284,22 +260,9 @@ const Dashboard = () => {
       newSet.add(type);
     }
     setExpandedEventTypes(newSet);
-
-    if (target && initialTop !== null) {
-      requestAnimationFrame(() => {
-        const newTop = target.getBoundingClientRect().top;
-        const diff = newTop - initialTop;
-        if (Math.abs(diff) > 1) {
-          window.scrollBy({ top: diff, behavior: 'instant' as ScrollBehavior });
-        }
-      });
-    }
   };
 
-  const togglePracticalInfo = (eventId: string, event?: React.MouseEvent) => {
-    const target = event?.currentTarget as HTMLElement | null;
-    const initialTop = target ? target.getBoundingClientRect().top : null;
-
+  const togglePracticalInfo = (eventId: string) => {
     const newSet = new Set(expandedPracticalInfo);
     if (newSet.has(eventId)) {
       newSet.delete(eventId);
@@ -307,16 +270,6 @@ const Dashboard = () => {
       newSet.add(eventId);
     }
     setExpandedPracticalInfo(newSet);
-
-    if (target && initialTop !== null) {
-      requestAnimationFrame(() => {
-        const newTop = target.getBoundingClientRect().top;
-        const diff = newTop - initialTop;
-        if (Math.abs(diff) > 1) {
-          window.scrollBy({ top: diff, behavior: 'instant' as ScrollBehavior });
-        }
-      });
-    }
   };
 
   const filteredEvents = React.useMemo(() => {
