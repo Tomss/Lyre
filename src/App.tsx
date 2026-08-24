@@ -45,17 +45,8 @@ function App() {
   const isFullWidthPage = isAdminOrDashboard || location.pathname === '/connexion' || location.pathname === '/activer-compte';
   const wrapperClass = isFullWidthPage ? "max-w-none" : "max-w-[2560px]";
 
-  // Global Cinematic Smooth Scrolling for all showcase public pages
+  // Global Cinematic Smooth Scrolling for ALL pages (Front Office & Back Office)
   useEffect(() => {
-    // Disable on admin dashboards for 100% native table and drag-and-drop performance
-    if (isAdminOrDashboard) {
-      if ((window as any).__lenis) {
-        (window as any).__lenis.destroy();
-        (window as any).__lenis = null;
-      }
-      return;
-    }
-
     const lenis = new Lenis({
       lerp: 0.09,
       orientation: 'vertical',
@@ -81,7 +72,7 @@ function App() {
       lenis.destroy();
       (window as any).__lenis = null;
     };
-  }, [isAdminOrDashboard]);
+  }, []);
 
   // Sync scroll and bounds on every route change
   useEffect(() => {
