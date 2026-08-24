@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Download, Music, FileText, ExternalLink } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Download, Music, FileText } from 'lucide-react';
 import { BASE_URL } from '../config';
 import { getOptimizedImageUrl, getImageSrcSet } from '../utils/image';
 
@@ -43,7 +43,7 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({ media, isOpen, onClose }) =
   } else if (media.media_type === 'enregistrement') {
     displayFiles = media.media_files.filter(file => file.file_type === 'audio' || file.file_type === 'image');
   } else if (media.media_type === 'journal' || media.media_type === 'lyrissimot') {
-    displayFiles = media.media_files;
+    displayFiles = media.media_files.filter(file => file.file_type === 'pdf' || file.file_type === 'image');
   } else {
     displayFiles = media.media_files;
   }
@@ -300,24 +300,9 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({ media, isOpen, onClose }) =
                 } ${isZoomed ? 'scale-150 cursor-zoom-out z-40' : 'cursor-zoom-in'}`}
                 onClick={() => setIsZoomed(!isZoomed)}
               />
-            ) : (currentFile.file_type === 'pdf' || (currentFile.file_path && currentFile.file_path.toLowerCase().includes('.pdf')) || media.media_type === 'journal' || media.media_type === 'lyrissimot') ? (
-              <div className="w-full max-w-5xl h-[78vh] bg-white rounded-2xl overflow-hidden shadow-2xl border border-white/20 flex flex-col">
-                <div className="bg-slate-900 text-white px-5 py-3.5 flex items-center justify-between border-b border-slate-800 flex-shrink-0">
-                  <div className="flex items-center space-x-2.5 overflow-hidden">
-                    <FileText size={20} className="text-rose-400 flex-shrink-0" />
-                    <span className="text-sm font-bold truncate max-w-md text-white">{currentFile.file_name || media.title}</span>
-                  </div>
-                  <a
-                    href={getFileUrl(currentFile.file_path)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-4 py-2 bg-teal-600 hover:bg-teal-500 text-white text-xs font-extrabold rounded-xl transition-all flex items-center gap-2 shadow-md hover:scale-105 active:scale-95 cursor-pointer"
-                  >
-                    <ExternalLink size={15} />
-                    Ouvrir dans un nouvel onglet
-                  </a>
-                </div>
-                <iframe src={`${getFileUrl(currentFile.file_path)}#toolbar=1&view=FitH`} className="w-full flex-1 border-none" title={currentFile.file_name} />
+            ) : currentFile.file_type === 'pdf' ? (
+              <div className="w-full max-w-4xl h-[60vh] bg-white rounded-2xl overflow-hidden shadow-2xl border border-white/20">
+                <iframe src={`${getFileUrl(currentFile.file_path)}#toolbar=1&view=FitH`} className="w-full h-full border-none" title={currentFile.file_name} />
               </div>
             ) : currentFile.file_type === 'video' ? (
               <video controls autoPlay src={getFileUrl(currentFile.file_path)} className="max-w-full max-h-[60vh] rounded-2xl shadow-2xl" />
