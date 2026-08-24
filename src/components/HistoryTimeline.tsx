@@ -58,7 +58,7 @@ const TimelineCard = ({ item }: { item: HistoryEvent }) => {
     const displayText = isExpanded ? content : content.slice(0, 200) + (shouldTruncate ? "..." : "");
 
     return (
-        <div className={`p-5 md:p-6 relative ${cardStyle} transition-all duration-300 hover:scale-[1.01]`}>
+        <div className={`p-5 md:p-6 relative ${cardStyle} transition-shadow duration-300 hover:shadow-2xl`}>
             <div className={`md:hidden ${dateStyle}`}>{item.year}</div>
             <h3 className={`text-2xl font-bold mb-4 ${item.era === 'vintage' ? 'font-serif' : ''}`}>
                 {item.title}
@@ -109,13 +109,18 @@ const HistoryTimeline = () => {
                 console.error("Failed to fetch history:", error);
             } finally {
                 setLoading(false);
+                setTimeout(() => {
+                    if ((window as any).__lenis) {
+                        (window as any).__lenis.resize();
+                    }
+                }, 100);
             }
         };
         fetchHistory();
     }, []);
 
     return (
-        <section className="py-12 bg-white overflow-hidden relative">
+        <section className="py-12 bg-white relative">
             <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center mb-10">
                     <h2 className="font-bold text-3xl md:text-5xl text-slate-800 mb-4">Notre Histoire</h2>
@@ -162,7 +167,7 @@ const HistoryTimeline = () => {
                                     {/* Image or Spacer for Desktop Layout */}
                                     <div className="flex-1 w-full hidden md:flex justify-center px-4 md:px-24 items-center">
                                         {item.image_url ? (
-                                            <div className="relative w-full h-64 max-w-md rounded-xl overflow-hidden shadow-lg transform hover:scale-[1.02] transition-all duration-500 group flex items-center justify-center bg-white/50">
+                                            <div className="relative w-full h-64 max-w-md rounded-xl overflow-hidden shadow-lg group flex items-center justify-center bg-white/50 border border-slate-100">
                                                 <img
                                                     src={getOptimizedImageUrl(item.image_url, 600, 80)}
                                                     srcSet={getImageSrcSet(item.image_url)}
@@ -170,7 +175,7 @@ const HistoryTimeline = () => {
                                                     alt={item.title}
                                                     loading="lazy"
                                                     decoding="async"
-                                                    className="w-full h-full object-contain"
+                                                    className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-[1.02]"
                                                 />
                                             </div>
                                         ) : (
