@@ -28,7 +28,7 @@ interface MediaItem {
   media_files: MediaFile[];
 }
 
-const MEDIA_CACHE_KEY = 'lyre_cached_media_items_v3';
+const MEDIA_CACHE_KEY = 'lyre_cached_media_items_v1';
 
 const Media = () => {
   const { pageHeaders } = useTheme();
@@ -151,64 +151,31 @@ const Media = () => {
   const featuredMedia = filteredMedia.filter(media => media.is_featured);
   const regularMedia = filteredMedia.filter(media => !media.is_featured);
 
-  const getMediaFiles = (media: any): MediaFile[] => {
-    if (!media) return [];
-    let files = media.media_files || media.files;
-    if (typeof files === 'string') {
-      try {
-        files = JSON.parse(files);
-      } catch (e) {
-        files = [];
-      }
-    }
-    return Array.isArray(files) ? files : [];
-  };
+  const openGallery = (media: MediaItem) => {
+    if (!media || !media.media_files || media.media_files.length === 0) return;
 
-  const getPdfUrl = (media: MediaItem): string | null => {
-    if (!media) return null;
-    const files = getMediaFiles(media);
-    if (!files || files.length === 0) return null;
-
-    // 1. Chercher si ce média contient un fichier PDF
-    const pdfFile = files.find(f => {
+    // 1. Chercher un fichier PDF (par file_type ou extension .pdf)
+    const pdfFile = media.media_files.find(f => {
       if (!f || !f.file_path) return false;
       const type = String(f.file_type || '').toLowerCase();
       const path = String(f.file_path || f.file_name || '').toLowerCase();
       return type === 'pdf' || path.endsWith('.pdf') || path.includes('.pdf') || type.includes('pdf');
     });
 
-    // 2. Si c'est un Lyrissimot ou qu'un fichier PDF est trouvé :
-    const targetFile = pdfFile || (
-      media.media_type === 'lyrissimot' ? files[0] : null
-    );
+    // 2. Si le média contient un fichier PDF ou est un Lyrissimot -> Ouverture immédiate dans un nouvel onglet !
+    const targetFile = pdfFile || (media.media_type === 'lyrissimot' ? media.media_files[0] : null);
 
     if (targetFile && targetFile.file_path) {
       const raw = targetFile.file_path;
-      return (raw.startsWith('http') || raw.startsWith('blob:'))
+      const pdfUrl = (raw.startsWith('http') || raw.startsWith('blob:'))
         ? raw
         : `${BASE_URL}${raw.startsWith('/') ? '' : '/'}${raw}`;
-    }
-
-    return null;
-  };
-
-  const openGallery = (media: MediaItem) => {
-    if (!media) return;
-    const files = getMediaFiles(media);
-    if (files.length === 0) return;
-
-    const pdfUrl = getPdfUrl(media);
-    if (pdfUrl) {
       window.open(pdfUrl, '_blank', 'noopener,noreferrer');
       return;
     }
 
     // 3. Sinon (images, photos d'albums, journaux scannés sous forme d'images) -> Ouverture dans la galerie modale en grand !
-    setSelectedMedia({
-      ...media,
-      media_files: files,
-      files: files
-    });
+    setSelectedMedia(media);
     setIsGalleryOpen(true);
   };
 
@@ -228,15 +195,12 @@ const Media = () => {
         />
       )}
 
-      {/* Hero Header */}
+      {/* Header Section */}
       <PageHero
         title={<span>Galerie <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-emerald-400 to-cyan-500">Multimédia</span></span>}
         subtitle="Revivez les moments forts de La Lyre : albums, enregistrements et souvenirs."
-        badgeText="Médiathèque"
-        badgeIcon={Camera}
         backgroundImage={pageHeaders['media'] || "/media-banner.webp"}
         anchors={[
-          { label: "À la Une", targetId: "a-la-une", icon: Star, color: "amber" },
           { label: "Médiathèque", targetId: "mediatheque", icon: Image, color: "teal" },
           { label: "Contribuer", targetId: "contribuer", icon: Camera, color: "rose" }
         ]}
@@ -256,16 +220,13 @@ const Media = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 relative z-10">
               {featuredMedia.map((media) => {
                 const TypeIcon = getTypeIcon(media.media_type);
-                const files = getMediaFiles(media);
-                const pdfUrl = getPdfUrl(media);
-
-                const cardInner = (
-                  <div className="flex flex-col h-full w-full">
+                return (
+                  <div key={media.id} onClick={() => openGallery(media)} className="group flex flex-col bg-white rounded-2xl border border-slate-100 overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-2 transition-all duration-500 cursor-pointer">
                     {/* Section Image / Preview */}
                     <div className="relative aspect-video overflow-hidden bg-slate-50 w-full border-b border-slate-100/50">
                       <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 to-transparent z-10 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                       <MediaPreview
-                        files={files}
+                        files={media.media_files}
                         mediaType={media.media_type}
                         title={media.title}
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
@@ -289,7 +250,7 @@ const Media = () => {
                       
                       <div className="absolute bottom-4 right-4 z-20">
                         <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900/90 text-white border border-white/10">
-                            {files.length} {files.length > 1 ? 'fichiers' : 'fichier'}
+                            {media.media_files.length} {media.media_files.length > 1 ? 'fichiers' : 'fichier'}
                         </span>
                       </div>
                     </div>
@@ -315,16 +276,6 @@ const Media = () => {
                         </span>
                       </div>
                     </div>
-                  </div>
-                );
-
-                return (
-                  <div
-                    key={media.id}
-                    onClick={() => openGallery(media)}
-                    className="group flex flex-col bg-white rounded-2xl border border-slate-100 overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-2 transition-all duration-500 cursor-pointer text-left"
-                  >
-                    {cardInner}
                   </div>
                 );
               })}
@@ -507,15 +458,12 @@ const Media = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
                   {regularMedia.slice(0, visibleCount).map((media) => {
                     const TypeIcon = getTypeIcon(media.media_type);
-                    const files = getMediaFiles(media);
-                    const pdfUrl = getPdfUrl(media);
-
-                    const cardInner = (
-                      <>
+                    return (
+                      <div key={media.id} onClick={() => openGallery(media)} className="group flex flex-col bg-white rounded-2xl border border-slate-100 overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 cursor-pointer">
                         {/* Section Image / Preview */}
                         <div className="relative aspect-[4/3] overflow-hidden bg-slate-50 w-full border-b border-slate-100/50">
                           <MediaPreview
-                            files={files}
+                            files={media.media_files}
                             mediaType={media.media_type}
                             title={media.title}
                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
@@ -543,13 +491,13 @@ const Media = () => {
                           {/* File count indicator */}
                           <div className="absolute bottom-3 right-3 z-20">
                             <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold bg-slate-900/90 text-white border border-white/10">
-                                {files.length} {files.length > 1 ? 'fichiers' : 'fichier'}
+                                {media.media_files.length} {media.media_files.length > 1 ? 'fichiers' : 'fichier'}
                             </span>
                           </div>
                         </div>
 
                         {/* Contenu textuel */}
-                        <div className="p-5 flex flex-col flex-grow bg-white">
+                        <div className="p-5 flex flex-col flex-grow">
                           <h3 className="font-bold text-[15px] text-slate-800 line-clamp-2 mb-3 group-hover:text-teal-600 transition-colors leading-snug">
                             {media.title}
                           </h3>
@@ -564,16 +512,6 @@ const Media = () => {
                             </span>
                           </div>
                         </div>
-                      </>
-                    );
-
-                    return (
-                      <div
-                        key={media.id}
-                        onClick={() => openGallery(media)}
-                        className="group flex flex-col bg-white rounded-2xl border border-slate-100 overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 cursor-pointer text-left"
-                      >
-                        {cardInner}
                       </div>
                     );
                   })}
