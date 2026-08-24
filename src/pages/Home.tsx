@@ -100,16 +100,12 @@ const Home = () => {
     <div className="">
       {/* Hero Section - Optimisé Ultra-Wide (Style Samsung) */}
       <section id="accueil" className="relative h-[calc(100vh-80px)] flex items-center justify-center bg-slate-900 overflow-hidden">
-        {/* Active Hero Background Image - Single GPU Layer */}
+        {/* Active Hero Background Image - GPU CSS Layer */}
         {backgroundImages.length > 0 && (
-          <div className="absolute inset-0 bg-slate-900 overflow-hidden pointer-events-none">
-            <img
-              src={backgroundImages[currentImageIndex]}
-              alt="La Lyre"
-              loading="eager"
-              decoding="sync"
-              fetchPriority="high"
-              className="absolute inset-0 w-full h-full object-cover z-0 transition-opacity duration-700 opacity-100 transform-gpu"
+          <div className="absolute inset-0 bg-slate-900 pointer-events-none">
+            <div
+              className="absolute inset-0 w-full h-full bg-cover bg-center transition-opacity duration-700 opacity-100"
+              style={{ backgroundImage: `url("${backgroundImages[currentImageIndex]}")` }}
             />
             <div className="absolute inset-0 bg-slate-950/50 z-1" />
           </div>
