@@ -152,27 +152,35 @@ const Media = () => {
   const regularMedia = filteredMedia.filter(media => !media.is_featured);
 
   const getPdfUrl = (media: MediaItem) => {
-    if (!media || !media.media_files || media.media_files.length === 0) return null;
+    if (!media || !media.media_files || !Array.isArray(media.media_files) || media.media_files.length === 0) {
+      return null;
+    }
     
     // 1. Chercher un fichier PDF (par file_type OU par extension .pdf)
     const pdfFile = media.media_files.find(f => {
       if (!f || !f.file_path) return false;
       const type = String(f.file_type || '').toLowerCase();
       const cleanPath = f.file_path.split('?')[0].toLowerCase();
-      return type === 'pdf' || cleanPath.endsWith('.pdf') || cleanPath.includes('.pdf?');
+      return type === 'pdf' || cleanPath.endsWith('.pdf') || cleanPath.includes('.pdf') || type.includes('pdf');
     });
 
-    // 2. Si media_type est lyrissimot ou journal et contient un fichier non-image :
+    // 2. Si media_type est lyrissimot ou journal et contient un fichier non-image (document PDF) :
     const targetFile = pdfFile || (
       (media.media_type === 'lyrissimot' || media.media_type === 'journal')
-        ? media.media_files.find(f => f.file_type !== 'image' && f.file_type !== 'video' && f.file_type !== 'audio')
+        ? media.media_files.find(f => {
+            if (!f || !f.file_path) return false;
+            const type = String(f.file_type || '').toLowerCase();
+            const cleanPath = f.file_path.split('?')[0].toLowerCase();
+            return type !== 'image' && type !== 'video' && type !== 'audio' && !cleanPath.endsWith('.jpg') && !cleanPath.endsWith('.png') && !cleanPath.endsWith('.webp') && !cleanPath.endsWith('.jpeg');
+          })
         : null
     );
 
     if (targetFile && targetFile.file_path) {
-      return targetFile.file_path.startsWith('http') 
-        ? targetFile.file_path 
-        : `${BASE_URL}${targetFile.file_path.startsWith('/') ? '' : '/'}${targetFile.file_path}`;
+      const rawPath = targetFile.file_path;
+      return rawPath.startsWith('http') 
+        ? rawPath 
+        : `${BASE_URL}${rawPath.startsWith('/') ? '' : '/'}${rawPath}`;
     }
 
     return null;
