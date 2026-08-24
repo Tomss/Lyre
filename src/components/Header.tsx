@@ -4,6 +4,7 @@ import { Menu, X, Music, UserCircle, ChevronDown, User, LogOut, Info } from 'luc
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { API_URL, BASE_URL } from '../config';
+import { getOptimizedImageUrl } from '../utils/image';
 
 const Header = () => {
   const [isVisible, setIsVisible] = useState(true);
@@ -175,7 +176,15 @@ const Header = () => {
           <Link to="/" className="flex-shrink-0 flex items-center space-x-3 group">
             {(settings?.header_logo_url || settings?.site_logo_url) ? (
               <div className="flex items-center gap-3">
-                <img src={settings.header_logo_url?.startsWith('http') ? settings.header_logo_url : (settings.header_logo_url ? `${BASE_URL}${settings.header_logo_url}` : (settings.site_logo_url?.startsWith('http') ? settings.site_logo_url : `${BASE_URL}${settings.site_logo_url}`))} alt="La Lyre" className="h-10 lg:h-16 w-auto object-contain transition-all duration-300 group-hover:scale-105" />
+                <img 
+                  src={getOptimizedImageUrl(settings.header_logo_url || settings.site_logo_url, 160, 85)} 
+                  alt="La Lyre" 
+                  loading="eager"
+                  decoding="async"
+                  // @ts-ignore
+                  fetchPriority="high"
+                  className="h-10 lg:h-16 w-auto object-contain transition-all duration-300 group-hover:scale-105" 
+                />
                 <span className="hidden sm:block font-bold text-xl lg:text-2xl tracking-tight text-slate-900 group-hover:text-teal-700 transition-colors">
                   La <span className="text-teal-600">Lyre</span>
                 </span>

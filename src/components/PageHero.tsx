@@ -1,5 +1,6 @@
 import React from 'react';
 import { ArrowRight, LucideIcon } from 'lucide-react';
+import { getOptimizedImageUrl, getImageSrcSet } from '../utils/image';
 
 interface PageHeroProps {
     title: React.ReactNode;
@@ -75,10 +76,13 @@ const PageHero: React.FC<PageHeroProps> = ({ title, subtitle, backgroundImage, a
             {backgroundImage && (
                 <div className="absolute inset-0">
                     <img
-                        src={backgroundImage}
+                        src={getOptimizedImageUrl(backgroundImage, 1600, 85)}
+                        srcSet={getImageSrcSet(backgroundImage)}
+                        sizes="100vw"
                         alt=""
                         loading="eager"
                         decoding="async"
+                        // @ts-ignore
                         fetchPriority="high"
                         className="absolute inset-0 w-full h-full object-cover pointer-events-none z-0"
                     />

@@ -1,42 +1,62 @@
+const mysql = require('mysql2/promise');
 const fs = require('fs');
 const path = require('path');
+require('dotenv').config();
 
-const utilsDir = path.join(__dirname, '..', 'src', 'utils');
-if (!fs.existsSync(utilsDir)) fs.mkdirSync(utilsDir, { recursive: true });
+async function runAudit() {
+  const conn = await mysql.createConnection({
+    host: process.env.DB_HOST || 'localhost',
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME
+  });
 
-const content = `import { BASE_URL } from '../config';
+  const queries = [
+    { table: 'carousel_images', col: 'image_url' },
+    { table: 'page_headers', col: 'image_url' },
+    { table: 'partners', col: 'logo_url' },
+    { table: 'site_settings', col: 'setting_value' },
+    { table: 'history_events', col: 'image_url' },
+    { table: 'media_files', col: 'file_path' }
+  ];
 
-export function getOptimizedImageUrl(
-  filePath: string | null | undefined,
-  width?: number,
-  quality: number = 80
-): string {
-  if (!filePath) return '';
-  if (filePath.startsWith('blob:') || filePath.startsWith('data:')) return filePath;
-  if (filePath.includes('res.cloudinary.com')) {
-    if (width) return filePath.replace('/upload/', '/upload/c_scale,w_' + width + ',f_auto,q_auto/');
-    return filePath;
+  console.log('=== VÉRIFICATION PHYSIQUE DES FICHIERS SUR DISQUE SSD ===');
+
+  let totalChecked = 0;
+  let totalFound = 0;
+  const missing = [];
+
+  for (const q of queries) {
+    try {
+      const [rows] = await conn.query('SELECT ' + q.col + ' as url FROM `' + q.table + '` WHERE `' + q.col + '` IS NOT NULL AND `' + q.col + '` != \'\'');
+      for (const r of rows) {
+        const url = r.url;
+        if (url && (url.startsWith('/uploads/') || url.startsWith('uploads/'))) {
+          totalChecked++;
+          const filename = url.replace(/^\/?uploads\//, '');
+          const inUploads = fs.existsSync(path.join('uploads', filename));
+          const inPublic = fs.existsSync(path.join('public', filename));
+          if (inUploads || inPublic) {
+            totalFound++;
+          } else {
+            missing.push({ table: q.table, filename: filename });
+          }
+        }
+      }
+    } catch (err) {
+      console.log('Erreur table ' + q.table + ':', err.message);
+    }
   }
-  const cleanPath = filePath.startsWith('/') ? filePath : '/' + filePath;
-  const fullUrl = filePath.startsWith('http') ? filePath : BASE_URL + cleanPath;
-  if (cleanPath.startsWith('/uploads/')) {
-    const params = new URLSearchParams();
-    if (width) params.set('w', width.toString());
-    if (quality && quality !== 80) params.set('q', quality.toString());
-    const query = params.toString();
-    return query ? fullUrl + '?' + query : fullUrl;
+
+  console.log('Total vérifié :', totalChecked, 'fichiers');
+  console.log('Total présents sur disque SSD (uploads/ ou public/) :', totalFound, 'fichiers');
+  console.log('Fichiers manquants :', missing.length);
+  if (missing.length > 0) {
+    console.log('Détails des manquants :', missing);
   }
-  return fullUrl;
+
+  await conn.end();
 }
 
-export function getImageSrcSet(filePath: string | null | undefined): string {
-  if (!filePath || !filePath.includes('/uploads/')) return '';
-  const widths = [320, 640, 960, 1280, 1600];
-  return widths.map(w => getOptimizedImageUrl(filePath, w) + ' ' + w + 'w').join(', ');
-}
-`;
-
-fs.writeFileSync(path.join(utilsDir, 'image.ts'), content, 'utf8');
-console.log('src/utils/image.ts generated successfully!');
-process.exit(0);
+runAudit();
 

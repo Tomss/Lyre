@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { API_URL, BASE_URL } from '../config';
 import { ExternalLink, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { getOptimizedImageUrl } from '../utils/image';
 
 interface Partner {
     id: string;
@@ -64,8 +65,10 @@ const PartnersSection = React.memo(() => {
 
                                 {/* Logo */}
                                 <img
-                                    src={partner.logo_url.startsWith('http') ? partner.logo_url : `${BASE_URL}${partner.logo_url}`}
+                                    src={getOptimizedImageUrl(partner.logo_url, 240, 85)}
                                     alt={partner.name}
+                                    loading="lazy"
+                                    decoding="async"
                                     className="max-w-full max-h-full object-contain transition-transform duration-300 transform group-hover:scale-110"
                                 />
 

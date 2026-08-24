@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import { BASE_URL } from '../config';
+import { getOptimizedImageUrl, getImageSrcSet } from '../utils/image';
 
 type HistoryEra = 'vintage' | 'retro' | 'classic' | 'modern';
-
-import { API_URL } from '../config';
-
-const BASE_URL = API_URL.replace('/api', '');
 
 export interface HistoryEvent {
     id: string;
@@ -161,8 +159,12 @@ const HistoryTimeline = () => {
                                         {item.image_url ? (
                                             <div className="relative w-full h-64 max-w-md rounded-xl overflow-hidden shadow-lg transform hover:scale-[1.02] transition-all duration-500 group flex items-center justify-center bg-white/50">
                                                 <img
-                                                    src={item.image_url.startsWith('http') ? item.image_url : `${BASE_URL}${item.image_url}`}
+                                                    src={getOptimizedImageUrl(item.image_url, 600, 80)}
+                                                    srcSet={getImageSrcSet(item.image_url)}
+                                                    sizes="(max-width: 768px) 100vw, 500px"
                                                     alt={item.title}
+                                                    loading="lazy"
+                                                    decoding="async"
                                                     className="w-full h-full object-contain"
                                                 />
                                             </div>
