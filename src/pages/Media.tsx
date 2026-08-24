@@ -153,25 +153,22 @@ const Media = () => {
 
   const openGallery = (media: MediaItem) => {
     if (media.media_files && media.media_files.length > 0) {
-      // Find PDF file (if present)
+      // 1. Chercher un fichier PDF dans la liste des fichiers
       const pdfFile = media.media_files.find(f => 
         f.file_type === 'pdf' || 
-        (f.file_path && f.file_path.toLowerCase().includes('.pdf'))
+        (f.file_path && f.file_path.toLowerCase().endsWith('.pdf'))
       );
 
-      // If this media contains a PDF (or is a Journal/Lyrissimot document):
-      if (pdfFile || media.media_type === 'journal' || media.media_type === 'lyrissimot') {
-        const fileToOpen = pdfFile || media.media_files.find(f => f.file_path && f.file_path.toLowerCase().includes('.pdf')) || media.media_files[0];
-        if (fileToOpen && fileToOpen.file_path) {
-          const pdfUrl = fileToOpen.file_path.startsWith('http') 
-            ? fileToOpen.file_path 
-            : `${BASE_URL}${fileToOpen.file_path.startsWith('/') ? '' : '/'}${fileToOpen.file_path}`;
-          window.open(pdfUrl, '_blank', 'noopener,noreferrer');
-          return;
-        }
+      // Si le média contient un fichier PDF -> Ouverture immédiate dans un nouvel onglet !
+      if (pdfFile && pdfFile.file_path) {
+        const pdfUrl = pdfFile.file_path.startsWith('http') 
+          ? pdfFile.file_path 
+          : `${BASE_URL}${pdfFile.file_path.startsWith('/') ? '' : '/'}${pdfFile.file_path}`;
+        window.open(pdfUrl, '_blank', 'noopener,noreferrer');
+        return;
       }
 
-      // Albums, Audios, Photos: Open in MediaGallery modal!
+      // 2. Si le média contient des images (ou audios/vidéos) -> Ouverture dans la galerie modale (comme les albums) !
       setSelectedMedia(media);
       setIsGalleryOpen(true);
     }
