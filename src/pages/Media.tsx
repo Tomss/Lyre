@@ -151,53 +151,33 @@ const Media = () => {
   const featuredMedia = filteredMedia.filter(media => media.is_featured);
   const regularMedia = filteredMedia.filter(media => !media.is_featured);
 
-  const getPdfUrl = (media: MediaItem) => {
-    if (!media || !media.media_files || !Array.isArray(media.media_files) || media.media_files.length === 0) {
-      return null;
-    }
-    
-    // 1. Chercher un fichier PDF (par file_type OU par extension .pdf)
-    const pdfFile = media.media_files.find(f => {
-      if (!f || !f.file_path) return false;
-      const type = String(f.file_type || '').toLowerCase();
-      const cleanPath = f.file_path.split('?')[0].toLowerCase();
-      return type === 'pdf' || cleanPath.endsWith('.pdf') || cleanPath.includes('.pdf') || type.includes('pdf');
-    });
-
-    // 2. Si media_type est lyrissimot ou journal et contient un fichier non-image (document PDF) :
-    const targetFile = pdfFile || (
-      (media.media_type === 'lyrissimot' || media.media_type === 'journal')
-        ? media.media_files.find(f => {
-            if (!f || !f.file_path) return false;
-            const type = String(f.file_type || '').toLowerCase();
-            const cleanPath = f.file_path.split('?')[0].toLowerCase();
-            return type !== 'image' && type !== 'video' && type !== 'audio' && !cleanPath.endsWith('.jpg') && !cleanPath.endsWith('.png') && !cleanPath.endsWith('.webp') && !cleanPath.endsWith('.jpeg');
-          })
-        : null
-    );
-
-    if (targetFile && targetFile.file_path) {
-      const rawPath = targetFile.file_path;
-      return rawPath.startsWith('http') 
-        ? rawPath 
-        : `${BASE_URL}${rawPath.startsWith('/') ? '' : '/'}${rawPath}`;
-    }
-
-    return null;
-  };
-
   const openGallery = (media: MediaItem) => {
     if (!media || !media.media_files || media.media_files.length === 0) return;
 
-    const pdfUrl = getPdfUrl(media);
-    if (pdfUrl) {
-      const win = window.open(pdfUrl, '_blank', 'noopener,noreferrer');
-      if (!win) {
-        window.location.href = pdfUrl;
-      }
+    // 1. Chercher si ce média contient un fichier PDF
+    const pdfFile = media.media_files.find(f => {
+      if (!f || !f.file_path) return false;
+      const type = String(f.file_type || '').toLowerCase();
+      const path = String(f.file_path || f.file_name || '').toLowerCase();
+      return type === 'pdf' || path.endsWith('.pdf') || path.includes('.pdf') || type.includes('pdf');
+    });
+
+    // 2. Si c'est un Lyrissimot (par nature un document PDF) ou qu'un fichier PDF est trouvé :
+    const targetFile = pdfFile || (
+      media.media_type === 'lyrissimot' ? media.media_files[0] : null
+    );
+
+    if (targetFile && targetFile.file_path) {
+      const raw = targetFile.file_path;
+      const pdfUrl = (raw.startsWith('http') || raw.startsWith('blob:'))
+        ? raw
+        : `${BASE_URL}${raw.startsWith('/') ? '' : '/'}${raw}`;
+
+      window.open(pdfUrl, '_blank', 'noopener,noreferrer');
       return;
     }
 
+    // 3. Sinon (images, photos d'albums, journaux scannés sous forme d'images) -> Ouverture dans la galerie modale en grand !
     setSelectedMedia(media);
     setIsGalleryOpen(true);
   };
@@ -246,10 +226,12 @@ const Media = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 relative z-10">
               {featuredMedia.map((media) => {
                 const TypeIcon = getTypeIcon(media.media_type);
-                const pdfUrl = getPdfUrl(media);
-
-                const cardContent = (
-                  <div className="flex flex-col h-full w-full">
+                return (
+                  <div
+                    key={media.id}
+                    onClick={() => openGallery(media)}
+                    className="group flex flex-col bg-white rounded-2xl border border-slate-100 overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-2 transition-all duration-500 cursor-pointer text-left"
+                  >
                     {/* Section Image / Preview */}
                     <div className="relative aspect-video overflow-hidden bg-slate-50 w-full border-b border-slate-100/50">
                       <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 to-transparent z-10 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -304,26 +286,6 @@ const Media = () => {
                         </span>
                       </div>
                     </div>
-                  </div>
-                );
-
-                return pdfUrl ? (
-                  <a
-                    key={media.id}
-                    href={pdfUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group flex flex-col bg-white rounded-2xl border border-slate-100 overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-2 transition-all duration-500 cursor-pointer block text-left"
-                  >
-                    {cardContent}
-                  </a>
-                ) : (
-                  <div
-                    key={media.id}
-                    onClick={() => openGallery(media)}
-                    className="group flex flex-col bg-white rounded-2xl border border-slate-100 overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-2 transition-all duration-500 cursor-pointer text-left"
-                  >
-                    {cardContent}
                   </div>
                 );
               })}
