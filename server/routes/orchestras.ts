@@ -125,37 +125,25 @@ router.put('/:id', async (req, res) => {
   try {
     await connection.beginTransaction();
 
+    const mainPhotoUrl = photo_url || (photos && photos.length > 0 ? (photos[0].url || photos[0].photo_url) : null);
+
     // Update basic info
     await connection.query(
       'UPDATE orchestras SET name = ?, description = ?, photo_url = ? WHERE id = ?',
-      [name, description || null, photo_url || null, id]
+      [name, description || null, mainPhotoUrl, id]
     );
 
-    // Handle photos if provided
+    // Handle photos atomically: remove all previous photos and insert updated list
+    await connection.query('DELETE FROM orchestra_photos WHERE orchestra_id = ?', [id]);
+
     if (photos && Array.isArray(photos)) {
-      // Get existing photos
-      const [existingRows] = await connection.query('SELECT id FROM orchestra_photos WHERE orchestra_id = ?', [id]);
-      const existingIds = (existingRows as any[]).map(r => r.id);
-
-      const incomingIds = photos.filter((p: any) => p.id).map((p: any) => p.id);
-
-      // Delete removed photos
-      const toDelete = existingIds.filter(eid => !incomingIds.includes(eid));
-      if (toDelete.length > 0) {
-        await connection.query('DELETE FROM orchestra_photos WHERE id IN (?)', [toDelete]);
-      }
-
-      // Insert new photos or update order
       for (let i = 0; i < photos.length; i++) {
         const photo = photos[i];
-        if (photo.id && existingIds.includes(photo.id)) {
-          // Update order of existing
-          await connection.query('UPDATE orchestra_photos SET display_order = ? WHERE id = ?', [i, photo.id]);
-        } else {
-          // Insert new
+        const pUrl = photo.url || photo.photo_url;
+        if (pUrl) {
           await connection.query(
             'INSERT INTO orchestra_photos (id, orchestra_id, photo_url, display_order) VALUES (UUID(), ?, ?, ?)',
-            [id, photo.url || photo.photo_url, i]
+            [id, pUrl, i]
           );
         }
       }
@@ -165,7 +153,7 @@ router.put('/:id', async (req, res) => {
     res.status(200).json({ message: 'Orchestre mis a jour avec succes.' });
   } catch (error) {
     await connection.rollback();
-    console.error(error);
+    console.error('Error updating orchestra:', error);
     res.status(500).json({ message: 'Erreur lors de la mise a jour de l orchestre.' });
   } finally {
     connection.release();
@@ -182,6 +170,7 @@ router.delete('/:id', async (req, res) => {
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
+    await connection.execute('DELETE FROM orchestra_photos WHERE orchestra_id = ?', [id]);
     await connection.execute('DELETE FROM event_orchestras WHERE orchestra_id = ?', [id]);
     await connection.execute('DELETE FROM morceau_orchestras WHERE orchestra_id = ?', [id]);
     await connection.execute('DELETE FROM user_orchestras WHERE orchestra_id = ?', [id]);
