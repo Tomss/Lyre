@@ -76,7 +76,7 @@ const PageHero: React.FC<PageHeroProps> = ({ title, subtitle, backgroundImage, a
             {backgroundImage && (
                 <div className="absolute inset-0">
                     <img
-                        src={getOptimizedImageUrl(backgroundImage, 1600, 85)}
+                        src={getOptimizedImageUrl(backgroundImage, 2048, 92)}
                         srcSet={getImageSrcSet(backgroundImage)}
                         sizes="100vw"
                         alt=""

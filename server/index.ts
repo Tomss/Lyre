@@ -339,9 +339,14 @@ app.use('/uploads', async (req, res, next) => {
       }
 
       if (targetFormat === 'avif') {
-        pipeline = pipeline.avif({ quality: requestedQuality, effort: 3 });
+        pipeline = pipeline.avif({ quality: requestedQuality, effort: 4 });
       } else {
-        pipeline = pipeline.webp({ quality: requestedQuality, effort: 3 });
+        pipeline = pipeline.webp({
+          quality: requestedQuality,
+          effort: 4,
+          preset: 'photo',
+          smartSubsample: true
+        });
       }
 
       await pipeline.toFile(cachedFilePath);

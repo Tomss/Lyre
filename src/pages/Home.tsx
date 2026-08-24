@@ -10,8 +10,8 @@ import { API_URL, BASE_URL } from '../config';
 
 import { getOptimizedImageUrl } from '../utils/image';
 
-const CAROUSEL_CACHE_KEY = 'lyre_cached_carousel_v2';
-const PRIMARY_HERO_IMAGE = getOptimizedImageUrl('/hero-banner.webp', 1600, 85);
+const CAROUSEL_CACHE_KEY = 'lyre_cached_carousel_v3';
+const PRIMARY_HERO_IMAGE = getOptimizedImageUrl('/hero-banner.webp', 2048, 92);
 
 const Home = () => {
   // Read cached real carousel images for instant frame-0 rendering
@@ -39,7 +39,7 @@ const Home = () => {
           const data = await response.json();
           if (Array.isArray(data) && data.length > 0) {
             const urls = data.map((item: any) => 
-               getOptimizedImageUrl(item.image_url, 1600, 85)
+               getOptimizedImageUrl(item.image_url, 2048, 92)
             );
             
             // Preload all carousel images in memory first so zero black blank flicker occurs on swap
