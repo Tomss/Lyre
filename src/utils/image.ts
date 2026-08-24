@@ -1,10 +1,4 @@
-const fs = require('fs');
-const path = require('path');
-
-const utilsDir = path.join(__dirname, '..', 'src', 'utils');
-if (!fs.existsSync(utilsDir)) fs.mkdirSync(utilsDir, { recursive: true });
-
-const content = `import { BASE_URL } from '../config';
+import { BASE_URL } from '../config';
 
 export function getOptimizedImageUrl(
   filePath: string | null | undefined,
@@ -34,9 +28,3 @@ export function getImageSrcSet(filePath: string | null | undefined): string {
   const widths = [320, 640, 960, 1280, 1600];
   return widths.map(w => getOptimizedImageUrl(filePath, w) + ' ' + w + 'w').join(', ');
 }
-`;
-
-fs.writeFileSync(path.join(utilsDir, 'image.ts'), content, 'utf8');
-console.log('src/utils/image.ts generated successfully!');
-process.exit(0);
-

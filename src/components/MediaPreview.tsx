@@ -1,5 +1,6 @@
 import React from 'react';
 import { FileText, Music, Image as ImageIcon } from 'lucide-react';
+import { getOptimizedImageUrl, getImageSrcSet } from '../utils/image';
 
 interface MediaFile {
   id: string;
@@ -37,7 +38,9 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({ files, mediaType, title, on
         onClick={onClick}
       >
         <img 
-          src={firstImage.file_path} 
+          src={getOptimizedImageUrl(firstImage.file_path, 600, 80)} 
+          srcSet={getImageSrcSet(firstImage.file_path)}
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 400px"
           alt={firstImage.alt_text || 'Album cover'} 
           loading="lazy"
           decoding="async"

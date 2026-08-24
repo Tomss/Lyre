@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Download, Music, FileText } from 'lucide-react';
 import { BASE_URL } from '../config';
+import { getOptimizedImageUrl, getImageSrcSet } from '../utils/image';
 
 interface MediaFile {
   id: string;
@@ -77,7 +78,7 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({ media, isOpen, onClose }) =
       const file = displayFiles[idx];
       if (file && file.file_type === 'image') {
         const img = new Image();
-        img.src = getFileUrl(file.file_path);
+        img.src = getOptimizedImageUrl(file.file_path, 1200, 80);
       }
     });
   }, [currentIndex, isOpen, displayFiles]);
@@ -285,10 +286,14 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({ media, isOpen, onClose }) =
             {currentFile.file_type === 'image' ? (
               <img
                 ref={mainImgRef}
-                src={getFileUrl(currentFile.file_path)}
+                src={getOptimizedImageUrl(currentFile.file_path, 1400, 82)}
+                srcSet={getImageSrcSet(currentFile.file_path)}
+                sizes="(max-width: 768px) 100vw, 1400px"
                 alt={currentFile.alt_text || media.title}
                 loading="eager"
                 decoding="async"
+                // @ts-ignore
+                fetchPriority="high"
                 onLoad={() => setIsImageLoaded(true)}
                 className={`max-w-full max-h-[58vh] md:max-h-[64vh] object-contain rounded-2xl shadow-2xl transition-all duration-300 ${
                   isImageLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
@@ -343,7 +348,7 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({ media, isOpen, onClose }) =
                 >
                   {file.file_type === 'image' ? (
                     <img 
-                      src={getFileUrl(file.file_path)} 
+                      src={getOptimizedImageUrl(file.file_path, 160, 75)} 
                       alt="" 
                       loading="lazy" 
                       decoding="async" 

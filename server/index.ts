@@ -268,7 +268,7 @@ app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-// Automatic Next.js / Apple style WebP Image Optimizer Middleware for /uploads
+// High-Performance Dynamic Sharp Image Engine for /uploads
 app.use('/uploads', async (req, res, next) => {
   if (req.method !== 'GET') return next();
   try {
@@ -277,7 +277,7 @@ app.use('/uploads', async (req, res, next) => {
     const ext = path.extname(filePath).toLowerCase();
 
     // If not an image (e.g. PDF, audio, video), pass to static handler
-    if (!['.jpg', '.jpeg', '.png', '.webp', '.avif'].includes(ext)) {
+    if (!['.jpg', '.jpeg', '.png', '.webp', '.avif', '.gif'].includes(ext)) {
       return next();
     }
 
@@ -297,41 +297,64 @@ app.use('/uploads', async (req, res, next) => {
     const stats = fs.statSync(actualFile);
     if (stats.isDirectory()) return next();
 
-    // If already a WebP, serve directly
-    if (ext === '.webp') {
+    // Parse requested width, quality, and format
+    const requestedWidth = req.query.w ? parseInt(req.query.w as string, 10) : null;
+    const requestedQuality = req.query.q ? Math.min(100, Math.max(20, parseInt(req.query.q as string, 10))) : 80;
+    const requestedFmt = (req.query.fmt as string)?.toLowerCase();
+
+    // Check if browser accepts AVIF and format was not explicitly forced
+    const acceptsAvif = req.headers.accept && req.headers.accept.includes('image/avif');
+    const targetFormat = requestedFmt === 'avif' || (acceptsAvif && !requestedFmt && requestedWidth) ? 'webp' : (requestedFmt || (ext === '.avif' ? 'avif' : 'webp'));
+
+    // If no resize is requested, no conversion is needed, and file is already WebP
+    if (!requestedWidth && ext === '.webp') {
       res.setHeader('Content-Type', 'image/webp');
       res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
       return res.sendFile(path.resolve(actualFile));
     }
 
-    const cacheDir = path.join(process.cwd(), 'uploads', '.optimized');
+    // Disk Cache Directory for resized variants
+    const cacheDir = path.join(process.cwd(), 'uploads', '.cache', `w_${requestedWidth || 'orig'}`);
     if (!fs.existsSync(cacheDir)) fs.mkdirSync(cacheDir, { recursive: true });
 
-    const safeBaseName = path.basename(filePath, ext).replace(/[^a-zA-Z0-9_-]/g, '_');
-    const cachedFile = path.join(cacheDir, `${safeBaseName}_${stats.size}.webp`);
+    const baseName = path.basename(filePath, ext).replace(/[^a-zA-Z0-9_-]/g, '_');
+    const cachedFilename = `${baseName}_w${requestedWidth || 'orig'}_q${requestedQuality}_${stats.size}.${targetFormat}`;
+    const cachedFilePath = path.join(cacheDir, cachedFilename);
 
-    if (fs.existsSync(cachedFile)) {
-      res.setHeader('Content-Type', 'image/webp');
+    if (fs.existsSync(cachedFilePath)) {
+      res.setHeader('Content-Type', targetFormat === 'avif' ? 'image/avif' : 'image/webp');
       res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-      return res.sendFile(cachedFile);
+      return res.sendFile(path.resolve(cachedFilePath));
     }
 
-    // Convert large raw images to high-quality, lightweight 120KB WebP
-    await sharp(actualFile)
-      .resize({ width: 1920, height: 1200, fit: 'inside', withoutEnlargement: true })
-      .webp({ quality: 80, effort: 4 })
-      .toFile(cachedFile);
+    // Resize on-the-fly and save to cache
+    let pipeline = sharp(actualFile);
+    if (requestedWidth) {
+      pipeline = pipeline.resize({
+        width: requestedWidth,
+        fit: 'inside',
+        withoutEnlargement: true
+      });
+    }
 
-    res.setHeader('Content-Type', 'image/webp');
+    if (targetFormat === 'avif') {
+      pipeline = pipeline.avif({ quality: requestedQuality, effort: 4 });
+    } else {
+      pipeline = pipeline.webp({ quality: requestedQuality, effort: 4 });
+    }
+
+    await pipeline.toFile(cachedFilePath);
+
+    res.setHeader('Content-Type', targetFormat === 'avif' ? 'image/avif' : 'image/webp');
     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-    return res.sendFile(cachedFile);
+    return res.sendFile(path.resolve(cachedFilePath));
   } catch (err) {
-    console.error('Error optimizing image on the fly:', err);
+    console.error('Error in on-the-fly image engine:', err);
     next();
   }
 });
 
-// Serve static files from the 'uploads' directory with 1-year immutable browser caching
+// Serve static files with 1-year immutable browser caching fallback
 app.use('/uploads', express.static('uploads', {
   maxAge: '1y',
   immutable: true,

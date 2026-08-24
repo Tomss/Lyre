@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { Music } from 'lucide-react';
 import PageHero from '../components/PageHero';
+import { getOptimizedImageUrl, getImageSrcSet } from '../utils/image';
 
 interface Orchestra {
     id: string;
@@ -13,7 +14,7 @@ interface Orchestra {
 
 import { API_URL, BASE_URL } from '../config';
 
-const SmoothFadeImage = ({ src, alt, className = '' }: { src: string; alt: string; className?: string }) => {
+const SmoothFadeImage = ({ src, srcSet, sizes, alt, className = '' }: { src: string; srcSet?: string; sizes?: string; alt: string; className?: string }) => {
     const [loaded, setLoaded] = useState(false);
     const imgRef = useRef<HTMLImageElement>(null);
 
@@ -28,6 +29,8 @@ const SmoothFadeImage = ({ src, alt, className = '' }: { src: string; alt: strin
             <img
                 ref={imgRef}
                 src={src}
+                srcSet={srcSet}
+                sizes={sizes}
                 alt={alt}
                 loading="lazy"
                 decoding="async"
@@ -59,7 +62,9 @@ const PhotoStack = ({ photos, altPrefix, height = "h-[400px] md:h-[500px]" }: { 
         return (
             <div className={`relative rounded-2xl overflow-hidden shadow-xl border-4 border-white ${height} bg-slate-100`}>
                 <SmoothFadeImage
-                    src={photos[0].photo_url.startsWith('http') ? photos[0].photo_url : `${BASE_URL}${photos[0].photo_url}`}
+                    src={getOptimizedImageUrl(photos[0].photo_url, 800, 80)}
+                    srcSet={getImageSrcSet(photos[0].photo_url)}
+                    sizes="(max-width: 768px) 100vw, 600px"
                     alt={altPrefix}
                     className="w-full h-full object-cover"
                 />
@@ -81,7 +86,9 @@ const PhotoStack = ({ photos, altPrefix, height = "h-[400px] md:h-[500px]" }: { 
                 >
                     <div className="relative rounded-2xl overflow-hidden shadow-xl border-4 border-white h-full bg-slate-100">
                         <SmoothFadeImage
-                            src={photo.photo_url.startsWith('http') ? photo.photo_url : `${BASE_URL}${photo.photo_url}`}
+                            src={getOptimizedImageUrl(photo.photo_url, 800, 80)}
+                            srcSet={getImageSrcSet(photo.photo_url)}
+                            sizes="(max-width: 768px) 100vw, 600px"
                             alt={`${altPrefix} - ${photo.display_order}`}
                             className="w-full h-full object-cover"
                         />
