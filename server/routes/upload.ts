@@ -14,7 +14,7 @@ try {
 const router = Router();
 
 // Ensure local uploads directory exists
-const localUploadDir = path.join(__dirname, '../../uploads');
+const localUploadDir = path.join(process.cwd(), 'uploads');
 if (!fs.existsSync(localUploadDir)) {
     fs.mkdirSync(localUploadDir, { recursive: true });
 }
@@ -61,7 +61,8 @@ router.post('/', authenticateToken, (req, res) => {
 
                 try {
                     await sharp(req.file.path)
-                        .webp({ quality: 85, effort: 4 })
+                        .resize({ width: 1920, height: 1200, fit: 'inside', withoutEnlargement: true })
+                        .webp({ quality: 82, effort: 4 })
                         .toFile(webpPath);
 
                     // Delete uncompressed original file

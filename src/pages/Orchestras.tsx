@@ -217,7 +217,7 @@ const Orchestras = () => {
                                         >
                                             <div className="relative w-7 h-7 rounded-full overflow-hidden border border-white shadow-xs group-hover:scale-105 transition-transform">
                                                  <img
-                                                    src={orch.photo_url?.startsWith('http') ? orch.photo_url : (orch.photo_url ? `${BASE_URL}${orch.photo_url}` : "https://via.placeholder.com/150")}
+                                                    src={orch.photo_url ? getOptimizedImageUrl(orch.photo_url, 80, 75) : "https://via.placeholder.com/150"}
                                                     alt={orch.name}
                                                     loading="lazy"
                                                     decoding="async"

@@ -21,6 +21,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 
 import { API_URL } from '../config';
+import { getOptimizedImageUrl } from '../utils/image';
 
 interface Orchestra {
   id: string;
@@ -371,7 +372,13 @@ const AdminOrchestras = () => {
                           <svg viewBox="0 0 20 20" width="20" height="20" fill="currentColor"><path d="M7 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 2zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 14zm6-8a2 2 0 1 0-.001-4.001A2 2 0 0 0 13 6zm0 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 14z"></path></svg>
                         </div>
 
-                        <img src={orchestra.photo_url || 'https://via.placeholder.com/100x100'} alt={orchestra.photo_url ? `Photo de ${orchestra.name}` : ''} className="w-16 h-16 object-cover rounded-md mr-4 flex-shrink-0" />
+                        <img 
+                          src={orchestra.photo_url ? getOptimizedImageUrl(orchestra.photo_url, 160, 75) : 'https://via.placeholder.com/100x100'} 
+                          alt={orchestra.photo_url ? `Photo de ${orchestra.name}` : ''} 
+                          loading="lazy"
+                          decoding="async"
+                          className="w-16 h-16 object-cover rounded-md mr-4 flex-shrink-0" 
+                        />
                         <div className="flex-grow">
                           <p className="font-bold text-lg text-gray-800">{orchestra.name}</p>
                           <p className="text-gray-600 text-sm">
@@ -415,7 +422,13 @@ const AdminOrchestras = () => {
                     <div className="grid grid-cols-3 gap-4">
                       {photos.map((photo, index) => (
                         <div key={index} className="relative group">
-                          <img src={photo.url} alt={`Photo ${index + 1}`} className="w-full h-24 object-cover rounded-lg" />
+                          <img 
+                            src={photo.url.startsWith('blob:') ? photo.url : getOptimizedImageUrl(photo.url, 200, 75)} 
+                            alt={`Photo ${index + 1}`} 
+                            loading="lazy"
+                            decoding="async"
+                            className="w-full h-24 object-cover rounded-lg" 
+                          />
                           <button
                             type="button"
                             onClick={() => removePhoto(index)}
