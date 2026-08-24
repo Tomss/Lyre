@@ -122,7 +122,7 @@ const Home = () => {
         
         <div className="w-full max-w-[2560px] mx-auto px-4 sm:px-10 lg:px-20 relative z-10 flex flex-col items-start justify-end pb-32 md:pb-48 h-full">
             {/* Main Title */}
-            <h1 className="flex flex-col items-start font-poppins font-black text-white mb-10 animate-fade-in-left">
+            <h1 className="flex flex-col items-start font-poppins font-black text-white mb-10">
               <span className="text-6xl md:text-[8.5rem] leading-[0.95] tracking-tighter drop-shadow-2xl">
                 La Lyre
               </span>
@@ -132,7 +132,7 @@ const Home = () => {
             </h1>
 
             {/* CTA Buttons */}
-            <div className="flex flex-wrap gap-4 animate-fade-in-left" style={{ animationDelay: '200ms' }}>
+            <div className="flex flex-wrap gap-4">
               <a href="#la-lyre" className="group relative px-8 py-4 bg-teal-600 text-white font-bold rounded-xl overflow-hidden transition-all hover:bg-teal-500 active:scale-95 flex items-center gap-2 shadow-lg shadow-teal-900/20">
                 <span>Découvrir la Lyre</span>
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />

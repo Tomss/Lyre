@@ -91,20 +91,20 @@ const PageHero: React.FC<PageHeroProps> = ({ title, subtitle, backgroundImage, a
             <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10 pt-10">
 
                 <div className="flex flex-col items-center mb-10 lg:mb-14">
-                    <h1 className="font-black text-5xl md:text-7xl text-white mb-6 drop-shadow-2xl tracking-tight animate-fade-in-up">
+                    <h1 className="font-black text-5xl md:text-7xl text-white mb-6 drop-shadow-2xl tracking-tight">
                         {title}
                     </h1>
                     
-                    <div className="h-1 w-24 md:w-32 bg-gradient-to-r from-transparent via-teal-400 to-transparent mb-6 opacity-80 animate-fade-in-up delay-100"></div>
+                    <div className="h-1 w-24 md:w-32 bg-gradient-to-r from-transparent via-teal-400 to-transparent mb-6 opacity-80"></div>
                     
-                    <p className="max-w-3xl mx-auto text-lg md:text-xl text-white/90 animate-fade-in-up delay-200 font-light tracking-wide leading-relaxed text-center drop-shadow-lg">
+                    <p className="max-w-3xl mx-auto text-lg md:text-xl text-white/90 font-light tracking-wide leading-relaxed text-center drop-shadow-lg">
                         {subtitle}
                     </p>
                 </div>
 
                 {/* Navigation Anchors */}
                 {anchors.length > 0 && (
-                    <div className="inline-flex flex-col sm:flex-row gap-4 animate-fade-in-up delay-300 justify-center flex-wrap">
+                    <div className="inline-flex flex-col sm:flex-row gap-4 justify-center flex-wrap">
                         {anchors.map((anchor, index) => {
                             const colors = getColorClasses(anchor.color || 'white');
                             const Icon = anchor.icon;
