@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTheme } from '../context/ThemeContext';
-import { Music } from 'lucide-react';
+import { Music, X, ZoomIn } from 'lucide-react';
 import PageHero from '../components/PageHero';
 import { getOptimizedImageUrl, getImageSrcSet } from '../utils/image';
 
@@ -41,12 +41,37 @@ const SmoothFadeImage = ({ src, srcSet, sizes, alt, className = '' }: { src: str
     );
 };
 
-const PhotoStack = ({ photos, altPrefix, height = "h-[400px] md:h-[500px]" }: { photos: { id: string; photo_url: string; display_order: number }[], altPrefix: string, height?: string }) => {
+const PhotoStack = ({ 
+    photos, 
+    altPrefix, 
+    aspectRatio = "aspect-[16/10]" 
+}: { 
+    photos: { id: string; photo_url: string; display_order: number }[]; 
+    altPrefix: string; 
+    aspectRatio?: string;
+}) => {
     const [stack, setStack] = useState(photos);
+    const [previewPhoto, setPreviewPhoto] = useState<string | null>(null);
 
     useEffect(() => {
         setStack(photos);
     }, [photos]);
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') setPreviewPhoto(null);
+        };
+        if (previewPhoto) {
+            document.body.style.overflow = 'hidden';
+            window.addEventListener('keydown', handleKeyDown);
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => {
+            document.body.style.overflow = 'unset';
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [previewPhoto]);
 
     const bringToFront = (index: number) => {
         if (index === 0) return;
@@ -58,44 +83,89 @@ const PhotoStack = ({ photos, altPrefix, height = "h-[400px] md:h-[500px]" }: { 
 
     if (!photos || photos.length === 0) return null;
 
-    if (photos.length === 1) {
-        return (
-            <div className={`relative rounded-2xl overflow-hidden shadow-xl border-4 border-white ${height} bg-slate-100`}>
-                <SmoothFadeImage
-                    src={getOptimizedImageUrl(photos[0].photo_url, 800, 80)}
-                    srcSet={getImageSrcSet(photos[0].photo_url)}
-                    sizes="(max-width: 768px) 100vw, 600px"
-                    alt={altPrefix}
-                    className="w-full h-full object-cover"
-                />
-            </div>
-        );
-    }
-
     return (
-        <div className={`relative ${height} w-full`}>
-            {stack.slice(0, 2).map((photo, i) => (
-                <div
-                    key={photo.id}
-                    className={`absolute top-0 left-0 w-full h-full ${i === 0 ? 'z-20 cursor-default' : 'z-10 cursor-pointer'}`}
-                    style={{
-                        transform: i === 0 ? 'none' : 'rotate(3deg) translate(8px, 8px)',
-                        opacity: i === 0 ? 1 : 0.8
-                    }}
-                    onClick={() => bringToFront(i)}
+        <>
+            {photos.length === 1 ? (
+                <div 
+                    onClick={() => setPreviewPhoto(photos[0].photo_url)}
+                    className={`relative rounded-2xl overflow-hidden shadow-xl border-4 border-white ${aspectRatio} w-full bg-slate-100 cursor-pointer group`}
                 >
-                    <div className="relative rounded-2xl overflow-hidden shadow-xl border-4 border-white h-full bg-slate-100">
-                        <SmoothFadeImage
-                            src={getOptimizedImageUrl(photo.photo_url, 800, 80)}
-                            srcSet={getImageSrcSet(photo.photo_url)}
-                            sizes="(max-width: 768px) 100vw, 600px"
-                            alt={`${altPrefix} - ${photo.display_order}`}
-                            className="w-full h-full object-cover"
+                    <SmoothFadeImage
+                        src={getOptimizedImageUrl(photos[0].photo_url, 1000, 85)}
+                        srcSet={getImageSrcSet(photos[0].photo_url)}
+                        sizes="(max-width: 768px) 100vw, 600px"
+                        alt={altPrefix}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/20 transition-colors duration-300 flex items-center justify-center pointer-events-none">
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900/80 backdrop-blur-sm text-white px-3.5 py-1.5 rounded-full text-xs font-semibold flex items-center space-x-1.5 shadow-lg border border-white/20">
+                            <ZoomIn className="w-3.5 h-3.5 text-teal-400" />
+                            <span>Agrandir</span>
+                        </div>
+                    </div>
+                </div>
+            ) : (
+                <div className={`relative ${aspectRatio} w-full`}>
+                    {stack.slice(0, 2).map((photo, i) => (
+                        <div
+                            key={photo.id}
+                            className={`absolute top-0 left-0 w-full h-full ${i === 0 ? 'z-20 cursor-pointer group' : 'z-10 cursor-pointer'}`}
+                            style={{
+                                transform: i === 0 ? 'none' : 'rotate(2.5deg) translate(8px, 8px)',
+                                opacity: i === 0 ? 1 : 0.85
+                            }}
+                            onClick={() => {
+                                if (i === 0) {
+                                    setPreviewPhoto(photo.photo_url);
+                                } else {
+                                    bringToFront(i);
+                                }
+                            }}
+                        >
+                            <div className="relative rounded-2xl overflow-hidden shadow-xl border-4 border-white h-full bg-slate-100">
+                                <SmoothFadeImage
+                                    src={getOptimizedImageUrl(photo.photo_url, 1000, 85)}
+                                    srcSet={getImageSrcSet(photo.photo_url)}
+                                    sizes="(max-width: 768px) 100vw, 600px"
+                                    alt={`${altPrefix} - ${photo.display_order}`}
+                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                />
+                                {i === 0 && (
+                                    <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/20 transition-colors duration-300 flex items-center justify-center pointer-events-none">
+                                        <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900/80 backdrop-blur-sm text-white px-3.5 py-1.5 rounded-full text-xs font-semibold flex items-center space-x-1.5 shadow-lg border border-white/20">
+                                            <ZoomIn className="w-3.5 h-3.5 text-teal-400" />
+                                            <span>Agrandir</span>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {/* Modal Lightbox Plein Écran */}
+            {previewPhoto && (
+                <div 
+                    className="fixed inset-0 z-[100] bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 sm:p-8 animate-in fade-in duration-200"
+                    onClick={() => setPreviewPhoto(null)}
+                >
+                    <div className="relative max-w-6xl max-h-[90vh] flex flex-col items-center" onClick={e => e.stopPropagation()}>
+                        <button 
+                            onClick={() => setPreviewPhoto(null)}
+                            className="absolute -top-12 right-0 text-white/80 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors"
+                        >
+                            <X className="w-7 h-7" />
+                        </button>
+                        <img 
+                            src={getOptimizedImageUrl(previewPhoto, 1920, 90)} 
+                            alt={altPrefix} 
+                            className="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl border border-white/10"
                         />
                     </div>
                 </div>
-            ))}
-        </div>
+            )}
+        </>
     );
 };
 
@@ -197,7 +267,7 @@ const Orchestras = () => {
                                             <PhotoStack
                                                 photos={orchestras[0].photos && orchestras[0].photos.length > 0 ? orchestras[0].photos : [{ id: 'default', photo_url: orchestras[0].photo_url || "", display_order: 0 }]}
                                                 altPrefix={orchestras[0].name}
-                                                height="h-[400px] md:h-[450px]"
+                                                aspectRatio="aspect-[16/10]"
                                             />
                                         </div>
 
@@ -239,7 +309,7 @@ const Orchestras = () => {
                                                         <PhotoStack
                                                             photos={orch.photos && orch.photos.length > 0 ? orch.photos : [{ id: 'default', photo_url: orch.photo_url || "", display_order: 0 }]}
                                                             altPrefix={orch.name}
-                                                            height="h-[400px]"
+                                                            aspectRatio="aspect-[16/10]"
                                                         />
                                                     </div>
                                                 </div>
