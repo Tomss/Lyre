@@ -62,6 +62,7 @@ const AdminEvents = () => {
     practical_info: '',
     event_type: 'concert' as 'concert' | 'repetition' | 'divers',
     event_date: '',
+    start_time: '20:00',
     end_time: '',
     location: '',
     is_public: true,
@@ -158,13 +159,20 @@ const AdminEvents = () => {
       const url = isUpdating ? `${API_URL}/events/${editingEvent.id}` : `${API_URL}/events`;
       const method = isUpdating ? 'PUT' : 'POST';
 
+      // Combine date and start_time into standard ISO format
+      const combinedEventDate = `${formData.event_date}T${formData.start_time || '20:00'}:00`;
+      const payload = {
+        ...formData,
+        event_date: combinedEventDate,
+      };
+
       const response = await fetch(url, {
         method,
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -213,17 +221,19 @@ const AdminEvents = () => {
   const handleEdit = (event: Event) => {
     setEditingEvent(event);
     
-    // The backend now returns a local ISO string (YYYY-MM-DDTHH:mm:ss)
-    // We just need to slice it to YYYY-MM-DDTHH:mm for the datetime-local input
-    const localISOTime = event.event_date.slice(0, 16);
+    // Extract separate date (YYYY-MM-DD) and start_time (HH:mm)
+    const localISOTime = event.event_date || '';
+    const datePart = localISOTime ? localISOTime.slice(0, 10) : '';
+    const timePart = localISOTime && localISOTime.length >= 16 ? localISOTime.slice(11, 16) : '20:00';
 
     setFormData({
       title: event.title,
       description: event.description || '',
       practical_info: event.practical_info || '',
       event_type: event.event_type,
-      event_date: localISOTime,
-      end_time: event.end_time || '',
+      event_date: datePart,
+      start_time: timePart,
+      end_time: event.end_time ? event.end_time.slice(0, 5) : '',
       location: event.location || '',
       is_public: event.is_public !== undefined ? event.is_public : (event.event_type === 'concert' || event.event_type === 'divers'),
       orchestra_ids: event.orchestras?.map(o => o.id) || [],
@@ -240,6 +250,7 @@ const AdminEvents = () => {
       practical_info: '',
       event_type: 'concert',
       event_date: '',
+      start_time: '20:00',
       end_time: '',
       location: '',
       is_public: true,
@@ -614,28 +625,62 @@ const AdminEvents = () => {
                     </div>
 
                     <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                             <div>
                                 <label className="flex items-center text-sm font-semibold text-slate-700 mb-1.5">
-                                    <Calendar size={16} className="mr-2 text-slate-400" /> Date et heure de début *
+                                    <Calendar size={16} className="mr-2 text-slate-400" /> Date *
                                 </label>
-                                <input type="datetime-local" name="event_date" value={formData.event_date} onChange={handleInputChange} required className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-slate-50/30 focus:bg-white text-sm" />
+                                <input 
+                                    type="date" 
+                                    name="event_date" 
+                                    value={formData.event_date} 
+                                    onChange={handleInputChange} 
+                                    required 
+                                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-slate-50/30 focus:bg-white text-sm" 
+                                />
+                            </div>
+
+                            <div>
+                                <label className="flex items-center text-sm font-semibold text-slate-700 mb-1.5">
+                                    <Clock size={16} className="mr-2 text-slate-400" /> Heure de début *
+                                </label>
+                                <input 
+                                    type="time" 
+                                    name="start_time" 
+                                    value={formData.start_time} 
+                                    onChange={handleInputChange} 
+                                    required 
+                                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-slate-50/30 focus:bg-white text-sm" 
+                                />
                             </div>
                             
                             {formData.event_type === 'repetition' ? (
                               <div>
                                   <label className="flex items-center text-sm font-semibold text-slate-700 mb-1.5">
-                                      <Clock size={16} className="mr-2 text-indigo-500" /> Heure de fin <span className="text-[10px] ml-1.5 text-slate-400 font-normal">(Optionnel)</span>
+                                      <Clock size={16} className="mr-2 text-indigo-500" /> Heure de fin <span className="text-[10px] ml-1 text-slate-400 font-normal">(Optionnel)</span>
                                   </label>
-                                  <input type="time" name="end_time" value={formData.end_time} onChange={handleInputChange} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-slate-50/30 focus:bg-white text-sm" />
+                                  <input 
+                                      type="time" 
+                                      name="end_time" 
+                                      value={formData.end_time} 
+                                      onChange={handleInputChange} 
+                                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-slate-50/30 focus:bg-white text-sm" 
+                                  />
                               </div>
                             ) : null}
 
-                            <div className={formData.event_type === 'repetition' ? "md:col-span-2" : ""}>
+                            <div className={formData.event_type === 'repetition' ? "col-span-1 sm:col-span-2 md:col-span-3" : "col-span-1 sm:col-span-2 md:col-span-1"}>
                                 <label className="flex items-center text-sm font-semibold text-slate-700 mb-1.5">
                                     <MapPin size={16} className="mr-2 text-slate-400" /> Lieu
                                 </label>
-                                <input type="text" name="location" value={formData.location} onChange={handleInputChange} placeholder="Ex: Salle des fêtes" className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-slate-50/30 focus:bg-white text-sm" />
+                                <input 
+                                    type="text" 
+                                    name="location" 
+                                    value={formData.location} 
+                                    onChange={handleInputChange} 
+                                    placeholder="Ex: Salle des fêtes" 
+                                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-slate-50/30 focus:bg-white text-sm" 
+                                />
                             </div>
                         </div>
 
