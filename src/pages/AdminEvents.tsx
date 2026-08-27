@@ -44,7 +44,7 @@ const AdminEvents = () => {
   const [submitting, setSubmitting] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
-  const [expandedTypes, setExpandedTypes] = useState<Set<string>>(new Set());
+  const [expandedTypes, setExpandedTypes] = useState<Set<string>>(new Set(['concert', 'repetition', 'divers']));
   const [timeFilter, setTimeFilter] = useState<'all' | 'upcoming' | 'past'>('upcoming');
   const [deleteConfirmation, setDeleteConfirmation] = useState<DeleteConfirmation>({
     isOpen: false,
@@ -289,17 +289,20 @@ const AdminEvents = () => {
   const isUpcoming = (dateString: string) => new Date(dateString) > new Date();
   const isPast = (dateString: string) => new Date(dateString) <= new Date();
 
-  // Filtrer les événements
+  // Filtrer les événements de manière sécurisée sans risque de crash
   const filteredEvents = events.filter(event => {
-    const searchLower = searchTerm.toLowerCase();
-    const matchesSearch = (
-      event.title.toLowerCase().includes(searchLower) ||
-      (event.description && event.description.toLowerCase().includes(searchLower)) ||
-      (event.location && event.location.toLowerCase().includes(searchLower)) ||
-      event.orchestras.some(o => o.name.toLowerCase().includes(searchLower))
+    if (!event) return false;
+    const searchLower = (searchTerm || '').trim().toLowerCase();
+    
+    const matchesSearch = !searchLower || (
+      (event.title ? event.title.toLowerCase().includes(searchLower) : false) ||
+      (event.description ? event.description.toLowerCase().includes(searchLower) : false) ||
+      (event.practical_info ? event.practical_info.toLowerCase().includes(searchLower) : false) ||
+      (event.location ? event.location.toLowerCase().includes(searchLower) : false) ||
+      (Array.isArray(event.orchestras) && event.orchestras.some(o => o && o.name ? o.name.toLowerCase().includes(searchLower) : false))
     );
 
-    const matchesType = typeFilter.includes(event.event_type);
+    const matchesType = !typeFilter.length || typeFilter.includes(event.event_type);
 
     const matchesTime = timeFilter === 'all' ||
       (timeFilter === 'upcoming' && isUpcoming(event.event_date)) ||
@@ -415,9 +418,15 @@ const AdminEvents = () => {
 
         {/* Events List */}
         {loading ? (
-          <div className="text-center text-gray-500">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <div className="text-center text-gray-500 py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
             <p className="mt-4">Chargement des événements...</p>
+          </div>
+        ) : filteredEvents.length === 0 ? (
+          <div className="bg-white rounded-2xl p-12 text-center border border-slate-200 shadow-sm">
+            <Calendar className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+            <h3 className="text-lg font-bold text-slate-700 mb-1">Aucun événement trouvé</h3>
+            <p className="text-sm text-slate-400">Modifiez vos critères de recherche ou réinitialisez les filtres.</p>
           </div>
         ) : (
           <div className="space-y-8">
