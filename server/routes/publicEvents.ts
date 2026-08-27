@@ -11,7 +11,7 @@ router.get('/', async (req, res) => {
       SELECT 
         e.id, e.title, e.description, e.event_type, 
         DATE_FORMAT(e.event_date, '%Y-%m-%dT%H:%i:%s') as event_date,
-        DATE_FORMAT(e.end_time, '%H:%i') as end_time,
+        TIME_FORMAT(e.end_time, '%H:%i') as end_time,
         e.location, 
         CASE 
           WHEN COUNT(o.id) > 0 THEN 

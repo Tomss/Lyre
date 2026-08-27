@@ -15,10 +15,14 @@ router.get('/', async (req, res) => {
         SELECT 
         e.id, e.title, e.description, e.event_type, 
         DATE_FORMAT(e.event_date, '%Y-%m-%dT%H:%i:%s') as event_date,
-        DATE_FORMAT(e.end_time, '%H:%i') as end_time,
+        TIME_FORMAT(e.end_time, '%H:%i') as end_time,
         e.location, e.is_public, e.practical_info,
-        JSON_ARRAYAGG(JSON_OBJECT('id', o.id, 'name', o.name))
-        AS orchestras
+        CASE 
+          WHEN COUNT(o.id) > 0 THEN 
+            JSON_ARRAYAGG(JSON_OBJECT('id', o.id, 'name', o.name))
+          ELSE 
+            JSON_ARRAY()
+        END AS orchestras
       FROM events e
       LEFT JOIN event_orchestras eo ON e.id = eo.event_id
       LEFT JOIN orchestras o ON eo.orchestra_id = o.id

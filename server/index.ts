@@ -74,6 +74,21 @@ dotenv.config();
       console.log('[Migration] Succès : colonne is_active ajoutée.');
     }
 
+    // Migration: Ajout de la colonne end_time à la table events
+    const [eventsCols]: any = await pool.query(`
+      SELECT COUNT(*) as count 
+      FROM information_schema.COLUMNS 
+      WHERE TABLE_SCHEMA = DATABASE() 
+      AND TABLE_NAME = 'events' 
+      AND COLUMN_NAME = 'end_time'
+    `);
+    
+    if (eventsCols[0].count === 0) {
+      console.log('[Migration] Ajout de la colonne end_time à la table events...');
+      await pool.query('ALTER TABLE events ADD COLUMN end_time TIME DEFAULT NULL');
+      console.log('[Migration] Succès : colonne end_time ajoutée à events.');
+    }
+
     // Migration: Création de la table activity_log
     const [tables]: any = await pool.query(`
       SELECT COUNT(*) as count 

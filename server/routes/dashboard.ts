@@ -28,7 +28,7 @@ router.get('/', authenticateToken, async (req, res) => {
         SELECT 
           e.id, e.title, 
           DATE_FORMAT(e.event_date, '%Y-%m-%dT%H:%i:%s') as event_date,
-          DATE_FORMAT(e.end_time, '%H:%i') as end_time,
+          TIME_FORMAT(e.end_time, '%H:%i') as end_time,
           e.location, e.practical_info, e.event_type,
           CASE 
             WHEN COUNT(o.id) > 0 THEN 
