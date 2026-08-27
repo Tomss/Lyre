@@ -6,6 +6,8 @@
 @layer base {
   body {
     @apply font-sans;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   html.lenis, html.lenis body {
@@ -14,6 +16,16 @@
 
   .lenis.lenis-smooth {
     scroll-behavior: auto !important;
+  }
+
+  /* Anti-saccade & Hardware-Accelerated Momentum Scrolling for all Modals & Popups */
+  .modal-smooth-scroll,
+  .overflow-y-auto,
+  [data-lenis-modal] {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    transform: translateZ(0);
+    backface-visibility: hidden;
   }
 }
 

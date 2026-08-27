@@ -5,6 +5,7 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
 import Lenis from 'lenis';
+import { attachModalSmoothScroll } from './utils/modalScroll';
 
 // Direct import for the critical landing page for instant first paint
 import Home from './pages/Home';
@@ -94,7 +95,48 @@ function App() {
     });
     resizeObserver.observe(document.body);
 
+    // Global Automatic Modal Lenis Smooth Scroll Observer
+    const modalCleanups = new Map<HTMLElement, () => void>();
+
+    const checkAndAttachModals = () => {
+      const modalOverlays = document.querySelectorAll('.fixed.inset-0, [role="dialog"]');
+      const foundScrollables = new Set<HTMLElement>();
+
+      modalOverlays.forEach((overlay) => {
+        const scrollables = overlay.querySelectorAll('.overflow-y-auto, [data-lenis-modal], .modal-scroll');
+        scrollables.forEach((el) => {
+          if (el instanceof HTMLElement) {
+            foundScrollables.add(el);
+            if (!modalCleanups.has(el)) {
+              const cleanup = attachModalSmoothScroll(el);
+              modalCleanups.set(el, cleanup);
+            }
+          }
+        });
+      });
+
+      // Detach any modals that were removed from the DOM
+      modalCleanups.forEach((cleanup, el) => {
+        if (!foundScrollables.has(el) || !document.body.contains(el)) {
+          cleanup();
+          modalCleanups.delete(el);
+        }
+      });
+    };
+
+    const modalMutationObserver = new MutationObserver(() => {
+      checkAndAttachModals();
+    });
+
+    modalMutationObserver.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+
     return () => {
+      modalMutationObserver.disconnect();
+      modalCleanups.forEach((cleanup) => cleanup());
+      modalCleanups.clear();
       resizeObserver.disconnect();
       cancelAnimationFrame(rafId);
       lenis.destroy();
