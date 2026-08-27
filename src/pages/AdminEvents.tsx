@@ -12,6 +12,7 @@ interface Event {
   practical_info: string | null;
   event_type: 'concert' | 'repetition' | 'divers';
   event_date: string;
+  end_time?: string | null;
   location: string | null;
   is_public: boolean;
   orchestras: Orchestra[];
@@ -61,6 +62,7 @@ const AdminEvents = () => {
     practical_info: '',
     event_type: 'concert' as 'concert' | 'repetition' | 'divers',
     event_date: '',
+    end_time: '',
     location: '',
     is_public: true,
     orchestra_ids: [] as string[],
@@ -130,6 +132,9 @@ const AdminEvents = () => {
       // Auto-toggle is_public based on selected event type if the user just changed event_type
       if (name === 'event_type') {
         newData.is_public = (val === 'concert' || val === 'divers');
+        if (val !== 'repetition') {
+          newData.end_time = '';
+        }
       }
       return newData;
     });
@@ -218,6 +223,7 @@ const AdminEvents = () => {
       practical_info: event.practical_info || '',
       event_type: event.event_type,
       event_date: localISOTime,
+      end_time: event.end_time || '',
       location: event.location || '',
       is_public: event.is_public !== undefined ? event.is_public : (event.event_type === 'concert' || event.event_type === 'divers'),
       orchestra_ids: event.orchestras?.map(o => o.id) || [],
@@ -234,6 +240,7 @@ const AdminEvents = () => {
       practical_info: '',
       event_type: 'concert',
       event_date: '',
+      end_time: '',
       location: '',
       is_public: true,
       orchestra_ids: [],
@@ -322,15 +329,27 @@ const AdminEvents = () => {
       return acc;
     }, {} as Record<string, Event[]>);
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('fr-FR', {
+  const formatDate = (dateString: string, endTime?: string | null) => {
+    const dateObj = new Date(dateString);
+    const datePart = dateObj.toLocaleDateString('fr-FR', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
-      day: 'numeric',
+      day: 'numeric'
+    });
+    const startTime = dateObj.toLocaleTimeString('fr-FR', {
       hour: '2-digit',
       minute: '2-digit'
     });
+
+    if (endTime) {
+      // Normalize endTime if in HH:mm:ss format
+      const formattedEndTime = endTime.slice(0, 5).replace(':', 'h');
+      const formattedStartTime = startTime.replace(':', 'h');
+      return `${datePart} de ${formattedStartTime} à ${formattedEndTime}`;
+    }
+
+    return `${datePart} à ${startTime.replace(':', 'h')}`;
   };
 
   if (currentUser && currentUser.role !== 'Admin' && (!currentUser.managedModules || !currentUser.managedModules.includes('news'))) {
@@ -465,7 +484,7 @@ const AdminEvents = () => {
                             <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-slate-500">
                               <span className="flex items-center text-indigo-600 font-medium bg-indigo-50 px-2.5 py-0.5 rounded-md">
                                 <Calendar className="w-3.5 h-3.5 mr-1.5" />
-                                {formatDate(event.event_date)}
+                                {formatDate(event.event_date, event.end_time)}
                               </span>
                               {event.location && (
                                 <span className="flex items-center">
@@ -598,15 +617,25 @@ const AdminEvents = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <div>
                                 <label className="flex items-center text-sm font-semibold text-slate-700 mb-1.5">
-                                    <Calendar size={16} className="mr-2 text-slate-400" /> Date et heure *
+                                    <Calendar size={16} className="mr-2 text-slate-400" /> Date et heure de début *
                                 </label>
-                                <input type="datetime-local" name="event_date" value={formData.event_date} onChange={handleInputChange} required className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-slate-50/30 focus:bg-white" />
+                                <input type="datetime-local" name="event_date" value={formData.event_date} onChange={handleInputChange} required className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-slate-50/30 focus:bg-white text-sm" />
                             </div>
-                            <div>
+                            
+                            {formData.event_type === 'repetition' ? (
+                              <div>
+                                  <label className="flex items-center text-sm font-semibold text-slate-700 mb-1.5">
+                                      <Clock size={16} className="mr-2 text-indigo-500" /> Heure de fin <span className="text-[10px] ml-1.5 text-slate-400 font-normal">(Optionnel)</span>
+                                  </label>
+                                  <input type="time" name="end_time" value={formData.end_time} onChange={handleInputChange} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-slate-50/30 focus:bg-white text-sm" />
+                              </div>
+                            ) : null}
+
+                            <div className={formData.event_type === 'repetition' ? "md:col-span-2" : ""}>
                                 <label className="flex items-center text-sm font-semibold text-slate-700 mb-1.5">
                                     <MapPin size={16} className="mr-2 text-slate-400" /> Lieu
                                 </label>
-                                <input type="text" name="location" value={formData.location} onChange={handleInputChange} placeholder="Ex: Salle des fêtes" className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-slate-50/30 focus:bg-white" />
+                                <input type="text" name="location" value={formData.location} onChange={handleInputChange} placeholder="Ex: Salle des fêtes" className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-slate-50/30 focus:bg-white text-sm" />
                             </div>
                         </div>
 

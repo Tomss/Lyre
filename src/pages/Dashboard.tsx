@@ -790,7 +790,16 @@ const Dashboard = () => {
                                           <div className="flex items-center">
                                             <Calendar className="h-4 w-4 mr-2 text-indigo-400" />
                                             <span className="font-medium text-slate-600">
-                                              {new Date(event.event_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}
+                                              {(() => {
+                                                const d = new Date(event.event_date);
+                                                const datePart = d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
+                                                const startTime = d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }).replace(':', 'h');
+                                                if (event.end_time) {
+                                                  const endTime = event.end_time.slice(0, 5).replace(':', 'h');
+                                                  return `${datePart} • ${startTime} à ${endTime}`;
+                                                }
+                                                return `${datePart} à ${startTime}`;
+                                              })()}
                                             </span>
                                           </div>
                                           {event.location && (

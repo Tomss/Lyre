@@ -17,6 +17,7 @@ interface Event {
   description: string | null;
   event_type: 'concert' | 'repetition' | 'divers';
   event_date: string;
+  end_time?: string | null;
   location: string | null;
   image_url?: string | null;
   orchestras: Orchestra[];
@@ -52,13 +53,18 @@ const Events = () => {
     fetchPublicEvents();
   }, []);
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string, endTime?: string | null) => {
     const date = new Date(dateString);
+    const startTime = date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }).replace(':', 'h');
+    const timeFormatted = endTime 
+      ? `${startTime} à ${endTime.slice(0, 5).replace(':', 'h')}` 
+      : startTime;
+
     return {
       day: date.getDate(),
       month: date.toLocaleDateString('fr-FR', { month: 'short' }),
       year: date.getFullYear(),
-      time: date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+      time: timeFormatted,
       weekday: date.toLocaleDateString('fr-FR', { weekday: 'long' }),
       fullDate: date.toLocaleDateString('fr-FR', {
         weekday: 'long',
@@ -117,8 +123,8 @@ const Events = () => {
             <div className="p-6 sm:p-8">
               <h2 className="font-bold text-2xl sm:text-3xl mb-4 text-slate-800">{selectedEvent.title}</h2>
               <div className="flex flex-wrap items-center gap-4 mb-6 text-sm text-slate-500 bg-slate-50 p-3.5 rounded-2xl border border-slate-100">
-                <span className="flex items-center text-teal-700 font-medium"><Calendar className="w-4 h-4 mr-1.5 text-teal-600" /> {formatDate(selectedEvent.event_date).fullDate}</span>
-                <span className="flex items-center text-slate-600"><Clock className="w-4 h-4 mr-1.5 text-teal-600" /> {formatDate(selectedEvent.event_date).time}</span>
+                <span className="flex items-center text-teal-700 font-medium"><Calendar className="w-4 h-4 mr-1.5 text-teal-600" /> {formatDate(selectedEvent.event_date, selectedEvent.end_time).fullDate}</span>
+                <span className="flex items-center text-slate-600"><Clock className="w-4 h-4 mr-1.5 text-teal-600" /> {formatDate(selectedEvent.event_date, selectedEvent.end_time).time}</span>
                 {selectedEvent.location && <span className="flex items-center text-slate-600"><MapPin className="w-4 h-4 mr-1.5 text-teal-600" /> {selectedEvent.location}</span>}
               </div>
               <p className="text-slate-600 leading-relaxed whitespace-pre-line">{selectedEvent.description}</p>
@@ -266,7 +272,7 @@ const Events = () => {
                     {(filter === 'upcoming' ? upcomingEvents : pastEvents).length > 0 ? (
                       <div className="space-y-6">
                         {(filter === 'upcoming' ? upcomingEvents : pastEvents).slice(0, 5).map((event, index) => {
-                          const dateInfo = formatDate(event.event_date);
+                          const dateInfo = formatDate(event.event_date, event.end_time);
                           const isNext = index === 0 && filter === 'upcoming';
                           const isSecond = index === 1;
                           const isPastEvent = filter === 'past';

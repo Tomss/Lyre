@@ -9,6 +9,7 @@ interface EventItem {
     title: string;
     description?: string;
     event_date: string;
+    end_time?: string | null;
     location?: string;
     image_url?: string;
     event_type: 'concert' | 'repetition' | 'divers';
@@ -201,7 +202,14 @@ const HomeAgendaSection = React.memo(() => {
                                 </div>
                                 <div className="flex items-center text-slate-700 font-medium">
                                     <Clock className="w-5 h-5 mr-3 text-teal-600" />
-                                    {new Date(selectedEvent.event_date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                                    {(() => {
+                                        const startTime = new Date(selectedEvent.event_date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }).replace(':', 'h');
+                                        if (selectedEvent.end_time) {
+                                            const endTime = selectedEvent.end_time.slice(0, 5).replace(':', 'h');
+                                            return `${startTime} à ${endTime}`;
+                                        }
+                                        return startTime;
+                                    })()}
                                 </div>
                                 <div className="flex items-center text-slate-700 font-medium">
                                     <MapPin className="w-5 h-5 mr-3 text-teal-600" />
@@ -290,7 +298,14 @@ const HomeAgendaSection = React.memo(() => {
                                             <div className="flex items-center space-x-4 text-slate-400 text-xs hidden sm:flex">
                                                 <div className="flex items-center">
                                                     <Clock className="w-3 h-3 mr-1" />
-                                                    {new Date(item.event_date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                                                    {(() => {
+                                                        const startTime = new Date(item.event_date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }).replace(':', 'h');
+                                                        if (item.end_time) {
+                                                            const endTime = item.end_time.slice(0, 5).replace(':', 'h');
+                                                            return `${startTime} à ${endTime}`;
+                                                        }
+                                                        return startTime;
+                                                    })()}
                                                 </div>
                                                 <div className="flex items-center truncate">
                                                     <MapPin className="w-3 h-3 mr-1" />
@@ -441,7 +456,14 @@ const HomeAgendaSection = React.memo(() => {
                                         <div className="space-y-2 mt-auto pt-4 border-t border-slate-700/60">
                                             <div className="flex items-center text-slate-300 text-xs font-medium">
                                                 <Clock className="w-4 h-4 mr-2 text-teal-400" />
-                                                {new Date(event.event_date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                                                {(() => {
+                                                    const startTime = new Date(event.event_date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }).replace(':', 'h');
+                                                    if (event.end_time) {
+                                                        const endTime = event.end_time.slice(0, 5).replace(':', 'h');
+                                                        return `${startTime} à ${endTime}`;
+                                                    }
+                                                    return startTime;
+                                                })()}
                                             </div>
                                             <div className="flex items-center text-slate-300 text-xs font-medium">
                                                 <MapPin className="w-4 h-4 mr-2 text-teal-400" />
