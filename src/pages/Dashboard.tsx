@@ -420,7 +420,11 @@ const Dashboard = () => {
                         
                         {/* Dropdown Panel - DARK THEME */}
                         {isNotificationsOpen && (
-                            <div className="absolute right-0 mt-3 w-80 sm:w-96 bg-slate-900/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/10 z-[100] animate-in fade-in zoom-in-95 duration-200 origin-top-right overflow-hidden">
+                            <div 
+                                className="absolute right-0 mt-3 w-80 sm:w-96 bg-slate-900/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/10 z-[100] animate-in fade-in zoom-in-95 duration-200 origin-top-right overflow-hidden"
+                                data-lenis-prevent
+                                style={{ overscrollBehavior: 'contain' }}
+                            >
                                 <div className="p-4 border-b border-white/5 bg-white/5 flex items-center justify-between">
                                     <h3 className="font-bold text-white flex items-center gap-2">
                                         <Bell className="w-5 h-5 text-indigo-400" />

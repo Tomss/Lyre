@@ -80,7 +80,11 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({ activities, onItemClick, la
     }
 
     return (
-        <div className="max-h-[400px] overflow-y-auto custom-scrollbar">
+        <div 
+            className="max-h-[400px] overflow-y-auto custom-scrollbar" 
+            data-lenis-prevent
+            style={{ overscrollBehavior: 'contain' }}
+        >
             <div className="divide-y divide-white/5">
                 {activities.map((activity, index) => {
                     const isNew = isActivityNew(index);
