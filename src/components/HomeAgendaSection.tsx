@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Calendar, Clock, MapPin, Music, ArrowRight, X } from 'lucide-react';
+import { Calendar, Clock, MapPin, Music, ArrowRight, X, ZoomIn } from 'lucide-react';
 
 import { API_URL, BASE_URL } from '../config';
+import { getOptimizedImageUrl, getImageSrcSet } from '../utils/image';
 
 interface EventItem {
     id: string;
@@ -23,6 +24,7 @@ const HomeAgendaSection = React.memo(() => {
     const [startX, setStartX] = useState(0);
     const [scrollLeft, setScrollLeft] = useState(0);
     const [selectedEvent, setSelectedEvent] = useState<EventItem | null>(null);
+    const [previewPhoto, setPreviewPhoto] = useState<string | null>(null);
     const [isAllEventsModalOpen, setIsAllEventsModalOpen] = useState(false);
     const [dragDistance, setDragDistance] = useState(0);
 
@@ -88,15 +90,24 @@ const HomeAgendaSection = React.memo(() => {
 
     // Prevent body scroll when modal is open
     useEffect(() => {
-        if (selectedEvent || isAllEventsModalOpen) {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                if (previewPhoto) setPreviewPhoto(null);
+                else if (selectedEvent) setSelectedEvent(null);
+                else if (isAllEventsModalOpen) setIsAllEventsModalOpen(false);
+            }
+        };
+        if (selectedEvent || isAllEventsModalOpen || previewPhoto) {
             document.body.style.overflow = 'hidden';
+            window.addEventListener('keydown', handleKeyDown);
         } else {
             document.body.style.overflow = 'unset';
         }
         return () => {
             document.body.style.overflow = 'unset';
+            window.removeEventListener('keydown', handleKeyDown);
         };
-    }, [selectedEvent, isAllEventsModalOpen]);
+    }, [selectedEvent, isAllEventsModalOpen, previewPhoto]);
 
     const scrollManual = (direction: 'left' | 'right') => {
         if (scrollRef.current) {
@@ -118,26 +129,50 @@ const HomeAgendaSection = React.memo(() => {
                 <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
                     <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto border border-slate-200" onClick={(e) => e.stopPropagation()}>
                         {/* Header/Image */}
-                        <div className="relative h-64 sm:h-80 bg-slate-800 flex-shrink-0">
+                        <div 
+                            className={`relative aspect-[16/10] sm:max-h-[360px] bg-slate-800 flex-shrink-0 overflow-hidden ${selectedEvent.image_url ? 'cursor-pointer group' : ''}`}
+                            onClick={() => {
+                                if (selectedEvent.image_url) setPreviewPhoto(selectedEvent.image_url);
+                            }}
+                        >
                             {selectedEvent.image_url ? (
-                                <img src={selectedEvent.image_url} alt={selectedEvent.title} className="w-full h-full object-cover" />
+                                <>
+                                    <img 
+                                        src={getOptimizedImageUrl(selectedEvent.image_url, 1200, 85)} 
+                                        srcSet={getImageSrcSet(selectedEvent.image_url)}
+                                        sizes="(max-width: 768px) 100vw, 800px"
+                                        alt={selectedEvent.title} 
+                                        loading="lazy"
+                                        decoding="async"
+                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                                    />
+                                    <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/20 transition-colors duration-300 flex items-center justify-center pointer-events-none">
+                                        <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900/80 backdrop-blur-sm text-white px-3.5 py-1.5 rounded-full text-xs font-semibold flex items-center space-x-1.5 shadow-lg border border-white/20">
+                                            <ZoomIn className="w-3.5 h-3.5 text-teal-400" />
+                                            <span>Agrandir</span>
+                                        </div>
+                                    </div>
+                                </>
                             ) : (
                                 <div className="w-full h-full flex flex-col items-center justify-center bg-slate-900 text-teal-400">
                                     <Music className="h-16 w-16 mb-4 opacity-50" />
                                 </div>
                             )}
-                            <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/20 to-transparent"></div>
+                            <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/20 to-transparent pointer-events-none"></div>
                             
                             {/* Bouton Fermeture */}
                             <button 
-                                onClick={() => setSelectedEvent(null)}
-                                className="absolute top-4 right-4 w-10 h-10 bg-black/30 hover:bg-black/50 backdrop-blur-md rounded-full text-white flex items-center justify-center transition-colors border border-white/20"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedEvent(null);
+                                }}
+                                className="absolute top-4 right-4 w-10 h-10 bg-black/30 hover:bg-black/50 backdrop-blur-md rounded-full text-white flex items-center justify-center transition-colors border border-white/20 z-20"
                             >
                                 <X className="w-5 h-5" />
                             </button>
                             
                             {/* Type Badge */}
-                            <div className="absolute top-4 left-4">
+                            <div className="absolute top-4 left-4 z-20">
                                 <span className="px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-white text-xs font-bold uppercase tracking-wide shadow-sm flex items-center gap-2">
                                     <div className={`w-1.5 h-1.5 rounded-full shadow-[0_0_5px_currentColor] ${
                                         selectedEvent.event_type === 'concert' ? 'bg-emerald-400 text-emerald-400' : 
@@ -183,6 +218,28 @@ const HomeAgendaSection = React.memo(() => {
                     </div>
                     {/* Overlay Click to Close */}
                     <div className="absolute inset-0 -z-10" onClick={() => setSelectedEvent(null)}></div>
+                </div>
+            )}
+
+            {/* Modal Lightbox Plein Écran Agenda */}
+            {previewPhoto && (
+                <div 
+                    className="fixed inset-0 z-[120] bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 sm:p-8 animate-in fade-in duration-200"
+                    onClick={() => setPreviewPhoto(null)}
+                >
+                    <div className="relative max-w-6xl max-h-[90vh] flex flex-col items-center" onClick={e => e.stopPropagation()}>
+                        <button 
+                            onClick={() => setPreviewPhoto(null)}
+                            className="absolute -top-12 right-0 text-white/80 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors"
+                        >
+                            <X className="w-7 h-7" />
+                        </button>
+                        <img 
+                            src={getOptimizedImageUrl(previewPhoto, 1920, 90)} 
+                            alt="Photo événement" 
+                            className="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl border border-white/10"
+                        />
+                    </div>
                 </div>
             )}
 

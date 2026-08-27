@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Newspaper, ArrowRight, CalendarDays, X } from 'lucide-react';
 
 import { API_URL, BASE_URL } from '../config';
+import { getOptimizedImageUrl, getImageSrcSet } from '../utils/image';
 
 interface NewsItem {
     id: string;
@@ -115,9 +116,9 @@ const HomeNewsSection = React.memo(() => {
                         <div className="relative bg-slate-900 flex flex-col items-center justify-center overflow-hidden">
                             {selectedNews.image_url ? (
                                 <img 
-                                    src={selectedNews.image_url.startsWith('http') ? selectedNews.image_url : `${BASE_URL}${selectedNews.image_url}`} 
+                                    src={getOptimizedImageUrl(selectedNews.image_url, 1600, 85)} 
                                     alt={selectedNews.title} 
-                                    className="w-auto max-w-full h-auto max-h-[80vh] block relative z-0" 
+                                    className="w-auto max-w-full h-auto max-h-[80vh] block relative z-0 object-contain" 
                                 />
                             ) : (
                                 <div className="w-full h-64 flex flex-col items-center justify-center bg-teal-50 text-teal-300">
@@ -288,14 +289,16 @@ const HomeNewsSection = React.memo(() => {
                                 ></div>
 
                                 {/* Image Section */}
-                                <div className="h-[200px] relative overflow-hidden bg-slate-100 flex-shrink-0">
+                                <div className="aspect-[16/10] relative overflow-hidden bg-slate-100 flex-shrink-0">
                                     {item.image_url ? (
                                         <img
-                                            src={item.image_url.startsWith('http') ? item.image_url : `${BASE_URL}${item.image_url}`}
+                                            src={getOptimizedImageUrl(item.image_url, 700, 80)}
+                                            srcSet={getImageSrcSet(item.image_url)}
+                                            sizes="(max-width: 640px) 300px, 350px"
                                             alt={item.title}
                                             loading="lazy"
                                             decoding="async"
-                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 pointer-events-none"
+                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 pointer-events-none"
                                         />
                                     ) : (
                                         <div className="w-full h-full flex flex-col items-center justify-center bg-teal-50 text-teal-300">

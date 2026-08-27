@@ -3,6 +3,7 @@ import React from 'react';
 import { API_URL } from '../config';
 import { useTheme } from '../context/ThemeContext';
 import { Calendar, Clock, MapPin, Users, Star, ChevronRight, X } from 'lucide-react';
+import { getOptimizedImageUrl, getImageSrcSet } from '../utils/image';
 
 // --- Ajout des types pour la cohérence du projet et corriger les erreurs implicites ---
 interface Orchestra {
@@ -17,6 +18,7 @@ interface Event {
   event_type: 'concert' | 'repetition' | 'divers';
   event_date: string;
   location: string | null;
+  image_url?: string | null;
   orchestras: Orchestra[];
 }
 // --- Fin de l'ajout des types ---
@@ -88,16 +90,36 @@ const Events = () => {
     <div>
       {/* Modal détails événement */}
       {isModalOpen && selectedEvent && (
-        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 border border-slate-200">
-            <div className="flex justify-end">
-              <button onClick={closeEventModal} className="p-2 text-slate-400 hover:text-slate-600 transition-colors"><X size={24} /></button>
-            </div>
-            <div className="p-4">
-              <h2 className="font-bold text-3xl mb-4 text-slate-800">{selectedEvent.title}</h2>
-              <div className="flex items-center space-x-4 mb-6 text-sm text-slate-500">
-                <span className="flex items-center"><Calendar className="w-4 h-4 mr-1" /> {formatDate(selectedEvent.event_date).fullDate}</span>
-                {selectedEvent.location && <span className="flex items-center"><MapPin className="w-4 h-4 mr-1" /> {selectedEvent.location}</span>}
+        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-300" onClick={closeEventModal}>
+          <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-slate-200 overflow-hidden relative" onClick={(e) => e.stopPropagation()}>
+            {selectedEvent.image_url && (
+              <div className="relative aspect-[16/10] max-h-[320px] bg-slate-800 overflow-hidden">
+                <img 
+                  src={getOptimizedImageUrl(selectedEvent.image_url, 1200, 85)} 
+                  srcSet={getImageSrcSet(selectedEvent.image_url)}
+                  sizes="(max-width: 768px) 100vw, 700px"
+                  alt={selectedEvent.title} 
+                  loading="lazy"
+                  decoding="async"
+                  className="w-full h-full object-cover" 
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent"></div>
+              </div>
+            )}
+
+            <button 
+              onClick={closeEventModal} 
+              className="absolute top-4 right-4 w-10 h-10 bg-black/40 hover:bg-black/70 backdrop-blur-md rounded-full text-white flex items-center justify-center transition-all z-20 border border-white/20"
+            >
+              <X size={20} />
+            </button>
+
+            <div className="p-6 sm:p-8">
+              <h2 className="font-bold text-2xl sm:text-3xl mb-4 text-slate-800">{selectedEvent.title}</h2>
+              <div className="flex flex-wrap items-center gap-4 mb-6 text-sm text-slate-500 bg-slate-50 p-3.5 rounded-2xl border border-slate-100">
+                <span className="flex items-center text-teal-700 font-medium"><Calendar className="w-4 h-4 mr-1.5 text-teal-600" /> {formatDate(selectedEvent.event_date).fullDate}</span>
+                <span className="flex items-center text-slate-600"><Clock className="w-4 h-4 mr-1.5 text-teal-600" /> {formatDate(selectedEvent.event_date).time}</span>
+                {selectedEvent.location && <span className="flex items-center text-slate-600"><MapPin className="w-4 h-4 mr-1.5 text-teal-600" /> {selectedEvent.location}</span>}
               </div>
               <p className="text-slate-600 leading-relaxed whitespace-pre-line">{selectedEvent.description}</p>
             </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, X, ZoomIn } from 'lucide-react';
 import { API_URL, BASE_URL } from '../config';
 import { getOptimizedImageUrl, getImageSrcSet } from '../utils/image';
 
@@ -96,6 +96,23 @@ const TimelineCard = ({ item }: { item: HistoryEvent }) => {
 const HistoryTimeline = () => {
     const [historyEvents, setHistoryEvents] = useState<HistoryEvent[]>([]);
     const [loading, setLoading] = useState(true);
+    const [previewPhoto, setPreviewPhoto] = useState<string | null>(null);
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') setPreviewPhoto(null);
+        };
+        if (previewPhoto) {
+            document.body.style.overflow = 'hidden';
+            window.addEventListener('keydown', handleKeyDown);
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => {
+            document.body.style.overflow = 'unset';
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [previewPhoto]);
 
     useEffect(() => {
         const fetchHistory = async () => {
@@ -167,16 +184,25 @@ const HistoryTimeline = () => {
                                     {/* Image or Spacer for Desktop Layout */}
                                     <div className="flex-1 w-full hidden md:flex justify-center px-4 md:px-24 items-center">
                                         {item.image_url ? (
-                                            <div className="relative w-full h-64 max-w-md rounded-xl overflow-hidden shadow-lg group flex items-center justify-center bg-white/50 border border-slate-100">
+                                            <div 
+                                                onClick={() => setPreviewPhoto(item.image_url || null)}
+                                                className="relative w-full aspect-[16/10] max-w-md rounded-2xl overflow-hidden shadow-lg group flex items-center justify-center bg-white/90 border border-slate-200 cursor-pointer"
+                                            >
                                                 <img
-                                                    src={getOptimizedImageUrl(item.image_url, 600, 80)}
+                                                    src={getOptimizedImageUrl(item.image_url, 800, 85)}
                                                     srcSet={getImageSrcSet(item.image_url)}
                                                     sizes="(max-width: 768px) 100vw, 500px"
                                                     alt={item.title}
                                                     loading="lazy"
                                                     decoding="async"
-                                                    className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-[1.02]"
+                                                    className="w-full h-full object-contain p-2 transition-transform duration-500 group-hover:scale-105"
                                                 />
+                                                <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/20 transition-colors duration-300 flex items-center justify-center pointer-events-none">
+                                                    <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900/80 backdrop-blur-sm text-white px-3.5 py-1.5 rounded-full text-xs font-semibold flex items-center space-x-1.5 shadow-lg border border-white/20">
+                                                        <ZoomIn className="w-3.5 h-3.5 text-teal-400" />
+                                                        <span>Agrandir</span>
+                                                    </div>
+                                                </div>
                                             </div>
                                         ) : (
                                             <div className="w-full" />
@@ -194,6 +220,28 @@ const HistoryTimeline = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Modal Lightbox Plein Écran Histoire */}
+            {previewPhoto && (
+                <div 
+                    className="fixed inset-0 z-[120] bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 sm:p-8 animate-in fade-in duration-200"
+                    onClick={() => setPreviewPhoto(null)}
+                >
+                    <div className="relative max-w-6xl max-h-[90vh] flex flex-col items-center" onClick={e => e.stopPropagation()}>
+                        <button 
+                            onClick={() => setPreviewPhoto(null)}
+                            className="absolute -top-12 right-0 text-white/80 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors"
+                        >
+                            <X className="w-7 h-7" />
+                        </button>
+                        <img 
+                            src={getOptimizedImageUrl(previewPhoto, 1920, 90)} 
+                            alt="Photo archive histoire" 
+                            className="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl border border-white/10"
+                        />
+                    </div>
+                </div>
+            )}
         </section>
     );
 };
