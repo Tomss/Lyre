@@ -95,27 +95,41 @@ function App() {
     });
     resizeObserver.observe(document.body);
 
-    // Global Automatic Modal Lenis Smooth Scroll Observer
+    // Global Automatic Modal Kinetic Smooth Scroll Observer
     const modalCleanups = new Map<HTMLElement, () => void>();
 
     const checkAndAttachModals = () => {
-      const modalOverlays = document.querySelectorAll('.fixed.inset-0, [role="dialog"]');
       const foundScrollables = new Set<HTMLElement>();
 
-      modalOverlays.forEach((overlay) => {
-        const scrollables = overlay.querySelectorAll('.overflow-y-auto, [data-lenis-modal], .modal-scroll');
+      // 1. Check all scrollables inside fixed overlays or dialogs
+      const allFixedElements = document.querySelectorAll('.fixed');
+      allFixedElements.forEach((fixedEl) => {
+        if (fixedEl.classList.contains('overflow-y-auto') && fixedEl instanceof HTMLElement) {
+          foundScrollables.add(fixedEl);
+        }
+
+        const scrollables = fixedEl.querySelectorAll('.overflow-y-auto, form, div');
         scrollables.forEach((el) => {
           if (el instanceof HTMLElement) {
-            foundScrollables.add(el);
-            if (!modalCleanups.has(el)) {
-              const cleanup = attachModalSmoothScroll(el);
-              modalCleanups.set(el, cleanup);
+            const isScrollable = el.classList.contains('overflow-y-auto') || 
+                                 el.hasAttribute('data-lenis-modal') || 
+                                 el.scrollHeight > el.clientHeight;
+            if (isScrollable && el.clientHeight > 100 && el.scrollHeight > el.clientHeight) {
+              foundScrollables.add(el);
             }
           }
         });
       });
 
-      // Detach any modals that were removed from the DOM
+      // 2. Attach smooth scroll to newly found scrollable modals
+      foundScrollables.forEach((el) => {
+        if (!modalCleanups.has(el)) {
+          const cleanup = attachModalSmoothScroll(el);
+          modalCleanups.set(el, cleanup);
+        }
+      });
+
+      // 3. Detach any modals that were closed/removed from DOM
       modalCleanups.forEach((cleanup, el) => {
         if (!foundScrollables.has(el) || !document.body.contains(el)) {
           cleanup();
