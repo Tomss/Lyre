@@ -18,6 +18,7 @@ interface Instrument {
 
 
 import { API_URL, BASE_URL } from '../config';
+import { getOptimizedImageUrl, getImageSrcSet } from '../utils/image';
 
 const getInstrumentConfig = (name: string) => {
   const n = name.toLowerCase();
@@ -207,13 +208,15 @@ const School = () => {
                   >
                     {/* Image Background */}
                     {inst.photo_url && (
-                      <div className="absolute inset-0 z-0">
+                      <div className="absolute inset-0 z-0 overflow-hidden">
                          <img
-                          src={inst.photo_url?.startsWith('http') ? inst.photo_url : (inst.photo_url ? `${BASE_URL}${inst.photo_url}` : "")}
+                          src={getOptimizedImageUrl(inst.photo_url, 600, 80)}
+                          srcSet={getImageSrcSet(inst.photo_url)}
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 300px"
                           alt={inst.name}
                           loading="lazy"
                           decoding="async"
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 opacity-40"
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 opacity-40 transform-gpu"
                           onError={(e) => {
                             // @ts-ignore
                             e.currentTarget.style.display = 'none';
@@ -249,9 +252,17 @@ const School = () => {
             <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
                 <div className="bg-slate-900 rounded-3xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto border border-white/10" onClick={(e) => e.stopPropagation()}>
                     {/* Header/Image */}
-                    <div className="relative h-64 sm:h-80 bg-slate-800 flex-shrink-0">
+                    <div className="relative h-64 sm:h-80 bg-slate-800 flex-shrink-0 overflow-hidden">
                          {selectedInstrument.photo_url ? (
-                            <img src={selectedInstrument.photo_url.startsWith('http') ? selectedInstrument.photo_url : `${BASE_URL}${selectedInstrument.photo_url}`} alt={selectedInstrument.name} className="w-full h-full object-cover" />
+                            <img 
+                              src={getOptimizedImageUrl(selectedInstrument.photo_url, 1200, 85)} 
+                              srcSet={getImageSrcSet(selectedInstrument.photo_url)}
+                              sizes="(max-width: 768px) 100vw, 800px"
+                              alt={selectedInstrument.name} 
+                              loading="lazy"
+                              decoding="async"
+                              className="w-full h-full object-cover" 
+                            />
                         ) : (
                             <div className="w-full h-full flex flex-col items-center justify-center bg-slate-900 text-teal-400">
                                 <Sparkles className="h-16 w-16 mb-4 opacity-50" />

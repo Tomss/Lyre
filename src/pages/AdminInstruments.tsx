@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { Navigate, Link } from 'react-router-dom';
 
 import { API_URL } from '../config';
+import { getOptimizedImageUrl } from '../utils/image';
 
 interface Instrument {
   id: string;
@@ -359,7 +360,19 @@ const AdminInstruments = () => {
               {filteredInstruments.map((instrument, index) => (
                 <div key={instrument.id} className={`p-4 flex flex-col md:flex-row md:items-center md:justify-between hover:bg-gray-50/50 transition-colors duration-200 ${index !== 0 ? 'mt-2' : ''}`}>
                   <div className="flex items-center flex-grow mb-4 md:mb-0">
-                    <img src={instrument.photo_url || 'https://via.placeholder.com/100x100'} alt={instrument.photo_url ? `Photo de ${instrument.name}` : ''} className="w-16 h-16 object-cover rounded-md mr-4" />
+                    {instrument.photo_url ? (
+                      <img 
+                        src={getOptimizedImageUrl(instrument.photo_url, 120, 80)} 
+                        alt={`Photo de ${instrument.name}`} 
+                        loading="lazy"
+                        decoding="async"
+                        className="w-16 h-16 object-cover rounded-xl mr-4 border border-slate-200 shadow-sm" 
+                      />
+                    ) : (
+                      <div className="w-16 h-16 bg-slate-100 rounded-xl mr-4 flex items-center justify-center text-slate-400 border border-slate-200">
+                        <Music size={24} />
+                      </div>
+                    )}
                     <div className="flex-grow">
                       <p className="font-bold text-lg text-gray-800">{instrument.name}</p>
                       {instrument.teacher && <p className="text-gray-600 text-sm">Professeur: {instrument.teacher}</p>}
