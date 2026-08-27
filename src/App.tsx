@@ -95,30 +95,26 @@ function App() {
     });
     resizeObserver.observe(document.body);
 
-    // Global Automatic Modal Kinetic Smooth Scroll Observer
+    // Global Automatic Modal Lenis Smooth Scroll Observer
     const modalCleanups = new Map<HTMLElement, () => void>();
 
     const checkAndAttachModals = () => {
       const foundScrollables = new Set<HTMLElement>();
 
-      // 1. Check all scrollables inside fixed overlays or dialogs
-      const allFixedElements = document.querySelectorAll('.fixed');
-      allFixedElements.forEach((fixedEl) => {
-        if (fixedEl.classList.contains('overflow-y-auto') && fixedEl instanceof HTMLElement) {
-          foundScrollables.add(fixedEl);
-        }
-
-        const scrollables = fixedEl.querySelectorAll('.overflow-y-auto, form, div');
-        scrollables.forEach((el) => {
+      // Target only explicit scroll containers inside fixed overlays or dialogs
+      const allFixedOverlays = document.querySelectorAll('.fixed, [role="dialog"]');
+      allFixedOverlays.forEach((overlay) => {
+        const scrollContainers = overlay.querySelectorAll('.overflow-y-auto, [data-lenis-modal], .modal-scroll');
+        scrollContainers.forEach((el) => {
           if (el instanceof HTMLElement) {
-            const isScrollable = el.classList.contains('overflow-y-auto') || 
-                                 el.hasAttribute('data-lenis-modal') || 
-                                 el.scrollHeight > el.clientHeight;
-            if (isScrollable && el.clientHeight > 100 && el.scrollHeight > el.clientHeight) {
-              foundScrollables.add(el);
-            }
+            foundScrollables.add(el);
           }
         });
+
+        // If the overlay itself is the scroll container
+        if (overlay.classList.contains('overflow-y-auto') && overlay instanceof HTMLElement) {
+          foundScrollables.add(overlay);
+        }
       });
 
       // 2. Attach smooth scroll to newly found scrollable modals
