@@ -17,9 +17,21 @@ router.get('/', async (req, res) => {
         DATE_FORMAT(e.event_date, '%Y-%m-%dT%H:%i:%s') as event_date,
         TIME_FORMAT(e.end_time, '%H:%i') as end_time,
         e.location, e.is_public, e.practical_info,
+        e.image_url,
+        COALESCE(
+          e.image_url,
+          (
+            SELECT COALESCE(o2.photo_url, (SELECT op.photo_url FROM orchestra_photos op WHERE op.orchestra_id = o2.id ORDER BY op.display_order ASC LIMIT 1))
+            FROM event_orchestras eo2
+            JOIN orchestras o2 ON eo2.orchestra_id = o2.id
+            WHERE eo2.event_id = e.id
+            ORDER BY o2.display_order ASC, o2.name ASC
+            LIMIT 1
+          )
+        ) AS fallback_image_url,
         CASE 
           WHEN COUNT(o.id) > 0 THEN 
-            JSON_ARRAYAGG(JSON_OBJECT('id', o.id, 'name', o.name))
+            JSON_ARRAYAGG(JSON_OBJECT('id', o.id, 'name', o.name, 'photo_url', o.photo_url))
           ELSE 
             JSON_ARRAY()
         END AS orchestras
@@ -42,20 +54,21 @@ router.post('/', async (req, res) => {
   if ((req as any).user.role !== 'Admin' && (!(req as any).user.managedModules || !(req as any).user.managedModules.includes('news'))) {
     return res.status(403).json({ message: 'Accès refusé.' });
   }
-  const { title, description, event_type, event_date, end_time, location, orchestra_ids, practical_info, is_public } = req.body;
+  const { title, description, event_type, event_date, end_time, location, orchestra_ids, practical_info, is_public, image_url } = req.body;
   if (!title || !event_type || !event_date) {
     return res.status(400).json({ message: 'Champs requis manquants.' });
   }
 
   const cleanEndTime = event_type === 'repetition' && end_time ? end_time : null;
+  const cleanImageUrl = image_url && typeof image_url === 'string' && image_url.trim() ? image_url.trim() : null;
 
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
     const newEventId = crypto.randomUUID();
     await connection.query(
-      'INSERT INTO events (id, title, description, event_type, event_date, end_time, location, practical_info, is_public) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [newEventId, title, description, event_type, event_date, cleanEndTime, location, practical_info, is_public !== undefined ? is_public : true]
+      'INSERT INTO events (id, title, description, event_type, event_date, end_time, location, practical_info, is_public, image_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [newEventId, title, description, event_type, event_date, cleanEndTime, location, practical_info, is_public !== undefined ? is_public : true, cleanImageUrl]
     );
     for (const orchestra_id of (orchestra_ids || [])) {
       await connection.query(
@@ -82,7 +95,7 @@ router.post('/', async (req, res) => {
   } catch (error) {
     await connection.rollback();
     console.error(error);
-    res.status(500).json({ message: 'Erreur lors de la crÃ©ation de l\'Ã©vÃ©nement.' });
+    res.status(500).json({ message: 'Erreur lors de la création de l\'événement.' });
   } finally {
     connection.release();
   }
@@ -95,12 +108,13 @@ router.put('/:id', async (req, res) => {
     return res.status(403).json({ message: 'Accès refusé.' });
   }
   const { id } = req.params;
-  const { title, description, event_type, event_date, end_time, location, orchestra_ids, practical_info, is_public } = req.body;
+  const { title, description, event_type, event_date, end_time, location, orchestra_ids, practical_info, is_public, image_url } = req.body;
   if (!title || !event_type || !event_date) {
     return res.status(400).json({ message: 'Champs requis manquants.' });
   }
 
   const cleanEndTime = event_type === 'repetition' && end_time ? end_time : null;
+  const cleanImageUrl = image_url && typeof image_url === 'string' && image_url.trim() ? image_url.trim() : null;
 
     const connection = await pool.getConnection();
     try {
@@ -117,8 +131,8 @@ router.put('/:id', async (req, res) => {
 
         // 2. Mettre à jour l'événement
         await connection.query(
-            'UPDATE events SET title = ?, description = ?, event_type = ?, event_date = ?, end_time = ?, location = ?, practical_info = ?, is_public = ? WHERE id = ?',
-            [title, description, event_type, event_date, cleanEndTime, location, practical_info, is_public !== undefined ? is_public : true, id]
+            'UPDATE events SET title = ?, description = ?, event_type = ?, event_date = ?, end_time = ?, location = ?, practical_info = ?, is_public = ?, image_url = ? WHERE id = ?',
+            [title, description, event_type, event_date, cleanEndTime, location, practical_info, is_public !== undefined ? is_public : true, cleanImageUrl, id]
         );
         await connection.query('DELETE FROM event_orchestras WHERE event_id = ?', [id]);
 

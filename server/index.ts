@@ -89,6 +89,21 @@ dotenv.config();
       console.log('[Migration] Succès : colonne end_time ajoutée à events.');
     }
 
+    // Migration: Ajout de la colonne image_url à la table events
+    const [eventsImgCols]: any = await pool.query(`
+      SELECT COUNT(*) as count 
+      FROM information_schema.COLUMNS 
+      WHERE TABLE_SCHEMA = DATABASE() 
+      AND TABLE_NAME = 'events' 
+      AND COLUMN_NAME = 'image_url'
+    `);
+    
+    if (eventsImgCols[0].count === 0) {
+      console.log('[Migration] Ajout de la colonne image_url à la table events...');
+      await pool.query('ALTER TABLE events ADD COLUMN image_url TEXT DEFAULT NULL');
+      console.log('[Migration] Succès : colonne image_url ajoutée à events.');
+    }
+
     // Migration: Création de la table activity_log
     const [tables]: any = await pool.query(`
       SELECT COUNT(*) as count 

@@ -1,9 +1,10 @@
 import React, { useState, useEffect, FormEvent } from 'react';
-import { ChevronDown,  Edit, Trash2, Plus, Calendar, Search, X, ArrowLeft, Clock, MapPin, ChevronRight, Globe, Users, Info, AlignLeft, LayoutGrid, EyeOff, FileText  } from "lucide-react";
+import { ChevronDown, Edit, Trash2, Plus, Calendar, Search, X, ArrowLeft, Clock, MapPin, ChevronRight, Globe, Users, Info, AlignLeft, LayoutGrid, EyeOff, FileText, Image as ImageIcon, Upload, Music } from "lucide-react";
 import { useAuth } from '../context/AuthContext';
 import { Navigate, Link } from 'react-router-dom';
 
 import { API_URL } from '../config';
+import { getOptimizedImageUrl } from '../utils/image';
 
 interface Event {
   id: string;
@@ -15,6 +16,8 @@ interface Event {
   end_time?: string | null;
   location: string | null;
   is_public: boolean;
+  image_url?: string | null;
+  fallback_image_url?: string | null;
   orchestras: Orchestra[];
 }
 
@@ -22,6 +25,7 @@ interface Orchestra {
   id: string;
   name: string;
   description?: string;
+  photo_url?: string | null;
 }
 
 interface DeleteConfirmation {
@@ -47,6 +51,8 @@ const AdminEvents = () => {
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [expandedTypes, setExpandedTypes] = useState<Set<string>>(new Set(['concert', 'repetition', 'divers']));
   const [timeFilter, setTimeFilter] = useState<'all' | 'upcoming' | 'past'>('upcoming');
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState<DeleteConfirmation>({
     isOpen: false,
     event: null,
@@ -66,6 +72,7 @@ const AdminEvents = () => {
     end_time: '',
     location: '',
     is_public: true,
+    image_url: '',
     orchestra_ids: [] as string[],
   });
 
@@ -150,6 +157,21 @@ const AdminEvents = () => {
     }));
   };
 
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setPhotoFile(file);
+      setPhotoPreview(URL.createObjectURL(file));
+      setFormData(prev => ({ ...prev, image_url: '' }));
+    }
+  };
+
+  const removePhoto = () => {
+    setPhotoFile(null);
+    setPhotoPreview(null);
+    setFormData(prev => ({ ...prev, image_url: '' }));
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!token) return;
@@ -159,11 +181,27 @@ const AdminEvents = () => {
       const url = isUpdating ? `${API_URL}/events/${editingEvent.id}` : `${API_URL}/events`;
       const method = isUpdating ? 'PUT' : 'POST';
 
-      // Combine date and start_time into standard ISO format
+      // 1. Upload photo if a new file was chosen
+      let finalImageUrl = formData.image_url;
+      if (photoFile) {
+        const photoFormData = new FormData();
+        photoFormData.append('file', photoFile);
+        const uploadRes = await fetch(`${API_URL}/upload`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: photoFormData,
+        });
+        if (!uploadRes.ok) throw new Error('Échec du téléchargement de la photo');
+        const uploadData = await uploadRes.json();
+        finalImageUrl = uploadData.filePath;
+      }
+
+      // 2. Combine date and start_time into standard ISO format
       const combinedEventDate = `${formData.event_date}T${formData.start_time || '20:00'}:00`;
       const payload = {
         ...formData,
         event_date: combinedEventDate,
+        image_url: finalImageUrl || null,
       };
 
       const response = await fetch(url, {
@@ -236,14 +274,19 @@ const AdminEvents = () => {
       end_time: event.end_time ? event.end_time.slice(0, 5) : '',
       location: event.location || '',
       is_public: event.is_public !== undefined ? event.is_public : (event.event_type === 'concert' || event.event_type === 'divers'),
+      image_url: event.image_url || '',
       orchestra_ids: event.orchestras?.map(o => o.id) || [],
     });
+    setPhotoFile(null);
+    setPhotoPreview(event.image_url || null);
     setShowAddForm(true);
   };
 
   const cancelEdit = () => {
     setEditingEvent(null);
     setShowAddForm(false);
+    setPhotoFile(null);
+    setPhotoPreview(null);
     setFormData({
       title: '',
       description: '',
@@ -254,6 +297,7 @@ const AdminEvents = () => {
       end_time: '',
       location: '',
       is_public: true,
+      image_url: '',
       orchestra_ids: [],
     });
   };
@@ -489,35 +533,54 @@ const AdminEvents = () => {
                   <div className="overflow-hidden">
                     <div className="divide-y divide-slate-100">
                       {eventList.map(event => (
-                        <div key={event.id} className="p-4 flex flex-col md:flex-row md:items-center md:justify-between hover:bg-slate-50/80 transition-colors duration-200">
-                          <div className="flex-1 mb-4 md:mb-0">
-                            <h3 className="font-bold text-slate-800 text-lg mb-1">{event.title}</h3>
-                            <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-slate-500">
-                              <span className="flex items-center text-indigo-600 font-medium bg-indigo-50 px-2.5 py-0.5 rounded-md">
-                                <Calendar className="w-3.5 h-3.5 mr-1.5" />
-                                {formatDate(event.event_date, event.end_time)}
-                              </span>
-                              {event.location && (
-                                <span className="flex items-center">
-                                  <MapPin className="w-3.5 h-3.5 mr-1.5 opacity-70" />
-                                  {event.location}
-                                </span>
-                              )}
-                              {event.is_public ? (
-                                <span className="flex items-center text-emerald-600 bg-emerald-50 px-2 rounded-md font-medium text-xs border border-emerald-100">
-                                  <Globe className="w-3 h-3 mr-1" />
-                                  Public
-                                </span>
+                        <div key={event.id} className="p-4 flex flex-col md:flex-row md:items-center md:justify-between hover:bg-slate-50/80 transition-colors duration-200 gap-4">
+                          <div className="flex items-center gap-4 flex-1 min-w-0">
+                            {/* Miniature Photo */}
+                            <div className="w-16 h-12 sm:w-20 sm:h-14 rounded-xl bg-slate-100 overflow-hidden flex-shrink-0 border border-slate-200/80 relative flex items-center justify-center shadow-sm">
+                              {(event.image_url || event.fallback_image_url) ? (
+                                <img 
+                                  src={getOptimizedImageUrl(event.image_url || event.fallback_image_url!, 200, 80)} 
+                                  alt={event.title}
+                                  className="w-full h-full object-cover"
+                                />
                               ) : (
-                                <span className="flex items-center text-slate-500 bg-slate-100 px-2 rounded-md font-medium text-xs border border-slate-200">
-                                  <EyeOff className="w-3 h-3 mr-1" />
-                                  Privé
-                                </span>
+                                <Music className="w-6 h-6 text-slate-300" />
+                              )}
+                              {event.image_url && (
+                                <span className="absolute bottom-1 right-1 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white" title="Photo personnalisée"></span>
                               )}
                             </div>
+
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-bold text-slate-800 text-base sm:text-lg mb-1 truncate">{event.title}</h3>
+                              <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-slate-500">
+                                <span className="flex items-center text-indigo-600 font-medium bg-indigo-50 px-2.5 py-0.5 rounded-md">
+                                  <Calendar className="w-3.5 h-3.5 mr-1.5" />
+                                  {formatDate(event.event_date, event.end_time)}
+                                </span>
+                                {event.location && (
+                                  <span className="flex items-center">
+                                    <MapPin className="w-3.5 h-3.5 mr-1.5 opacity-70" />
+                                    {event.location}
+                                  </span>
+                                )}
+                                {event.is_public ? (
+                                  <span className="flex items-center text-emerald-600 bg-emerald-50 px-2 rounded-md font-medium text-xs border border-emerald-100">
+                                    <Globe className="w-3 h-3 mr-1" />
+                                    Public
+                                  </span>
+                                ) : (
+                                  <span className="flex items-center text-slate-500 bg-slate-100 px-2 rounded-md font-medium text-xs border border-slate-200">
+                                    <EyeOff className="w-3 h-3 mr-1" />
+                                    Privé
+                                  </span>
+                                )}
+                              </div>
+                            </div>
                           </div>
-                          <div className="flex-1 mb-4 md:mb-0">
-                            <h4 className="font-semibold text-gray-600 text-sm mb-1">Orchestres</h4>
+
+                          <div className="flex-1 md:max-w-xs mb-2 md:mb-0">
+                            <h4 className="font-semibold text-gray-600 text-xs uppercase tracking-wider mb-1">Orchestres</h4>
                             {event.orchestras && event.orchestras.length > 0 ? (
                               <div className="flex flex-wrap gap-1">
                                 {event.orchestras.map(orc => (
@@ -528,6 +591,7 @@ const AdminEvents = () => {
                               </div>
                             ) : <p className="text-gray-400 text-xs italic">Aucun</p>}
                           </div>
+
                           <div className="flex items-center space-x-2 flex-shrink-0">
                             <button onClick={() => handleEdit(event)} title="Modifier" className="p-2 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition-all duration-300 hover:scale-110 shadow-sm"><Edit size={16} /></button>
                             <button onClick={() => confirmDelete(event)} title="Supprimer" className="p-2 text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl transition-all duration-300 hover:scale-110 shadow-sm"><Trash2 size={16} /></button>
@@ -690,6 +754,101 @@ const AdminEvents = () => {
                             </label>
                             <textarea name="practical_info" value={formData.practical_info} onChange={handleInputChange} placeholder="Horaires de rdv, tenue, etc..." className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-slate-50/30 focus:bg-white h-20 resize-none text-sm"></textarea>
                         </div>
+                    </div>
+                </div>
+
+                {/* Section: Affiche / Photo */}
+                <div className="space-y-4">
+                    <div className="flex items-center justify-between text-indigo-600 mb-1">
+                        <div className="flex items-center space-x-2">
+                            <ImageIcon size={16} />
+                            <h3 className="text-xs font-bold uppercase tracking-wider">Affiche / Photo de l'événement</h3>
+                        </div>
+                        <span className="text-[11px] text-slate-400 font-normal">Optionnel</span>
+                    </div>
+
+                    <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+                        {photoPreview ? (
+                            <div className="space-y-3">
+                                <div className="relative rounded-2xl overflow-hidden border border-slate-200 bg-slate-900 group aspect-[16/10] max-h-60 shadow-md">
+                                    <img 
+                                        src={photoPreview.startsWith('blob:') ? photoPreview : getOptimizedImageUrl(photoPreview, 800, 85)} 
+                                        alt="Aperçu événement" 
+                                        className="w-full h-full object-cover" 
+                                    />
+                                    <div className="absolute inset-0 bg-slate-900/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                                        <label htmlFor="event-photo-upload" className="cursor-pointer px-4 py-2 bg-white text-slate-800 rounded-xl text-xs font-bold shadow-lg hover:bg-slate-50 transition-all flex items-center gap-1.5">
+                                            <Upload size={14} /> Changer
+                                        </label>
+                                        <button 
+                                            type="button" 
+                                            onClick={removePhoto} 
+                                            className="px-4 py-2 bg-rose-600 text-white rounded-xl text-xs font-bold shadow-lg hover:bg-rose-700 transition-all flex items-center gap-1.5"
+                                        >
+                                            <Trash2 size={14} /> Supprimer
+                                        </button>
+                                    </div>
+                                </div>
+                                <div className="flex items-center justify-between px-1 text-xs text-slate-500">
+                                    <span className="text-emerald-600 font-medium flex items-center gap-1">
+                                        ✓ Photo personnalisée active
+                                    </span>
+                                    <button 
+                                        type="button" 
+                                        onClick={removePhoto} 
+                                        className="text-rose-500 hover:text-rose-700 font-medium transition"
+                                    >
+                                        Supprimer et utiliser la photo de l'orchestre
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="space-y-3">
+                                <label 
+                                    htmlFor="event-photo-upload" 
+                                    className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-200 hover:border-indigo-400 rounded-2xl cursor-pointer bg-slate-50/50 hover:bg-indigo-50/20 transition-all group"
+                                >
+                                    <div className="w-12 h-12 rounded-xl bg-indigo-50 group-hover:bg-indigo-100 flex items-center justify-center text-indigo-600 transition-colors mb-2">
+                                        <Upload size={20} />
+                                    </div>
+                                    <span className="text-sm font-semibold text-slate-700 group-hover:text-indigo-600 transition-colors">
+                                        Importer une affiche ou photo personnalisée
+                                    </span>
+                                    <span className="text-xs text-slate-400 mt-1">
+                                        Format recommandé 16:10 (PNG, JPG, WEBP)
+                                    </span>
+                                </label>
+
+                                {(() => {
+                                    const firstSelectedOrchestra = orchestras.find(o => formData.orchestra_ids.includes(o.id));
+                                    if (firstSelectedOrchestra) {
+                                        return (
+                                            <div className="flex items-center gap-3 p-3 bg-indigo-50/60 rounded-xl border border-indigo-100/80 text-xs text-indigo-900">
+                                                <Info size={16} className="text-indigo-600 flex-shrink-0" />
+                                                <span>
+                                                    <strong>Photo automatique :</strong> En l'absence de photo dédiée, la photo de l'orchestre <strong>{firstSelectedOrchestra.name}</strong> sera automatiquement affichée sur le site public.
+                                                </span>
+                                            </div>
+                                        );
+                                    }
+                                    return (
+                                        <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100 text-xs text-slate-500">
+                                            <Info size={16} className="text-slate-400 flex-shrink-0" />
+                                            <span>
+                                                Si aucune photo personnalisée n'est importée, la photo du 1ᵉʳ orchestre sélectionné (ou l'illustration musicale par défaut) sera utilisée sur le site.
+                                            </span>
+                                        </div>
+                                    );
+                                })()}
+                            </div>
+                        )}
+                        <input 
+                            type="file" 
+                            id="event-photo-upload" 
+                            accept="image/*" 
+                            onChange={handlePhotoChange} 
+                            className="hidden" 
+                        />
                     </div>
                 </div>
 

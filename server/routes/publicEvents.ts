@@ -12,7 +12,18 @@ router.get('/', async (req, res) => {
         e.id, e.title, e.description, e.event_type, 
         DATE_FORMAT(e.event_date, '%Y-%m-%dT%H:%i:%s') as event_date,
         TIME_FORMAT(e.end_time, '%H:%i') as end_time,
-        e.location, 
+        e.location,
+        COALESCE(
+          e.image_url,
+          (
+            SELECT COALESCE(o2.photo_url, (SELECT op.photo_url FROM orchestra_photos op WHERE op.orchestra_id = o2.id ORDER BY op.display_order ASC LIMIT 1))
+            FROM event_orchestras eo2
+            JOIN orchestras o2 ON eo2.orchestra_id = o2.id
+            WHERE eo2.event_id = e.id
+            ORDER BY o2.display_order ASC, o2.name ASC
+            LIMIT 1
+          )
+        ) AS image_url,
         CASE 
           WHEN COUNT(o.id) > 0 THEN 
             JSON_ARRAYAGG(
