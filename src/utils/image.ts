@@ -11,6 +11,25 @@ export function getOptimizedImageUrl(
     if (width) return filePath.replace('/upload/', '/upload/c_scale,w_' + width + ',f_auto,q_auto/');
     return filePath;
   }
+  if (filePath.includes('images.pexels.com')) {
+    try {
+      const u = new URL(filePath);
+      if (width) u.searchParams.set('w', width.toString());
+      u.searchParams.set('auto', 'compress');
+      u.searchParams.set('cs', 'tinysrgb');
+      return u.toString();
+    } catch (e) {}
+  }
+  if (filePath.includes('images.unsplash.com')) {
+    try {
+      const u = new URL(filePath);
+      if (width) u.searchParams.set('w', width.toString());
+      u.searchParams.set('auto', 'format');
+      u.searchParams.set('fit', 'crop');
+      u.searchParams.set('q', quality.toString());
+      return u.toString();
+    } catch (e) {}
+  }
   const cleanPath = filePath.startsWith('/') ? filePath : '/' + filePath;
   const fullUrl = filePath.startsWith('http') ? filePath : BASE_URL + cleanPath;
   if (cleanPath.startsWith('/uploads/')) {

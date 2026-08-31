@@ -45,7 +45,29 @@ const School = () => {
   });
   const [instrumentsLoading, setInstrumentsLoading] = useState(() => instruments.length === 0);
   const [selectedInstrument, setSelectedInstrument] = useState<Instrument | null>(null);
-  const [previewPhoto, setPreviewPhoto] = useState<string | null>(null);
+  const [previewPhoto, setPreviewPhoto] = useState<string | null>(null);  // Stable memoized instrument list with pre-optimized URLs
+  const displayedInstruments = React.useMemo(() => {
+    const list = [...instruments];
+    if (!list.some(i => i.name.toLowerCase().includes('formation'))) {
+      list.push({
+        id: 'fm-manual',
+        name: "Formation Musicale",
+        teacher: "A. Brisard, M-C. Rémongin, N. Cardot",
+        photo_url: "https://images.pexels.com/photos/4502973/pexels-photo-4502973.jpeg?auto=compress&cs=tinysrgb&w=600",
+        description: "La pierre angulaire de l'apprentissage musical. Apprenez à lire, écrire et comprendre la musique dans une ambiance bienveillante."
+      });
+    }
+    if (!list.some(i => i.name.toLowerCase().includes('eveil') || i.name.toLowerCase().includes('éveil'))) {
+      list.push({
+        id: 'eveil-manual',
+        name: "Éveil Musical",
+        teacher: "Équipe pédagogique",
+        photo_url: "https://images.pexels.com/photos/17691880/pexels-photo-17691880.jpeg?auto=compress&cs=tinysrgb&w=600",
+        description: "Le monde magique de la musique : chants, mime, percussions corporelles... Une découverte ludique pour les tout-petits !"
+      });
+    }
+    return list;
+  }, [instruments]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -106,8 +128,6 @@ const School = () => {
           { label: "Notre Histoire", targetId: "histoire", icon: History, color: "amber" }
         ]}
       />
-
-
 
       {/* Main Content: Notre École Section */}
       <section id="presentation" className="scroll-mt-20 py-24 bg-white relative overflow-hidden">
@@ -189,36 +209,18 @@ const School = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-7xl mx-auto">
-              {[
-                ...instruments,
-                // Fallback for Formation Musicale if not present in DB
-                ...(!instruments.some(i => i.name.toLowerCase().includes('formation')) ? [{
-                  id: 'fm-manual',
-                  name: "Formation Musicale",
-                  teacher: "A. Brisard, M-C. Rémongin, N. Cardot",
-                  photo_url: "https://images.pexels.com/photos/4502973/pexels-photo-4502973.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-                  description: "La pierre angulaire de l'apprentissage musical. Apprenez à lire, écrire et comprendre la musique dans une ambiance bienveillante."
-                }] : []),
-                // Fallback for Eveil Musical if not present in DB
-                ...(!instruments.some(i => i.name.toLowerCase().includes('eveil') || i.name.toLowerCase().includes('éveil')) ? [{
-                  id: 'eveil-manual',
-                  name: "Éveil Musical",
-                  teacher: "Équipe pédagogique",
-                  photo_url: "https://images.pexels.com/photos/17691880/pexels-photo-17691880.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-                  description: "Le monde magique de la musique : chants, mime, percussions corporelles... Une découverte ludique pour les tout-petits !"
-                }] : [])
-              ].map((inst, idx) => {
+              {displayedInstruments.map((inst, idx) => {
                 return (
                   <div
                     key={inst.id || idx}
-                    className={`group relative bg-slate-800 rounded-2xl border border-white/10 overflow-hidden hover:border-teal-400 transition-colors duration-150 cursor-pointer ${inst.name.toLowerCase().includes('formation') || inst.name.toLowerCase().includes('eveil') || inst.name.toLowerCase().includes('éveil') ? 'md:col-span-2 lg:col-span-1 xl:col-span-2' : ''}`}
+                    className="group relative bg-slate-800 rounded-2xl border border-white/10 overflow-hidden hover:border-teal-400 transition-colors duration-150 cursor-pointer"
                     onClick={() => setSelectedInstrument(inst)}
                   >
                     {/* Image Background */}
                     {inst.photo_url && (
                       <div className="absolute inset-0 z-0 overflow-hidden">
                          <img
-                          src={getOptimizedImageUrl(inst.photo_url, 600, 80)}
+                          src={getOptimizedImageUrl(inst.photo_url, 400, 80)}
                           alt={inst.name}
                           loading="eager"
                           decoding="async"
