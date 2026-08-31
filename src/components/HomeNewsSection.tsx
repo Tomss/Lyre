@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Newspaper, ArrowRight, CalendarDays, X } from 'lucide-react';
+import { Newspaper, ArrowRight, CalendarDays, Calendar, X } from 'lucide-react';
 
 import { API_URL, BASE_URL } from '../config';
 import { getOptimizedImageUrl, getImageSrcSet } from '../utils/image';
@@ -10,6 +10,10 @@ interface NewsItem {
     content: string;
     image_url: string;
     published_at: string;
+    monthShort?: string;
+    dayNum?: number;
+    fullDateStr?: string;
+    yearStr?: string;
 }
 
 const HomeNewsSection = React.memo(() => {
@@ -17,7 +21,6 @@ const HomeNewsSection = React.memo(() => {
     const [allNews, setAllNews] = useState<NewsItem[]>([]);
     const [loading, setLoading] = useState(true);
     const scrollRef = useRef<HTMLDivElement>(null);
-    const [isPaused, setIsPaused] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
     const [startX, setStartX] = useState(0);
     const [scrollLeft, setScrollLeft] = useState(0);
@@ -29,7 +32,6 @@ const HomeNewsSection = React.memo(() => {
     const handleMouseDown = (e: React.MouseEvent) => {
         if (!scrollRef.current) return;
         setIsDragging(true);
-        setIsPaused(true);
         setStartX(e.pageX - scrollRef.current.offsetLeft);
         setScrollLeft(scrollRef.current.scrollLeft);
         setDragDistance(0);
@@ -37,7 +39,6 @@ const HomeNewsSection = React.memo(() => {
 
     const handleMouseLeave = () => {
         setIsDragging(false);
-        setIsPaused(false);
     };
 
     const handleMouseUp = () => {
@@ -60,8 +61,25 @@ const HomeNewsSection = React.memo(() => {
                 if (response.ok) {
                     const data = await response.json();
                     const sortedNews = data.sort((a: any, b: any) => new Date(b.published_at).getTime() - new Date(a.published_at).getTime());
-                    const top10News = sortedNews.slice(0, 10);
-                    const top50News = sortedNews.slice(0, 50);
+
+                    // Pre-format all dates statically to eliminate Intl calls during render
+                    const formattedNews = sortedNews.map((item: any) => {
+                        const d = new Date(item.published_at);
+                        const monthShort = d.toLocaleDateString('fr-FR', { month: 'short' }).replace('.', '');
+                        const dayNum = d.getDate();
+                        const fullDateStr = d.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'long' });
+                        const yearStr = d.toLocaleDateString('fr-FR', { year: 'numeric' });
+                        return {
+                            ...item,
+                            monthShort,
+                            dayNum,
+                            fullDateStr,
+                            yearStr
+                        };
+                    });
+
+                    const top10News = formattedNews.slice(0, 10);
+                    const top50News = formattedNews.slice(0, 50);
 
                     if (top10News.length > 0) {
                         setNews(top10News);
@@ -140,7 +158,7 @@ const HomeNewsSection = React.memo(() => {
                             {/* Date Superposée - Plus discrète */}
                             <div className="absolute bottom-4 left-4 flex items-center text-white/90 text-xs font-semibold z-20 bg-slate-900/80 px-3 py-1.5 rounded-full border border-white/10">
                                 <CalendarDays className="w-3.5 h-3.5 mr-2 text-teal-400" />
-                                {new Date(selectedNews.published_at).toLocaleDateString('fr-FR', {
+                                {selectedNews.fullDateStr || new Date(selectedNews.published_at).toLocaleDateString('fr-FR', {
                                     weekday: 'short',
                                     day: 'numeric',
                                     month: 'long',
@@ -204,7 +222,7 @@ const HomeNewsSection = React.memo(() => {
                                         <div className="flex flex-col flex-1 min-w-0">
                                             <div className="flex items-center text-[10px] sm:text-xs font-bold text-teal-600 mb-1">
                                                 <CalendarDays className="w-3 h-3 mr-1" />
-                                                {new Date(item.published_at).toLocaleDateString('fr-FR')}
+                                                {item.fullDateStr || new Date(item.published_at).toLocaleDateString('fr-FR')}
                                             </div>
                                             <h3 className="font-bold text-sm sm:text-base text-slate-800 mb-1 group-hover:text-teal-700 transition-colors truncate">
                                                 {item.title}
@@ -235,13 +253,9 @@ const HomeNewsSection = React.memo(() => {
                 </div>
             </div>
 
-            {/* Slider Container - Removed py-10 here to move it to track for shadow visibility */}
-            <div
-                className="relative w-full"
-                onMouseEnter={() => setIsPaused(true)}
-                onMouseLeave={handleMouseLeave}
-            >
-                {/* Navigation Buttons (Floating with 100% Click Priority via z-50 & stopPropagation) */}
+            {/* Slider Container */}
+            <div className="relative w-full">
+                {/* Navigation Buttons */}
                 <button
                     onClick={(e) => {
                         e.stopPropagation();
@@ -265,10 +279,10 @@ const HomeNewsSection = React.memo(() => {
                     <ArrowRight className="w-5 h-5" />
                 </button>
 
-                {/* Scrollable Track - px-20 md:px-24 ensures 1st and last cards don't overlap arrows in initial/end states */}
+                {/* Scrollable Track */}
                 <div
                     ref={scrollRef}
-                    className={`flex gap-8 px-20 md:px-24 py-12 overflow-x-auto no-scrollbar select-none overscroll-x-contain touch-pan-y ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+                    className="flex gap-8 px-20 md:px-24 py-12 overflow-x-auto no-scrollbar select-none overscroll-x-contain touch-pan-y cursor-grab active:cursor-grabbing"
                     onMouseDown={handleMouseDown}
                     onMouseUp={handleMouseUp}
                     onMouseMove={handleMouseMove}
@@ -279,7 +293,8 @@ const HomeNewsSection = React.memo(() => {
                             key={item.id}
                             className="w-[300px] md:w-[350px] shrink-0 h-[450px]"
                         >
-                            <div className="h-full bg-white rounded-3xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-teal-400 transition-all duration-200 overflow-hidden flex flex-col relative group">
+                            {/* Card - Formatted with exact Agenda layout */}
+                            <div className="h-full bg-white rounded-3xl border border-slate-200 hover:border-teal-400/80 shadow-md hover:shadow-xl transition-all duration-200 overflow-hidden flex flex-col relative group">
                                 {/* Click Overlay */}
                                 <div 
                                     className="absolute inset-0 z-30 cursor-pointer" 
@@ -293,46 +308,67 @@ const HomeNewsSection = React.memo(() => {
                                     {item.image_url ? (
                                         <img
                                             src={getOptimizedImageUrl(item.image_url, 700, 80)}
-                                            srcSet={getImageSrcSet(item.image_url)}
-                                            sizes="(max-width: 640px) 300px, 350px"
                                             alt={item.title}
-                                            loading="lazy"
+                                            loading="eager"
                                             decoding="async"
                                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 pointer-events-none"
                                         />
                                     ) : (
                                         <div className="w-full h-full flex flex-col items-center justify-center bg-teal-50 text-teal-300">
                                             <Newspaper className="h-16 w-16 mb-4 opacity-50" />
-                                            <span className="text-xs font-bold uppercase tracking-widest opacity-70">Actualité</span>
                                         </div>
                                     )}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent pointer-events-none"></div>
 
-                                    {/* Date Badge */}
-                                    <div className="absolute top-4 left-4 z-20">
-                                        <div className="bg-white/95 px-3 py-1.5 rounded-full flex items-center gap-2 shadow-md border border-slate-100">
-                                            <span className="text-sm font-black text-teal-600 leading-none">{new Date(item.published_at).getDate()}</span>
-                                            <span className="text-xs font-bold uppercase text-slate-700 tracking-wider">
-                                                {new Date(item.published_at).toLocaleDateString('fr-FR', { month: 'short' }).replace('.', '')}
+                                    {/* Date Badge Top Right */}
+                                    <div className="absolute top-3 right-3 z-20">
+                                        <div className="bg-white/95 px-3 py-1.5 rounded-2xl flex flex-col items-center justify-center shadow-md border border-slate-100 min-w-[52px]">
+                                            <span className="text-[10px] font-black uppercase text-teal-600 tracking-wider leading-none">
+                                                {item.monthShort}
+                                            </span>
+                                            <span className="text-lg font-black text-slate-800 leading-none mt-0.5">
+                                                {item.dayNum}
                                             </span>
                                         </div>
                                     </div>
+
+                                    {/* Type Badge Bottom Left */}
+                                    <div className="absolute bottom-3 left-3 z-20">
+                                        <span className="px-2.5 py-1 rounded-full bg-white/95 border border-slate-200 text-slate-700 text-[10px] font-bold uppercase tracking-wider shadow-sm flex items-center gap-1.5">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-teal-500"></div>
+                                            Actualité
+                                        </span>
+                                    </div>
                                 </div>
 
-                                {/* Content Section */}
-                                <div className="p-6 flex flex-col flex-1 bg-white">
-                                    <h3 className="font-bold text-lg text-slate-900 mb-2 leading-snug group-hover:text-teal-600 transition-colors line-clamp-2">
+                                {/* Body Content */}
+                                <div className="p-5 flex-grow flex flex-col bg-white">
+                                    {/* Date complète mise en avant */}
+                                    <div className="flex items-center gap-1.5 text-xs font-bold text-teal-600 uppercase tracking-wide mb-1">
+                                        <Calendar className="w-3.5 h-3.5 text-teal-600 flex-shrink-0" />
+                                        <span>
+                                            {item.fullDateStr}
+                                        </span>
+                                    </div>
+
+                                    {/* Titre */}
+                                    <h3 className="font-bold text-base text-slate-900 mb-1.5 group-hover:text-teal-600 transition-colors line-clamp-1 leading-snug">
                                         {item.title}
                                     </h3>
 
-                                    <p className="text-slate-600 text-sm leading-relaxed line-clamp-3 mb-4 font-normal">
+                                    {/* Description */}
+                                    <p className="text-slate-600 text-xs leading-relaxed line-clamp-2 mb-3 font-normal">
                                         {item.content}
                                     </p>
 
-                                    <div className="mt-auto flex items-center justify-between border-t border-slate-100 pt-4">
-                                        <span className="text-xs font-bold text-teal-700 uppercase tracking-wide flex items-center">
-                                            <CalendarDays className="w-4 h-4 mr-2 text-teal-600" />
-                                            {new Date(item.published_at).toLocaleDateString('fr-FR', { year: 'numeric' })}
-                                        </span>
+                                    {/* Footer Capsule & Action */}
+                                    <div className="mt-auto pt-2.5 border-t border-slate-100 flex items-center justify-between">
+                                        <div className="flex items-center bg-slate-50 rounded-xl px-2.5 py-1.5 border border-slate-100">
+                                            <CalendarDays className="w-3.5 h-3.5 mr-1.5 text-teal-600 flex-shrink-0" />
+                                            <span className="text-slate-700 text-xs font-medium">
+                                                {item.yearStr}
+                                            </span>
+                                        </div>
 
                                         <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 group-hover:bg-teal-600 group-hover:text-white transition-colors">
                                             <ArrowRight className="w-4 h-4" />
