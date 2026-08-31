@@ -49,34 +49,13 @@ const openInNewTab = (url: string) => {
     ? url
     : `${BASE_URL}${url.startsWith('/') ? '' : '/'}${url}`;
 
-  try {
-    const opened = window.open(fullUrl, '_blank', 'noopener,noreferrer');
-    if (!opened || opened.closed || typeof opened.closed === 'undefined') {
-      const a = document.createElement('a');
-      a.href = fullUrl;
-      a.target = '_blank';
-      a.rel = 'noopener noreferrer';
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(() => {
-        try {
-          document.body.removeChild(a);
-        } catch (e) {}
-      }, 100);
-    }
-  } catch (e) {
-    const a = document.createElement('a');
-    a.href = fullUrl;
-    a.target = '_blank';
-    a.rel = 'noopener noreferrer';
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => {
-      try {
-        document.body.removeChild(a);
-      } catch (err) {}
-    }, 100);
-  }
+  const a = document.createElement('a');
+  a.href = fullUrl;
+  a.target = '_blank';
+  a.rel = 'noopener noreferrer';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 };
 
 const Media = () => {
