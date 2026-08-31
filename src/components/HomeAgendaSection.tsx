@@ -433,7 +433,7 @@ const HomeAgendaSection = React.memo(() => {
                 {events.length > 0 ? (
                     <div
                         ref={scrollRef}
-                        className="flex gap-8 px-20 md:px-24 py-12 overflow-x-auto no-scrollbar select-none cursor-grab active:cursor-grabbing"
+                        className="flex gap-8 px-20 md:px-24 py-12 overflow-x-auto no-scrollbar select-none overscroll-x-contain touch-pan-y cursor-grab active:cursor-grabbing"
                         onMouseDown={handleMouseDown}
                         onMouseUp={handleMouseUp}
                         onMouseMove={handleMouseMove}
@@ -442,7 +442,7 @@ const HomeAgendaSection = React.memo(() => {
                         {events.map((event) => (
                             <div key={event.id} className="w-[300px] md:w-[350px] shrink-0 h-[450px]">
                                 {/* Dark Card */}
-                                <div className="h-full bg-slate-800 rounded-3xl border border-slate-700 hover:border-teal-400/80 shadow-md hover:shadow-lg transition-colors duration-150 overflow-hidden flex flex-col relative group">
+                                <div className="h-full bg-slate-800 rounded-3xl border border-slate-700 hover:border-teal-400/80 shadow-md hover:shadow-xl transition-all duration-200 overflow-hidden flex flex-col relative group">
                                     {/* Click Overlay */}
                                     <div 
                                         className="absolute inset-0 z-30 cursor-pointer" 
@@ -451,8 +451,8 @@ const HomeAgendaSection = React.memo(() => {
                                         }}
                                     ></div>
 
-                                    {/* Image / Header */}
-                                    <div className="h-[175px] relative overflow-hidden bg-slate-900 flex-shrink-0">
+                                    {/* Image / Header with standard 16/10 aspect ratio */}
+                                    <div className="aspect-[16/10] relative overflow-hidden bg-slate-900 flex-shrink-0">
                                         {event.image_url ? (
                                             <img
                                                 src={getOptimizedImageUrl(event.image_url, 700, 80)}
@@ -461,7 +461,7 @@ const HomeAgendaSection = React.memo(() => {
                                                 alt={event.title}
                                                 loading="lazy"
                                                 decoding="async"
-                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 pointer-events-none"
+                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 pointer-events-none"
                                             />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center opacity-30">
