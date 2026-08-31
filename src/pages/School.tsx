@@ -1,11 +1,10 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { Users, Sparkles, Compass, Rocket, School as SchoolIcon, Presentation, Lightbulb, Heart, Mic2, History, X, ZoomIn } from 'lucide-react';
 import PageHero from '../components/PageHero';
 import HistoryTimeline from '../components/HistoryTimeline';
 
 // Interfaces (peuvent être partagées)
-
 
 interface Instrument {
   id: string;
@@ -14,8 +13,6 @@ interface Instrument {
   description: string | null;
   photo_url: string | null;
 }
-
-
 
 import { API_URL, BASE_URL } from '../config';
 import { getOptimizedImageUrl, getImageSrcSet } from '../utils/image';
@@ -45,8 +42,10 @@ const School = () => {
   });
   const [instrumentsLoading, setInstrumentsLoading] = useState(() => instruments.length === 0);
   const [selectedInstrument, setSelectedInstrument] = useState<Instrument | null>(null);
-  const [previewPhoto, setPreviewPhoto] = useState<string | null>(null);  // Stable memoized instrument list with pre-optimized URLs
-  const displayedInstruments = React.useMemo(() => {
+  const [previewPhoto, setPreviewPhoto] = useState<string | null>(null);
+
+  // Stable memoized instrument list with pre-optimized URLs
+  const displayedInstruments = useMemo(() => {
     const list = [...instruments];
     if (!list.some(i => i.name.toLowerCase().includes('formation'))) {
       list.push({
