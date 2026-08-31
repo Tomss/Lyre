@@ -295,6 +295,11 @@ const HomeAgendaSection = React.memo(() => {
                                             <h3 className="font-bold text-sm sm:text-base text-white mb-1 group-hover:text-teal-300 transition-colors truncate">
                                                 {item.title}
                                             </h3>
+                                            {item.description && (
+                                                <p className="text-slate-400 text-xs line-clamp-1 leading-relaxed hidden sm:block mb-1 font-normal">
+                                                    {item.description}
+                                                </p>
+                                            )}
                                             <div className="flex items-center space-x-4 text-slate-400 text-xs hidden sm:flex">
                                                 <div className="flex items-center">
                                                     <Clock className="w-3 h-3 mr-1" />
@@ -453,21 +458,33 @@ const HomeAgendaSection = React.memo(() => {
                                             {event.title}
                                         </h3>
 
+                                        {event.description ? (
+                                            <p className="text-slate-400 text-sm leading-relaxed line-clamp-3 mb-4 font-normal">
+                                                {event.description}
+                                            </p>
+                                        ) : (
+                                            <p className="text-slate-500/70 text-sm italic line-clamp-3 mb-4 font-normal">
+                                                Aucune description disponible pour cet événement.
+                                            </p>
+                                        )}
+
                                         <div className="space-y-2 mt-auto pt-4 border-t border-slate-700/60">
                                             <div className="flex items-center text-slate-300 text-xs font-medium">
-                                                <Clock className="w-4 h-4 mr-2 text-teal-400" />
-                                                {(() => {
-                                                    const startTime = new Date(event.event_date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }).replace(':', 'h');
-                                                    if (event.end_time) {
-                                                        const endTime = event.end_time.slice(0, 5).replace(':', 'h');
-                                                        return `${startTime} à ${endTime}`;
-                                                    }
-                                                    return startTime;
-                                                })()}
+                                                <Clock className="w-4 h-4 mr-2 text-teal-400 flex-shrink-0" />
+                                                <span>
+                                                    {(() => {
+                                                        const startTime = new Date(event.event_date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }).replace(':', 'h');
+                                                        if (event.end_time) {
+                                                            const endTime = event.end_time.slice(0, 5).replace(':', 'h');
+                                                            return `${startTime} à ${endTime}`;
+                                                        }
+                                                        return startTime;
+                                                    })()}
+                                                </span>
                                             </div>
                                             <div className="flex items-center text-slate-300 text-xs font-medium">
-                                                <MapPin className="w-4 h-4 mr-2 text-teal-400" />
-                                                <span className="truncate max-w-[260px]">{event.location || 'Lieu à définir'}</span>
+                                                <MapPin className="w-4 h-4 mr-2 text-teal-400 flex-shrink-0" />
+                                                <span className="truncate max-w-[240px]">{event.location || 'Lieu à définir'}</span>
                                             </div>
                                         </div>
                                     </div>
