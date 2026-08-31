@@ -153,31 +153,8 @@ const HomeAgendaSection = React.memo(() => {
         }
     };
 
-    if (loading) {
-        return (
-            <section id="agenda" className="py-24 bg-slate-900 relative scroll-mt-20 overflow-hidden group/section text-white min-h-[600px]">
-                <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 mb-12 text-center relative z-10">
-                    <h2 className="font-bold text-3xl md:text-5xl text-white">Agenda</h2>
-                </div>
-                <div className="flex gap-8 px-20 md:px-24 py-12 overflow-x-auto no-scrollbar select-none">
-                    {[1, 2, 3, 4].map((i) => (
-                        <div key={i} className="w-[300px] md:w-[350px] shrink-0 h-[450px] bg-slate-800/60 rounded-3xl border border-slate-700/60 animate-pulse flex flex-col overflow-hidden">
-                            <div className="h-[175px] bg-slate-700/40" />
-                            <div className="p-5 flex-grow flex flex-col space-y-3">
-                                <div className="h-4 bg-slate-700/50 rounded w-2/3" />
-                                <div className="h-5 bg-slate-700/50 rounded w-4/5" />
-                                <div className="h-3 bg-slate-700/30 rounded w-full mt-2" />
-                                <div className="mt-auto pt-3 border-t border-slate-700/40 space-y-2">
-                                    <div className="h-8 bg-slate-700/40 rounded-xl" />
-                                    <div className="h-8 bg-slate-700/40 rounded-xl" />
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </section>
-        );
-    }
+    if (loading) return null;
+    if (events.length === 0) return null;
 
     return (
         <section id="agenda" className="py-24 bg-slate-900 relative scroll-mt-20 overflow-hidden group/section text-white">
@@ -207,9 +184,9 @@ const HomeAgendaSection = React.memo(() => {
             {selectedEvent && (
                 <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center z-[1000] p-3 sm:p-6 overflow-hidden animate-in fade-in duration-300">
                     <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full max-h-[82vh] sm:max-h-[85vh] overflow-y-auto border border-slate-200 relative my-auto" data-lenis-modal onClick={(e) => e.stopPropagation()}>
-                        {/* Header/Image */}
+                        {/* Header/Image - Full Width Edge-to-Edge */}
                         <div 
-                            className={`relative aspect-[16/10] sm:max-h-[360px] bg-slate-800 flex-shrink-0 overflow-hidden ${selectedEvent.image_url ? 'cursor-pointer group' : ''}`}
+                            className={`w-full h-64 sm:h-80 md:h-96 relative bg-slate-900 flex-shrink-0 overflow-hidden ${selectedEvent.image_url ? 'cursor-pointer group' : ''}`}
                             onClick={() => {
                                 if (selectedEvent.image_url) setPreviewPhoto(selectedEvent.image_url);
                             }}
