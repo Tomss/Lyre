@@ -298,6 +298,40 @@ app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
+// High-Speed Direct Streaming for PDF documents (bypass proxy buffers & sharp)
+app.use('/uploads', (req, res, next) => {
+  if (req.method !== 'GET') return next();
+  const rawPath = req.path.replace(/^\//, '');
+  const ext = path.extname(rawPath).toLowerCase();
+  if (ext !== '.pdf') return next();
+
+  const filePath = path.join(process.cwd(), 'uploads', decodeURIComponent(rawPath));
+  let actualFile = filePath;
+  if (!fs.existsSync(actualFile)) {
+    const publicFallback = path.join(process.cwd(), 'public', decodeURIComponent(rawPath));
+    const distFallback = path.join(process.cwd(), 'dist', decodeURIComponent(rawPath));
+    if (fs.existsSync(publicFallback)) {
+      actualFile = publicFallback;
+    } else if (fs.existsSync(distFallback)) {
+      actualFile = distFallback;
+    } else {
+      return next();
+    }
+  }
+
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition', 'inline');
+  res.setHeader('Accept-Ranges', 'bytes');
+  res.setHeader('X-Accel-Buffering', 'no'); // Disable Nginx/proxy buffering for instant streaming
+  res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+  return res.sendFile(path.resolve(actualFile), {
+    acceptRanges: true,
+    cacheControl: true,
+    maxAge: '1y',
+    dotfiles: 'allow'
+  });
+});
+
 // High-Performance Dynamic Sharp Image Engine for /uploads
 app.use('/uploads', async (req, res, next) => {
   if (req.method !== 'GET') return next();
