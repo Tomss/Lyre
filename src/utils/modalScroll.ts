@@ -51,6 +51,9 @@ export function attachModalSmoothScroll(container: HTMLElement | null): () => vo
       prevent: () => false,
     });
 
+    container.scrollTop = 0;
+    modalLenis.scrollTo(0, { immediate: true });
+
     let rafId: number;
     function raf(time: number) {
       modalLenis.raf(time);

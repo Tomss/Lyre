@@ -156,7 +156,7 @@ const HomeAgendaSection = React.memo(() => {
     if (loading) return null;
 
     return (
-        <section id="agenda" className="py-24 bg-slate-900 relative scroll-mt-20 overflow-hidden group/section text-white transform-gpu">
+        <section id="agenda" className="py-24 bg-slate-900 relative scroll-mt-20 overflow-hidden group/section text-white">
             {/* Lightbox / Preview Photo */}
             {previewPhoto && (
                 <div 
