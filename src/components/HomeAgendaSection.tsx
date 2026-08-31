@@ -161,7 +161,7 @@ const HomeAgendaSection = React.memo(() => {
             {/* Lightbox / Preview Photo */}
             {previewPhoto && (
                 <div 
-                    className="fixed inset-0 z-[1010] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200"
+                    className="fixed inset-0 z-[1010] bg-black/95 flex items-center justify-center p-4 animate-in fade-in duration-200"
                     onClick={() => setPreviewPhoto(null)}
                 >
                     <div className="relative max-w-5xl max-h-[90vh] flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
@@ -182,7 +182,7 @@ const HomeAgendaSection = React.memo(() => {
 
             {/* Modal Événement */}
             {selectedEvent && (
-                <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center z-[1000] p-3 sm:p-6 overflow-hidden animate-in fade-in duration-300">
+                <div className="fixed inset-0 bg-slate-950/90 flex items-center justify-center z-[1000] p-3 sm:p-6 overflow-hidden animate-in fade-in duration-300">
                     <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full max-h-[82vh] sm:max-h-[85vh] overflow-y-auto border border-slate-200 relative my-auto" data-lenis-modal onClick={(e) => e.stopPropagation()}>
                         {/* Header/Image - Full Width Edge-to-Edge */}
                         <div 
@@ -195,15 +195,13 @@ const HomeAgendaSection = React.memo(() => {
                                 <>
                                     <img 
                                         src={getOptimizedImageUrl(selectedEvent.image_url, 1200, 85)} 
-                                        srcSet={getImageSrcSet(selectedEvent.image_url)}
-                                        sizes="(max-width: 768px) 100vw, 800px"
                                         alt={selectedEvent.title} 
-                                        loading="lazy"
+                                        loading="eager"
                                         decoding="async"
                                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
                                     />
                                     <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/20 transition-colors duration-300 flex items-center justify-center pointer-events-none">
-                                        <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900/80 backdrop-blur-sm text-white px-3.5 py-1.5 rounded-full text-xs font-semibold flex items-center space-x-1.5 shadow-lg border border-white/20">
+                                        <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 text-white px-3.5 py-1.5 rounded-full text-xs font-semibold flex items-center space-x-1.5 shadow-lg border border-white/20">
                                             <ZoomIn className="w-3.5 h-3.5 text-teal-400" />
                                             <span>Agrandir</span>
                                         </div>
@@ -222,14 +220,14 @@ const HomeAgendaSection = React.memo(() => {
                                     e.stopPropagation();
                                     setSelectedEvent(null);
                                 }}
-                                className="absolute top-4 right-4 w-10 h-10 bg-black/30 hover:bg-black/50 backdrop-blur-md rounded-full text-white flex items-center justify-center transition-colors border border-white/20 z-20"
+                                className="absolute top-4 right-4 w-10 h-10 bg-slate-900/80 hover:bg-slate-900 rounded-full text-white flex items-center justify-center transition-colors border border-white/20 z-20"
                             >
                                 <X className="w-5 h-5" />
                             </button>
                             
                             {/* Type Badge */}
                             <div className="absolute top-4 left-4 z-20">
-                                <span className="px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-white text-xs font-bold uppercase tracking-wide shadow-sm flex items-center gap-2">
+                                <span className="px-3 py-1.5 rounded-full bg-slate-900/90 border border-white/10 text-white text-xs font-bold uppercase tracking-wide shadow-sm flex items-center gap-2">
                                     <div className={`w-1.5 h-1.5 rounded-full shadow-[0_0_5px_currentColor] ${
                                         selectedEvent.event_type === 'concert' ? 'bg-emerald-400 text-emerald-400' : 
                                         selectedEvent.event_type === 'divers' ? 'bg-purple-400 text-purple-400' : 'bg-blue-400 text-blue-400'
@@ -289,7 +287,7 @@ const HomeAgendaSection = React.memo(() => {
 
             {/* Modal "Tout l'Agenda" */}
             {isAllEventsModalOpen && !selectedEvent && (
-                <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center z-[1000] p-3 sm:p-6 overflow-hidden animate-in fade-in duration-300">
+                <div className="fixed inset-0 bg-slate-950/90 flex items-center justify-center z-[1000] p-3 sm:p-6 overflow-hidden animate-in fade-in duration-300">
                     <div className="bg-slate-900 rounded-3xl shadow-2xl max-w-5xl w-full max-h-[82vh] sm:max-h-[85vh] flex flex-col border border-slate-700 overflow-hidden relative my-auto" onClick={(e) => e.stopPropagation()}>
                         {/* Header Modal */}
                         <div className="p-5 sm:p-6 border-b border-slate-800 flex items-center justify-between bg-slate-900 z-10 flex-shrink-0">
@@ -319,9 +317,9 @@ const HomeAgendaSection = React.memo(() => {
                                                 <img 
                                                     src={getOptimizedImageUrl(item.image_url, 400, 80)} 
                                                     alt={item.title} 
-                                                    loading="lazy"
+                                                    loading="eager"
                                                     decoding="async"
-                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 pointer-events-none" 
+                                                    className="w-full h-full object-cover pointer-events-none" 
                                                 />
                                             ) : (
                                                 <div className="w-full h-full flex items-center justify-center text-teal-400 bg-slate-900">

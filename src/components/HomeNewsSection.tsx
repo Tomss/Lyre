@@ -110,7 +110,7 @@ const HomeNewsSection = React.memo(() => {
         <section id="actualites" className="py-24 bg-white relative overflow-hidden scroll-mt-20 group/section">
             {/* Modal Actualité */}
             {selectedNews && (
-                <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
+                <div className="fixed inset-0 bg-slate-950/90 flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
                     <div className="bg-white rounded-3xl shadow-2xl max-w-[95vw] sm:max-w-[85vw] lg:max-w-5xl w-fit max-h-[92vh] overflow-y-auto border border-slate-200 relative mb-4 mt-4" onClick={(e) => e.stopPropagation()}>
                         {/* Header/Image */}
                         <div className="relative bg-slate-900 flex flex-col items-center justify-center overflow-hidden">
@@ -126,19 +126,19 @@ const HomeNewsSection = React.memo(() => {
                                 </div>
                             )}
                             
-                            {/* Overlay Gradient pour la lisibilitÃ© du texte en bas */}
+                            {/* Overlay Gradient pour la lisibilité du texte en bas */}
                             <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-slate-950/60 to-transparent pointer-events-none z-10"></div>
                             
-                            {/* Bouton Fermeture fixÃ© en haut Ã  droite de l'image ou du modal */}
+                            {/* Bouton Fermeture fixé en haut à droite de l'image ou du modal */}
                             <button 
                                 onClick={() => setSelectedNews(null)}
-                                className="absolute top-4 right-4 w-10 h-10 bg-black/40 hover:bg-black/70 backdrop-blur-md rounded-full text-white flex items-center justify-center transition-all z-20 border border-white/20 hover:scale-110"
+                                className="absolute top-4 right-4 w-10 h-10 bg-slate-900/80 hover:bg-slate-900 rounded-full text-white flex items-center justify-center transition-all z-20 border border-white/20 hover:scale-110"
                             >
                                 <X className="w-5 h-5" />
                             </button>
                             
-                            {/* Date SuperposÃ©e - Plus discrÃ¨te */}
-                            <div className="absolute bottom-4 left-4 flex items-center text-white/90 text-xs font-semibold z-20 bg-black/30 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/10">
+                            {/* Date Superposée - Plus discrète */}
+                            <div className="absolute bottom-4 left-4 flex items-center text-white/90 text-xs font-semibold z-20 bg-slate-900/80 px-3 py-1.5 rounded-full border border-white/10">
                                 <CalendarDays className="w-3.5 h-3.5 mr-2 text-teal-400" />
                                 {new Date(selectedNews.published_at).toLocaleDateString('fr-FR', {
                                     weekday: 'short',
@@ -166,7 +166,7 @@ const HomeNewsSection = React.memo(() => {
 
             {/* Modal "Toutes les Actualités" (50 dernières) */}
             {isAllNewsModalOpen && !selectedNews && (
-                <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-[90] p-4 animate-in fade-in duration-300">
+                <div className="fixed inset-0 bg-slate-950/90 flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
                     <div className="bg-white rounded-3xl shadow-2xl max-w-5xl w-full max-h-[90vh] flex flex-col border border-slate-200 overflow-hidden" onClick={(e) => e.stopPropagation()}>
                         {/* Header Modal */}
                         <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-white z-10">
