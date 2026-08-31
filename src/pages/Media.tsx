@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTheme } from '../context/ThemeContext';
-import { API_URL } from '../config';
+import { API_URL, BASE_URL } from '../config';
 import { Link } from 'react-router-dom';
 import { Image, Camera, Music, FileText, Filter, Search, X, ArrowRight, Star, Calendar, Sparkles, Type } from 'lucide-react';
 import MediaGallery from '../components/MediaGallery';
@@ -45,13 +45,38 @@ const parseMediaFiles = (media: any): MediaFile[] => {
 
 const openInNewTab = (url: string) => {
   if (!url) return;
-  const a = document.createElement('a');
-  a.href = url;
-  a.target = '_blank';
-  a.rel = 'noopener noreferrer';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  const fullUrl = (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('blob:'))
+    ? url
+    : `${BASE_URL}${url.startsWith('/') ? '' : '/'}${url}`;
+
+  try {
+    const opened = window.open(fullUrl, '_blank', 'noopener,noreferrer');
+    if (!opened || opened.closed || typeof opened.closed === 'undefined') {
+      const a = document.createElement('a');
+      a.href = fullUrl;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        try {
+          document.body.removeChild(a);
+        } catch (e) {}
+      }, 100);
+    }
+  } catch (e) {
+    const a = document.createElement('a');
+    a.href = fullUrl;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      try {
+        document.body.removeChild(a);
+      } catch (err) {}
+    }, 100);
+  }
 };
 
 const Media = () => {
@@ -209,11 +234,7 @@ const Media = () => {
     const targetFile = pdfFile || (media.media_type === 'lyrissimot' ? files[0] : null);
 
     if (targetFile && targetFile.file_path) {
-      const raw = targetFile.file_path;
-      const pdfUrl = (raw.startsWith('http') || raw.startsWith('blob:'))
-        ? raw
-        : `${BASE_URL}${raw.startsWith('/') ? '' : '/'}${raw}`;
-      openInNewTab(pdfUrl);
+      openInNewTab(targetFile.file_path);
       return;
     }
 
