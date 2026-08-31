@@ -38,7 +38,7 @@ export function attachModalSmoothScroll(container: HTMLElement | null): () => vo
   try {
     const modalLenis = new Lenis({
       wrapper: container,
-      content: container,
+      content: (container.firstElementChild as HTMLElement) || container,
       eventsTarget: modalOverlay as HTMLElement,
       duration: 0.7,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),

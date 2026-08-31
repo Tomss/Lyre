@@ -85,6 +85,16 @@ const HomeAgendaSection = React.memo(() => {
                 console.error('Error fetching events:', error);
             } finally {
                 setLoading(false);
+                setTimeout(() => {
+                    if ((window as any).__lenis) {
+                        (window as any).__lenis.resize();
+                    }
+                }, 50);
+                setTimeout(() => {
+                    if ((window as any).__lenis) {
+                        (window as any).__lenis.resize();
+                    }
+                }, 300);
             }
         };
         fetchEvents();
@@ -104,10 +114,16 @@ const HomeAgendaSection = React.memo(() => {
             window.addEventListener('keydown', handleKeyDown);
         } else {
             document.body.style.overflow = 'unset';
+            if ((window as any).__lenis) {
+                (window as any).__lenis.resize();
+            }
         }
         return () => {
             document.body.style.overflow = 'unset';
             window.removeEventListener('keydown', handleKeyDown);
+            if ((window as any).__lenis) {
+                (window as any).__lenis.resize();
+            }
         };
     }, [selectedEvent, isAllEventsModalOpen, previewPhoto]);
 
@@ -408,7 +424,7 @@ const HomeAgendaSection = React.memo(() => {
                         {events.map((event) => (
                             <div key={event.id} className="w-[310px] md:w-[360px] shrink-0 h-[490px]">
                                 {/* Dark Card */}
-                                <div className="h-full bg-slate-850 bg-slate-800/95 rounded-3xl border border-slate-700 hover:border-teal-400/80 shadow-lg hover:shadow-2xl hover:shadow-teal-950/30 transition-all duration-300 overflow-hidden flex flex-col relative group">
+                                <div className="h-full bg-slate-800 rounded-3xl border border-slate-700 hover:border-teal-400/80 shadow-md hover:shadow-xl transition-all duration-200 overflow-hidden flex flex-col relative group transform-gpu">
                                     {/* Click Overlay */}
                                     <div 
                                         className="absolute inset-0 z-30 cursor-pointer" 
@@ -436,7 +452,7 @@ const HomeAgendaSection = React.memo(() => {
 
                                         {/* Date Badge Stylisé */}
                                         <div className="absolute top-3.5 right-3.5 z-20">
-                                            <div className="bg-slate-900/90 backdrop-blur-md px-3.5 py-2 rounded-2xl flex flex-col items-center justify-center shadow-xl border border-teal-400/30 min-w-[56px]">
+                                            <div className="bg-slate-900/95 px-3 py-1.5 rounded-2xl flex flex-col items-center justify-center shadow-lg border border-teal-400/30 min-w-[54px]">
                                                 <span className="text-[11px] font-black uppercase text-teal-400 tracking-wider leading-none">
                                                     {new Date(event.event_date).toLocaleDateString('fr-FR', { month: 'short' }).replace('.', '')}
                                                 </span>
@@ -448,7 +464,7 @@ const HomeAgendaSection = React.memo(() => {
 
                                         {/* Type Badge */}
                                         <div className="absolute bottom-3.5 left-3.5 z-20">
-                                            <span className="px-3 py-1 rounded-full bg-slate-900/90 backdrop-blur-md border border-slate-700/80 text-white text-[11px] font-bold uppercase tracking-wider shadow-sm flex items-center gap-1.5">
+                                            <span className="px-3 py-1 rounded-full bg-slate-900/95 border border-slate-700/80 text-white text-[11px] font-bold uppercase tracking-wider shadow-sm flex items-center gap-1.5">
                                                 <div className={`w-1.5 h-1.5 rounded-full ${
                                                     event.event_type === 'concert' ? 'bg-emerald-400' :
                                                     event.event_type === 'repetition' ? 'bg-purple-400' : 'bg-blue-400'
@@ -459,7 +475,7 @@ const HomeAgendaSection = React.memo(() => {
                                     </div>
 
                                     {/* Body */}
-                                    <div className="p-6 flex-grow flex flex-col bg-slate-800/90">
+                                    <div className="p-6 flex-grow flex flex-col bg-slate-800">
                                         {/* Date complète mise en avant */}
                                         <div className="flex items-center gap-1.5 text-xs font-bold text-teal-400 uppercase tracking-wide mb-1.5">
                                             <Calendar className="w-3.5 h-3.5 text-teal-400 flex-shrink-0" />
