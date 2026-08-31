@@ -58,14 +58,17 @@ export function attachModalSmoothScroll(container: HTMLElement | null): () => vo
     }
     rafId = requestAnimationFrame(raf);
 
-    // Initial resize and delayed layout recalculation
-    modalLenis.resize();
-    const resizeTimer1 = setTimeout(() => modalLenis.resize(), 50);
-    const resizeTimer2 = setTimeout(() => modalLenis.resize(), 200);
+    // Real-time ResizeObserver so when images inside modal load, Lenis recalculates bounds immediately
+    const modalResizeObserver = new ResizeObserver(() => {
+      modalLenis.resize();
+    });
+    modalResizeObserver.observe(container);
+    if (container.firstElementChild) {
+      modalResizeObserver.observe(container.firstElementChild);
+    }
 
     const cleanup = () => {
-      clearTimeout(resizeTimer1);
-      clearTimeout(resizeTimer2);
+      modalResizeObserver.disconnect();
       cancelAnimationFrame(rafId);
       try {
         modalLenis.destroy();

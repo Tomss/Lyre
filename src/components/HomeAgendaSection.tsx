@@ -160,7 +160,7 @@ const HomeAgendaSection = React.memo(() => {
             {/* Lightbox / Preview Photo */}
             {previewPhoto && (
                 <div 
-                    className="fixed inset-0 z-[110] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200"
+                    className="fixed inset-0 z-[1010] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200"
                     onClick={() => setPreviewPhoto(null)}
                 >
                     <div className="relative max-w-5xl max-h-[90vh] flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
@@ -181,8 +181,8 @@ const HomeAgendaSection = React.memo(() => {
 
             {/* Modal Événement */}
             {selectedEvent && (
-                <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
-                    <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto border border-slate-200" onClick={(e) => e.stopPropagation()}>
+                <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center z-[1000] p-3 sm:p-6 overflow-hidden animate-in fade-in duration-300">
+                    <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full max-h-[82vh] sm:max-h-[85vh] overflow-y-auto border border-slate-200 relative my-auto" data-lenis-modal onClick={(e) => e.stopPropagation()}>
                         {/* Header/Image */}
                         <div 
                             className={`relative aspect-[16/10] sm:max-h-[360px] bg-slate-800 flex-shrink-0 overflow-hidden ${selectedEvent.image_url ? 'cursor-pointer group' : ''}`}
@@ -288,24 +288,24 @@ const HomeAgendaSection = React.memo(() => {
 
             {/* Modal "Tout l'Agenda" */}
             {isAllEventsModalOpen && !selectedEvent && (
-                <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-[90] p-4 animate-in fade-in duration-300">
-                    <div className="bg-slate-900 rounded-3xl shadow-2xl max-w-5xl w-full max-h-[90vh] flex flex-col border border-slate-700 overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center z-[1000] p-3 sm:p-6 overflow-hidden animate-in fade-in duration-300">
+                    <div className="bg-slate-900 rounded-3xl shadow-2xl max-w-5xl w-full max-h-[82vh] sm:max-h-[85vh] flex flex-col border border-slate-700 overflow-hidden relative my-auto" onClick={(e) => e.stopPropagation()}>
                         {/* Header Modal */}
-                        <div className="p-6 border-b border-slate-800 flex items-center justify-between bg-slate-900 z-10">
+                        <div className="p-5 sm:p-6 border-b border-slate-800 flex items-center justify-between bg-slate-900 z-10 flex-shrink-0">
                             <div>
-                                <h2 className="font-bold text-2xl text-white">Agenda Complet</h2>
-                                <p className="text-teal-400 text-sm">Tous les événements à venir</p>
+                                <h2 className="font-bold text-xl sm:text-2xl text-white">Agenda Complet</h2>
+                                <p className="text-teal-400 text-xs sm:text-sm">Tous les événements à venir</p>
                             </div>
                             <button 
                                 onClick={() => setIsAllEventsModalOpen(false)}
-                                className="w-10 h-10 bg-slate-800 hover:bg-slate-700 rounded-full text-slate-300 flex items-center justify-center transition-colors border border-slate-700"
+                                className="w-10 h-10 bg-slate-800 hover:bg-slate-700 rounded-full text-slate-300 flex items-center justify-center transition-colors border border-slate-700 cursor-pointer"
                             >
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
                         
                         {/* Liste au scroll */}
-                        <div className="p-4 sm:p-6 overflow-y-auto flex-1 bg-slate-800/50">
+                        <div className="p-4 sm:p-6 overflow-y-auto flex-1 bg-slate-800/50 modal-scroll" data-lenis-modal>
                             <div className="flex flex-col space-y-3">
                                 {allEvents.length > 0 ? allEvents.map((item) => (
                                     <div 

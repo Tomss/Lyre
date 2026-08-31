@@ -22,6 +22,7 @@
   .modal-smooth-scroll,
   .overflow-y-auto,
   [data-lenis-modal] {
+    scroll-behavior: auto !important;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
     transform: translateZ(0);
