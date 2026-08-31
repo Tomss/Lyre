@@ -220,12 +220,10 @@ const School = () => {
                       <div className="absolute inset-0 z-0 overflow-hidden">
                          <img
                           src={getOptimizedImageUrl(inst.photo_url, 600, 80)}
-                          srcSet={getImageSrcSet(inst.photo_url)}
-                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 300px"
                           alt={inst.name}
-                          loading="lazy"
+                          loading="eager"
                           decoding="async"
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 opacity-40 transform-gpu"
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 opacity-40 pointer-events-none"
                           onError={(e) => {
                             // @ts-ignore
                             e.currentTarget.style.display = 'none';
@@ -258,11 +256,11 @@ const School = () => {
 
           {/* Modal Instrument */}
           {selectedInstrument && (
-            <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
-                <div className="bg-slate-900 rounded-3xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto border border-white/10" onClick={(e) => e.stopPropagation()}>
-                    {/* Header/Image */}
+            <div className="fixed inset-0 bg-slate-950/90 flex items-center justify-center z-[1000] p-3 sm:p-6 overflow-hidden animate-in fade-in duration-300">
+                <div className="bg-slate-900 rounded-3xl shadow-2xl max-w-3xl w-full max-h-[82vh] sm:max-h-[85vh] overflow-y-auto border border-white/10 relative my-auto" data-lenis-modal onClick={(e) => e.stopPropagation()}>
+                    {/* Header/Image - Full Width Edge-to-Edge */}
                     <div 
-                      className={`relative aspect-[16/10] sm:max-h-[360px] bg-slate-800 flex-shrink-0 overflow-hidden ${selectedInstrument.photo_url ? 'cursor-pointer group' : ''}`}
+                      className={`w-full h-64 sm:h-80 md:h-96 relative bg-slate-900 flex-shrink-0 overflow-hidden ${selectedInstrument.photo_url ? 'cursor-pointer group' : ''}`}
                       onClick={() => {
                         if (selectedInstrument.photo_url) setPreviewPhoto(selectedInstrument.photo_url);
                       }}
@@ -271,15 +269,13 @@ const School = () => {
                             <>
                               <img 
                                 src={getOptimizedImageUrl(selectedInstrument.photo_url, 1200, 85)} 
-                                srcSet={getImageSrcSet(selectedInstrument.photo_url)}
-                                sizes="(max-width: 768px) 100vw, 800px"
                                 alt={selectedInstrument.name} 
-                                loading="lazy"
+                                loading="eager"
                                 decoding="async"
                                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
                               />
                               <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/20 transition-colors duration-300 flex items-center justify-center pointer-events-none">
-                                  <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900/80 backdrop-blur-sm text-white px-3.5 py-1.5 rounded-full text-xs font-semibold flex items-center space-x-1.5 shadow-lg border border-white/20">
+                                  <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 text-white px-3.5 py-1.5 rounded-full text-xs font-semibold flex items-center space-x-1.5 shadow-lg border border-white/20">
                                       <ZoomIn className="w-3.5 h-3.5 text-teal-400" />
                                       <span>Agrandir</span>
                                   </div>
@@ -298,7 +294,7 @@ const School = () => {
                               e.stopPropagation();
                               setSelectedInstrument(null);
                             }}
-                            className="absolute top-4 right-4 w-10 h-10 bg-black/30 hover:bg-black/50 backdrop-blur-md rounded-full text-white flex items-center justify-center transition-colors border border-white/20 z-20"
+                            className="absolute top-4 right-4 w-10 h-10 bg-slate-900/80 hover:bg-slate-900 rounded-full text-white flex items-center justify-center transition-colors border border-white/20 z-20"
                         >
                             <X className="w-5 h-5" />
                         </button>
@@ -310,7 +306,7 @@ const School = () => {
                             {selectedInstrument.name}
                         </h2>
 
-                        <div className="flex flex-col sm:flex-row gap-6 mb-8 p-4 bg-slate-800/80 rounded-2xl border border-white/10">
+                        <div className="flex flex-col sm:flex-row gap-6 mb-8 p-4 bg-slate-800 rounded-2xl border border-white/10">
                             <div className="flex items-center text-teal-200 font-medium">
                                 <Users className="w-5 h-5 mr-3 text-teal-400" />
                                 Professeur(s) : <span className="text-white ml-2">{selectedInstrument.teacher || "À confirmer"}</span>
@@ -334,7 +330,7 @@ const School = () => {
           {/* Modal Lightbox Plein Écran Instrument */}
           {previewPhoto && (
               <div 
-                  className="fixed inset-0 z-[120] bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 sm:p-8 animate-in fade-in duration-200"
+                  className="fixed inset-0 z-[1010] bg-black/95 flex items-center justify-center p-4 sm:p-8 animate-in fade-in duration-200"
                   onClick={() => setPreviewPhoto(null)}
               >
                   <div className="relative max-w-6xl max-h-[90vh] flex flex-col items-center" onClick={e => e.stopPropagation()}>

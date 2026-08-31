@@ -198,7 +198,7 @@ const HistoryTimeline = () => {
                                                     className="w-full h-full object-contain p-2 transition-transform duration-500 group-hover:scale-105"
                                                 />
                                                 <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/20 transition-colors duration-300 flex items-center justify-center pointer-events-none">
-                                                    <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900/80 backdrop-blur-sm text-white px-3.5 py-1.5 rounded-full text-xs font-semibold flex items-center space-x-1.5 shadow-lg border border-white/20">
+                                                    <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 text-white px-3.5 py-1.5 rounded-full text-xs font-semibold flex items-center space-x-1.5 shadow-lg border border-white/20">
                                                         <ZoomIn className="w-3.5 h-3.5 text-teal-400" />
                                                         <span>Agrandir</span>
                                                     </div>
@@ -224,7 +224,7 @@ const HistoryTimeline = () => {
             {/* Modal Lightbox Plein Écran Histoire */}
             {previewPhoto && (
                 <div 
-                    className="fixed inset-0 z-[120] bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 sm:p-8 animate-in fade-in duration-200"
+                    className="fixed inset-0 z-[1010] bg-black/95 flex items-center justify-center p-4 sm:p-8 animate-in fade-in duration-200"
                     onClick={() => setPreviewPhoto(null)}
                 >
                     <div className="relative max-w-6xl max-h-[90vh] flex flex-col items-center" onClick={e => e.stopPropagation()}>
