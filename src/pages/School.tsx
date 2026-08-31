@@ -81,6 +81,11 @@ const School = () => {
         console.error('Erreur lors de la récupération des instruments:', err);
       } finally {
         setInstrumentsLoading(false);
+        setTimeout(() => {
+          if ((window as any).__lenis) {
+            (window as any).__lenis.resize();
+          }
+        }, 50);
       }
     };
 
@@ -168,7 +173,6 @@ const School = () => {
 
       {/* Section Classes & Professeurs (Fusionnée) */}
       <section id="classes" className="scroll-mt-20 py-20 bg-slate-900 text-white relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
         <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-teal-500/50 to-transparent"></div>
 
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -176,10 +180,7 @@ const School = () => {
             <h2 className="font-bold text-4xl md:text-5xl text-white mb-6">
               Nos Classes & Professeurs
             </h2>
-            <div className="h-1 w-24 bg-gradient-to-r from-teal-500 to-cyan-500 rounded-full mx-auto shadow-[0_0_15px_rgba(20,184,166,0.5)]"></div>
-            <p className="mt-6 text-teal-200 text-lg max-w-2xl mx-auto">
-              L'excellence pédagogique au service de votre passion. Découvrez nos enseignements et les professeurs qui les dispensent.
-            </p>
+            <div className="h-1 w-24 bg-gradient-to-r from-teal-500 to-cyan-500 rounded-full mx-auto shadow-sm shadow-teal-500/30"></div>
           </div>
 
           {instrumentsLoading ? (
@@ -207,12 +208,10 @@ const School = () => {
                   description: "Le monde magique de la musique : chants, mime, percussions corporelles... Une découverte ludique pour les tout-petits !"
                 }] : [])
               ].map((inst, idx) => {
-                const config = getInstrumentConfig(inst.name);
-
                 return (
                   <div
                     key={inst.id || idx}
-                    className={`group relative bg-slate-800 rounded-2xl border border-white/10 overflow-hidden hover:border-teal-400 transition-colors duration-200 cursor-pointer ${inst.name.toLowerCase().includes('formation') || inst.name.toLowerCase().includes('eveil') || inst.name.toLowerCase().includes('éveil') ? 'md:col-span-2 lg:col-span-1 xl:col-span-2' : ''}`}
+                    className={`group relative bg-slate-800 rounded-2xl border border-white/10 overflow-hidden hover:border-teal-400 transition-colors duration-150 cursor-pointer ${inst.name.toLowerCase().includes('formation') || inst.name.toLowerCase().includes('eveil') || inst.name.toLowerCase().includes('éveil') ? 'md:col-span-2 lg:col-span-1 xl:col-span-2' : ''}`}
                     onClick={() => setSelectedInstrument(inst)}
                   >
                     {/* Image Background */}
@@ -229,17 +228,17 @@ const School = () => {
                             e.currentTarget.style.display = 'none';
                           }}
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/80 to-transparent"></div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/80 to-transparent pointer-events-none"></div>
                       </div>
                     )}
 
                     <div className="p-6 relative z-10 flex flex-col h-full min-h-[220px]">
-                      <h3 className="font-bold text-2xl text-white mb-2 group-hover:text-teal-300 transition-colors drop-shadow-md">
+                      <h3 className="font-bold text-2xl text-white mb-2 group-hover:text-teal-300 transition-colors">
                         {inst.name}
                       </h3>
 
                       <div className="mt-auto pt-6 border-t border-white/10 flex items-center gap-3">
-                        <div className="shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center border border-white/20 shadow-lg">
+                        <div className="shrink-0 w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center border border-white/20 shadow-sm">
                           <Users className="w-5 h-5 text-teal-400" />
                         </div>
                         <div className="overflow-hidden">
