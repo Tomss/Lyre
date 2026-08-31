@@ -53,7 +53,7 @@ const HomeAgendaSection = React.memo(() => {
         if (!isDragging || !scrollRef.current) return;
         e.preventDefault();
         const x = e.pageX - scrollRef.current.offsetLeft;
-        const walk = (x - startX) * 2; // Scroll sensitivity
+        const walk = (x - startX) * 2;
         setDragDistance(Math.abs(walk));
         scrollRef.current.scrollLeft = scrollLeft - walk;
     };
@@ -83,6 +83,11 @@ const HomeAgendaSection = React.memo(() => {
                 console.error('Error fetching events:', error);
             } finally {
                 setLoading(false);
+                setTimeout(() => {
+                    if ((window as any).__lenis) {
+                        (window as any).__lenis.resize();
+                    }
+                }, 50);
             }
         };
         fetchEvents();
@@ -102,10 +107,16 @@ const HomeAgendaSection = React.memo(() => {
             window.addEventListener('keydown', handleKeyDown);
         } else {
             document.body.style.overflow = 'unset';
+            if ((window as any).__lenis) {
+                (window as any).__lenis.resize();
+            }
         }
         return () => {
             document.body.style.overflow = 'unset';
             window.removeEventListener('keydown', handleKeyDown);
+            if ((window as any).__lenis) {
+                (window as any).__lenis.resize();
+            }
         };
     }, [selectedEvent, isAllEventsModalOpen, previewPhoto]);
 
@@ -400,9 +411,9 @@ const HomeAgendaSection = React.memo(() => {
                         onMouseLeave={handleMouseLeave}
                     >
                         {events.map((event) => (
-                            <div key={event.id} className="w-[310px] md:w-[360px] shrink-0 h-[490px]">
+                            <div key={event.id} className="w-[300px] md:w-[350px] shrink-0 h-[450px]">
                                 {/* Dark Card */}
-                                <div className="h-full bg-slate-800 rounded-3xl border border-slate-700 hover:border-teal-400/80 shadow-lg hover:shadow-2xl hover:shadow-teal-950/30 transition-all duration-300 overflow-hidden flex flex-col relative group">
+                                <div className="h-full bg-slate-800 rounded-3xl border border-slate-700 hover:border-teal-400/80 shadow-md hover:shadow-xl transition-all duration-200 overflow-hidden flex flex-col relative group">
                                     {/* Click Overlay */}
                                     <div 
                                         className="absolute inset-0 z-30 cursor-pointer" 
@@ -412,12 +423,12 @@ const HomeAgendaSection = React.memo(() => {
                                     ></div>
 
                                     {/* Image / Header */}
-                                    <div className="h-[190px] relative overflow-hidden bg-slate-900 flex-shrink-0">
+                                    <div className="h-[175px] relative overflow-hidden bg-slate-900 flex-shrink-0">
                                         {event.image_url ? (
                                             <img
                                                 src={getOptimizedImageUrl(event.image_url, 700, 80)}
                                                 srcSet={getImageSrcSet(event.image_url)}
-                                                sizes="(max-width: 640px) 310px, 360px"
+                                                sizes="(max-width: 640px) 300px, 350px"
                                                 alt={event.title}
                                                 loading="lazy"
                                                 decoding="async"
@@ -431,20 +442,20 @@ const HomeAgendaSection = React.memo(() => {
                                         <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent pointer-events-none"></div>
 
                                         {/* Date Badge */}
-                                        <div className="absolute top-3.5 right-3.5 z-20">
-                                            <div className="bg-slate-900/90 backdrop-blur-md px-3.5 py-2 rounded-2xl flex flex-col items-center justify-center shadow-xl border border-teal-400/30 min-w-[56px]">
-                                                <span className="text-[11px] font-black uppercase text-teal-400 tracking-wider leading-none">
+                                        <div className="absolute top-3 right-3 z-20">
+                                            <div className="bg-slate-900/95 px-3 py-1.5 rounded-2xl flex flex-col items-center justify-center shadow-lg border border-teal-400/30 min-w-[52px]">
+                                                <span className="text-[10px] font-black uppercase text-teal-400 tracking-wider leading-none">
                                                     {new Date(event.event_date).toLocaleDateString('fr-FR', { month: 'short' }).replace('.', '')}
                                                 </span>
-                                                <span className="text-xl font-black text-white leading-none mt-1">
+                                                <span className="text-lg font-black text-white leading-none mt-0.5">
                                                     {new Date(event.event_date).getDate()}
                                                 </span>
                                             </div>
                                         </div>
 
                                         {/* Type Badge */}
-                                        <div className="absolute bottom-3.5 left-3.5 z-20">
-                                            <span className="px-3 py-1 rounded-full bg-slate-900/90 backdrop-blur-md border border-slate-700/80 text-white text-[11px] font-bold uppercase tracking-wider shadow-sm flex items-center gap-1.5">
+                                        <div className="absolute bottom-3 left-3 z-20">
+                                            <span className="px-2.5 py-1 rounded-full bg-slate-900/95 border border-slate-700/80 text-white text-[10px] font-bold uppercase tracking-wider shadow-sm flex items-center gap-1.5">
                                                 <div className={`w-1.5 h-1.5 rounded-full ${
                                                     event.event_type === 'concert' ? 'bg-emerald-400' :
                                                     event.event_type === 'repetition' ? 'bg-purple-400' : 'bg-blue-400'
@@ -455,9 +466,9 @@ const HomeAgendaSection = React.memo(() => {
                                     </div>
 
                                     {/* Body */}
-                                    <div className="p-6 flex-grow flex flex-col bg-slate-800">
+                                    <div className="p-5 flex-grow flex flex-col bg-slate-800">
                                         {/* Date complète mise en avant */}
-                                        <div className="flex items-center gap-1.5 text-xs font-bold text-teal-400 uppercase tracking-wide mb-1.5">
+                                        <div className="flex items-center gap-1.5 text-xs font-bold text-teal-400 uppercase tracking-wide mb-1">
                                             <Calendar className="w-3.5 h-3.5 text-teal-400 flex-shrink-0" />
                                             <span>
                                                 {new Date(event.event_date).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'long' })}
@@ -465,27 +476,27 @@ const HomeAgendaSection = React.memo(() => {
                                         </div>
 
                                         {/* Titre */}
-                                        <h3 className="font-bold text-lg text-white mb-2 group-hover:text-teal-300 transition-colors line-clamp-1 leading-snug">
+                                        <h3 className="font-bold text-base text-white mb-1.5 group-hover:text-teal-300 transition-colors line-clamp-1 leading-snug">
                                             {event.title}
                                         </h3>
 
                                         {/* Description */}
                                         {event.description ? (
-                                            <p className="text-slate-300 text-xs sm:text-sm leading-relaxed line-clamp-2 mb-4 font-normal">
+                                            <p className="text-slate-300 text-xs leading-relaxed line-clamp-2 mb-3 font-normal">
                                                 {event.description}
                                             </p>
                                         ) : (
-                                            <p className="text-slate-500 text-xs sm:text-sm italic line-clamp-2 mb-4 font-normal">
+                                            <p className="text-slate-500 text-xs italic line-clamp-2 mb-3 font-normal">
                                                 Rejoignez-nous pour ce rendez-vous musical !
                                             </p>
                                         )}
 
                                         {/* Blocs Horaires et Lieu mis en valeur */}
-                                        <div className="space-y-2 mt-auto pt-3 border-t border-slate-700/70">
+                                        <div className="space-y-1.5 mt-auto pt-2.5 border-t border-slate-700/70">
                                             {/* Horaire & Orchestre */}
-                                            <div className="flex items-center justify-between bg-slate-900/80 rounded-xl px-3 py-2 border border-slate-700/60">
+                                            <div className="flex items-center justify-between bg-slate-900/90 rounded-xl px-2.5 py-1.5 border border-slate-700/60">
                                                 <div className="flex items-center text-teal-300 text-xs font-bold">
-                                                    <Clock className="w-4 h-4 mr-2 text-teal-400 flex-shrink-0" />
+                                                    <Clock className="w-3.5 h-3.5 mr-1.5 text-teal-400 flex-shrink-0" />
                                                     <span>
                                                         {(() => {
                                                             const startTime = new Date(event.event_date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }).replace(':', 'h');
@@ -498,16 +509,16 @@ const HomeAgendaSection = React.memo(() => {
                                                     </span>
                                                 </div>
                                                 {event.orchestras && event.orchestras.length > 0 && (
-                                                    <span className="text-[10px] font-bold text-slate-300 bg-slate-800 px-2 py-0.5 rounded-md border border-slate-700 truncate max-w-[130px]" title={event.orchestras.map(o => o.name).join(', ')}>
+                                                    <span className="text-[10px] font-bold text-slate-300 bg-slate-800 px-2 py-0.5 rounded-md border border-slate-700 truncate max-w-[120px]" title={event.orchestras.map(o => o.name).join(', ')}>
                                                         {event.orchestras[0].name}
                                                     </span>
                                                 )}
                                             </div>
 
                                             {/* Lieu */}
-                                            <div className="flex items-center bg-slate-900/80 rounded-xl px-3 py-2 border border-slate-700/60">
-                                                <MapPin className="w-4 h-4 mr-2 text-rose-400 flex-shrink-0" />
-                                                <span className="text-slate-200 text-xs font-semibold truncate" title={event.location || 'Lieu à définir'}>
+                                            <div className="flex items-center bg-slate-900/90 rounded-xl px-2.5 py-1.5 border border-slate-700/60">
+                                                <MapPin className="w-3.5 h-3.5 mr-1.5 text-rose-400 flex-shrink-0" />
+                                                <span className="text-slate-200 text-xs font-medium truncate" title={event.location || 'Lieu à définir'}>
                                                     {event.location || 'Lieu à définir'}
                                                 </span>
                                             </div>
