@@ -28,8 +28,10 @@ export function attachModalSmoothScroll(container: HTMLElement | null): () => vo
   } catch (e) {}
 
   // Apply GPU containment and anti-saccade styles
+  container.style.scrollBehavior = 'auto';
   container.style.overscrollBehavior = 'contain';
   container.style.webkitOverflowScrolling = 'touch';
+  container.style.touchAction = 'pan-y';
   container.classList.add('modal-smooth-scroll');
 
   // Find the closest modal backdrop or window to capture all wheel events over the modal
@@ -38,7 +40,6 @@ export function attachModalSmoothScroll(container: HTMLElement | null): () => vo
   try {
     const modalLenis = new Lenis({
       wrapper: container,
-      content: (container.firstElementChild as HTMLElement) || container,
       eventsTarget: modalOverlay as HTMLElement,
       duration: 0.7,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),

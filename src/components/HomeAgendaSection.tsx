@@ -153,7 +153,31 @@ const HomeAgendaSection = React.memo(() => {
         }
     };
 
-    if (loading) return null;
+    if (loading) {
+        return (
+            <section id="agenda" className="py-24 bg-slate-900 relative scroll-mt-20 overflow-hidden group/section text-white min-h-[600px]">
+                <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 mb-12 text-center relative z-10">
+                    <h2 className="font-bold text-3xl md:text-5xl text-white">Agenda</h2>
+                </div>
+                <div className="flex gap-8 px-20 md:px-24 py-12 overflow-x-auto no-scrollbar select-none">
+                    {[1, 2, 3, 4].map((i) => (
+                        <div key={i} className="w-[300px] md:w-[350px] shrink-0 h-[450px] bg-slate-800/60 rounded-3xl border border-slate-700/60 animate-pulse flex flex-col overflow-hidden">
+                            <div className="h-[175px] bg-slate-700/40" />
+                            <div className="p-5 flex-grow flex flex-col space-y-3">
+                                <div className="h-4 bg-slate-700/50 rounded w-2/3" />
+                                <div className="h-5 bg-slate-700/50 rounded w-4/5" />
+                                <div className="h-3 bg-slate-700/30 rounded w-full mt-2" />
+                                <div className="mt-auto pt-3 border-t border-slate-700/40 space-y-2">
+                                    <div className="h-8 bg-slate-700/40 rounded-xl" />
+                                    <div className="h-8 bg-slate-700/40 rounded-xl" />
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </section>
+        );
+    }
 
     return (
         <section id="agenda" className="py-24 bg-slate-900 relative scroll-mt-20 overflow-hidden group/section text-white">
