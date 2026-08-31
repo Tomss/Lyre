@@ -320,18 +320,6 @@ const HomeNewsSection = React.memo(() => {
                                     )}
                                     <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent pointer-events-none"></div>
 
-                                    {/* Date Badge Top Right */}
-                                    <div className="absolute top-3 right-3 z-20">
-                                        <div className="bg-white/95 px-3 py-1.5 rounded-2xl flex flex-col items-center justify-center shadow-md border border-slate-100 min-w-[52px]">
-                                            <span className="text-[10px] font-black uppercase text-teal-600 tracking-wider leading-none">
-                                                {item.monthShort}
-                                            </span>
-                                            <span className="text-lg font-black text-slate-800 leading-none mt-0.5">
-                                                {item.dayNum}
-                                            </span>
-                                        </div>
-                                    </div>
-
                                     {/* Type Badge Bottom Left */}
                                     <div className="absolute bottom-3 left-3 z-20">
                                         <span className="px-2.5 py-1 rounded-full bg-white/95 border border-slate-200 text-slate-700 text-[10px] font-bold uppercase tracking-wider shadow-sm flex items-center gap-1.5">
@@ -343,32 +331,22 @@ const HomeNewsSection = React.memo(() => {
 
                                 {/* Body Content */}
                                 <div className="p-5 flex-grow flex flex-col bg-white">
-                                    {/* Date complète mise en avant */}
-                                    <div className="flex items-center gap-1.5 text-xs font-bold text-teal-600 uppercase tracking-wide mb-1">
-                                        <Calendar className="w-3.5 h-3.5 text-teal-600 flex-shrink-0" />
-                                        <span>
-                                            {item.fullDateStr}
-                                        </span>
-                                    </div>
-
                                     {/* Titre */}
-                                    <h3 className="font-bold text-base text-slate-900 mb-1.5 group-hover:text-teal-600 transition-colors line-clamp-1 leading-snug">
+                                    <h3 className="font-bold text-base text-slate-900 mb-2 group-hover:text-teal-600 transition-colors line-clamp-2 leading-snug">
                                         {item.title}
                                     </h3>
 
                                     {/* Description */}
-                                    <p className="text-slate-600 text-xs leading-relaxed line-clamp-2 mb-3 font-normal">
+                                    <p className="text-slate-600 text-xs leading-relaxed line-clamp-3 mb-3 font-normal">
                                         {item.content}
                                     </p>
 
                                     {/* Footer Capsule & Action */}
-                                    <div className="mt-auto pt-2.5 border-t border-slate-100 flex items-center justify-between">
-                                        <div className="flex items-center bg-slate-50 rounded-xl px-2.5 py-1.5 border border-slate-100">
-                                            <CalendarDays className="w-3.5 h-3.5 mr-1.5 text-teal-600 flex-shrink-0" />
-                                            <span className="text-slate-700 text-xs font-medium">
-                                                {item.yearStr}
-                                            </span>
-                                        </div>
+                                    <div className="mt-auto pt-3 border-t border-slate-100 flex items-center justify-between">
+                                        <span className="text-[11px] text-slate-400 font-medium flex items-center gap-1.5">
+                                            <Calendar className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+                                            {item.fullDateStr}
+                                        </span>
 
                                         <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 group-hover:bg-teal-600 group-hover:text-white transition-colors">
                                             <ArrowRight className="w-4 h-4" />
