@@ -222,7 +222,7 @@ const School = () => {
                           alt={inst.name}
                           loading="eager"
                           decoding="async"
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 opacity-40 pointer-events-none"
+                          className="w-full h-full object-cover opacity-40 pointer-events-none"
                           onError={(e) => {
                             // @ts-ignore
                             e.currentTarget.style.display = 'none';
@@ -410,8 +410,8 @@ const School = () => {
                   color: "amber"
                 }
               ].map((item, index) => (
-                <div key={index} className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-teal-100/40 transition-all duration-300 hover:-translate-y-1 group">
-                  <div className={`w-12 h-12 rounded-xl bg-${item.color}-50 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
+                <div key={index} className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:border-teal-400 hover:shadow-md transition-colors duration-150 group">
+                  <div className={`w-12 h-12 rounded-xl bg-${item.color}-50 flex items-center justify-center mb-4 transition-colors duration-150`}>
                     <item.icon className={`h-6 w-6 text-${item.color}-600`} />
                   </div>
                   <h3 className="font-bold text-lg text-slate-800 mb-2">{item.title}</h3>

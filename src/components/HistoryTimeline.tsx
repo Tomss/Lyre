@@ -186,18 +186,16 @@ const HistoryTimeline = () => {
                                         {item.image_url ? (
                                             <div 
                                                 onClick={() => setPreviewPhoto(item.image_url || null)}
-                                                className="relative w-full aspect-[16/10] max-w-md rounded-2xl overflow-hidden shadow-lg group flex items-center justify-center bg-white/90 border border-slate-200 cursor-pointer"
+                                                className="relative w-full aspect-[16/10] max-w-md rounded-2xl overflow-hidden shadow-sm group flex items-center justify-center bg-white border border-slate-200 cursor-pointer hover:border-teal-400 transition-colors duration-150"
                                             >
                                                 <img
                                                     src={getOptimizedImageUrl(item.image_url, 800, 85)}
-                                                    srcSet={getImageSrcSet(item.image_url)}
-                                                    sizes="(max-width: 768px) 100vw, 500px"
                                                     alt={item.title}
-                                                    loading="lazy"
+                                                    loading="eager"
                                                     decoding="async"
-                                                    className="w-full h-full object-contain p-2 transition-transform duration-500 group-hover:scale-105"
+                                                    className="w-full h-full object-contain p-2 pointer-events-none"
                                                 />
-                                                <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/20 transition-colors duration-300 flex items-center justify-center pointer-events-none">
+                                                <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/20 transition-colors duration-150 flex items-center justify-center pointer-events-none">
                                                     <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 text-white px-3.5 py-1.5 rounded-full text-xs font-semibold flex items-center space-x-1.5 shadow-lg border border-white/20">
                                                         <ZoomIn className="w-3.5 h-3.5 text-teal-400" />
                                                         <span>Agrandir</span>
