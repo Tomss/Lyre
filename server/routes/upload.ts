@@ -4,6 +4,7 @@ import { authenticateToken } from '../middleware/auth';
 import path from 'path';
 import fs from 'fs';
 import sharp from 'sharp';
+import { optimizePdfBuffer } from '../utils/pdfOptimizer';
 
 const router = Router();
 
@@ -57,8 +58,12 @@ router.post('/', authenticateToken, (req, res) => {
                     .resize({ width: 1920, height: 1200, fit: 'inside', withoutEnlargement: true })
                     .webp({ quality: 82, effort: 3 })
                     .toFile(targetPath);
+            } else if (ext === '.pdf') {
+                // PDF document: optimize embedded images & object streams
+                const optimizedBuffer = await optimizePdfBuffer(req.file.buffer);
+                fs.writeFileSync(targetPath, optimizedBuffer);
             } else {
-                // Non-image files (PDF, audio)
+                // Other files (audio, video, docs)
                 fs.writeFileSync(targetPath, req.file.buffer);
             }
 

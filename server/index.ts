@@ -5,6 +5,7 @@ import path from 'path';
 import fs from 'fs';
 import sharp from 'sharp';
 import pool from './db';
+import { optimizePdfBuffer } from './utils/pdfOptimizer';
 
 // Routers
 import authRouter from './routes/auth';
@@ -298,8 +299,8 @@ app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-// High-Speed Direct Streaming for PDF documents (bypass proxy buffers & sharp)
-app.use('/uploads', (req, res, next) => {
+// High-Speed Direct Streaming & Dynamic Compression Engine for PDF documents
+app.use('/uploads', async (req, res, next) => {
   if (req.method !== 'GET') return next();
   const rawPath = req.path.replace(/^\//, '');
   const ext = path.extname(rawPath).toLowerCase();
@@ -322,8 +323,47 @@ app.use('/uploads', (req, res, next) => {
   res.setHeader('Content-Type', 'application/pdf');
   res.setHeader('Content-Disposition', 'inline');
   res.setHeader('Accept-Ranges', 'bytes');
-  res.setHeader('X-Accel-Buffering', 'no'); // Disable Nginx/proxy buffering for instant streaming
+  res.setHeader('X-Accel-Buffering', 'no'); // Disable proxy buffering for instant chunk streaming
   res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+
+  try {
+    const stats = fs.statSync(actualFile);
+    // If PDF is heavy (> 1.2 MB), check/generate web-optimized cached version
+    if (stats.size > 1.2 * 1024 * 1024) {
+      const pdfCacheDir = path.join(process.cwd(), 'uploads', 'cache', 'pdf');
+      if (!fs.existsSync(pdfCacheDir)) {
+        fs.mkdirSync(pdfCacheDir, { recursive: true });
+      }
+
+      const safeBaseName = path.basename(actualFile, ext).replace(/[^a-zA-Z0-9_-]/g, '_');
+      const cachedOptimizedPath = path.join(pdfCacheDir, `${safeBaseName}_opt_${stats.size}.pdf`);
+
+      if (fs.existsSync(cachedOptimizedPath)) {
+        return res.sendFile(path.resolve(cachedOptimizedPath), {
+          acceptRanges: true,
+          cacheControl: true,
+          maxAge: '1y',
+          dotfiles: 'allow'
+        });
+      }
+
+      // Optimize on the fly once, save to cache, and serve
+      const originalBuffer = fs.readFileSync(actualFile);
+      const optimizedBuffer = await optimizePdfBuffer(originalBuffer);
+      if (optimizedBuffer.length < originalBuffer.length) {
+        fs.writeFileSync(cachedOptimizedPath, optimizedBuffer);
+        return res.sendFile(path.resolve(cachedOptimizedPath), {
+          acceptRanges: true,
+          cacheControl: true,
+          maxAge: '1y',
+          dotfiles: 'allow'
+        });
+      }
+    }
+  } catch (optErr) {
+    console.warn('[PDF Engine] Optimization error, serving original directly:', optErr);
+  }
+
   return res.sendFile(path.resolve(actualFile), {
     acceptRanges: true,
     cacheControl: true,
