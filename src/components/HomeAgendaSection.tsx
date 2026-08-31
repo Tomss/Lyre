@@ -21,41 +21,39 @@ const HomeAgendaSection = React.memo(() => {
     const [allEvents, setAllEvents] = useState<EventItem[]>([]);
     const [loading, setLoading] = useState(true);
     const scrollRef = useRef<HTMLDivElement>(null);
-    const [isPaused, setIsPaused] = useState(false);
-    const [isDragging, setIsDragging] = useState(false);
-    const [startX, setStartX] = useState(0);
-    const [scrollLeft, setScrollLeft] = useState(0);
     const [selectedEvent, setSelectedEvent] = useState<EventItem | null>(null);
     const [previewPhoto, setPreviewPhoto] = useState<string | null>(null);
     const [isAllEventsModalOpen, setIsAllEventsModalOpen] = useState(false);
-    const [dragDistance, setDragDistance] = useState(0);
 
-    // Mouse Drag events
+    // Refs for drag to prevent ANY React re-render during mouse interactions
+    const isDraggingRef = useRef(false);
+    const startXRef = useRef(0);
+    const scrollLeftRef = useRef(0);
+    const dragDistanceRef = useRef(0);
+
     const handleMouseDown = (e: React.MouseEvent) => {
         if (!scrollRef.current) return;
-        setIsDragging(true);
-        setIsPaused(true);
-        setStartX(e.pageX - scrollRef.current.offsetLeft);
-        setScrollLeft(scrollRef.current.scrollLeft);
-        setDragDistance(0);
+        isDraggingRef.current = true;
+        startXRef.current = e.pageX - scrollRef.current.offsetLeft;
+        scrollLeftRef.current = scrollRef.current.scrollLeft;
+        dragDistanceRef.current = 0;
     };
 
     const handleMouseLeave = () => {
-        setIsDragging(false);
-        setIsPaused(false);
+        isDraggingRef.current = false;
     };
 
     const handleMouseUp = () => {
-        setIsDragging(false);
+        isDraggingRef.current = false;
     };
 
     const handleMouseMove = (e: React.MouseEvent) => {
-        if (!isDragging || !scrollRef.current) return;
+        if (!isDraggingRef.current || !scrollRef.current) return;
         e.preventDefault();
         const x = e.pageX - scrollRef.current.offsetLeft;
-        const walk = (x - startX) * 2;
-        setDragDistance(Math.abs(walk));
-        scrollRef.current.scrollLeft = scrollLeft - walk;
+        const walk = (x - startXRef.current) * 1.5;
+        dragDistanceRef.current = Math.abs(walk);
+        scrollRef.current.scrollLeft = scrollLeftRef.current - walk;
     };
 
     useEffect(() => {
@@ -365,22 +363,15 @@ const HomeAgendaSection = React.memo(() => {
                 </div>
             )}
 
-            {/* Header Section */}
+            {/* Header Section - Titre Pur et Direct */}
             <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 mb-12 text-center relative z-10">
-                <h2 className="font-bold text-3xl md:text-5xl text-white mb-4">
+                <h2 className="font-bold text-3xl md:text-5xl text-white">
                     Agenda
                 </h2>
-                <p className="text-teal-400 text-sm">
-                    Ne manquez pas nos prochains rendez-vous musicaux
-                </p>
             </div>
 
             {/* Slider Container */}
-            <div 
-                className="relative w-full"
-                onMouseEnter={() => setIsPaused(true)}
-                onMouseLeave={handleMouseLeave}
-            >
+            <div className="relative w-full">
                 {/* Navigation Buttons */}
                 <button
                     onClick={(e) => {
@@ -407,7 +398,7 @@ const HomeAgendaSection = React.memo(() => {
                 {events.length > 0 ? (
                     <div
                         ref={scrollRef}
-                        className={`flex gap-8 px-20 md:px-24 py-12 overflow-x-auto no-scrollbar select-none overscroll-x-contain touch-pan-y ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+                        className="flex gap-8 px-20 md:px-24 py-12 overflow-x-auto no-scrollbar select-none cursor-grab active:cursor-grabbing"
                         onMouseDown={handleMouseDown}
                         onMouseUp={handleMouseUp}
                         onMouseMove={handleMouseMove}
@@ -421,7 +412,7 @@ const HomeAgendaSection = React.memo(() => {
                                     <div 
                                         className="absolute inset-0 z-30 cursor-pointer" 
                                         onClick={() => {
-                                            if (dragDistance < 10) setSelectedEvent(event);
+                                            if (dragDistanceRef.current < 10) setSelectedEvent(event);
                                         }}
                                     ></div>
 
