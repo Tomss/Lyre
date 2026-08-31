@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { API_URL, BASE_URL } from '../config';
 import { Link } from 'react-router-dom';
@@ -81,6 +81,7 @@ const openInNewTab = (url: string) => {
 
 const Media = () => {
   const { pageHeaders } = useTheme();
+  const prefetchedFiles = useRef<Set<string>>(new Set());
   const [mediaItems, setMediaItems] = useState<MediaItem[]>(() => {
     try {
       const cached = localStorage.getItem(MEDIA_CACHE_KEY);
@@ -104,6 +105,28 @@ const Media = () => {
   const [selectedMedia, setSelectedMedia] = useState<MediaItem | null>(null);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [visibleCount, setVisibleCount] = useState(20);
+
+  const handleMouseEnter = (media: MediaItem) => {
+    const files = parseMediaFiles(media);
+    const pdfFile = files.find(f => {
+      if (!f || !f.file_path) return false;
+      const type = String(f.file_type || '').toLowerCase();
+      const path = String(f.file_path || f.file_name || '').toLowerCase();
+      return type === 'pdf' || path.endsWith('.pdf') || path.includes('.pdf') || type.includes('pdf');
+    });
+    const targetFile = pdfFile || (media.media_type === 'lyrissimot' ? files[0] : null);
+    if (targetFile && targetFile.file_path && !prefetchedFiles.current.has(targetFile.file_path)) {
+      prefetchedFiles.current.add(targetFile.file_path);
+      const fullUrl = (targetFile.file_path.startsWith('http') || targetFile.file_path.startsWith('blob:'))
+        ? targetFile.file_path
+        : `${BASE_URL}${targetFile.file_path.startsWith('/') ? '' : '/'}${targetFile.file_path}`;
+      const link = document.createElement('link');
+      link.rel = 'prefetch';
+      link.as = 'document';
+      link.href = fullUrl;
+      document.head.appendChild(link);
+    }
+  };
 
   // Reset visible count when filters change
   useEffect(() => {
@@ -290,7 +313,12 @@ const Media = () => {
                 const TypeIcon = getTypeIcon(media.media_type);
                 const files = parseMediaFiles(media);
                 return (
-                  <div key={media.id} onClick={() => openGallery(media)} className="group flex flex-col bg-white rounded-2xl border border-slate-100 overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-2 transition-all duration-500 cursor-pointer">
+                  <div 
+                    key={media.id} 
+                    onClick={() => openGallery(media)} 
+                    onMouseEnter={() => handleMouseEnter(media)}
+                    className="group flex flex-col bg-white rounded-2xl border border-slate-100 overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-2 transition-all duration-500 cursor-pointer"
+                  >
                     {/* Section Image / Preview */}
                     <div className="relative aspect-video overflow-hidden bg-slate-50 w-full border-b border-slate-100/50">
                       <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 to-transparent z-10 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -529,7 +557,12 @@ const Media = () => {
                     const TypeIcon = getTypeIcon(media.media_type);
                     const files = parseMediaFiles(media);
                     return (
-                      <div key={media.id} onClick={() => openGallery(media)} className="group flex flex-col bg-white rounded-2xl border border-slate-100 overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 cursor-pointer">
+                      <div 
+                        key={media.id} 
+                        onClick={() => openGallery(media)} 
+                        onMouseEnter={() => handleMouseEnter(media)}
+                        className="group flex flex-col bg-white rounded-2xl border border-slate-100 overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+                      >
                         {/* Section Image / Preview */}
                         <div className="relative aspect-[4/3] overflow-hidden bg-slate-50 w-full border-b border-slate-100/50">
                           <MediaPreview

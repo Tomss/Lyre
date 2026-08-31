@@ -397,8 +397,33 @@ app.use('/uploads', async (req, res, next) => {
 });
 
 // Fallback static handlers for uploads, public, and dist assets
-app.use('/uploads', express.static(path.join(process.cwd(), 'uploads'), { maxAge: '1y', immutable: true, dotfiles: 'allow' }));
-app.use('/uploads', express.static(path.join(process.cwd(), 'public'), { maxAge: '1y', immutable: true, dotfiles: 'allow' }));
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads'), {
+  maxAge: '1y',
+  immutable: true,
+  dotfiles: 'allow',
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.pdf')) {
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'inline');
+      res.setHeader('Accept-Ranges', 'bytes');
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    }
+  }
+}));
+
+app.use('/uploads', express.static(path.join(process.cwd(), 'public'), {
+  maxAge: '1y',
+  immutable: true,
+  dotfiles: 'allow',
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.pdf')) {
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'inline');
+      res.setHeader('Accept-Ranges', 'bytes');
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    }
+  }
+}));
 
 // API Routes
 app.use('/api/auth', authRouter);
