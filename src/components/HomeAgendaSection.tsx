@@ -335,11 +335,17 @@ const HomeAgendaSection = React.memo(() => {
                                     <div 
                                         key={item.id}
                                         onClick={() => setSelectedEvent(item)}
-                                        className="bg-slate-800 rounded-xl shadow-sm border border-slate-700 hover:shadow-lg hover:border-teal-500/50 transition-all cursor-pointer flex items-center p-3 group overflow-hidden"
+                                        className="bg-slate-800 rounded-xl border border-slate-700 hover:border-teal-500/80 transition-colors duration-150 cursor-pointer flex items-center p-3 group overflow-hidden shadow-sm"
                                     >
                                         <div className="w-24 h-24 sm:w-32 sm:h-24 flex-shrink-0 bg-slate-900 relative rounded-lg overflow-hidden mr-4">
                                             {item.image_url ? (
-                                                <img src={getOptimizedImageUrl(item.image_url, 400, 80)} alt={item.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-90 group-hover:opacity-100" />
+                                                <img 
+                                                    src={getOptimizedImageUrl(item.image_url, 400, 80)} 
+                                                    alt={item.title} 
+                                                    loading="lazy"
+                                                    decoding="async"
+                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 pointer-events-none" 
+                                                />
                                             ) : (
                                                 <div className="w-full h-full flex items-center justify-center text-teal-400 bg-slate-900">
                                                     <Music className="w-8 h-8 opacity-30" />
@@ -436,7 +442,7 @@ const HomeAgendaSection = React.memo(() => {
                         {events.map((event) => (
                             <div key={event.id} className="w-[300px] md:w-[350px] shrink-0 h-[450px]">
                                 {/* Dark Card */}
-                                <div className="h-full bg-slate-800 rounded-3xl border border-slate-700 hover:border-teal-400/80 shadow-md hover:shadow-xl transition-all duration-200 overflow-hidden flex flex-col relative group">
+                                <div className="h-full bg-slate-800 rounded-3xl border border-slate-700 hover:border-teal-400/80 shadow-md hover:shadow-lg transition-colors duration-150 overflow-hidden flex flex-col relative group">
                                     {/* Click Overlay */}
                                     <div 
                                         className="absolute inset-0 z-30 cursor-pointer" 
@@ -455,7 +461,7 @@ const HomeAgendaSection = React.memo(() => {
                                                 alt={event.title}
                                                 loading="lazy"
                                                 decoding="async"
-                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 pointer-events-none"
+                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 pointer-events-none"
                                             />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center opacity-30">
