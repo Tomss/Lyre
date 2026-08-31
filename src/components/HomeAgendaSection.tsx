@@ -14,6 +14,11 @@ interface EventItem {
     image_url?: string;
     event_type: 'concert' | 'repetition' | 'divers';
     orchestras?: { id: string; name: string }[];
+    monthShort?: string;
+    dayNum?: number;
+    fullDateStr?: string;
+    timeRangeStr?: string;
+    orchestrasStr?: string;
 }
 
 const HomeAgendaSection = React.memo(() => {
@@ -21,41 +26,39 @@ const HomeAgendaSection = React.memo(() => {
     const [allEvents, setAllEvents] = useState<EventItem[]>([]);
     const [loading, setLoading] = useState(true);
     const scrollRef = useRef<HTMLDivElement>(null);
-    const [isPaused, setIsPaused] = useState(false);
-    const [isDragging, setIsDragging] = useState(false);
-    const [startX, setStartX] = useState(0);
-    const [scrollLeft, setScrollLeft] = useState(0);
     const [selectedEvent, setSelectedEvent] = useState<EventItem | null>(null);
     const [previewPhoto, setPreviewPhoto] = useState<string | null>(null);
     const [isAllEventsModalOpen, setIsAllEventsModalOpen] = useState(false);
-    const [dragDistance, setDragDistance] = useState(0);
 
-    // Mouse Drag events
+    // Refs for drag to eliminate 100% of React re-renders during mouse interaction
+    const isDraggingRef = useRef(false);
+    const startXRef = useRef(0);
+    const scrollLeftRef = useRef(0);
+    const dragDistanceRef = useRef(0);
+
     const handleMouseDown = (e: React.MouseEvent) => {
         if (!scrollRef.current) return;
-        setIsDragging(true);
-        setIsPaused(true);
-        setStartX(e.pageX - scrollRef.current.offsetLeft);
-        setScrollLeft(scrollRef.current.scrollLeft);
-        setDragDistance(0);
+        isDraggingRef.current = true;
+        startXRef.current = e.pageX - scrollRef.current.offsetLeft;
+        scrollLeftRef.current = scrollRef.current.scrollLeft;
+        dragDistanceRef.current = 0;
     };
 
     const handleMouseLeave = () => {
-        setIsDragging(false);
-        setIsPaused(false);
+        isDraggingRef.current = false;
     };
 
     const handleMouseUp = () => {
-        setIsDragging(false);
+        isDraggingRef.current = false;
     };
 
     const handleMouseMove = (e: React.MouseEvent) => {
-        if (!isDragging || !scrollRef.current) return;
+        if (!isDraggingRef.current || !scrollRef.current) return;
         e.preventDefault();
         const x = e.pageX - scrollRef.current.offsetLeft;
-        const walk = (x - startX) * 2;
-        setDragDistance(Math.abs(walk));
-        scrollRef.current.scrollLeft = scrollLeft - walk;
+        const walk = (x - startXRef.current) * 1.5;
+        dragDistanceRef.current = Math.abs(walk);
+        scrollRef.current.scrollLeft = scrollLeftRef.current - walk;
     };
 
     useEffect(() => {
@@ -68,8 +71,27 @@ const HomeAgendaSection = React.memo(() => {
                         .filter((e: any) => new Date(e.event_date) >= new Date())
                         .sort((a: any, b: any) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime());
 
-                    const top10Events = nextEvents.slice(0, 10);
-                    const allFutureEvents = nextEvents;
+                    // Pre-format all dates & times once to avoid heavy Intl allocations on scroll/render
+                    const formattedEvents = nextEvents.map((e: any) => {
+                        const d = new Date(e.event_date);
+                        const monthShort = d.toLocaleDateString('fr-FR', { month: 'short' }).replace('.', '');
+                        const dayNum = d.getDate();
+                        const fullDateStr = d.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'long' });
+                        const startTime = d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }).replace(':', 'h');
+                        const timeRangeStr = e.end_time ? `${startTime} à ${e.end_time.slice(0, 5).replace(':', 'h')}` : startTime;
+                        const orchestrasStr = e.orchestras && e.orchestras.length > 0 ? e.orchestras.map((o: any) => o.name).join(', ') : '';
+                        return {
+                            ...e,
+                            monthShort,
+                            dayNum,
+                            fullDateStr,
+                            timeRangeStr,
+                            orchestrasStr
+                        };
+                    });
+
+                    const top10Events = formattedEvents.slice(0, 10);
+                    const allFutureEvents = formattedEvents;
 
                     if (top10Events.length > 0) {
                         setEvents(top10Events);
@@ -134,7 +156,7 @@ const HomeAgendaSection = React.memo(() => {
     if (loading) return null;
 
     return (
-        <section id="agenda" className="py-24 bg-slate-900 relative scroll-mt-20 overflow-hidden group/section text-white">
+        <section id="agenda" className="py-24 bg-slate-900 relative scroll-mt-20 overflow-hidden group/section text-white transform-gpu">
             {/* Lightbox / Preview Photo */}
             {previewPhoto && (
                 <div 
@@ -225,23 +247,11 @@ const HomeAgendaSection = React.memo(() => {
                             <div className="flex flex-col sm:flex-row gap-6 mb-8 p-4 bg-slate-50 rounded-2xl border border-slate-100">
                                 <div className="flex items-center text-slate-700 font-medium">
                                     <Calendar className="w-5 h-5 mr-3 text-teal-600" />
-                                    {new Date(selectedEvent.event_date).toLocaleDateString('fr-FR', {
-                                        weekday: 'long',
-                                        year: 'numeric',
-                                        month: 'long',
-                                        day: 'numeric'
-                                    })}
+                                    {selectedEvent.fullDateStr || new Date(selectedEvent.event_date).toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                                 </div>
                                 <div className="flex items-center text-slate-700 font-medium">
                                     <Clock className="w-5 h-5 mr-3 text-teal-600" />
-                                    {(() => {
-                                        const startTime = new Date(selectedEvent.event_date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }).replace(':', 'h');
-                                        if (selectedEvent.end_time) {
-                                            const endTime = selectedEvent.end_time.slice(0, 5).replace(':', 'h');
-                                            return `${startTime} à ${endTime}`;
-                                        }
-                                        return startTime;
-                                    })()}
+                                    {selectedEvent.timeRangeStr}
                                 </div>
                                 <div className="flex items-center text-slate-700 font-medium">
                                     <MapPin className="w-5 h-5 mr-3 text-teal-600" />
@@ -315,7 +325,7 @@ const HomeAgendaSection = React.memo(() => {
                                         <div className="flex flex-col flex-1 min-w-0">
                                             <div className="flex items-center text-[10px] sm:text-xs font-bold text-teal-400 mb-1">
                                                 <Calendar className="w-3 h-3 mr-1" />
-                                                {new Date(item.event_date).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })}
+                                                {item.fullDateStr || new Date(item.event_date).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })}
                                             </div>
                                             <h3 className="font-bold text-sm sm:text-base text-white mb-1 group-hover:text-teal-300 transition-colors truncate">
                                                 {item.title}
@@ -328,14 +338,7 @@ const HomeAgendaSection = React.memo(() => {
                                             <div className="flex items-center space-x-4 text-slate-400 text-xs hidden sm:flex">
                                                 <div className="flex items-center">
                                                     <Clock className="w-3 h-3 mr-1 text-teal-400" />
-                                                    {(() => {
-                                                        const startTime = new Date(item.event_date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }).replace(':', 'h');
-                                                        if (item.end_time) {
-                                                            const endTime = item.end_time.slice(0, 5).replace(':', 'h');
-                                                            return `${startTime} à ${endTime}`;
-                                                        }
-                                                        return startTime;
-                                                    })()}
+                                                    {item.timeRangeStr}
                                                 </div>
                                                 <div className="flex items-center truncate">
                                                     <MapPin className="w-3 h-3 mr-1 text-rose-400" />
@@ -373,11 +376,7 @@ const HomeAgendaSection = React.memo(() => {
             </div>
 
             {/* Slider Container */}
-            <div 
-                className="relative w-full"
-                onMouseEnter={() => setIsPaused(true)}
-                onMouseLeave={handleMouseLeave}
-            >
+            <div className="relative w-full">
                 {/* Navigation Buttons */}
                 <button
                     onClick={(e) => {
@@ -404,7 +403,7 @@ const HomeAgendaSection = React.memo(() => {
                 {events.length > 0 ? (
                     <div
                         ref={scrollRef}
-                        className={`flex gap-8 px-20 md:px-24 py-12 overflow-x-auto no-scrollbar select-none overscroll-x-contain touch-pan-y ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+                        className="flex gap-8 px-20 md:px-24 py-12 overflow-x-auto no-scrollbar select-none cursor-grab active:cursor-grabbing"
                         onMouseDown={handleMouseDown}
                         onMouseUp={handleMouseUp}
                         onMouseMove={handleMouseMove}
@@ -418,7 +417,7 @@ const HomeAgendaSection = React.memo(() => {
                                     <div 
                                         className="absolute inset-0 z-30 cursor-pointer" 
                                         onClick={() => {
-                                            if (dragDistance < 10) setSelectedEvent(event);
+                                            if (dragDistanceRef.current < 10) setSelectedEvent(event);
                                         }}
                                     ></div>
 
@@ -445,10 +444,10 @@ const HomeAgendaSection = React.memo(() => {
                                         <div className="absolute top-3 right-3 z-20">
                                             <div className="bg-slate-900/95 px-3 py-1.5 rounded-2xl flex flex-col items-center justify-center shadow-lg border border-teal-400/30 min-w-[52px]">
                                                 <span className="text-[10px] font-black uppercase text-teal-400 tracking-wider leading-none">
-                                                    {new Date(event.event_date).toLocaleDateString('fr-FR', { month: 'short' }).replace('.', '')}
+                                                    {event.monthShort}
                                                 </span>
                                                 <span className="text-lg font-black text-white leading-none mt-0.5">
-                                                    {new Date(event.event_date).getDate()}
+                                                    {event.dayNum}
                                                 </span>
                                             </div>
                                         </div>
@@ -471,7 +470,7 @@ const HomeAgendaSection = React.memo(() => {
                                         <div className="flex items-center gap-1.5 text-xs font-bold text-teal-400 uppercase tracking-wide mb-1">
                                             <Calendar className="w-3.5 h-3.5 text-teal-400 flex-shrink-0" />
                                             <span>
-                                                {new Date(event.event_date).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'long' })}
+                                                {event.fullDateStr}
                                             </span>
                                         </div>
 
@@ -498,19 +497,12 @@ const HomeAgendaSection = React.memo(() => {
                                                 <div className="flex items-center text-teal-300 text-xs font-bold">
                                                     <Clock className="w-3.5 h-3.5 mr-1.5 text-teal-400 flex-shrink-0" />
                                                     <span>
-                                                        {(() => {
-                                                            const startTime = new Date(event.event_date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }).replace(':', 'h');
-                                                            if (event.end_time) {
-                                                                const endTime = event.end_time.slice(0, 5).replace(':', 'h');
-                                                                return `${startTime} à ${endTime}`;
-                                                            }
-                                                            return startTime;
-                                                        })()}
+                                                        {event.timeRangeStr}
                                                     </span>
                                                 </div>
-                                                {event.orchestras && event.orchestras.length > 0 && (
-                                                    <span className="text-[10px] font-bold text-slate-300 bg-slate-800 px-2 py-0.5 rounded-md border border-slate-700 truncate max-w-[120px]" title={event.orchestras.map(o => o.name).join(', ')}>
-                                                        {event.orchestras[0].name}
+                                                {event.orchestrasStr && (
+                                                    <span className="text-[10px] font-bold text-slate-300 bg-slate-800 px-2 py-0.5 rounded-md border border-slate-700 truncate max-w-[120px]" title={event.orchestrasStr}>
+                                                        {event.orchestrasStr}
                                                     </span>
                                                 )}
                                             </div>
