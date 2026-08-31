@@ -538,7 +538,7 @@ const HomeAgendaSection = React.memo(() => {
             <div className="text-center mt-12 relative z-10">
                 <button 
                     onClick={() => setIsAllEventsModalOpen(true)}
-                    className="inline-flex items-center justify-center px-8 py-3 text-base font-bold text-white bg-slate-800/80 backdrop-blur-md rounded-full border border-white/10 hover:bg-teal-600 hover:border-teal-500 hover:scale-105 transition-all duration-300 shadow-lg shadow-black/20 hover:shadow-teal-900/40 cursor-pointer"
+                    className="inline-flex items-center justify-center px-8 py-3 text-base font-bold text-white bg-slate-800 rounded-full border border-slate-700 hover:bg-teal-600 hover:border-teal-500 hover:scale-105 transition-all duration-300 shadow-lg shadow-black/20 hover:shadow-teal-900/40 cursor-pointer"
                 >
                     Voir tout l'agenda
                     <ArrowRight className="ml-2 h-4 w-4" />
