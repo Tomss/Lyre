@@ -433,10 +433,8 @@ const HomeAgendaSection = React.memo(() => {
                                         {event.image_url ? (
                                             <img
                                                 src={getOptimizedImageUrl(event.image_url, 700, 80)}
-                                                srcSet={getImageSrcSet(event.image_url)}
-                                                sizes="(max-width: 640px) 300px, 350px"
                                                 alt={event.title}
-                                                loading="lazy"
+                                                loading="eager"
                                                 decoding="async"
                                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 pointer-events-none"
                                             />
