@@ -382,13 +382,13 @@ const HomeAgendaSection = React.memo(() => {
 
             {/* Slider Container */}
             <div className="relative w-full">
-                {/* Navigation Buttons (subtle frosted glass, highlighted on hover) */}
+                {/* Navigation Buttons */}
                 <button
                     onClick={(e) => {
                         e.stopPropagation();
                         scrollManual('left');
                     }}
-                    className="hidden sm:flex absolute left-3 md:left-6 top-1/2 -translate-y-1/2 z-40 w-11 h-11 md:w-12 md:h-12 rounded-full bg-slate-900/70 hover:bg-teal-600 text-white shadow-xl border border-slate-700/80 hover:border-teal-500 backdrop-blur-md items-center justify-center transition-all duration-300 opacity-40 group-hover/section:opacity-85 hover:!opacity-100 hover:scale-110 cursor-pointer"
+                    className="hidden sm:flex absolute left-3 md:left-6 top-1/2 -translate-y-1/2 z-40 w-11 h-11 md:w-12 md:h-12 rounded-full bg-slate-800 hover:bg-teal-600 text-white shadow-lg border border-slate-700 hover:border-teal-500 items-center justify-center transition-colors cursor-pointer"
                     aria-label="Précédent"
                 >
                     <ArrowRight className="w-5 h-5 rotate-180" />
@@ -398,7 +398,7 @@ const HomeAgendaSection = React.memo(() => {
                         e.stopPropagation();
                         scrollManual('right');
                     }}
-                    className="hidden sm:flex absolute right-3 md:right-6 top-1/2 -translate-y-1/2 z-40 w-11 h-11 md:w-12 md:h-12 rounded-full bg-slate-900/70 hover:bg-teal-600 text-white shadow-xl border border-slate-700/80 hover:border-teal-500 backdrop-blur-md items-center justify-center transition-all duration-300 opacity-40 group-hover/section:opacity-85 hover:!opacity-100 hover:scale-110 cursor-pointer"
+                    className="hidden sm:flex absolute right-3 md:right-6 top-1/2 -translate-y-1/2 z-40 w-11 h-11 md:w-12 md:h-12 rounded-full bg-slate-800 hover:bg-teal-600 text-white shadow-lg border border-slate-700 hover:border-teal-500 items-center justify-center transition-colors cursor-pointer"
                     aria-label="Suivant"
                 >
                     <ArrowRight className="w-5 h-5" />
@@ -408,14 +408,14 @@ const HomeAgendaSection = React.memo(() => {
                 {events.length > 0 ? (
                     <div
                         ref={scrollRef}
-                        className="flex gap-4 sm:gap-6 md:gap-8 px-4 sm:px-8 md:px-12 py-4 sm:py-8 md:py-12 overflow-x-auto no-scrollbar overscroll-x-contain cursor-grab active:cursor-grabbing snap-x snap-mandatory scroll-smooth"
+                        className="flex gap-4 sm:gap-6 md:gap-8 px-4 sm:px-8 md:px-12 py-4 sm:py-8 md:py-12 overflow-x-auto no-scrollbar select-none overscroll-x-contain cursor-grab active:cursor-grabbing"
                         onMouseDown={handleMouseDown}
                         onMouseUp={handleMouseUp}
                         onMouseMove={handleMouseMove}
                         onMouseLeave={handleMouseLeave}
                     >
                         {events.map((event) => (
-                            <div key={event.id} className="w-[260px] sm:w-[300px] md:w-[350px] shrink-0 h-[390px] sm:h-[420px] md:h-[450px] snap-start">
+                            <div key={event.id} className="w-[260px] sm:w-[300px] md:w-[350px] shrink-0 h-[390px] sm:h-[420px] md:h-[450px]">
                                 {/* Dark Card */}
                                 <div className="h-full bg-slate-800 rounded-3xl border border-slate-700 hover:border-teal-400/80 shadow-md hover:shadow-xl transition-all duration-200 overflow-hidden flex flex-col relative group">
                                     {/* Click Overlay */}
