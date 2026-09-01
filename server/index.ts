@@ -6,6 +6,7 @@ import fs from 'fs';
 import sharp from 'sharp';
 import pool from './db';
 import { optimizePdfBuffer } from './utils/pdfOptimizer';
+import { authenticateToken } from './middleware/auth';
 
 // Routers
 import authRouter from './routes/auth';
@@ -563,7 +564,10 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(distPath, 'index.html'));
 });
 
-app.get('/api/test-db', async (req, res) => {
+app.get('/api/test-db', authenticateToken, async (req, res) => {
+  if ((req as any).user?.role !== 'Admin') {
+    return res.status(403).json({ message: 'Accès réservé aux administrateurs.' });
+  }
   try {
     const [rows] = await pool.query('SELECT 1 + 1 AS solution');
     res.json({ success: true, result: rows });
@@ -573,7 +577,10 @@ app.get('/api/test-db', async (req, res) => {
   }
 });
 
-app.get('/api/db-status', async (req, res) => {
+app.get('/api/db-status', authenticateToken, async (req, res) => {
+  if ((req as any).user?.role !== 'Admin') {
+    return res.status(403).json({ message: 'Accès réservé aux administrateurs.' });
+  }
   try {
     const [items] = await pool.query('SELECT COUNT(*) as count FROM media_items');
     const [files] = await pool.query('SELECT COUNT(*) as count FROM media_files');
