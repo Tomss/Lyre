@@ -18,7 +18,7 @@ export interface HistoryEvent {
 
 
 
-const TimelineCard = ({ item }: { item: HistoryEvent }) => {
+const TimelineCard = ({ item, onPreviewPhoto }: { item: HistoryEvent; onPreviewPhoto?: (url: string) => void }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const content = item.content || '';
     const shouldTruncate = content.length > 200;
@@ -58,9 +58,29 @@ const TimelineCard = ({ item }: { item: HistoryEvent }) => {
     const displayText = isExpanded ? content : content.slice(0, 200) + (shouldTruncate ? "..." : "");
 
     return (
-        <div className={`p-5 md:p-6 relative ${cardStyle} transition-shadow duration-300 hover:shadow-2xl`}>
+        <div className={`p-5 md:p-6 relative ${cardStyle} transition-shadow duration-300 hover:shadow-2xl rounded-2xl overflow-hidden`}>
+            {/* Mobile Image Thumbnail */}
+            {item.image_url && (
+                <div 
+                    onClick={() => onPreviewPhoto && onPreviewPhoto(item.image_url || '')}
+                    className="md:hidden relative w-full aspect-[16/10] mb-4 rounded-xl overflow-hidden shadow-sm bg-white/60 border border-black/10 cursor-pointer active:scale-98 transition-transform group"
+                >
+                    <img
+                        src={getOptimizedImageUrl(item.image_url, 600, 85)}
+                        alt={item.title}
+                        loading="lazy"
+                        decoding="async"
+                        className="w-full h-full object-contain p-1.5"
+                    />
+                    <div className="absolute bottom-2 right-2 bg-slate-900/80 text-white px-2.5 py-1 rounded-full text-[10px] font-semibold flex items-center gap-1 shadow-md border border-white/20">
+                        <ZoomIn className="w-3 h-3 text-teal-400" />
+                        <span>Agrandir</span>
+                    </div>
+                </div>
+            )}
+
             <div className={`md:hidden ${dateStyle}`}>{item.year}</div>
-            <h3 className={`text-2xl font-bold mb-4 ${item.era === 'vintage' ? 'font-serif' : ''}`}>
+            <h3 className={`text-xl md:text-2xl font-bold mb-3 md:mb-4 ${item.era === 'vintage' ? 'font-serif' : ''}`}>
                 {item.title}
             </h3>
 
@@ -209,7 +229,7 @@ const HistoryTimeline = () => {
 
                                     {/* Content Card */}
                                     <div className="flex-1 w-full px-4 md:px-24">
-                                        <TimelineCard item={item} />
+                                        <TimelineCard item={item} onPreviewPhoto={setPreviewPhoto} />
                                     </div>
 
                                 </div>
