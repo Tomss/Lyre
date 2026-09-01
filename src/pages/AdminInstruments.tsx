@@ -193,7 +193,7 @@ const AdminInstruments = () => {
     setLoading(true);
 
     try {
-      let photoUrl = editingInstrument.photo_url;
+      let photoUrl = photoPreview ? editingInstrument.photo_url : null;
       if (selectedPhoto) {
         const photoFormData = new FormData();
         photoFormData.append('file', selectedPhoto);
