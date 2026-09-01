@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useTheme } from '../context/ThemeContext';
-import { Users, Sparkles, Compass, Rocket, School as SchoolIcon, Presentation, Lightbulb, Heart, Mic2, History, X, ZoomIn } from 'lucide-react';
+import { Users, Sparkles, Compass, Rocket, School as SchoolIcon, Presentation, Lightbulb, Heart, Mic2, History, X, ZoomIn, ArrowRight } from 'lucide-react';
 import PageHero from '../components/PageHero';
 import HistoryTimeline from '../components/HistoryTimeline';
 
@@ -212,39 +212,68 @@ const School = () => {
                 return (
                   <div
                     key={inst.id || idx}
-                    className="group relative bg-slate-800 rounded-2xl border border-white/10 overflow-hidden hover:border-teal-400 transition-colors duration-150 cursor-pointer"
+                    className="h-full bg-slate-800 rounded-3xl border border-slate-700 hover:border-teal-400/80 shadow-md hover:shadow-xl transition-all duration-200 overflow-hidden flex flex-col relative group cursor-pointer"
                     onClick={() => setSelectedInstrument(inst)}
                   >
-                    {/* Image Background */}
-                    {inst.photo_url && (
-                      <div className="absolute inset-0 z-0 overflow-hidden">
-                         <img
-                          src={getOptimizedImageUrl(inst.photo_url, 400, 80)}
+                    {/* Image / Header with standard 16/10 aspect ratio */}
+                    <div className="aspect-[16/10] relative overflow-hidden bg-slate-900 flex-shrink-0">
+                      {inst.photo_url ? (
+                        <img
+                          src={getOptimizedImageUrl(inst.photo_url, 600, 80)}
                           alt={inst.name}
                           loading="eager"
                           decoding="async"
-                          className="w-full h-full object-cover opacity-40 pointer-events-none"
+                          className="w-full h-full object-cover pointer-events-none"
                           onError={(e) => {
                             // @ts-ignore
                             e.currentTarget.style.display = 'none';
                           }}
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/80 to-transparent pointer-events-none"></div>
-                      </div>
-                    )}
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center opacity-30 text-teal-400 bg-slate-900">
+                          <Sparkles className="h-14 w-14" />
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent pointer-events-none"></div>
 
-                    <div className="p-6 relative z-10 flex flex-col h-full min-h-[220px]">
-                      <h3 className="font-bold text-2xl text-white mb-2 group-hover:text-teal-300 transition-colors">
+                      {/* Type Badge */}
+                      <div className="absolute bottom-3 left-3 z-20">
+                        <span className="px-2.5 py-1 rounded-full bg-slate-900/95 border border-slate-700/80 text-white text-[10px] font-bold uppercase tracking-wider shadow-sm flex items-center gap-1.5">
+                          <div className="w-1.5 h-1.5 rounded-full bg-teal-400"></div>
+                          Classe
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Body */}
+                    <div className="p-5 flex-grow flex flex-col bg-slate-800">
+                      {/* Titre */}
+                      <h3 className="font-bold text-lg text-white mb-1.5 group-hover:text-teal-300 transition-colors line-clamp-1 leading-snug">
                         {inst.name}
                       </h3>
 
-                      <div className="mt-auto pt-6 border-t border-white/10 flex items-center gap-3">
-                        <div className="shrink-0 w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center border border-white/20 shadow-sm">
-                          <Users className="w-5 h-5 text-teal-400" />
+                      {/* Description si disponible */}
+                      {inst.description ? (
+                        <p className="text-slate-300 text-xs leading-relaxed line-clamp-2 mb-4 font-normal">
+                          {inst.description}
+                        </p>
+                      ) : (
+                        <p className="text-slate-500 text-xs italic line-clamp-2 mb-4 font-normal">
+                          Découvrez la classe de {inst.name.toLowerCase()} à l'école de musique.
+                        </p>
+                      )}
+
+                      {/* Footer Professeur */}
+                      <div className="mt-auto pt-2.5 border-t border-slate-700/70 flex items-center justify-between">
+                        <div className="flex items-center bg-slate-900/90 rounded-xl px-2.5 py-1.5 border border-slate-700/60 min-w-0 max-w-[calc(100%-40px)]">
+                          <Users className="w-3.5 h-3.5 mr-1.5 text-teal-400 flex-shrink-0" />
+                          <span className="text-slate-200 text-xs font-medium truncate" title={inst.teacher || "Professeur à confirmer"}>
+                            {inst.teacher || "Professeur à confirmer"}
+                          </span>
                         </div>
-                        <div className="overflow-hidden">
-                          <p className="text-xs text-teal-400 uppercase tracking-wide font-bold mb-0.5">Professeur</p>
-                          <p className="text-sm font-medium text-white/95 truncate">{inst.teacher || "Professeur à confirmer"}</p>
+
+                        <div className="w-8 h-8 rounded-full bg-slate-700/60 flex items-center justify-center text-teal-400 group-hover:bg-teal-600 group-hover:text-white transition-colors flex-shrink-0">
+                          <ArrowRight className="w-4 h-4" />
                         </div>
                       </div>
                     </div>
