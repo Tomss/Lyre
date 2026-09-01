@@ -9,11 +9,17 @@ import HomeAgendaSection from '../components/HomeAgendaSection';
 import { API_URL, BASE_URL } from '../config';
 
 import { getOptimizedImageUrl } from '../utils/image';
+import { useSEO } from '../utils/seo';
 
 const CAROUSEL_CACHE_KEY = 'lyre_cached_carousel_v3';
 const PRIMARY_HERO_IMAGE = getOptimizedImageUrl('/hero-banner.webp', 2048, 92);
 
 const Home = () => {
+  useSEO({
+    title: 'La Lyre - Ecole de musique | Chalindrey (52)',
+    description: "École de Musique et Orchestre d'Harmonie La Lyre à Chalindrey (Haute-Marne). Éveil musical, apprentissage des instruments, pratique collective, orchestres et concerts.",
+    url: '/'
+  });
   // Read cached real carousel images for instant frame-0 rendering
   const [backgroundImages, setBackgroundImages] = React.useState<string[]>(() => {
     try {

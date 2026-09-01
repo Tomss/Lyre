@@ -17,6 +17,7 @@ interface Instrument {
 
 import { API_URL, BASE_URL } from '../config';
 import { getOptimizedImageUrl } from '../utils/image';
+import { useSEO } from '../utils/seo';
 
 const INSTRUMENTS_CACHE_KEY = 'lyre_cached_school_instruments_v2';
 
@@ -93,6 +94,11 @@ const InstrumentCard = React.memo(({ inst, isClass, onSelect }: { inst: Instrume
 });
 
 const School = () => {
+  useSEO({
+    title: "L'École de Musique & Classes d'Instruments",
+    description: "Découvrez l'école de musique La Lyre à Chalindrey : éveil musical, formation musicale, cours d'instruments (trompette, clarinette, batterie, saxophone...) et professeurs.",
+    url: '/school'
+  });
   const { settings, pageHeaders } = useTheme();
   const [instruments, setInstruments] = useState<Instrument[]>(() => {
     try {

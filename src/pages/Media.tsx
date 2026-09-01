@@ -6,6 +6,7 @@ import { Image, Camera, Music, FileText, Filter, Search, X, ArrowRight, Star, Ca
 import MediaGallery from '../components/MediaGallery';
 import MediaPreview from '../components/MediaPreview';
 import PageHero from '../components/PageHero';
+import { useSEO } from '../utils/seo';
 
 interface MediaFile {
   id: string;
@@ -59,6 +60,11 @@ const openInNewTab = (url: string) => {
 };
 
 const Media = () => {
+  useSEO({
+    title: "Médiathèque, Photos & Enregistrements",
+    description: "Galerie multimédia de La Lyre de Chalindrey : albums photos de concerts, enregistrements audio, journaux et publications.",
+    url: '/media'
+  });
   const { pageHeaders } = useTheme();
   const prefetchedFiles = useRef<Set<string>>(new Set());
   const [mediaItems, setMediaItems] = useState<MediaItem[]>(() => {

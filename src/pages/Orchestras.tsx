@@ -3,6 +3,7 @@ import { useTheme } from '../context/ThemeContext';
 import { Music, X, ZoomIn } from 'lucide-react';
 import PageHero from '../components/PageHero';
 import { getOptimizedImageUrl, getImageSrcSet } from '../utils/image';
+import { useSEO } from '../utils/seo';
 
 interface Orchestra {
     id: string;
@@ -172,6 +173,11 @@ const PhotoStack = ({
 const ORCHESTRAS_CACHE_KEY = 'lyre_cached_orchestras_v1';
 
 const Orchestras = () => {
+    useSEO({
+        title: "Nos Orchestres & Ensembles Musicaux",
+        description: "Les orchestres et ensembles de La Lyre de Chalindrey : Grand Orchestre d'Harmonie, Orchestre des Jeunes et ensembles musicaux en Haute-Marne.",
+        url: '/orchestres'
+    });
     const { pageHeaders } = useTheme();
     const [orchestras, setOrchestras] = useState<Orchestra[]>(() => {
         try {

@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import PageHero from '../components/PageHero';
 import { useTheme } from '../context/ThemeContext';
 import { getOptimizedImageUrl, getImageSrcSet } from '../utils/image';
+import { useSEO } from '../utils/seo';
 
 import { API_URL, BASE_URL } from '../config';
 
@@ -16,6 +17,11 @@ interface NewsItem {
 }
 
 const NewsArchive = () => {
+    useSEO({
+        title: "Actualités & Événements",
+        description: "Toutes les actualités, concerts, projets et événements de l'école de musique et orchestre d'harmonie La Lyre à Chalindrey.",
+        url: '/toutes-les-actualites'
+    });
     const { pageHeaders } = useTheme();
     const [news, setNews] = useState<NewsItem[]>([]);
     const [loading, setLoading] = useState(true);

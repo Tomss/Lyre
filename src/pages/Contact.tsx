@@ -3,6 +3,7 @@ import { useTheme } from '../context/ThemeContext';
 import { MapPin, Mail, Clock, Send, MessageSquare, CheckCircle, AlertCircle, Heart, ChevronDown } from 'lucide-react';
 import PageHero from '../components/PageHero';
 import { BASE_URL, API_URL } from '../config';
+import { useSEO } from '../utils/seo';
 
 interface FormData {
   name: string;
@@ -18,6 +19,11 @@ interface FormStatus {
 }
 
 const Contact = () => {
+  useSEO({
+    title: "Contact & Inscriptions",
+    description: "Contactez l'école de musique et orchestre d'harmonie La Lyre à Chalindrey (52600). Formulaire de contact, adresse, horaires et inscriptions.",
+    url: '/contact'
+  });
   const { pageHeaders, settings } = useTheme();
   const [formData, setFormData] = useState<FormData>({
     name: '',
