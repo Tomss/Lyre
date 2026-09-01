@@ -374,10 +374,13 @@ const HomeAgendaSection = React.memo(() => {
             )}
 
             {/* Header Section */}
-            <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 mb-12 text-center relative z-10">
-                <h2 className="font-bold text-3xl md:text-5xl text-white">
-                    Agenda
-                </h2>
+            <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 mb-12 relative z-10">
+                <div className="text-center">
+                    <h2 className="font-bold text-3xl md:text-5xl text-white mb-4">
+                        Agenda
+                    </h2>
+                    <div className="h-1 w-24 bg-gradient-to-r from-teal-500 to-cyan-500 rounded-full mx-auto shadow-sm shadow-teal-500/20"></div>
+                </div>
             </div>
 
             {/* Slider Container */}
@@ -388,7 +391,7 @@ const HomeAgendaSection = React.memo(() => {
                         e.stopPropagation();
                         scrollManual('left');
                     }}
-                    className="hidden sm:flex absolute left-3 md:left-6 top-1/2 -translate-y-1/2 z-40 w-11 h-11 md:w-12 md:h-12 rounded-full bg-slate-800 hover:bg-teal-600 text-white shadow-lg border border-slate-700 hover:border-teal-500 items-center justify-center transition-colors cursor-pointer"
+                    className="hidden sm:flex absolute left-2 sm:left-4 md:left-6 top-1/2 -translate-y-1/2 z-40 w-11 h-11 md:w-12 md:h-12 rounded-full bg-slate-800 hover:bg-teal-600 text-white shadow-lg border border-slate-700 hover:border-teal-500 items-center justify-center transition-colors cursor-pointer"
                     aria-label="Précédent"
                 >
                     <ArrowRight className="w-5 h-5 rotate-180" />
@@ -398,7 +401,7 @@ const HomeAgendaSection = React.memo(() => {
                         e.stopPropagation();
                         scrollManual('right');
                     }}
-                    className="hidden sm:flex absolute right-3 md:right-6 top-1/2 -translate-y-1/2 z-40 w-11 h-11 md:w-12 md:h-12 rounded-full bg-slate-800 hover:bg-teal-600 text-white shadow-lg border border-slate-700 hover:border-teal-500 items-center justify-center transition-colors cursor-pointer"
+                    className="hidden sm:flex absolute right-2 sm:right-4 md:right-6 top-1/2 -translate-y-1/2 z-40 w-11 h-11 md:w-12 md:h-12 rounded-full bg-slate-800 hover:bg-teal-600 text-white shadow-lg border border-slate-700 hover:border-teal-500 items-center justify-center transition-colors cursor-pointer"
                     aria-label="Suivant"
                 >
                     <ArrowRight className="w-5 h-5" />
@@ -408,7 +411,7 @@ const HomeAgendaSection = React.memo(() => {
                 {events.length > 0 ? (
                     <div
                         ref={scrollRef}
-                        className="flex gap-4 sm:gap-6 md:gap-8 px-4 sm:px-8 md:px-12 py-4 sm:py-8 md:py-12 overflow-x-auto no-scrollbar select-none overscroll-x-contain cursor-grab active:cursor-grabbing"
+                        className="flex gap-4 sm:gap-6 md:gap-8 px-4 sm:px-10 md:px-20 lg:px-24 py-4 sm:py-8 md:py-12 overflow-x-auto no-scrollbar select-none overscroll-x-contain cursor-grab active:cursor-grabbing"
                         onMouseDown={handleMouseDown}
                         onMouseUp={handleMouseUp}
                         onMouseMove={handleMouseMove}
