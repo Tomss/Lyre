@@ -31,6 +31,82 @@
     <meta name="twitter:description" content="École de Musique et Orchestre d'Harmonie La Lyre à Chalindrey. Éveil musical, cours d'instruments, pratique collective, orchestres et concerts en Haute-Marne." />
     <meta name="twitter:image" content="https://lalyre.fr/hero-banner.webp" />
 
+    <!-- Schema.org JSON-LD Structured Data for Google -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": ["MusicSchool", "EducationalOrganization"],
+          "@id": "https://lalyre.fr/#school",
+          "name": "École de Musique La Lyre",
+          "alternateName": "La Lyre Chalindrey",
+          "url": "https://lalyre.fr",
+          "logo": "https://lalyre.fr/favicon.png",
+          "image": "https://lalyre.fr/hero-banner.webp",
+          "description": "École de Musique associative à Chalindrey (Haute-Marne). Éveil musical dès le plus jeune âge, cours d'instruments (cuivres, bois, percussions, cordes), formation musicale et cursus pédagogique de qualité.",
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Chalindrey",
+            "postalCode": "52600",
+            "addressRegion": "Haute-Marne",
+            "addressCountry": "FR"
+          },
+          "areaServed": {
+            "@type": "AdministrativeArea",
+            "name": "Chalindrey, Pays de Langres, Haute-Marne (52)"
+          },
+          "hasOfferCatalog": {
+            "@type": "OfferCatalog",
+            "name": "Enseignement musical",
+            "itemListElement": [
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "Éveil Musical"
+                }
+              },
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "Formation Musicale / Solfège"
+                }
+              },
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "Classes d'instruments (Trompette, Clarinette, Saxophone, Flûte, Batterie, Trombone, Guitare...)"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "@type": ["PerformingGroup", "MusicGroup"],
+          "@id": "https://lalyre.fr/#orchestra",
+          "name": "La Lyre - Orchestre d'Harmonie de Chalindrey",
+          "url": "https://lalyre.fr/orchestres",
+          "image": "https://lalyre.fr/orchestras-banner.webp",
+          "description": "Société musicale et Grand Orchestre d'Harmonie de Chalindrey réunissant musiciens passionnés pour des concerts, événements et échanges culturels.",
+          "location": {
+            "@type": "Place",
+            "name": "Chalindrey",
+            "address": {
+              "@type": "PostalAddress",
+              "addressLocality": "Chalindrey",
+              "postalCode": "52600",
+              "addressRegion": "Haute-Marne",
+              "addressCountry": "FR"
+            }
+          }
+        }
+      ]
+    }
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
