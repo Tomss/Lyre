@@ -257,45 +257,39 @@ const School = () => {
             </div>
           ) : (
             <div className="space-y-16 max-w-7xl mx-auto">
-              {/* Section 1 : Classes Collectives & Éveil (si présentes en bdd) */}
-              {collectiveClasses.length > 0 && (
-                <div>
-                  <div className="flex items-center gap-3 mb-8">
-                    <div className="w-10 h-10 rounded-2xl bg-purple-500/20 text-purple-400 flex items-center justify-center border border-purple-500/30">
-                      <Sparkles className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h3 className="text-2xl font-bold text-white">Éveil & Pratiques Collectives</h3>
-                      <p className="text-xs text-slate-400">Formation musicale, découverte sensorielle et apprentissages collectifs</p>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {collectiveClasses.map((inst, idx) => (
-                      <InstrumentCard key={inst.id || idx} inst={inst} isClass={true} onSelect={() => setSelectedInstrument(inst)} />
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Section 2 : Classes Instrumentales */}
+              {/* Section 1 : Classes Instrumentales */}
               {individualInstruments.length > 0 && (
                 <div>
                   {collectiveClasses.length > 0 && (
-                    <div className="flex items-center gap-3 mb-8 pt-8 border-t border-slate-800">
+                    <div className="flex items-center gap-3 mb-8">
                       <div className="w-10 h-10 rounded-2xl bg-teal-500/20 text-teal-400 flex items-center justify-center border border-teal-500/30">
                         <Music className="w-5 h-5" />
                       </div>
-                      <div>
-                        <h3 className="text-2xl font-bold text-white">Classes Instrumentales</h3>
-                        <p className="text-xs text-slate-400">Pratique individuelle de l'instrument et accompagnement personnalisé</p>
-                      </div>
+                      <h3 className="text-2xl font-bold text-white">Classes Instrumentales</h3>
                     </div>
                   )}
 
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {individualInstruments.map((inst, idx) => (
                       <InstrumentCard key={inst.id || idx} inst={inst} isClass={false} onSelect={() => setSelectedInstrument(inst)} />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Section 2 : Formation Musicale & Pratiques Collectives (si présentes en bdd) */}
+              {collectiveClasses.length > 0 && (
+                <div>
+                  <div className={`flex items-center gap-3 mb-8 ${individualInstruments.length > 0 ? 'pt-8 border-t border-slate-800' : ''}`}>
+                    <div className="w-10 h-10 rounded-2xl bg-purple-500/20 text-purple-400 flex items-center justify-center border border-purple-500/30">
+                      <Sparkles className="w-5 h-5" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-white">Formation Musicale & Pratiques Collectives</h3>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {collectiveClasses.map((inst, idx) => (
+                      <InstrumentCard key={inst.id || idx} inst={inst} isClass={true} onSelect={() => setSelectedInstrument(inst)} />
                     ))}
                   </div>
                 </div>
