@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { authenticateToken } from '../middleware/auth';
@@ -6,34 +6,90 @@ import pool from '../db';
 
 const router = Router();
 
-router.post('/login', async (req, res) => {
+// Anti Brute-Force Protection: IP -> { failedAttempts: number, lockoutUntil: number }
+interface LoginAttemptRecord {
+  failedAttempts: number;
+  lockoutUntil: number;
+  lastAttempt: number;
+}
+
+const loginAttempts = new Map<string, LoginAttemptRecord>();
+const LOCKOUT_WINDOW = 15 * 60 * 1000; // 15 minutes lockout
+const MAX_FAILED_ATTEMPTS = 5; // Max 5 failed attempts allowed before lockout
+
+// Periodic cleanup of expired rate limit entries every 15 minutes
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, record] of loginAttempts.entries()) {
+    if (now > record.lockoutUntil && (now - record.lastAttempt > LOCKOUT_WINDOW)) {
+      loginAttempts.delete(key);
+    }
+  }
+}, LOCKOUT_WINDOW);
+
+router.post('/login', async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
     return res.status(400).json({ message: 'Email et mot de passe sont requis.' });
   }
 
+  const clientIp = (req.headers['x-forwarded-for'] as string || req.socket.remoteAddress || 'unknown').split(',')[0].trim();
+  const normalizedEmail = String(email).trim().toLowerCase();
+  const rateLimitKey = `${clientIp}_${normalizedEmail}`;
+  const now = Date.now();
+
+  const attemptRecord = loginAttempts.get(rateLimitKey);
+
+  // Check if currently locked out
+  if (attemptRecord && attemptRecord.lockoutUntil > now) {
+    const remainingMinutes = Math.ceil((attemptRecord.lockoutUntil - now) / 60000);
+    console.warn(`[Brute-Force Blocked] IP: ${clientIp}, Email: ${normalizedEmail} - Locked out for ${remainingMinutes} min`);
+    return res.status(429).json({
+      message: `Trop de tentatives de connexion échouées. Par mesure de sécurité, veuillez patienter ${remainingMinutes} minute(s) avant de réessayer.`
+    });
+  }
+
+  const registerFailedAttempt = () => {
+    const current = loginAttempts.get(rateLimitKey) || { failedAttempts: 0, lockoutUntil: 0, lastAttempt: now };
+    current.failedAttempts += 1;
+    current.lastAttempt = now;
+
+    if (current.failedAttempts >= MAX_FAILED_ATTEMPTS) {
+      current.lockoutUntil = now + LOCKOUT_WINDOW;
+      console.warn(`[Brute-Force Triggered] IP: ${clientIp}, Email: ${normalizedEmail} locked out for 15 minutes.`);
+    }
+
+    loginAttempts.set(rateLimitKey, current);
+  };
+
   try {
     // 1. Trouver l'utilisateur par email
-    const [userRows] = await pool.query<any[]>('SELECT * FROM users WHERE email = ?', [email]);
+    const [userRows] = await pool.query<any[]>('SELECT * FROM users WHERE email = ?', [normalizedEmail]);
 
     if (userRows.length === 0) {
-      console.log(`[Login] Échec: Utilisateur non trouvé pour ${email}`);
+      registerFailedAttempt();
+      console.log(`[Login] Échec: Utilisateur non trouvé pour ${normalizedEmail}`);
       return res.status(401).json({ message: 'Email ou mot de passe incorrect.' });
     }
     const user = userRows[0];
 
     // 2. Vérifier si un mot de passe existe (pour les invités non activés)
     if (!user.password_hash) {
-      console.log(`[Login] Échec: Tentative de connexion sur compte non activé ${email}`);
+      console.log(`[Login] Échec: Tentative de connexion sur compte non activé ${normalizedEmail}`);
       return res.status(401).json({ message: 'Compte non activé. Veuillez utiliser le lien reçu par email.' });
     }
 
     // 3. Vérifier le mot de passe
     const isMatch = await bcrypt.compare(password, user.password_hash);
     if (!isMatch) {
+      registerFailedAttempt();
+      console.log(`[Login] Échec: Mot de passe invalide pour ${normalizedEmail}`);
       return res.status(401).json({ message: 'Email ou mot de passe incorrect.' });
     }
+
+    // Login successful -> clear failed attempts counter
+    loginAttempts.delete(rateLimitKey);
 
     // 4. Récupérer le profil et vérifier le statut
     const [profileRows] = await pool.query<any[]>(`
