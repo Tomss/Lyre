@@ -1,7 +1,43 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Facebook, Youtube, Music } from 'lucide-react';
+import { Facebook, Youtube, Instagram, Linkedin, Twitter, Music, Globe, Share2, Radio } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { BASE_URL } from '../config';
+
+interface SocialLink {
+  id: string;
+  platform: string;
+  name: string;
+  url: string;
+  is_active: boolean;
+}
+
+const getSocialIcon = (platform: string) => {
+  switch (platform?.toLowerCase()) {
+    case 'facebook': return Facebook;
+    case 'youtube': return Youtube;
+    case 'instagram': return Instagram;
+    case 'linkedin': return Linkedin;
+    case 'twitter': return Twitter;
+    case 'spotify': return Music;
+    case 'soundcloud': return Radio;
+    case 'tiktok': return Share2;
+    default: return Globe;
+  }
+};
+
+const getSocialColors = (platform: string) => {
+  switch (platform?.toLowerCase()) {
+    case 'facebook': return 'hover:bg-[#1877F2]/20 hover:border-[#1877F2]/50 hover:text-[#1877F2]';
+    case 'youtube': return 'hover:bg-[#FF0000]/20 hover:border-[#FF0000]/50 hover:text-[#FF0000]';
+    case 'instagram': return 'hover:bg-[#E4405F]/20 hover:border-[#E4405F]/50 hover:text-[#E4405F]';
+    case 'linkedin': return 'hover:bg-[#0A66C2]/20 hover:border-[#0A66C2]/50 hover:text-[#0A66C2]';
+    case 'twitter': return 'hover:bg-slate-700 hover:border-slate-500 hover:text-white';
+    case 'tiktok': return 'hover:bg-[#25F4EE]/20 hover:border-[#25F4EE]/50 hover:text-[#25F4EE]';
+    case 'spotify': return 'hover:bg-[#1DB954]/20 hover:border-[#1DB954]/50 hover:text-[#1DB954]';
+    case 'soundcloud': return 'hover:bg-[#FF5500]/20 hover:border-[#FF5500]/50 hover:text-[#FF5500]';
+    default: return 'hover:bg-teal-500/20 hover:border-teal-500/50 hover:text-teal-400';
+  }
+};
 
 const Footer = () => {
   const location = useLocation();
@@ -19,6 +55,22 @@ const Footer = () => {
 
   const logoUrl = settings?.header_logo_url || settings?.site_logo_url;
   const fullLogoUrl = logoUrl ? (logoUrl.startsWith('http') ? logoUrl : `${BASE_URL}${logoUrl}`) : null;
+
+  // Parse dynamic social links from settings, with robust fallback
+  const socialLinks: SocialLink[] = (() => {
+    try {
+      if (settings?.social_links) {
+        const parsed = JSON.parse(settings.social_links);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.filter((item: SocialLink) => item && item.is_active !== false && item.url);
+        }
+      }
+    } catch (e) {}
+    return [
+      { id: '1', platform: 'facebook', name: 'Facebook', url: 'https://facebook.com', is_active: true },
+      { id: '2', platform: 'youtube', name: 'YouTube', url: 'https://youtube.com', is_active: true }
+    ];
+  })();
 
   return (
     <footer className="bg-slate-900 text-slate-300 relative border-t border-slate-800/80 overflow-hidden">
@@ -70,29 +122,30 @@ const Footer = () => {
             </ul>
           </nav>
 
-          {/* Social Links (Facebook & YouTube Only) */}
-          <div className="flex items-center gap-2">
-            <a
-              href="https://facebook.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group flex items-center gap-1.5 px-2.5 py-1 bg-slate-800/90 hover:bg-[#1877F2]/20 border border-slate-700/60 hover:border-[#1877F2]/50 rounded-lg text-slate-300 hover:text-[#1877F2] transition-all shadow-xs text-xs font-bold"
-              aria-label="Facebook de La Lyre"
-            >
-              <Facebook className="h-3.5 w-3.5 transition-transform group-hover:scale-110" />
-              <span>Facebook</span>
-            </a>
+          {/* Dynamic Social Links */}
+          <div className="flex items-center flex-wrap justify-center gap-2">
+            {socialLinks.map((link) => {
+              const Icon = getSocialIcon(link.platform);
+              const colorClasses = getSocialColors(link.platform);
+              const fullUrl = link.url.startsWith('http://') || link.url.startsWith('https://') 
+                ? link.url 
+                : `https://${link.url}`;
 
-            <a
-              href="https://youtube.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group flex items-center gap-1.5 px-2.5 py-1 bg-slate-800/90 hover:bg-[#FF0000]/20 border border-slate-700/60 hover:border-[#FF0000]/50 rounded-lg text-slate-300 hover:text-[#FF0000] transition-all shadow-xs text-xs font-bold"
-              aria-label="Chaîne YouTube de La Lyre"
-            >
-              <Youtube className="h-3.5 w-3.5 transition-transform group-hover:scale-110" />
-              <span>YouTube</span>
-            </a>
+              return (
+                <a
+                  key={link.id || link.name}
+                  href={fullUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`group flex items-center gap-1.5 px-2.5 py-1 bg-slate-800/90 border border-slate-700/60 rounded-lg text-slate-300 transition-all shadow-xs text-xs font-bold ${colorClasses}`}
+                  aria-label={`${link.name} de La Lyre`}
+                  title={link.name}
+                >
+                  <Icon className="h-3.5 w-3.5 transition-transform group-hover:scale-110 flex-shrink-0" />
+                  <span>{link.name}</span>
+                </a>
+              );
+            })}
           </div>
 
         </div>

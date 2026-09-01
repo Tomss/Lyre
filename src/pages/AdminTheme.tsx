@@ -2,13 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { Navigate, Link } from 'react-router-dom';
-import { ArrowLeft, Plus, Trash2, Save, Upload, GripVertical, X, Image as ImageIcon, Layout, Palette, BookOpen, Edit } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Save, Upload, GripVertical, X, Image as ImageIcon, Layout, Palette, BookOpen, Edit, Share2, Facebook, Youtube, Instagram, Linkedin, Twitter, Music, Globe, Radio, ExternalLink, Check, Eye, EyeOff } from 'lucide-react';
 
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
 import { API_URL, BASE_URL } from '../config';
+
+export interface SocialLink {
+    id: string;
+    platform: 'facebook' | 'youtube' | 'instagram' | 'tiktok' | 'twitter' | 'linkedin' | 'spotify' | 'soundcloud' | 'custom';
+    name: string;
+    url: string;
+    is_active: boolean;
+}
 
 interface CarouselImage {
     id: string;
@@ -55,7 +63,7 @@ interface HistoryEvent {
 const AdminTheme = () => {
     const { currentUser, token, isAuthenticated } = useAuth();
     const { settings, updateSettings, pageHeaders, updatePageHeader } = useTheme();
-    const [activeTab, setActiveTab] = useState<'general' | 'carousel' | 'headers' | 'history'>('general');
+    const [activeTab, setActiveTab] = useState<'general' | 'carousel' | 'headers' | 'history' | 'social'>('general');
     const [headerUploading, setHeaderUploading] = useState<string | null>(null);
 
     // Page Headers Local State
@@ -136,6 +144,141 @@ const AdminTheme = () => {
     const [deleteHistoryConfirmId, setDeleteHistoryConfirmId] = useState<string | null>(null);
     const [uploadingHistory, setUploadingHistory] = useState(false);
 
+    // Social Links State
+    const [socialLinks, setSocialLinks] = useState<SocialLink[]>(() => {
+        try {
+            if (settings.social_links) {
+                const parsed = JSON.parse(settings.social_links);
+                if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+            }
+        } catch (e) {}
+        return [
+            { id: '1', platform: 'facebook', name: 'Facebook', url: 'https://facebook.com', is_active: true },
+            { id: '2', platform: 'youtube', name: 'YouTube', url: 'https://youtube.com', is_active: true }
+        ];
+    });
+    const [showSocialModal, setShowSocialModal] = useState(false);
+    const [editingSocialLink, setEditingSocialLink] = useState<SocialLink | null>(null);
+    const [socialFormData, setSocialFormData] = useState<{
+        platform: SocialLink['platform'];
+        name: string;
+        url: string;
+        is_active: boolean;
+    }>({
+        platform: 'facebook',
+        name: 'Facebook',
+        url: '',
+        is_active: true
+    });
+    const [deleteSocialConfirmId, setDeleteSocialConfirmId] = useState<string | null>(null);
+    const [savingSocial, setSavingSocial] = useState(false);
+
+    useEffect(() => {
+        if (settings.social_links) {
+            try {
+                const parsed = JSON.parse(settings.social_links);
+                if (Array.isArray(parsed)) {
+                    setSocialLinks(parsed);
+                }
+            } catch (e) {}
+        }
+    }, [settings.social_links]);
+
+    const saveSocialLinksToBackend = async (newLinks: SocialLink[]) => {
+        setSavingSocial(true);
+        try {
+            await updateSettings({
+                social_links: JSON.stringify(newLinks)
+            });
+            showNotification('Réseaux sociaux mis à jour avec succès !');
+        } catch (err: any) {
+            console.error(err);
+            showNotification('Erreur lors de la sauvegarde des réseaux sociaux', 'error');
+        } finally {
+            setSavingSocial(false);
+        }
+    };
+
+    const openAddSocialModal = () => {
+        setEditingSocialLink(null);
+        setSocialFormData({
+            platform: 'facebook',
+            name: 'Facebook',
+            url: '',
+            is_active: true
+        });
+        setShowSocialModal(true);
+    };
+
+    const openEditSocialModal = (link: SocialLink) => {
+        setEditingSocialLink(link);
+        setSocialFormData({
+            platform: link.platform,
+            name: link.name,
+            url: link.url,
+            is_active: link.is_active !== false
+        });
+        setShowSocialModal(true);
+    };
+
+    const handlePlatformChange = (p: SocialLink['platform']) => {
+        const defaultNames: Record<string, string> = {
+            facebook: 'Facebook',
+            youtube: 'YouTube',
+            instagram: 'Instagram',
+            tiktok: 'TikTok',
+            twitter: 'X (Twitter)',
+            linkedin: 'LinkedIn',
+            spotify: 'Spotify',
+            soundcloud: 'SoundCloud',
+            custom: 'Autre'
+        };
+        setSocialFormData(prev => ({
+            ...prev,
+            platform: p,
+            name: (!prev.name || Object.values(defaultNames).includes(prev.name)) ? (defaultNames[p] || 'Autre') : prev.name
+        }));
+    };
+
+    const handleSocialSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        let newLinks: SocialLink[];
+        if (editingSocialLink) {
+            newLinks = socialLinks.map(l => l.id === editingSocialLink.id ? { ...l, ...socialFormData } : l);
+        } else {
+            const newLink: SocialLink = {
+                id: Date.now().toString(),
+                ...socialFormData
+            };
+            newLinks = [...socialLinks, newLink];
+        }
+        setSocialLinks(newLinks);
+        setShowSocialModal(false);
+        await saveSocialLinksToBackend(newLinks);
+    };
+
+    const handleToggleSocialActive = async (id: string) => {
+        const newLinks = socialLinks.map(l => l.id === id ? { ...l, is_active: !l.is_active } : l);
+        setSocialLinks(newLinks);
+        await saveSocialLinksToBackend(newLinks);
+    };
+
+    const handleDeleteSocial = async (id: string) => {
+        const newLinks = socialLinks.filter(l => l.id !== id);
+        setSocialLinks(newLinks);
+        setDeleteSocialConfirmId(null);
+        await saveSocialLinksToBackend(newLinks);
+    };
+
+    const handleMoveSocial = async (index: number, direction: 'up' | 'down') => {
+        const targetIndex = direction === 'up' ? index - 1 : index + 1;
+        if (targetIndex < 0 || targetIndex >= socialLinks.length) return;
+        const newLinks = [...socialLinks];
+        const [moved] = newLinks.splice(index, 1);
+        newLinks.splice(targetIndex, 0, moved);
+        setSocialLinks(newLinks);
+        await saveSocialLinksToBackend(newLinks);
+    };
 
     // Dnd Sensors
     const sensors = useSensors(
@@ -634,6 +777,13 @@ const AdminTheme = () => {
                             <BookOpen className="h-5 w-5 mr-2" />
                             Notre Histoire
                         </button>
+                        <button
+                            onClick={() => setActiveTab('social')}
+                            className={`flex items-center px-6 py-4 font-medium transition-colors ${activeTab === 'social' ? 'text-teal-600 border-b-2 border-teal-600 bg-teal-50/50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}
+                        >
+                            <Share2 className="h-5 w-5 mr-2" />
+                            Réseaux Sociaux
+                        </button>
                     </div>
 
                     <div className="p-6 md:p-8">
@@ -1035,6 +1185,171 @@ const AdminTheme = () => {
 
                             </div>
                         )}
+
+                        {/* --- TAB: SOCIAL --- */}
+                        {activeTab === 'social' && (
+                            <div className="space-y-8">
+                                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-slate-100">
+                                    <div>
+                                        <h3 className="text-xl font-bold text-slate-800">Réseaux Sociaux du Site</h3>
+                                        <p className="text-sm text-slate-500 mt-0.5">Ces liens sont automatiquement affichés dans le pied de page (footer) de toutes les pages.</p>
+                                    </div>
+                                    <button
+                                        onClick={openAddSocialModal}
+                                        className="flex items-center px-4 py-2.5 bg-teal-600 text-white rounded-xl hover:bg-teal-700 transition shadow-md shadow-teal-200 font-semibold text-sm"
+                                    >
+                                        <Plus className="h-4 w-4 mr-1.5" />
+                                        Ajouter un réseau
+                                    </button>
+                                </div>
+
+                                {/* Social Links List */}
+                                <div className="space-y-3">
+                                    {socialLinks.length === 0 ? (
+                                        <div className="text-center py-12 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
+                                            <Share2 className="h-12 w-12 text-slate-300 mx-auto mb-3" />
+                                            <p className="text-slate-600 font-medium">Aucun réseau social configuré</p>
+                                            <p className="text-xs text-slate-400 mt-1">Cliquez sur « Ajouter un réseau » pour afficher vos premiers liens dans le footer.</p>
+                                        </div>
+                                    ) : (
+                                        socialLinks.map((link, index) => {
+                                            const getIcon = () => {
+                                                switch (link.platform) {
+                                                    case 'facebook': return <Facebook className="h-5 w-5 text-[#1877F2]" />;
+                                                    case 'youtube': return <Youtube className="h-5 w-5 text-[#FF0000]" />;
+                                                    case 'instagram': return <Instagram className="h-5 w-5 text-[#E4405F]" />;
+                                                    case 'tiktok': return <Share2 className="h-5 w-5 text-slate-800" />;
+                                                    case 'twitter': return <Twitter className="h-5 w-5 text-slate-800" />;
+                                                    case 'linkedin': return <Linkedin className="h-5 w-5 text-[#0A66C2]" />;
+                                                    case 'spotify': return <Music className="h-5 w-5 text-[#1DB954]" />;
+                                                    case 'soundcloud': return <Radio className="h-5 w-5 text-[#FF5500]" />;
+                                                    default: return <Globe className="h-5 w-5 text-teal-600" />;
+                                                }
+                                            };
+
+                                            const getBadgeColor = () => {
+                                                switch (link.platform) {
+                                                    case 'facebook': return 'bg-[#1877F2]/10 border-[#1877F2]/20';
+                                                    case 'youtube': return 'bg-[#FF0000]/10 border-[#FF0000]/20';
+                                                    case 'instagram': return 'bg-[#E4405F]/10 border-[#E4405F]/20';
+                                                    case 'tiktok': return 'bg-slate-100 border-slate-200';
+                                                    case 'twitter': return 'bg-slate-100 border-slate-200';
+                                                    case 'linkedin': return 'bg-[#0A66C2]/10 border-[#0A66C2]/20';
+                                                    case 'spotify': return 'bg-[#1DB954]/10 border-[#1DB954]/20';
+                                                    case 'soundcloud': return 'bg-[#FF5500]/10 border-[#FF5500]/20';
+                                                    default: return 'bg-teal-50 border-teal-200';
+                                                }
+                                            };
+
+                                            return (
+                                                <div
+                                                    key={link.id}
+                                                    className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl border transition-all ${link.is_active ? 'bg-white border-slate-200 shadow-sm' : 'bg-slate-50/60 border-slate-200 opacity-60'}`}
+                                                >
+                                                    <div className="flex items-center space-x-4 min-w-0">
+                                                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center border shrink-0 ${getBadgeColor()}`}>
+                                                            {getIcon()}
+                                                        </div>
+                                                        <div className="min-w-0">
+                                                            <div className="flex items-center gap-2">
+                                                                <h4 className="font-bold text-slate-800 text-sm truncate">{link.name}</h4>
+                                                                {!link.is_active && (
+                                                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600">Désactivé</span>
+                                                                )}
+                                                            </div>
+                                                            <a
+                                                                href={link.url.startsWith('http') ? link.url : `https://${link.url}`}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="text-xs text-slate-400 hover:text-teal-600 flex items-center gap-1 mt-0.5 truncate transition-colors"
+                                                            >
+                                                                <span className="truncate">{link.url || 'Aucun lien'}</span>
+                                                                <ExternalLink className="h-3 w-3 shrink-0" />
+                                                            </a>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="flex items-center gap-2 mt-3 sm:mt-0 self-end sm:self-auto">
+                                                        {/* Reorder Up / Down */}
+                                                        <div className="flex items-center bg-slate-100 rounded-xl p-0.5 border border-slate-200">
+                                                            <button
+                                                                type="button"
+                                                                disabled={index === 0}
+                                                                onClick={() => handleMoveSocial(index, 'up')}
+                                                                title="Monter"
+                                                                className="p-1.5 text-slate-600 hover:text-teal-600 disabled:opacity-30 disabled:hover:text-slate-600 rounded-lg hover:bg-white transition"
+                                                            >
+                                                                ▲
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                disabled={index === socialLinks.length - 1}
+                                                                onClick={() => handleMoveSocial(index, 'down')}
+                                                                title="Descendre"
+                                                                className="p-1.5 text-slate-600 hover:text-teal-600 disabled:opacity-30 disabled:hover:text-slate-600 rounded-lg hover:bg-white transition"
+                                                            >
+                                                                ▼
+                                                            </button>
+                                                        </div>
+
+                                                        {/* Toggle Active */}
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleToggleSocialActive(link.id)}
+                                                            title={link.is_active ? 'Désactiver du footer' : 'Activer dans le footer'}
+                                                            className={`p-2 rounded-xl border transition ${link.is_active ? 'bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100' : 'bg-slate-100 text-slate-500 border-slate-200 hover:bg-slate-200'}`}
+                                                        >
+                                                            {link.is_active ? <Eye size={18} /> : <EyeOff size={18} />}
+                                                        </button>
+
+                                                        {/* Edit */}
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => openEditSocialModal(link)}
+                                                            title="Modifier"
+                                                            className="p-2 text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-100 rounded-xl transition"
+                                                        >
+                                                            <Edit size={18} />
+                                                        </button>
+
+                                                        {/* Delete */}
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setDeleteSocialConfirmId(link.id)}
+                                                            title="Supprimer"
+                                                            className="p-2 text-red-600 bg-red-50 hover:bg-red-100 border border-red-100 rounded-xl transition"
+                                                        >
+                                                            <Trash2 size={18} />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })
+                                    )}
+                                </div>
+
+                                {/* Live Preview Box */}
+                                <div className="p-6 bg-slate-900 rounded-2xl border border-slate-800 text-slate-300">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Aperçu en direct dans le Footer</span>
+                                        <span className="text-xs text-teal-400 font-semibold">{socialLinks.filter(l => l.is_active && l.url).length} lien(s) actif(s)</span>
+                                    </div>
+                                    <div className="flex items-center flex-wrap gap-2 pt-2">
+                                        {socialLinks.filter(l => l.is_active && l.url).map(link => {
+                                            return (
+                                                <div
+                                                    key={link.id}
+                                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800/90 border border-slate-700/60 rounded-lg text-slate-300 text-xs font-bold"
+                                                >
+                                                    <span className="text-teal-400">●</span>
+                                                    <span>{link.name}</span>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                 </div>
@@ -1244,6 +1559,125 @@ const AdminTheme = () => {
                                     </button>
                                 </div>
                             </form>
+                        </div>
+                    </div>
+                )
+            }
+
+            {/* Social Link Form Modal */}
+            {
+                showSocialModal && (
+                    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
+                        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-fade-in-up">
+                            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                                <h2 className="text-xl font-bold text-slate-800">
+                                    {editingSocialLink ? 'Modifier le réseau social' : 'Ajouter un réseau social'}
+                                </h2>
+                                <button onClick={() => setShowSocialModal(false)} className="text-slate-400 hover:text-slate-600">
+                                    <X className="h-6 w-6" />
+                                </button>
+                            </div>
+                            <form onSubmit={handleSocialSubmit} className="p-6 space-y-4">
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-slate-700">Plateforme</label>
+                                    <select
+                                        value={socialFormData.platform}
+                                        onChange={(e) => handlePlatformChange(e.target.value as any)}
+                                        className="w-full px-3 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none bg-white font-medium text-slate-800"
+                                    >
+                                        <option value="facebook">Facebook</option>
+                                        <option value="youtube">YouTube</option>
+                                        <option value="instagram">Instagram</option>
+                                        <option value="tiktok">TikTok</option>
+                                        <option value="twitter">X (anciennement Twitter)</option>
+                                        <option value="linkedin">LinkedIn</option>
+                                        <option value="spotify">Spotify</option>
+                                        <option value="soundcloud">SoundCloud</option>
+                                        <option value="custom">Autre / Site Web</option>
+                                    </select>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-slate-700">Nom affiché dans le footer</label>
+                                    <input
+                                        type="text"
+                                        value={socialFormData.name}
+                                        onChange={(e) => setSocialFormData({ ...socialFormData, name: e.target.value })}
+                                        placeholder="Ex: Facebook, Chaîne YouTube..."
+                                        className="w-full px-3 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none"
+                                        required
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-slate-700">Lien URL complet</label>
+                                    <input
+                                        type="text"
+                                        value={socialFormData.url}
+                                        onChange={(e) => setSocialFormData({ ...socialFormData, url: e.target.value })}
+                                        placeholder={
+                                            socialFormData.platform === 'facebook' ? 'https://facebook.com/votre-page' :
+                                            socialFormData.platform === 'youtube' ? 'https://youtube.com/@votre-chaine' :
+                                            socialFormData.platform === 'instagram' ? 'https://instagram.com/votre-compte' :
+                                            socialFormData.platform === 'tiktok' ? 'https://tiktok.com/@votre-compte' :
+                                            'https://...'
+                                        }
+                                        className="w-full px-3 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none font-mono text-xs"
+                                        required
+                                    />
+                                </div>
+
+                                <div className="space-y-2 pt-2">
+                                    <label className="flex items-center space-x-2.5 cursor-pointer select-none">
+                                        <input
+                                            type="checkbox"
+                                            checked={socialFormData.is_active}
+                                            onChange={(e) => setSocialFormData({ ...socialFormData, is_active: e.target.checked })}
+                                            className="h-4 w-4 rounded text-teal-600 focus:ring-teal-500 border-slate-300"
+                                        />
+                                        <span className="text-sm font-medium text-slate-700">Activer et afficher dans le footer</span>
+                                    </label>
+                                </div>
+
+                                <div className="pt-4 flex justify-end space-x-3 border-t border-slate-100">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowSocialModal(false)}
+                                        className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl transition-colors font-medium text-sm"
+                                    >
+                                        Annuler
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={savingSocial}
+                                        className="px-6 py-2 bg-teal-600 text-white rounded-xl hover:bg-teal-700 transition shadow-md shadow-teal-200 font-medium text-sm disabled:opacity-70 flex items-center"
+                                    >
+                                        {savingSocial && <div className="animate-spin rounded-full h-4 w-4 border-2 border-white mr-2" />}
+                                        {editingSocialLink ? 'Enregistrer' : 'Ajouter'}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )
+            }
+
+            {/* Delete Confirmation Modal for Social Link */}
+            {
+                deleteSocialConfirmId && (
+                    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                        <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden animate-fade-in-up">
+                            <div className="p-6 text-center">
+                                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <Trash2 className="h-8 w-8 text-red-600" />
+                                </div>
+                                <h3 className="text-xl font-bold text-slate-800 mb-2">Supprimer ce réseau ?</h3>
+                                <p className="text-slate-500 mb-6 text-sm">Le lien sera définitivement retiré du pied de page.</p>
+                                <div className="flex gap-3 justify-center">
+                                    <button onClick={() => setDeleteSocialConfirmId(null)} className="px-5 py-2.5 text-slate-600 font-medium hover:bg-slate-100 rounded-xl transition-colors text-sm">Annuler</button>
+                                    <button onClick={() => handleDeleteSocial(deleteSocialConfirmId)} className="px-5 py-2.5 bg-red-600 text-white font-medium rounded-xl hover:bg-red-700 transition-colors shadow-lg shadow-red-200 text-sm">Supprimer</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 )
