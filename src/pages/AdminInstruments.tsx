@@ -334,14 +334,9 @@ const AdminInstruments = () => {
               <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center mr-4 shadow-sm border border-indigo-50 flex-shrink-0">
                 <Music size={28} />
               </div>
-              <div>
-                <h1 className="text-2xl md:text-3xl font-black text-slate-800">
-                  Gestion des Instruments & Classes
-                </h1>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Configurez les instruments et classes collectives d'enseignement (éveil, solfège...).
-                </p>
-              </div>
+              <h1 className="text-2xl md:text-3xl font-black text-slate-800">
+                Gestion des Instruments & Classes
+              </h1>
             </div>
             <button 
               onClick={() => { setEditingInstrument(null); setShowAddForm(true); }} 
