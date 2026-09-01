@@ -1,4 +1,4 @@
-﻿import { Router } from 'express';
+import { Router } from 'express';
 import { authenticateToken } from '../middleware/auth';
 import pool from '../db';
 import crypto from 'crypto';
@@ -15,7 +15,7 @@ router.get('/', async (req, res) => {
     return res.status(403).json({ message: 'Acces refuse.' });
   }
   try {
-    const [instruments] = await pool.query('SELECT * FROM instruments ORDER BY name ASC');
+    const [instruments] = await pool.query('SELECT * FROM instruments ORDER BY is_class DESC, name ASC');
     res.json(instruments);
   } catch (error) {
     res.status(500).json({ message: 'Erreur lors de la recuperation des instruments.' });
@@ -28,7 +28,7 @@ router.post('/', async (req, res) => {
   if ((req as any).user.role !== 'Admin' && (!(req as any).user.managedModules || !(req as any).user.managedModules.includes('instruments'))) {
     return res.status(403).json({ message: 'Acces refuse.' });
   }
-  const { name, teacher, description, photo_url } = req.body;
+  const { name, teacher, description, photo_url, is_class } = req.body;
   if (!name) {
     return res.status(400).json({ message: "Le nom de l instrument est requis." });
   }
@@ -39,11 +39,12 @@ router.post('/', async (req, res) => {
       teacher: teacher || null,
       description: description || null,
       photo_url: photo_url || null,
+      is_class: is_class ? 1 : 0,
       created_at: new Date(),
     };
     await pool.query(
-      'INSERT INTO instruments (id, name, teacher, description, photo_url, created_at) VALUES (?, ?, ?, ?, ?, ?)',
-      [newInstrument.id, newInstrument.name, newInstrument.teacher, newInstrument.description, newInstrument.photo_url, newInstrument.created_at]
+      'INSERT INTO instruments (id, name, teacher, description, photo_url, is_class, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [newInstrument.id, newInstrument.name, newInstrument.teacher, newInstrument.description, newInstrument.photo_url, newInstrument.is_class, newInstrument.created_at]
     );
     res.status(201).json({ message: 'Instrument cree avec succes', instrument: newInstrument });
   } catch (error) {
@@ -58,14 +59,15 @@ router.put('/:id', async (req, res) => {
     return res.status(403).json({ message: 'Acces refuse.' });
   }
   const { id } = req.params;
-  const { name, teacher, description, photo_url } = req.body;
+  const { name, teacher, description, photo_url, is_class } = req.body;
   if (!name) {
     return res.status(400).json({ message: "Le nom de l instrument est requis." });
   }
   try {
+    const isClassVal = is_class ? 1 : 0;
     const [result] = await pool.query(
-      'UPDATE instruments SET name = ?, teacher = ?, description = ?, photo_url = ? WHERE id = ?',
-      [name, teacher || null, description || null, photo_url || null, id]
+      'UPDATE instruments SET name = ?, teacher = ?, description = ?, photo_url = ?, is_class = ? WHERE id = ?',
+      [name, teacher || null, description || null, photo_url || null, isClassVal, id]
     );
     // @ts-ignore
     if (result.affectedRows === 0) {

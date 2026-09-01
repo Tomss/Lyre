@@ -7,7 +7,7 @@ const router = Router();
 router.get('/', async (req, res) => {
   try {
     const [instruments] = await pool.query(
-      'SELECT * FROM instruments ORDER BY name ASC'
+      'SELECT * FROM instruments ORDER BY is_class DESC, name ASC'
     );
     res.json(instruments);
   } catch (error) {

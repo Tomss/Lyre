@@ -105,6 +105,21 @@ dotenv.config();
       console.log('[Migration] Succès : colonne image_url ajoutée à events.');
     }
 
+    // Migration: Ajout de la colonne is_class à la table instruments
+    const [instrumentsIsClassCols]: any = await pool.query(`
+      SELECT COUNT(*) as count 
+      FROM information_schema.COLUMNS 
+      WHERE TABLE_SCHEMA = DATABASE() 
+      AND TABLE_NAME = 'instruments' 
+      AND COLUMN_NAME = 'is_class'
+    `);
+    
+    if (instrumentsIsClassCols[0].count === 0) {
+      console.log('[Migration] Ajout de la colonne is_class à la table instruments...');
+      await pool.query('ALTER TABLE instruments ADD COLUMN is_class TINYINT(1) NOT NULL DEFAULT 0');
+      console.log('[Migration] Succès : colonne is_class ajoutée à instruments.');
+    }
+
     // Migration: Création de la table activity_log
     const [tables]: any = await pool.query(`
       SELECT COUNT(*) as count 

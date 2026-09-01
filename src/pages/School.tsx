@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useTheme } from '../context/ThemeContext';
-import { Users, Sparkles, Compass, Rocket, School as SchoolIcon, Presentation, Lightbulb, Heart, Mic2, History, X, ZoomIn, ArrowRight } from 'lucide-react';
+import { Users, Sparkles, Compass, Rocket, School as SchoolIcon, Presentation, Lightbulb, Heart, Mic2, History, X, ZoomIn, ArrowRight, Music } from 'lucide-react';
 import PageHero from '../components/PageHero';
 import HistoryTimeline from '../components/HistoryTimeline';
 
@@ -12,21 +12,85 @@ interface Instrument {
   teacher: string | null;
   description: string | null;
   photo_url: string | null;
+  is_class?: boolean | number;
 }
 
 import { API_URL, BASE_URL } from '../config';
-import { getOptimizedImageUrl, getImageSrcSet } from '../utils/image';
+import { getOptimizedImageUrl } from '../utils/image';
 
-const getInstrumentConfig = (name: string) => {
-  const n = name.toLowerCase();
-  if (n.includes('hautbois') || n.includes('flûte') || n.includes('clarinette') || n.includes('saxophone') || n.includes('phonium') || n.includes('trompette') || n.includes('cor') || n.includes('trombone') || n.includes('tuba') || n.includes('saxhorn')) return { color: 'teal' };
-  if (n.includes('guitare') || n.includes('basse') || n.includes('contrebasse')) return { color: 'emerald' };
-  if (n.includes('percussion') || n.includes('batterie')) return { color: 'fuchsia' };
-  if (n.includes('eveil') || n.includes('éveil')) return { color: 'violet' };
-  return { color: 'cyan' };
-};
+const INSTRUMENTS_CACHE_KEY = 'lyre_cached_school_instruments_v2';
 
-const INSTRUMENTS_CACHE_KEY = 'lyre_cached_school_instruments_v1';
+const InstrumentCard = React.memo(({ inst, isClass, onSelect }: { inst: Instrument; isClass?: boolean; onSelect: () => void }) => {
+  return (
+    <div
+      className="h-full bg-slate-800 rounded-3xl border border-slate-700 hover:border-teal-400/80 shadow-md hover:shadow-xl transition-all duration-200 overflow-hidden flex flex-col relative group cursor-pointer"
+      onClick={onSelect}
+    >
+      {/* Image / Header with standard 16/10 aspect ratio */}
+      <div className="aspect-[16/10] relative overflow-hidden bg-slate-900 flex-shrink-0">
+        {inst.photo_url ? (
+          <img
+            src={getOptimizedImageUrl(inst.photo_url, 600, 80)}
+            alt={inst.name}
+            loading="eager"
+            decoding="async"
+            className="w-full h-full object-cover pointer-events-none"
+            onError={(e) => {
+              // @ts-ignore
+              e.currentTarget.style.display = 'none';
+            }}
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center opacity-30 text-teal-400 bg-slate-900">
+            {isClass ? <Sparkles className="h-14 w-14" /> : <Music className="h-14 w-14" />}
+          </div>
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent pointer-events-none"></div>
+
+        {/* Type Badge */}
+        <div className="absolute bottom-3 left-3 z-20">
+          <span className="px-2.5 py-1 rounded-full bg-slate-900/95 border border-slate-700/80 text-white text-[10px] font-bold uppercase tracking-wider shadow-sm flex items-center gap-1.5">
+            <div className={`w-1.5 h-1.5 rounded-full ${isClass ? 'bg-purple-400' : 'bg-teal-400'}`}></div>
+            {isClass ? 'Éveil & Formation' : 'Instrument'}
+          </span>
+        </div>
+      </div>
+
+      {/* Body */}
+      <div className="p-5 flex-grow flex flex-col bg-slate-800">
+        {/* Titre */}
+        <h3 className="font-bold text-lg text-white mb-1.5 group-hover:text-teal-300 transition-colors line-clamp-1 leading-snug">
+          {inst.name}
+        </h3>
+
+        {/* Description si disponible */}
+        {inst.description ? (
+          <p className="text-slate-300 text-xs leading-relaxed line-clamp-2 mb-4 font-normal">
+            {inst.description}
+          </p>
+        ) : (
+          <p className="text-slate-500 text-xs italic line-clamp-2 mb-4 font-normal">
+            {isClass ? `Découvrez le cursus ${inst.name.toLowerCase()} à l'école de musique.` : `Découvrez la classe de ${inst.name.toLowerCase()} à l'école de musique.`}
+          </p>
+        )}
+
+        {/* Footer Professeur */}
+        <div className="mt-auto pt-2.5 border-t border-slate-700/70 flex items-center justify-between">
+          <div className="flex items-center bg-slate-900/90 rounded-xl px-2.5 py-1.5 border border-slate-700/60 min-w-0 max-w-[calc(100%-40px)]">
+            <Users className="w-3.5 h-3.5 mr-1.5 text-teal-400 flex-shrink-0" />
+            <span className="text-slate-200 text-xs font-medium truncate" title={inst.teacher || "Professeur à confirmer"}>
+              {inst.teacher || "Professeur à confirmer"}
+            </span>
+          </div>
+
+          <div className="w-8 h-8 rounded-full bg-slate-700/60 flex items-center justify-center text-teal-400 group-hover:bg-teal-600 group-hover:text-white transition-colors flex-shrink-0">
+            <ArrowRight className="w-4 h-4" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+});
 
 const School = () => {
   const { settings, pageHeaders } = useTheme();
@@ -44,28 +108,13 @@ const School = () => {
   const [selectedInstrument, setSelectedInstrument] = useState<Instrument | null>(null);
   const [previewPhoto, setPreviewPhoto] = useState<string | null>(null);
 
-  // Stable memoized instrument list with pre-optimized URLs
-  const displayedInstruments = useMemo(() => {
-    const list = [...instruments];
-    if (!list.some(i => i.name.toLowerCase().includes('formation'))) {
-      list.push({
-        id: 'fm-manual',
-        name: "Formation Musicale",
-        teacher: "A. Brisard, M-C. Rémongin, N. Cardot",
-        photo_url: "https://images.pexels.com/photos/4502973/pexels-photo-4502973.jpeg?auto=compress&cs=tinysrgb&w=600",
-        description: "La pierre angulaire de l'apprentissage musical. Apprenez à lire, écrire et comprendre la musique dans une ambiance bienveillante."
-      });
-    }
-    if (!list.some(i => i.name.toLowerCase().includes('eveil') || i.name.toLowerCase().includes('éveil'))) {
-      list.push({
-        id: 'eveil-manual',
-        name: "Éveil Musical",
-        teacher: "Équipe pédagogique",
-        photo_url: "https://images.pexels.com/photos/17691880/pexels-photo-17691880.jpeg?auto=compress&cs=tinysrgb&w=600",
-        description: "Le monde magique de la musique : chants, mime, percussions corporelles... Une découverte ludique pour les tout-petits !"
-      });
-    }
-    return list;
+  // Separate collective classes from individual instruments cleanly
+  const collectiveClasses = useMemo(() => {
+    return instruments.filter(i => Boolean(i.is_class));
+  }, [instruments]);
+
+  const individualInstruments = useMemo(() => {
+    return instruments.filter(i => !i.is_class);
   }, [instruments]);
 
   useEffect(() => {
@@ -207,79 +256,50 @@ const School = () => {
               <div className="animate-spin rounded-full h-12 w-12 border-4 border-teal-500 border-t-transparent"></div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-7xl mx-auto">
-              {displayedInstruments.map((inst, idx) => {
-                return (
-                  <div
-                    key={inst.id || idx}
-                    className="h-full bg-slate-800 rounded-3xl border border-slate-700 hover:border-teal-400/80 shadow-md hover:shadow-xl transition-all duration-200 overflow-hidden flex flex-col relative group cursor-pointer"
-                    onClick={() => setSelectedInstrument(inst)}
-                  >
-                    {/* Image / Header with standard 16/10 aspect ratio */}
-                    <div className="aspect-[16/10] relative overflow-hidden bg-slate-900 flex-shrink-0">
-                      {inst.photo_url ? (
-                        <img
-                          src={getOptimizedImageUrl(inst.photo_url, 600, 80)}
-                          alt={inst.name}
-                          loading="eager"
-                          decoding="async"
-                          className="w-full h-full object-cover pointer-events-none"
-                          onError={(e) => {
-                            // @ts-ignore
-                            e.currentTarget.style.display = 'none';
-                          }}
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center opacity-30 text-teal-400 bg-slate-900">
-                          <Sparkles className="h-14 w-14" />
-                        </div>
-                      )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent pointer-events-none"></div>
-
-                      {/* Type Badge */}
-                      <div className="absolute bottom-3 left-3 z-20">
-                        <span className="px-2.5 py-1 rounded-full bg-slate-900/95 border border-slate-700/80 text-white text-[10px] font-bold uppercase tracking-wider shadow-sm flex items-center gap-1.5">
-                          <div className="w-1.5 h-1.5 rounded-full bg-teal-400"></div>
-                          Classe
-                        </span>
-                      </div>
+            <div className="space-y-16 max-w-7xl mx-auto">
+              {/* Section 1 : Classes Collectives & Éveil (si présentes en bdd) */}
+              {collectiveClasses.length > 0 && (
+                <div>
+                  <div className="flex items-center gap-3 mb-8">
+                    <div className="w-10 h-10 rounded-2xl bg-purple-500/20 text-purple-400 flex items-center justify-center border border-purple-500/30">
+                      <Sparkles className="w-5 h-5" />
                     </div>
-
-                    {/* Body */}
-                    <div className="p-5 flex-grow flex flex-col bg-slate-800">
-                      {/* Titre */}
-                      <h3 className="font-bold text-lg text-white mb-1.5 group-hover:text-teal-300 transition-colors line-clamp-1 leading-snug">
-                        {inst.name}
-                      </h3>
-
-                      {/* Description si disponible */}
-                      {inst.description ? (
-                        <p className="text-slate-300 text-xs leading-relaxed line-clamp-2 mb-4 font-normal">
-                          {inst.description}
-                        </p>
-                      ) : (
-                        <p className="text-slate-500 text-xs italic line-clamp-2 mb-4 font-normal">
-                          Découvrez la classe de {inst.name.toLowerCase()} à l'école de musique.
-                        </p>
-                      )}
-
-                      {/* Footer Professeur */}
-                      <div className="mt-auto pt-2.5 border-t border-slate-700/70 flex items-center justify-between">
-                        <div className="flex items-center bg-slate-900/90 rounded-xl px-2.5 py-1.5 border border-slate-700/60 min-w-0 max-w-[calc(100%-40px)]">
-                          <Users className="w-3.5 h-3.5 mr-1.5 text-teal-400 flex-shrink-0" />
-                          <span className="text-slate-200 text-xs font-medium truncate" title={inst.teacher || "Professeur à confirmer"}>
-                            {inst.teacher || "Professeur à confirmer"}
-                          </span>
-                        </div>
-
-                        <div className="w-8 h-8 rounded-full bg-slate-700/60 flex items-center justify-center text-teal-400 group-hover:bg-teal-600 group-hover:text-white transition-colors flex-shrink-0">
-                          <ArrowRight className="w-4 h-4" />
-                        </div>
-                      </div>
+                    <div>
+                      <h3 className="text-2xl font-bold text-white">Éveil & Pratiques Collectives</h3>
+                      <p className="text-xs text-slate-400">Formation musicale, découverte sensorielle et apprentissages collectifs</p>
                     </div>
                   </div>
-                );
-              })}
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {collectiveClasses.map((inst, idx) => (
+                      <InstrumentCard key={inst.id || idx} inst={inst} isClass={true} onSelect={() => setSelectedInstrument(inst)} />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Section 2 : Classes Instrumentales */}
+              {individualInstruments.length > 0 && (
+                <div>
+                  {collectiveClasses.length > 0 && (
+                    <div className="flex items-center gap-3 mb-8 pt-8 border-t border-slate-800">
+                      <div className="w-10 h-10 rounded-2xl bg-teal-500/20 text-teal-400 flex items-center justify-center border border-teal-500/30">
+                        <Music className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h3 className="text-2xl font-bold text-white">Classes Instrumentales</h3>
+                        <p className="text-xs text-slate-400">Pratique individuelle de l'instrument et accompagnement personnalisé</p>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {individualInstruments.map((inst, idx) => (
+                      <InstrumentCard key={inst.id || idx} inst={inst} isClass={false} onSelect={() => setSelectedInstrument(inst)} />
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

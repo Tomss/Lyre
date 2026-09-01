@@ -224,6 +224,15 @@ router.post('/', async (req, res) => {
 
         for (const inst of instruments) {
             if (!inst.nom || !inst.instrument_id) continue;
+
+            const [classCheck]: any = await connection.query(
+                'SELECT name FROM instruments WHERE id = ? AND is_class = 1',
+                [inst.instrument_id]
+            );
+            if (classCheck.length > 0) {
+                await connection.rollback();
+                return res.status(400).json({ message: `Impossible d'affecter une partition à la classe collective "${classCheck[0].name}".` });
+            }
             
             const newPartition = {
                 id: crypto.randomUUID(),
@@ -261,7 +270,7 @@ router.put('/:id', async (req, res) => {
     // @ts-ignore
     const userRole = (req as any).user.role;
     if (userRole !== 'Admin' && (!(req as any).user.managedModules || !(req as any).user.managedModules.includes('morceaux')) && userRole !== 'Gestionnaire') {
-        return res.status(403).json({ message: 'AccÃ¨s refusÃ©.' });
+        return res.status(403).json({ message: 'Accès refusé.' });
     }
 
     const { id } = req.params;
@@ -272,6 +281,13 @@ router.put('/:id', async (req, res) => {
     }
 
     try {
+        const [classCheck]: any = await pool.query(
+            'SELECT name FROM instruments WHERE id = ? AND is_class = 1',
+            [instrument_id]
+        );
+        if (classCheck.length > 0) {
+            return res.status(400).json({ message: `Impossible d'affecter une partition à la classe collective "${classCheck[0].name}".` });
+        }
         const [result] = await pool.query(
             'UPDATE partitions SET nom = ?, morceau_id = ?, instrument_id = ?, file_path = ?, file_name = ?, file_type = ?, file_size = ?, updated_at = ? WHERE id = ?',
             [nom, morceau_id, instrument_id, file_path || null, file_name || null, file_type || null, file_size || null, new Date(), id]

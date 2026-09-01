@@ -160,7 +160,8 @@ const AdminPartitions = () => {
       if (response.status === 403) throw new Error('Accès refusé.');
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
-      setInstruments(data || []);
+      const playableInstruments = (data || []).filter((i: any) => !i.is_class);
+      setInstruments(playableInstruments);
     } catch (err: any) {
       console.error('Erreur lors de la récupération des instruments:', err);
       showNotification(err.message, 'error');
