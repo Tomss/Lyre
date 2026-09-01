@@ -64,24 +64,24 @@ const InstrumentCard = React.memo(({ inst, isClass, onSelect }: { inst: Instrume
         </h3>
 
         {/* Description si disponible */}
-        {inst.description ? (
+        {inst.description && (
           <p className="text-slate-300 text-xs leading-relaxed line-clamp-2 mb-4 font-normal">
             {inst.description}
-          </p>
-        ) : (
-          <p className="text-slate-500 text-xs italic line-clamp-2 mb-4 font-normal">
-            {isClass ? `Découvrez le cursus ${inst.name.toLowerCase()} à l'école de musique.` : `Découvrez la classe de ${inst.name.toLowerCase()} à l'école de musique.`}
           </p>
         )}
 
         {/* Footer Professeur */}
         <div className="mt-auto pt-2.5 border-t border-slate-700/70 flex items-center justify-between">
-          <div className="flex items-center bg-slate-900/90 rounded-xl px-2.5 py-1.5 border border-slate-700/60 min-w-0 max-w-[calc(100%-40px)]">
-            <Users className="w-3.5 h-3.5 mr-1.5 text-teal-400 flex-shrink-0" />
-            <span className="text-slate-200 text-xs font-medium truncate" title={inst.teacher || "Professeur à confirmer"}>
-              {inst.teacher || "Professeur à confirmer"}
-            </span>
-          </div>
+          {inst.teacher ? (
+            <div className="flex items-center bg-slate-900/90 rounded-xl px-2.5 py-1.5 border border-slate-700/60 min-w-0 max-w-[calc(100%-40px)]">
+              <Users className="w-3.5 h-3.5 mr-1.5 text-teal-400 flex-shrink-0" />
+              <span className="text-slate-200 text-xs font-medium truncate" title={inst.teacher}>
+                {inst.teacher}
+              </span>
+            </div>
+          ) : (
+            <div />
+          )}
 
           <div className="w-8 h-8 rounded-full bg-slate-700/60 flex items-center justify-center text-teal-400 group-hover:bg-teal-600 group-hover:text-white transition-colors flex-shrink-0">
             <ArrowRight className="w-4 h-4" />
@@ -349,19 +349,19 @@ const School = () => {
                             {selectedInstrument.name}
                         </h2>
 
-                        <div className="flex flex-col sm:flex-row gap-6 mb-8 p-4 bg-slate-800 rounded-2xl border border-white/10">
-                            <div className="flex items-center text-teal-200 font-medium">
-                                <Users className="w-5 h-5 mr-3 text-teal-400" />
-                                Professeur(s) : <span className="text-white ml-2">{selectedInstrument.teacher || "À confirmer"}</span>
+                        {selectedInstrument.teacher && (
+                            <div className="flex flex-col sm:flex-row gap-6 mb-8 p-4 bg-slate-800 rounded-2xl border border-white/10">
+                                <div className="flex items-center text-teal-200 font-medium">
+                                    <Users className="w-5 h-5 mr-3 text-teal-400" />
+                                    Professeur(s) : <span className="text-white ml-2">{selectedInstrument.teacher}</span>
+                                </div>
                             </div>
-                        </div>
+                        )}
 
-                        {selectedInstrument.description ? (
+                        {selectedInstrument.description && (
                             <div className="prose prose-invert prose-teal max-w-none text-slate-300 leading-relaxed whitespace-pre-wrap">
                                 {selectedInstrument.description}
                             </div>
-                        ) : (
-                            <p className="text-slate-400 italic">Aucune description détaillée n'est disponible pour cette classe actuellement.</p>
                         )}
                     </div>
                 </div>
