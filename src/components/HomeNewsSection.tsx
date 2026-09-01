@@ -255,13 +255,13 @@ const HomeNewsSection = React.memo(() => {
 
             {/* Slider Container */}
             <div className="relative w-full">
-                {/* Navigation Buttons */}
+                {/* Navigation Buttons (visible on tablet and desktop) */}
                 <button
                     onClick={(e) => {
                         e.stopPropagation();
                         scrollManual('left');
                     }}
-                    className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 z-50 w-12 h-12 rounded-full bg-white shadow-xl border border-teal-100 text-teal-600 flex items-center justify-center hover:bg-teal-500 hover:text-white transition-all duration-200 cursor-pointer"
+                    className="hidden sm:flex absolute left-2 md:left-6 top-1/2 -translate-y-1/2 z-50 w-11 h-11 md:w-12 md:h-12 rounded-full bg-white shadow-xl border border-teal-100 text-teal-600 items-center justify-center hover:bg-teal-500 hover:text-white transition-all duration-200 cursor-pointer"
                     aria-label="Précédent"
                     title="Précédent"
                 >
@@ -272,7 +272,7 @@ const HomeNewsSection = React.memo(() => {
                         e.stopPropagation();
                         scrollManual('right');
                     }}
-                    className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 z-50 w-12 h-12 rounded-full bg-white shadow-xl border border-teal-100 text-teal-600 flex items-center justify-center hover:bg-teal-500 hover:text-white transition-all duration-200 cursor-pointer"
+                    className="hidden sm:flex absolute right-2 md:right-6 top-1/2 -translate-y-1/2 z-50 w-11 h-11 md:w-12 md:h-12 rounded-full bg-white shadow-xl border border-teal-100 text-teal-600 items-center justify-center hover:bg-teal-500 hover:text-white transition-all duration-200 cursor-pointer"
                     aria-label="Suivant"
                     title="Suivant"
                 >
@@ -282,7 +282,7 @@ const HomeNewsSection = React.memo(() => {
                 {/* Scrollable Track */}
                 <div
                     ref={scrollRef}
-                    className="flex gap-8 px-20 md:px-24 py-12 overflow-x-auto no-scrollbar select-none overscroll-x-contain touch-pan-y cursor-grab active:cursor-grabbing"
+                    className="flex gap-4 sm:gap-6 md:gap-8 px-4 sm:px-8 md:px-24 py-4 sm:py-8 md:py-12 overflow-x-auto no-scrollbar overscroll-x-contain cursor-grab active:cursor-grabbing snap-x snap-mandatory scroll-smooth"
                     onMouseDown={handleMouseDown}
                     onMouseUp={handleMouseUp}
                     onMouseMove={handleMouseMove}
@@ -291,7 +291,7 @@ const HomeNewsSection = React.memo(() => {
                     {news.map((item) => (
                         <div
                             key={item.id}
-                            className="w-[300px] md:w-[350px] shrink-0 h-[450px]"
+                            className="w-[260px] sm:w-[300px] md:w-[350px] shrink-0 h-[390px] sm:h-[420px] md:h-[450px] snap-start"
                         >
                             {/* Card - Formatted with exact Agenda layout */}
                             <div className="h-full bg-white rounded-3xl border border-slate-200 hover:border-teal-400/80 shadow-md hover:shadow-xl transition-all duration-200 overflow-hidden flex flex-col relative group">
@@ -330,26 +330,26 @@ const HomeNewsSection = React.memo(() => {
                                 </div>
 
                                 {/* Body Content */}
-                                <div className="p-5 flex-grow flex flex-col bg-white">
+                                <div className="p-4 sm:p-5 flex-grow flex flex-col bg-white">
                                     {/* Titre */}
-                                    <h3 className="font-bold text-base text-slate-900 mb-2 group-hover:text-teal-600 transition-colors line-clamp-2 leading-snug">
+                                    <h3 className="font-bold text-sm sm:text-base text-slate-900 mb-1.5 sm:mb-2 group-hover:text-teal-600 transition-colors line-clamp-2 leading-snug">
                                         {item.title}
                                     </h3>
 
                                     {/* Description */}
-                                    <p className="text-slate-600 text-xs leading-relaxed line-clamp-3 mb-3 font-normal">
+                                    <p className="text-slate-600 text-xs leading-relaxed line-clamp-2 sm:line-clamp-3 mb-2 sm:mb-3 font-normal">
                                         {item.content}
                                     </p>
 
                                     {/* Footer Capsule & Action */}
-                                    <div className="mt-auto pt-3 border-t border-slate-100 flex items-center justify-between">
-                                        <span className="text-[11px] text-slate-400 font-medium flex items-center gap-1.5">
+                                    <div className="mt-auto pt-2.5 sm:pt-3 border-t border-slate-100 flex items-center justify-between">
+                                        <span className="text-[11px] text-slate-400 font-medium flex items-center gap-1.5 truncate mr-2">
                                             <Calendar className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-                                            {item.fullDateStr}
+                                            <span className="truncate">{item.fullDateStr}</span>
                                         </span>
 
-                                        <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 group-hover:bg-teal-600 group-hover:text-white transition-colors">
-                                            <ArrowRight className="w-4 h-4" />
+                                        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 group-hover:bg-teal-600 group-hover:text-white transition-colors shrink-0">
+                                            <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                         </div>
                                     </div>
                                 </div>

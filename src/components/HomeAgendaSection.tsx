@@ -382,13 +382,13 @@ const HomeAgendaSection = React.memo(() => {
 
             {/* Slider Container */}
             <div className="relative w-full">
-                {/* Navigation Buttons */}
+                {/* Navigation Buttons (visible on tablet and desktop) */}
                 <button
                     onClick={(e) => {
                         e.stopPropagation();
                         scrollManual('left');
                     }}
-                    className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 z-50 w-12 h-12 rounded-full bg-slate-800/90 hover:bg-teal-600 text-white shadow-xl border border-slate-700 hover:border-teal-500 flex items-center justify-center transition-all duration-200 cursor-pointer"
+                    className="hidden sm:flex absolute left-2 md:left-6 top-1/2 -translate-y-1/2 z-50 w-11 h-11 md:w-12 md:h-12 rounded-full bg-slate-800/90 hover:bg-teal-600 text-white shadow-xl border border-slate-700 hover:border-teal-500 items-center justify-center transition-all duration-200 cursor-pointer"
                     aria-label="Précédent"
                 >
                     <ArrowRight className="w-5 h-5 rotate-180" />
@@ -398,7 +398,7 @@ const HomeAgendaSection = React.memo(() => {
                         e.stopPropagation();
                         scrollManual('right');
                     }}
-                    className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 z-50 w-12 h-12 rounded-full bg-slate-800/90 hover:bg-teal-600 text-white shadow-xl border border-slate-700 hover:border-teal-500 flex items-center justify-center transition-all duration-200 cursor-pointer"
+                    className="hidden sm:flex absolute right-2 md:right-6 top-1/2 -translate-y-1/2 z-50 w-11 h-11 md:w-12 md:h-12 rounded-full bg-slate-800/90 hover:bg-teal-600 text-white shadow-xl border border-slate-700 hover:border-teal-500 items-center justify-center transition-all duration-200 cursor-pointer"
                     aria-label="Suivant"
                 >
                     <ArrowRight className="w-5 h-5" />
@@ -408,14 +408,14 @@ const HomeAgendaSection = React.memo(() => {
                 {events.length > 0 ? (
                     <div
                         ref={scrollRef}
-                        className="flex gap-8 px-20 md:px-24 py-12 overflow-x-auto no-scrollbar select-none overscroll-x-contain touch-pan-y cursor-grab active:cursor-grabbing"
+                        className="flex gap-4 sm:gap-6 md:gap-8 px-4 sm:px-8 md:px-24 py-4 sm:py-8 md:py-12 overflow-x-auto no-scrollbar overscroll-x-contain cursor-grab active:cursor-grabbing snap-x snap-mandatory scroll-smooth"
                         onMouseDown={handleMouseDown}
                         onMouseUp={handleMouseUp}
                         onMouseMove={handleMouseMove}
                         onMouseLeave={handleMouseLeave}
                     >
                         {events.map((event) => (
-                            <div key={event.id} className="w-[300px] md:w-[350px] shrink-0 h-[450px]">
+                            <div key={event.id} className="w-[260px] sm:w-[300px] md:w-[350px] shrink-0 h-[390px] sm:h-[420px] md:h-[450px] snap-start">
                                 {/* Dark Card */}
                                 <div className="h-full bg-slate-800 rounded-3xl border border-slate-700 hover:border-teal-400/80 shadow-md hover:shadow-xl transition-all duration-200 overflow-hidden flex flex-col relative group">
                                     {/* Click Overlay */}
@@ -445,11 +445,11 @@ const HomeAgendaSection = React.memo(() => {
 
                                         {/* Date Badge */}
                                         <div className="absolute top-3 right-3 z-20">
-                                            <div className="bg-slate-900/95 px-3 py-1.5 rounded-2xl flex flex-col items-center justify-center shadow-lg border border-teal-400/30 min-w-[52px]">
-                                                <span className="text-[10px] font-black uppercase text-teal-400 tracking-wider leading-none">
+                                            <div className="bg-slate-900/95 px-2.5 py-1.5 sm:px-3 rounded-2xl flex flex-col items-center justify-center shadow-lg border border-teal-400/30 min-w-[46px] sm:min-w-[52px]">
+                                                <span className="text-[9px] sm:text-[10px] font-black uppercase text-teal-400 tracking-wider leading-none">
                                                     {event.monthShort}
                                                 </span>
-                                                <span className="text-lg font-black text-white leading-none mt-0.5">
+                                                <span className="text-base sm:text-lg font-black text-white leading-none mt-0.5">
                                                     {event.dayNum}
                                                 </span>
                                             </div>
@@ -468,17 +468,17 @@ const HomeAgendaSection = React.memo(() => {
                                     </div>
 
                                     {/* Body */}
-                                    <div className="p-5 flex-grow flex flex-col bg-slate-800">
+                                    <div className="p-4 sm:p-5 flex-grow flex flex-col bg-slate-800">
                                         {/* Date complète mise en avant */}
                                         <div className="flex items-center gap-1.5 text-xs font-bold text-teal-400 uppercase tracking-wide mb-1">
                                             <Calendar className="w-3.5 h-3.5 text-teal-400 flex-shrink-0" />
-                                            <span>
+                                            <span className="truncate">
                                                 {event.fullDateStr}
                                             </span>
                                         </div>
 
                                         {/* Titre */}
-                                        <h3 className="font-bold text-base text-white mb-1.5 group-hover:text-teal-300 transition-colors line-clamp-1 leading-snug">
+                                        <h3 className="font-bold text-sm sm:text-base text-white mb-1 group-hover:text-teal-300 transition-colors line-clamp-1 leading-snug">
                                             {event.title}
                                         </h3>
 
