@@ -35,17 +35,9 @@ import contactRouter from './routes/contact';
 
 dotenv.config();
 
-// Emergency Activation for admin@lyre.fr (Production Rescue)
+// Automatic Startup Database Migrations
 (async () => {
   try {
-    await pool.query(`
-      UPDATE profiles p
-      JOIN users u ON u.id = p.id
-      SET p.status = 'Active'
-      WHERE u.email = 'admin@lyre.fr'
-    `);
-    console.log('[Emergency] Succès ! Le compte est débloqué.');
-    
     // Migration: Ajout de la colonne last_login si elle n'existe pas
     const [columns]: any = await pool.query(`
       SELECT COUNT(*) as count 
