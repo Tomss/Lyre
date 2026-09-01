@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Page d'Accueil -->
+  <url>
+    <loc>https://lalyre.fr/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- École de Musique -->
+  <url>
+    <loc>https://lalyre.fr/school</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Nos Orchestres -->
+  <url>
+    <loc>https://lalyre.fr/orchestres</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Actualités & Événements -->
+  <url>
+    <loc>https://lalyre.fr/toutes-les-actualites</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Médiathèque -->
+  <url>
+    <loc>https://lalyre.fr/media</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Contact & Inscriptions -->
+  <url>
+    <loc>https://lalyre.fr/contact</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+</urlset>

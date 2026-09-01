@@ -1,0 +1,18 @@
+﻿# Robots.txt for La Lyre (https://lalyre.fr)
+User-agent: *
+Allow: /
+Allow: /school
+Allow: /orchestres
+Allow: /toutes-les-actualites
+Allow: /media
+Allow: /contact
+
+# Disallow private and administrative areas
+Disallow: /admin/
+Disallow: /dashboard
+Disallow: /connexion
+Disallow: /activer-compte
+Disallow: /api/
+
+# Sitemap location
+Sitemap: https://lalyre.fr/sitemap.xml
