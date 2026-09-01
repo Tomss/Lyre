@@ -26,6 +26,20 @@ const upload = multer({
     limits: { fileSize: 50 * 1024 * 1024 } // 50MB limit
 });
 
+// Strict Whitelist of allowed file extensions
+const ALLOWED_EXTENSIONS = new Set([
+    // Images
+    '.jpg', '.jpeg', '.png', '.webp', '.avif', '.gif', '.svg', '.ico',
+    // Documents & Partitions
+    '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.odt', '.ods', '.txt', '.csv',
+    // Audio & Scores
+    '.mp3', '.wav', '.ogg', '.m4a', '.aac', '.flac', '.mid', '.midi',
+    // Video
+    '.mp4', '.webm', '.mov',
+    // Archives
+    '.zip'
+]);
+
 // Route POST pour uploader un fichier (protégée) avec conversion WebP instantanée
 router.post('/', authenticateToken, (req, res) => {
     upload.single('file')(req, res, async (err) => {
@@ -43,6 +57,15 @@ router.post('/', authenticateToken, (req, res) => {
 
         try {
             const ext = path.extname(req.file.originalname).toLowerCase();
+            
+            // Security Check: Validate file extension against strict whitelist
+            if (!ext || !ALLOWED_EXTENSIONS.has(ext)) {
+                console.warn(`[Upload Rejected] Forbidden extension attempt: "${ext}" by user ${(req as any).user?.email}`);
+                return res.status(400).json({ 
+                    message: `Format de fichier "${ext}" non autorisé. Veuillez utiliser un format supporté (images, PDF, audio, vidéo, documents, zip).` 
+                });
+            }
+
             const sanitizedBaseName = path.basename(req.file.originalname, ext).replace(/[^a-zA-Z0-9_-]/g, '_');
             const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e6);
 
@@ -63,7 +86,7 @@ router.post('/', authenticateToken, (req, res) => {
                 const optimizedBuffer = await optimizePdfBuffer(req.file.buffer);
                 fs.writeFileSync(targetPath, optimizedBuffer);
             } else {
-                // Other files (audio, video, docs)
+                // Other allowed files (audio, video, docs, zip)
                 fs.writeFileSync(targetPath, req.file.buffer);
             }
 
