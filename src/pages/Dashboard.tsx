@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, Navigate } from 'react-router-dom';
-import { ChevronUp,  LogOut, Users, Music, Music2, Calendar, Image, FileText, Download, ChevronRight, ChevronDown, User, UserCircle, Mail, MapPin, Info, Clock, Palette, Building2, Bell, Newspaper, Search, X  } from "lucide-react";
+import { ChevronUp,  LogOut, Users, Music, Music2, Calendar, Image, FileText, Download, ChevronRight, ChevronDown, User, UserCircle, Mail, MapPin, Info, Clock, Palette, Building2, Bell, Newspaper, Search, X, BarChart3  } from "lucide-react";
 import ActivityFeed, { Activity } from '../components/ActivityFeed';
 import { useAuth } from '../context/AuthContext';
 
@@ -667,6 +667,15 @@ const Dashboard = () => {
                     <Building2 className="h-8 w-8" />
                   </div>
                   <span className="font-bold text-slate-700">Partenaires</span>
+                </Link>
+              )}
+
+              {(currentUser?.role === 'Admin' || currentUser?.managedModules?.includes('stats')) && (
+                <Link to="/admin/statistiques" className="admin-card group block bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition-all border border-gray-100 text-center">
+                  <div className="w-16 h-16 mx-auto rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300">
+                    <BarChart3 className="h-8 w-8" />
+                  </div>
+                  <span className="font-bold text-slate-700">Statistiques</span>
                 </Link>
               )}
             </div>
