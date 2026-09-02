@@ -32,7 +32,6 @@ const AdminMorceaux = lazy(() => import('./pages/AdminMorceaux'));
 const AdminPartitions = lazy(() => import('./pages/AdminPartitions'));
 const AdminNews = lazy(() => import('./pages/AdminNews'));
 const AdminCommunication = lazy(() => import('./pages/AdminCommunication'));
-const AdminStats = lazy(() => import('./pages/AdminStats'));
 
 // Minimal elegant page loader
 const PageFallback = () => (
@@ -194,7 +193,6 @@ function App() {
               <Route path="/admin/partitions" element={<AdminPartitions />} />
               <Route path="/admin/news" element={<AdminNews />} />
               <Route path="/admin/communication" element={<AdminCommunication />} />
-              <Route path="/admin/statistiques" element={<AdminStats />} />
             </Routes>
           </Suspense>
         </main>

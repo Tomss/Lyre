@@ -84,7 +84,6 @@ const AdminUsers = () => {
     { id: 'morceaux', label: 'Répertoire Musical' },
     { id: 'partners', label: 'Partenaires' },
     { id: 'theme', label: 'Configuration du thème' },
-    { id: 'stats', label: 'Statistiques' },
     { id: 'users', label: 'Utilisateurs' },
   ];
 
