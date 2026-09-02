@@ -121,11 +121,11 @@ const AdminStats: React.FC = () => {
                 </div>
 
                 {/* Control Bar: Time Range Selector & Live Controls */}
-                <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm mb-6 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
+                <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm mb-6 flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4">
                     
-                    {/* Time Range Pills */}
-                    <div className="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0 scrollbar-none">
-                        <div className="flex items-center text-xs font-bold text-slate-400 mr-2 uppercase tracking-wider">
+                    {/* Time Range Pills - Wrapped & Clean (No horizontal scroll) */}
+                    <div className="flex flex-wrap items-center gap-1.5 w-full xl:w-auto">
+                        <div className="flex items-center text-xs font-bold text-slate-400 mr-1.5 uppercase tracking-wider">
                             <Calendar size={14} className="mr-1 text-slate-400" />
                             Période :
                         </div>
@@ -135,7 +135,7 @@ const AdminStats: React.FC = () => {
                                 <button
                                     key={range.id}
                                     onClick={() => setSelectedRange(range.id)}
-                                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all duration-200 ${
+                                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${
                                         isSelected
                                             ? 'bg-indigo-600 text-white shadow-xs scale-100'
                                             : 'bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900'
@@ -148,7 +148,7 @@ const AdminStats: React.FC = () => {
                     </div>
 
                     {/* Refresh & Live Status Controls */}
-                    <div className="flex items-center justify-between lg:justify-end gap-3 pt-3 lg:pt-0 border-t lg:border-t-0 border-slate-100">
+                    <div className="flex items-center justify-between xl:justify-end gap-3 w-full xl:w-auto pt-3 xl:pt-0 border-t xl:border-t-0 border-slate-100">
                         <span className="text-[11px] text-slate-400 font-medium hidden sm:inline">
                             Actualisé à {lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                         </span>
