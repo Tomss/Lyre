@@ -274,9 +274,9 @@ const AdminStats: React.FC = () => {
                     </div>
 
                     {/* Embedded Interactive Umami View */}
-                    <div className="relative w-full bg-slate-900 min-h-[680px] lg:min-h-[780px]">
+                    <div className="relative w-full bg-white min-h-[680px] lg:min-h-[780px]">
                         <iframe
-                            src="https://stats.lalyre.fr"
+                            src="https://stats.lalyre.fr/share/VTPrCmd87buqcPt1"
                             title="Tableau de bord Umami Analytics La Lyre"
                             className="w-full h-full min-h-[680px] lg:min-h-[780px] border-0 rounded-b-2xl"
                             loading="lazy"
