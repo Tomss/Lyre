@@ -30,6 +30,8 @@ router.get('/', authenticateToken, async (req, res) => {
           DATE_FORMAT(e.event_date, '%Y-%m-%dT%H:%i:%s') as event_date,
           TIME_FORMAT(e.end_time, '%H:%i') as end_time,
           e.location, e.practical_info, e.event_type,
+          ea.status AS user_attendance_status,
+          ea.comment AS user_attendance_comment,
           CASE 
             WHEN COUNT(o.id) > 0 THEN 
               JSON_ARRAYAGG(JSON_OBJECT('id', o.id, 'name', o.name))
@@ -39,6 +41,7 @@ router.get('/', authenticateToken, async (req, res) => {
         FROM events e
         LEFT JOIN event_orchestras eo ON e.id = eo.event_id
         LEFT JOIN orchestras o ON eo.orchestra_id = o.id
+        LEFT JOIN event_attendances ea ON e.id = ea.event_id AND ea.user_id = ?
         WHERE e.event_date > NOW() AND (
           e.id IN (
             SELECT eo2.event_id 
@@ -48,9 +51,9 @@ router.get('/', authenticateToken, async (req, res) => {
           )
           OR NOT EXISTS (SELECT 1 FROM event_orchestras eo3 WHERE eo3.event_id = e.id)
         )
-        GROUP BY e.id
+        GROUP BY e.id, ea.status, ea.comment
         ORDER BY e.event_date ASC
-      `, [userId]),
+      `, [userId, userId, userId]),
       pool.query(`
         SELECT 
           p.id, p.nom, p.file_path, p.created_at as partition_created_at,

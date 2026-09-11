@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, Navigate } from 'react-router-dom';
-import { ChevronUp,  LogOut, Users, Music, Music2, Calendar, Image, FileText, Download, ChevronRight, ChevronDown, User, UserCircle, Mail, MapPin, Info, Clock, Palette, Building2, Bell, Newspaper, Search, X } from "lucide-react";
+import { ChevronUp,  LogOut, Users, Music, Music2, Calendar, Image, FileText, Download, ChevronRight, ChevronDown, User, UserCircle, Mail, MapPin, Info, Clock, Palette, Building2, Bell, Newspaper, Search, X, CheckCircle2, XCircle, MessageSquare, Loader2 } from "lucide-react";
 import ActivityFeed, { Activity } from '../components/ActivityFeed';
 import { useAuth } from '../context/AuthContext';
 
@@ -23,6 +23,8 @@ const Dashboard = () => {
   const [lastSeenId, setLastSeenId] = React.useState<string | null>(localStorage.getItem('lastSeenActivityId'));
   const [eventFilter, setEventFilter] = React.useState<string>('all');
   const [partitionSearch, setPartitionSearch] = React.useState<string>('');
+  const [savingAttendance, setSavingAttendance] = React.useState<Record<string, boolean>>({});
+  const [commentingEventId, setCommentingEventId] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     if (lastSeenId) {
@@ -91,6 +93,45 @@ const Dashboard = () => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isNotificationsOpen]);
+
+  const handleSetAttendance = async (eventId: string, status: 'present' | 'absent', comment?: string) => {
+    if (!token) return;
+
+    // Optimistic UI update
+    setUserEvents(prev => prev.map(ev => {
+      if (ev.id === eventId) {
+        return {
+          ...ev,
+          user_attendance_status: status,
+          user_attendance_comment: comment !== undefined ? comment : ev.user_attendance_comment
+        };
+      }
+      return ev;
+    }));
+
+    setSavingAttendance(prev => ({ ...prev, [eventId]: true }));
+
+    try {
+      const response = await fetch(`${API_URL}/events/${eventId}/attendance`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ status, comment })
+      });
+
+      if (!response.ok) {
+        throw new Error('Erreur lors de l\'enregistrement de votre présence.');
+      }
+    } catch (err) {
+      console.error('Attendance error:', err);
+      // Rollback on critical error by refetching
+      fetchDashboardData(true);
+    } finally {
+      setSavingAttendance(prev => ({ ...prev, [eventId]: false }));
+    }
+  };
 
   const fetchDashboardData = React.useCallback(async (silent = false) => {
     if (!currentUser || !token) {
@@ -851,6 +892,107 @@ const Dashboard = () => {
                                             </div>
                                           </div>
                                         )}
+                                      </div>
+                                    )}
+
+                                    {/* Widget de Présence du Musicien (RSVP 1-Clic) */}
+                                    <div className="mt-4 pt-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                                          Votre présence :
+                                        </span>
+                                        {event.user_attendance_status && (
+                                          <span className={`text-[11px] px-2.5 py-0.5 rounded-full font-bold inline-flex items-center gap-1 ${
+                                            event.user_attendance_status === 'present' 
+                                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/80' 
+                                              : 'bg-rose-50 text-rose-700 border border-rose-200/80'
+                                          }`}>
+                                            {event.user_attendance_status === 'present' ? '✓ Confirmé présent' : '✕ Déclaré absent'}
+                                          </span>
+                                        )}
+                                      </div>
+
+                                      <div className="flex items-center gap-2">
+                                        <button
+                                          onClick={() => handleSetAttendance(event.id, 'present')}
+                                          disabled={savingAttendance[event.id]}
+                                          className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer select-none active:scale-95 ${
+                                            event.user_attendance_status === 'present'
+                                              ? 'bg-emerald-600 text-white shadow-xs scale-100 ring-2 ring-emerald-300'
+                                              : 'bg-emerald-50/80 text-emerald-700 hover:bg-emerald-100 border border-emerald-200/80'
+                                          }`}
+                                        >
+                                          {savingAttendance[event.id] ? (
+                                            <Loader2 size={13} className="animate-spin" />
+                                          ) : (
+                                            <CheckCircle2 size={14} className={event.user_attendance_status === 'present' ? 'text-white' : 'text-emerald-600'} />
+                                          )}
+                                          <span>Présent</span>
+                                        </button>
+
+                                        <button
+                                          onClick={() => {
+                                            handleSetAttendance(event.id, 'absent');
+                                            if (!event.user_attendance_comment) {
+                                              setCommentingEventId(event.id);
+                                            }
+                                          }}
+                                          disabled={savingAttendance[event.id]}
+                                          className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer select-none active:scale-95 ${
+                                            event.user_attendance_status === 'absent'
+                                              ? 'bg-rose-600 text-white shadow-xs scale-100 ring-2 ring-rose-300'
+                                              : 'bg-rose-50/80 text-rose-700 hover:bg-rose-100 border border-rose-200/80'
+                                          }`}
+                                        >
+                                          <XCircle size={14} className={event.user_attendance_status === 'absent' ? 'text-white' : 'text-rose-600'} />
+                                          <span>Absent</span>
+                                        </button>
+
+                                        <button
+                                          onClick={() => setCommentingEventId(commentingEventId === event.id ? null : event.id)}
+                                          className={`p-1.5 rounded-xl border transition-colors ${
+                                            event.user_attendance_comment 
+                                              ? 'bg-indigo-50 border-indigo-200 text-indigo-600' 
+                                              : 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-400 hover:text-slate-600'
+                                          }`}
+                                          title={event.user_attendance_comment ? `Motif: ${event.user_attendance_comment}` : "Ajouter un motif / note"}
+                                        >
+                                          <MessageSquare size={14} />
+                                        </button>
+                                      </div>
+                                    </div>
+
+                                    {/* Champ de motif / commentaire rapide */}
+                                    {commentingEventId === event.id && (
+                                      <div className="mt-2.5 p-2 bg-slate-50 rounded-xl border border-slate-200/80 flex items-center gap-2 animate-in fade-in slide-in-from-top-1">
+                                        <input
+                                          type="text"
+                                          placeholder="Motif ou précision (ex: déplacement pro, retard à 20h30)..."
+                                          defaultValue={event.user_attendance_comment || ''}
+                                          onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                              handleSetAttendance(event.id, event.user_attendance_status || 'absent', (e.target as HTMLInputElement).value);
+                                              setCommentingEventId(null);
+                                            }
+                                          }}
+                                          className="flex-1 bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                                        />
+                                        <button
+                                          onClick={(e) => {
+                                            const input = (e.currentTarget.previousElementSibling as HTMLInputElement);
+                                            handleSetAttendance(event.id, event.user_attendance_status || 'absent', input.value);
+                                            setCommentingEventId(null);
+                                          }}
+                                          className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition"
+                                        >
+                                          Valider
+                                        </button>
+                                        <button
+                                          onClick={() => setCommentingEventId(null)}
+                                          className="px-2 py-1.5 text-slate-400 hover:text-slate-600 text-xs font-medium"
+                                        >
+                                          Fermer
+                                        </button>
                                       </div>
                                     )}
                                   </div>

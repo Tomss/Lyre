@@ -629,8 +629,11 @@ app.use((req: express.Request, res: express.Response, next: express.NextFunction
   res.sendFile(path.join(distPath, 'index.html'));
 });
 
+import { initDatabaseTables } from './utils/initDb';
+
 app.listen(port, () => {
   console.log(`Backend server is running on http://localhost:${port}`);
+  initDatabaseTables().catch(e => console.error('[Database Init Error]', e));
   try {
     const { run } = require(path.join(process.cwd(), 'scripts', 'autoConvertAllUploadsToWebp.cjs'));
     run().catch((e: any) => console.error('[WebP Auto-Migrator Init Error]', e.message));

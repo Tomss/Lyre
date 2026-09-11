@@ -8,7 +8,7 @@ const router = Router();
 
 router.use(authenticateToken);
 
-// GET /api/events - Récupérer tous les événements avec leurs orchestres
+// GET /api/events - Récupérer tous les événements avec leurs orchestres et statistiques de présence
 router.get('/', async (req, res) => {
   try {
     const [events] = await pool.query(`
@@ -30,14 +30,26 @@ router.get('/', async (req, res) => {
           )
         ) AS fallback_image_url,
         CASE 
-          WHEN COUNT(o.id) > 0 THEN 
+          WHEN COUNT(DISTINCT o.id) > 0 THEN 
             JSON_ARRAYAGG(JSON_OBJECT('id', o.id, 'name', o.name, 'photo_url', o.photo_url))
           ELSE 
             JSON_ARRAY()
-        END AS orchestras
+        END AS orchestras,
+        COUNT(DISTINCT CASE WHEN ea.status = 'present' THEN ea.user_id END) AS attendance_present,
+        COUNT(DISTINCT CASE WHEN ea.status = 'absent' THEN ea.user_id END) AS attendance_absent,
+        COALESCE(
+          NULLIF((
+            SELECT COUNT(DISTINCT uo.user_id)
+            FROM user_orchestras uo
+            JOIN event_orchestras eo_sub ON uo.orchestra_id = eo_sub.orchestra_id
+            WHERE eo_sub.event_id = e.id
+          ), 0),
+          (SELECT COUNT(*) FROM profiles WHERE status = 'Active' OR status IS NULL)
+        ) AS attendance_total_target
       FROM events e
       LEFT JOIN event_orchestras eo ON e.id = eo.event_id
       LEFT JOIN orchestras o ON eo.orchestra_id = o.id
+      LEFT JOIN event_attendances ea ON e.id = ea.event_id
       GROUP BY e.id
       ORDER BY e.event_date DESC
     `);
@@ -231,6 +243,153 @@ router.delete('/:id', async (req, res) => {
     res.status(500).json({ message: 'Erreur lors de la suppression de l\'Ã©vÃ©nement.' });
   } finally {
     connection.release();
+  }
+});
+
+// POST /api/events/:id/attendance - Enregistrer ou modifier sa présence (Membre/Admin/Gestionnaire)
+router.post('/:id/attendance', async (req, res) => {
+  // @ts-ignore
+  const userId = (req as any).user?.id;
+  const { id: eventId } = req.params;
+  const { status, comment } = req.body;
+
+  if (!userId) {
+    return res.status(401).json({ message: 'Utilisateur non authentifié.' });
+  }
+
+  if (!['present', 'absent'].includes(status)) {
+    return res.status(400).json({ message: 'Statut invalide. Utilisez "present" ou "absent".' });
+  }
+
+  try {
+    const attendanceId = crypto.randomUUID();
+    const cleanComment = comment && typeof comment === 'string' ? comment.trim().slice(0, 255) : null;
+
+    await pool.query(`
+      INSERT INTO event_attendances (id, event_id, user_id, status, comment, updated_at)
+      VALUES (?, ?, ?, ?, ?, NOW())
+      ON DUPLICATE KEY UPDATE
+        status = VALUES(status),
+        comment = VALUES(comment),
+        updated_at = NOW()
+    `, [attendanceId, eventId, userId, status, cleanComment]);
+
+    res.json({ 
+      success: true, 
+      status, 
+      comment: cleanComment,
+      message: status === 'present' ? 'Votre présence a été confirmée.' : 'Votre absence a été enregistrée.' 
+    });
+  } catch (error: any) {
+    console.error('Error recording attendance:', error);
+    res.status(500).json({ message: 'Erreur lors de l\'enregistrement de votre présence.' });
+  }
+});
+
+// GET /api/events/:id/attendances - Récupérer le détail complet des présences pour un événement (Admin/Gestionnaire)
+router.get('/:id/attendances', async (req, res) => {
+  // @ts-ignore
+  const userRole = (req as any).user?.role;
+  if (!['Admin', 'Gestionnaire'].includes(userRole)) {
+    return res.status(403).json({ message: 'Accès réservé aux gestionnaires et administrateurs.' });
+  }
+  const { id: eventId } = req.params;
+
+  try {
+    // 1. Récupérer les orchestres liés à cet événement
+    const [eventOrchs]: any = await pool.query(
+      'SELECT orchestra_id FROM event_orchestras WHERE event_id = ?',
+      [eventId]
+    );
+
+    let targetUsersQuery = '';
+    let params: any[] = [];
+
+    if (eventOrchs.length > 0) {
+      const orchIds = eventOrchs.map((o: any) => o.orchestra_id);
+      targetUsersQuery = `
+        SELECT DISTINCT
+          u.id as user_id,
+          p.first_name,
+          p.last_name,
+          p.email,
+          p.role,
+          ea.status as attendance_status,
+          ea.comment as attendance_comment,
+          DATE_FORMAT(ea.updated_at, '%Y-%m-%dT%H:%i:%s') as attendance_updated_at,
+          (
+            SELECT GROUP_CONCAT(DISTINCT i.name ORDER BY i.name SEPARATOR ', ')
+            FROM user_instruments ui
+            JOIN instruments i ON ui.instrument_id = i.id
+            WHERE ui.user_id = u.id
+          ) as instruments,
+          (
+            SELECT GROUP_CONCAT(DISTINCT o.name ORDER BY o.name SEPARATOR ', ')
+            FROM user_orchestras uo2
+            JOIN orchestras o ON uo2.orchestra_id = o.id
+            WHERE uo2.user_id = u.id
+          ) as orchestras
+        FROM users u
+        JOIN profiles p ON u.id = p.id
+        JOIN user_orchestras uo ON u.id = uo.user_id
+        LEFT JOIN event_attendances ea ON ea.event_id = ? AND ea.user_id = u.id
+        WHERE uo.orchestra_id IN (?) AND (p.status = 'Active' OR p.status IS NULL)
+        ORDER BY p.last_name ASC, p.first_name ASC
+      `;
+      params = [eventId, orchIds];
+    } else {
+      targetUsersQuery = `
+        SELECT DISTINCT
+          u.id as user_id,
+          p.first_name,
+          p.last_name,
+          p.email,
+          p.role,
+          ea.status as attendance_status,
+          ea.comment as attendance_comment,
+          DATE_FORMAT(ea.updated_at, '%Y-%m-%dT%H:%i:%s') as attendance_updated_at,
+          (
+            SELECT GROUP_CONCAT(DISTINCT i.name ORDER BY i.name SEPARATOR ', ')
+            FROM user_instruments ui
+            JOIN instruments i ON ui.instrument_id = i.id
+            WHERE ui.user_id = u.id
+          ) as instruments,
+          (
+            SELECT GROUP_CONCAT(DISTINCT o.name ORDER BY o.name SEPARATOR ', ')
+            FROM user_orchestras uo2
+            JOIN orchestras o ON uo2.orchestra_id = o.id
+            WHERE uo2.user_id = u.id
+          ) as orchestras
+        FROM users u
+        JOIN profiles p ON u.id = p.id
+        LEFT JOIN event_attendances ea ON ea.event_id = ? AND ea.user_id = u.id
+        WHERE p.status = 'Active' OR p.status IS NULL
+        ORDER BY p.last_name ASC, p.first_name ASC
+      `;
+      params = [eventId];
+    }
+
+    const [users]: any = await pool.query(targetUsersQuery, params);
+
+    const presents = users.filter((u: any) => u.attendance_status === 'present');
+    const absents = users.filter((u: any) => u.attendance_status === 'absent');
+    const unanswered = users.filter((u: any) => !u.attendance_status);
+
+    res.json({
+      total_target: users.length,
+      counts: {
+        present: presents.length,
+        absent: absents.length,
+        unanswered: unanswered.length,
+        rate: users.length > 0 ? Math.round((presents.length / users.length) * 100) : 0
+      },
+      presents,
+      absents,
+      unanswered
+    });
+  } catch (error: any) {
+    console.error('Error fetching event attendance details:', error);
+    res.status(500).json({ message: 'Erreur lors de la récupération des détails de présence.' });
   }
 });
 
