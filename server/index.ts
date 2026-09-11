@@ -289,6 +289,49 @@ dotenv.config();
       }
     }
 
+    // Migration: Table event_attendances et auto-alignement de la collation
+    const [attTables]: any = await pool.query(`
+      SELECT COUNT(*) as count 
+      FROM information_schema.TABLES 
+      WHERE TABLE_SCHEMA = DATABASE() 
+      AND TABLE_NAME = 'event_attendances'
+    `);
+
+    if (attTables[0].count === 0) {
+      console.log('[Migration] Création de la table event_attendances...');
+      await pool.query(`
+        CREATE TABLE event_attendances (
+          id VARCHAR(36) PRIMARY KEY,
+          event_id VARCHAR(36) NOT NULL,
+          user_id VARCHAR(36) NOT NULL,
+          status ENUM('present', 'absent') NOT NULL,
+          comment VARCHAR(255) NULL,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+          UNIQUE KEY unique_event_user (event_id, user_id),
+          INDEX idx_event_id (event_id),
+          INDEX idx_user_id (user_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+      `);
+      console.log('[Migration] Table event_attendances créée avec succès.');
+    }
+
+    // Auto-réparation et harmonisation systématique des collations pour éviter tout ER_CANT_AGGREGATE_2COLLATIONS
+    try {
+      const [eventCols]: any = await pool.query(`
+        SELECT COLLATION_NAME 
+        FROM information_schema.COLUMNS 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = 'events' 
+        AND COLUMN_NAME = 'id'
+      `);
+      const targetCollation = eventCols[0]?.COLLATION_NAME || 'utf8mb4_0900_ai_ci';
+      await pool.query(`ALTER TABLE event_attendances CONVERT TO CHARACTER SET utf8mb4 COLLATE ${targetCollation}`);
+      console.log(`[Migration] Collation de event_attendances harmonisée avec succès sur ${targetCollation}.`);
+    } catch (collErr: any) {
+      console.warn('[Migration Warning] Harmonisation collation event_attendances:', collErr.message);
+    }
+
   } catch (e) {
     console.error('[Emergency/Migration] Erreur:', e);
   }
@@ -629,11 +672,8 @@ app.use((req: express.Request, res: express.Response, next: express.NextFunction
   res.sendFile(path.join(distPath, 'index.html'));
 });
 
-import { initDatabaseTables } from './utils/initDb';
-
 app.listen(port, () => {
   console.log(`Backend server is running on http://localhost:${port}`);
-  initDatabaseTables().catch(e => console.error('[Database Init Error]', e));
   try {
     const { run } = require(path.join(process.cwd(), 'scripts', 'autoConvertAllUploadsToWebp.cjs'));
     run().catch((e: any) => console.error('[WebP Auto-Migrator Init Error]', e.message));
