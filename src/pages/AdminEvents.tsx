@@ -135,37 +135,11 @@ const AdminEvents = () => {
   const [attendanceTab, setAttendanceTab] = useState<'present' | 'absent' | 'unanswered'>('present');
   const [copiedRoster, setCopiedRoster] = useState<boolean>(false);
   const [hoveredAttendanceEventId, setHoveredAttendanceEventId] = useState<string | null>(null);
-  const [hoverAttendanceCache, setHoverAttendanceCache] = useState<Record<string, AttendanceDetails>>({});
-  const [hoverLoadingMap, setHoverLoadingMap] = useState<Record<string, boolean>>({});
-
-  const handleAttendanceHover = async (eventId: string) => {
-    setHoveredAttendanceEventId(eventId);
-    if (!token || hoverAttendanceCache[eventId] || hoverLoadingMap[eventId]) return;
-
-    setHoverLoadingMap(prev => ({ ...prev, [eventId]: true }));
-    try {
-      const response = await fetch(`${API_URL}/events/${eventId}/attendances`, {
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setHoverAttendanceCache(prev => ({ ...prev, [eventId]: data }));
-      }
-    } catch (e) {
-      // Ignore hover background errors
-    } finally {
-      setHoverLoadingMap(prev => ({ ...prev, [eventId]: false }));
-    }
-  };
-
-  const handleAttendanceLeave = () => {
-    setHoveredAttendanceEventId(null);
-  };
 
   const openAttendanceModal = async (event: Event) => {
     setSelectedAttendanceEvent(event);
     setAttendanceLoading(true);
-    setAttendanceDetails(hoverAttendanceCache[event.id] || null);
+    setAttendanceDetails(null);
     setAttendanceSearch('');
     setAttendanceTab('present');
 
@@ -176,7 +150,6 @@ const AdminEvents = () => {
       if (!response.ok) throw new Error('Erreur lors du chargement des présences');
       const data = await response.json();
       setAttendanceDetails(data);
-      setHoverAttendanceCache(prev => ({ ...prev, [event.id]: data }));
     } catch (err: any) {
       showNotification(err.message, 'error');
     } finally {
@@ -197,13 +170,13 @@ const AdminEvents = () => {
       `📊 Taux de présence : ${attendanceDetails.counts.rate}% (${attendanceDetails.counts.present}/${attendanceDetails.total_target})`,
       '',
       `🟢 PRÉSENTS (${attendanceDetails.presents.length}) :`,
-      ...attendanceDetails.presents.map(u => `  • ${u.first_name} ${u.last_name}${u.instruments ? ` (${u.instruments})` : ''}`),
+      ...attendanceDetails.presents.map(u => `  • ${u.last_name.toUpperCase()} ${u.first_name}`),
       '',
       `🔴 ABSENTS (${attendanceDetails.absents.length}) :`,
-      ...attendanceDetails.absents.map(u => `  • ${u.first_name} ${u.last_name}${u.instruments ? ` (${u.instruments})` : ''}`),
+      ...attendanceDetails.absents.map(u => `  • ${u.last_name.toUpperCase()} ${u.first_name}`),
       '',
       `⚪ SANS RÉPONSE (${attendanceDetails.unanswered.length}) :`,
-      ...attendanceDetails.unanswered.map(u => `  • ${u.first_name} ${u.last_name}${u.instruments ? ` (${u.instruments})` : ''}`)
+      ...attendanceDetails.unanswered.map(u => `  • ${u.last_name.toUpperCase()} ${u.first_name}`)
     ];
 
     navigator.clipboard.writeText(lines.join('\n'));
@@ -623,8 +596,9 @@ const AdminEvents = () => {
               })
               .map(([type, eventList]) => {
               const color = getTypeColor(type);
+              const isExpanded = expandedTypes.has(type);
               return (
-              <div key={type} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden transition-all duration-300 hover:shadow-md">
+              <div key={type} className={`bg-white rounded-2xl shadow-sm border border-slate-200 transition-all duration-300 hover:shadow-md ${isExpanded ? 'overflow-visible' : 'overflow-hidden'}`}>
                 <div onClick={() => toggleTypeExpansion(type)} className={`p-4 flex justify-between items-center cursor-pointer ${color.bg} hover:opacity-90 transition-all`}>
                   <div className="flex items-center">
                     <div className={`p-2 ${color.iconBg} rounded-xl ${color.icon} mr-4 shadow-sm`}>
@@ -641,11 +615,11 @@ const AdminEvents = () => {
                   </div>
                   <ChevronDown className="text-slate-400" />
                 </div>
-                <div className={`grid transition-all duration-300 ease-in-out ${expandedTypes.has(type) ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
-                  <div className="overflow-hidden">
+                <div className={`grid transition-all duration-300 ease-in-out ${isExpanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
+                  <div className={isExpanded ? 'overflow-visible' : 'overflow-hidden'}>
                     <div className="divide-y divide-slate-100">
                       {eventList.map(event => (
-                        <div key={event.id} className="p-4 flex flex-col md:flex-row md:items-center md:justify-between hover:bg-slate-50/80 transition-colors duration-200 gap-4">
+                        <div key={event.id} className={`p-4 flex flex-col md:flex-row md:items-center md:justify-between hover:bg-slate-50/80 transition-colors duration-200 gap-4 relative ${hoveredAttendanceEventId === event.id ? 'z-40' : 'z-0'}`}>
                           <div className="flex items-center gap-4 flex-1 min-w-0">
                             {/* Miniature Photo */}
                             <div className="w-16 h-12 sm:w-20 sm:h-14 rounded-xl bg-slate-100 overflow-hidden flex-shrink-0 border border-slate-200/80 relative flex items-center justify-center shadow-sm">
@@ -747,63 +721,46 @@ const AdminEvents = () => {
                               </span>
                             </div>
 
-                            {/* Info-Bulle détaillée au survol */}
+                            {/* Info-Bulle compacte au survol (juste le nombre de présents et absents) */}
                             {hoveredAttendanceEventId === event.id && (
                               <div 
-                                className="absolute bottom-full right-0 mb-2 w-72 bg-slate-900/95 backdrop-blur-md text-white p-3.5 rounded-2xl shadow-2xl border border-slate-700/70 z-50 text-xs pointer-events-none animate-in fade-in zoom-in-95 duration-150"
+                                className="absolute top-full right-0 mt-2 w-56 bg-slate-900 text-white p-3 rounded-xl shadow-2xl border border-slate-700/80 z-[70] text-xs pointer-events-none animate-in fade-in zoom-in-95 duration-150"
                               >
-                                <div className="font-bold text-slate-100 border-b border-slate-700/60 pb-1.5 mb-2 flex items-center justify-between">
-                                  <span className="truncate max-w-[170px]">{event.title}</span>
+                                <div className="font-bold text-slate-100 border-b border-slate-700/80 pb-1.5 mb-2 flex items-center justify-between">
+                                  <span className="truncate max-w-[140px]">{event.title}</span>
                                   <span className="text-[10px] text-indigo-300 font-bold">{event.attendance_present || 0}/{event.attendance_total_target || 0}</span>
                                 </div>
 
-                                {hoverLoadingMap[event.id] && !hoverAttendanceCache[event.id] ? (
-                                  <div className="py-2 text-center text-slate-400 text-[11px] flex items-center justify-center gap-1.5">
-                                    <div className="w-3 h-3 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin"></div>
-                                    Chargement des présences...
+                                <div className="space-y-1.5 font-medium">
+                                  <div className="flex items-center justify-between text-emerald-400">
+                                    <span className="flex items-center gap-1.5">
+                                      <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                      Présents
+                                    </span>
+                                    <span className="font-bold">{event.attendance_present || 0}</span>
                                   </div>
-                                ) : hoverAttendanceCache[event.id] ? (
-                                  <div className="space-y-2">
-                                    <div>
-                                      <div className="flex items-center gap-1 font-bold text-emerald-400 text-[11px] mb-0.5">
-                                        <span>🟢 Présents ({hoverAttendanceCache[event.id].presents.length}) :</span>
-                                      </div>
-                                      {hoverAttendanceCache[event.id].presents.length > 0 ? (
-                                        <div className="text-[11px] text-slate-300 line-clamp-3 leading-relaxed">
-                                          {hoverAttendanceCache[event.id].presents.map(u => `${u.first_name} ${u.last_name}`).join(', ')}
-                                        </div>
-                                      ) : (
-                                        <p className="text-[10px] italic text-slate-400">Aucun présent</p>
-                                      )}
-                                    </div>
 
-                                    <div>
-                                      <div className="flex items-center gap-1 font-bold text-rose-400 text-[11px] mb-0.5">
-                                        <span>🔴 Absents ({hoverAttendanceCache[event.id].absents.length}) :</span>
-                                      </div>
-                                      {hoverAttendanceCache[event.id].absents.length > 0 ? (
-                                        <div className="text-[11px] text-slate-300 line-clamp-2 leading-relaxed">
-                                          {hoverAttendanceCache[event.id].absents.map(u => `${u.first_name} ${u.last_name}`).join(', ')}
-                                        </div>
-                                      ) : (
-                                        <p className="text-[10px] italic text-slate-400">Aucun absent</p>
-                                      )}
-                                    </div>
-
-                                    {hoverAttendanceCache[event.id].unanswered.length > 0 && (
-                                      <div className="pt-1.5 border-t border-slate-700/50 text-[10px] text-slate-400">
-                                        ⚪ Sans réponse : {hoverAttendanceCache[event.id].unanswered.length} musicien(s)
-                                      </div>
-                                    )}
+                                  <div className="flex items-center justify-between text-rose-400">
+                                    <span className="flex items-center gap-1.5">
+                                      <span className="w-2 h-2 rounded-full bg-rose-500"></span>
+                                      Absents
+                                    </span>
+                                    <span className="font-bold">{event.attendance_absent || 0}</span>
                                   </div>
-                                ) : (
-                                  <div className="text-[11px] text-slate-300">
-                                    {event.attendance_present || 0} présent(s), {event.attendance_absent || 0} absent(s)
-                                  </div>
-                                )}
 
-                                <div className="mt-2 pt-1.5 border-t border-slate-700/60 text-[9px] text-indigo-300 text-center font-medium">
-                                  Cliquez pour ouvrir la liste nominative complète
+                                  <div className="flex items-center justify-between text-slate-400 pt-1 border-t border-slate-800">
+                                    <span className="flex items-center gap-1.5">
+                                      <span className="w-2 h-2 rounded-full bg-slate-500"></span>
+                                      Sans réponse
+                                    </span>
+                                    <span className="font-bold">
+                                      {Math.max(0, (event.attendance_total_target || 0) - ((event.attendance_present || 0) + (event.attendance_absent || 0)))}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                <div className="mt-2 pt-1.5 border-t border-slate-800 text-[10px] text-indigo-300 text-center font-medium">
+                                  Cliquez pour voir la liste nominative
                                 </div>
                               </div>
                             )}
@@ -1318,7 +1275,7 @@ const AdminEvents = () => {
                           type="text"
                           value={attendanceSearch}
                           onChange={(e) => setAttendanceSearch(e.target.value)}
-                          placeholder="Filtrer par nom ou instrument..."
+                          placeholder="Rechercher un musicien (nom, prénom)..."
                           className="w-full pl-9 pr-8 py-1.5 bg-white border border-slate-200 rounded-xl text-xs text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                         />
                         {attendanceSearch && (
@@ -1333,7 +1290,7 @@ const AdminEvents = () => {
                     </div>
 
                     {/* Liste des Musiciens filtrés */}
-                    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden divide-y divide-slate-100">
+                    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
                       {(() => {
                         const currentList = attendanceTab === 'present' 
                           ? attendanceDetails.presents 
@@ -1345,8 +1302,8 @@ const AdminEvents = () => {
                           if (!attendanceSearch) return true;
                           const s = attendanceSearch.toLowerCase();
                           return (
-                            `${u.first_name} ${u.last_name}`.toLowerCase().includes(s) ||
-                            (u.instruments && u.instruments.toLowerCase().includes(s))
+                            `${u.last_name} ${u.first_name}`.toLowerCase().includes(s) ||
+                            `${u.first_name} ${u.last_name}`.toLowerCase().includes(s)
                           );
                         });
 
@@ -1358,51 +1315,22 @@ const AdminEvents = () => {
                           );
                         }
 
-                        return filtered.map(user => (
-                          <div key={user.user_id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50/80 transition-colors">
-                            <div className="flex items-center gap-3">
-                              <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs ${
-                                attendanceTab === 'present' 
-                                  ? 'bg-emerald-100 text-emerald-800' 
-                                  : attendanceTab === 'absent'
-                                    ? 'bg-rose-100 text-rose-800'
-                                    : 'bg-slate-100 text-slate-700'
-                              }`}>
-                                {user.first_name?.[0]}{user.last_name?.[0]}
+                        return (
+                          <div className="p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+                            {filtered.map(user => (
+                              <div 
+                                key={user.user_id} 
+                                className="px-3.5 py-2.5 bg-slate-50/80 hover:bg-slate-100/80 rounded-xl border border-slate-200/70 flex items-center gap-2.5 text-sm font-bold text-slate-800 transition-colors"
+                              >
+                                <span className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                                  attendanceTab === 'present' ? 'bg-emerald-500 ring-2 ring-emerald-100' :
+                                  attendanceTab === 'absent' ? 'bg-rose-500 ring-2 ring-rose-100' : 'bg-slate-300'
+                                }`} />
+                                <span className="truncate">{user.last_name.toUpperCase()} {user.first_name}</span>
                               </div>
-                              <div>
-                                <h4 className="text-sm font-bold text-slate-800">
-                                  {user.first_name} {user.last_name}
-                                </h4>
-                                <div className="flex flex-wrap items-center gap-2 mt-0.5">
-                                  {user.instruments ? (
-                                    <span className="text-[11px] text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md font-medium border border-indigo-100/60">
-                                      🎺 {user.instruments}
-                                    </span>
-                                  ) : (
-                                    <span className="text-[11px] text-slate-400 italic">
-                                      Aucun instrument renseigné
-                                    </span>
-                                  )}
-                                  {user.orchestras && (
-                                    <span className="text-[11px] text-slate-500">
-                                      • {user.orchestras}
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Horodatage de réponse */}
-                            <div className="flex items-center sm:text-right">
-                              {user.attendance_updated_at && (
-                                <span className="text-[11px] text-slate-400">
-                                  Répondu le {new Date(user.attendance_updated_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
-                                </span>
-                              )}
-                            </div>
+                            ))}
                           </div>
-                        ));
+                        );
                       })()}
                     </div>
                   </>

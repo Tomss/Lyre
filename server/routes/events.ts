@@ -44,7 +44,7 @@ router.get('/', async (req, res) => {
             JOIN event_orchestras eo_sub ON uo.orchestra_id = eo_sub.orchestra_id
             WHERE eo_sub.event_id = e.id
           ), 0),
-          (SELECT COUNT(*) FROM profiles WHERE status = 'Active' OR status IS NULL)
+          (SELECT COUNT(*) FROM profiles)
         ) AS attendance_total_target
       FROM events e
       LEFT JOIN event_orchestras eo ON e.id = eo.event_id
@@ -333,7 +333,7 @@ router.get('/:id/attendances', async (req, res) => {
         JOIN profiles p ON u.id = p.id
         JOIN user_orchestras uo ON u.id = uo.user_id
         LEFT JOIN event_attendances ea ON ea.event_id = ? AND ea.user_id = u.id
-        WHERE uo.orchestra_id IN (?) AND (p.status = 'Active' OR p.status IS NULL)
+        WHERE uo.orchestra_id IN (?)
         ORDER BY p.last_name ASC, p.first_name ASC
       `;
       params = [eventId, orchIds];
@@ -363,7 +363,6 @@ router.get('/:id/attendances', async (req, res) => {
         FROM users u
         JOIN profiles p ON u.id = p.id
         LEFT JOIN event_attendances ea ON ea.event_id = ? AND ea.user_id = u.id
-        WHERE p.status = 'Active' OR p.status IS NULL
         ORDER BY p.last_name ASC, p.first_name ASC
       `;
       params = [eventId];
