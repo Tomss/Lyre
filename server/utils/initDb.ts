@@ -1,4 +1,4 @@
-﻿import pool from '../db';
+import pool from '../db';
 
 export async function initDatabaseTables() {
   try {
@@ -14,7 +14,7 @@ export async function initDatabaseTables() {
         UNIQUE KEY unique_event_user (event_id, user_id),
         INDEX idx_event_id (event_id),
         INDEX idx_user_id (user_id)
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     `);
     console.log('[Database] event_attendances table verified/created.');
   } catch (error: any) {
