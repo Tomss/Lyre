@@ -1,5 +1,5 @@
 import React, { useState, useEffect, FormEvent } from 'react';
-import { ChevronDown, Edit, Trash2, Plus, Calendar, Search, X, ArrowLeft, Clock, MapPin, ChevronRight, Globe, Users, Info, AlignLeft, LayoutGrid, EyeOff, FileText, Image as ImageIcon, Upload, Music, CheckCircle2, XCircle, HelpCircle, Copy, Check, MessageSquare, Loader2 } from "lucide-react";
+import { ChevronDown, Edit, Trash2, Plus, Calendar, Search, X, ArrowLeft, Clock, MapPin, Globe, Users, Info, AlignLeft, LayoutGrid, EyeOff, FileText, Image as ImageIcon, Upload, Music, CheckCircle2, XCircle, HelpCircle, Copy, Check, Loader2 } from "lucide-react";
 import { useAuth } from '../context/AuthContext';
 import { Navigate, Link } from 'react-router-dom';
 
@@ -136,6 +136,14 @@ const AdminEvents = () => {
   const [copiedRoster, setCopiedRoster] = useState<boolean>(false);
   const [hoveredAttendanceEventId, setHoveredAttendanceEventId] = useState<string | null>(null);
 
+  const handleAttendanceHover = (id: string) => {
+    setHoveredAttendanceEventId(id);
+  };
+
+  const handleAttendanceLeave = () => {
+    setHoveredAttendanceEventId(null);
+  };
+
   const openAttendanceModal = async (event: Event) => {
     setSelectedAttendanceEvent(event);
     setAttendanceLoading(true);
@@ -170,13 +178,13 @@ const AdminEvents = () => {
       `📊 Taux de présence : ${attendanceDetails.counts.rate}% (${attendanceDetails.counts.present}/${attendanceDetails.total_target})`,
       '',
       `🟢 PRÉSENTS (${attendanceDetails.presents.length}) :`,
-      ...attendanceDetails.presents.map(u => `  • ${u.last_name.toUpperCase()} ${u.first_name}`),
+      ...attendanceDetails.presents.map(u => `  • ${(u.last_name || '').toUpperCase()} ${u.first_name || ''}`.trim()),
       '',
       `🔴 ABSENTS (${attendanceDetails.absents.length}) :`,
-      ...attendanceDetails.absents.map(u => `  • ${u.last_name.toUpperCase()} ${u.first_name}`),
+      ...attendanceDetails.absents.map(u => `  • ${(u.last_name || '').toUpperCase()} ${u.first_name || ''}`.trim()),
       '',
       `⚪ SANS RÉPONSE (${attendanceDetails.unanswered.length}) :`,
-      ...attendanceDetails.unanswered.map(u => `  • ${u.last_name.toUpperCase()} ${u.first_name}`)
+      ...attendanceDetails.unanswered.map(u => `  • ${(u.last_name || '').toUpperCase()} ${u.first_name || ''}`.trim())
     ];
 
     navigator.clipboard.writeText(lines.join('\n'));
@@ -1301,9 +1309,11 @@ const AdminEvents = () => {
                         const filtered = currentList.filter(u => {
                           if (!attendanceSearch) return true;
                           const s = attendanceSearch.toLowerCase();
+                          const last = (u.last_name || '').toLowerCase();
+                          const first = (u.first_name || '').toLowerCase();
                           return (
-                            `${u.last_name} ${u.first_name}`.toLowerCase().includes(s) ||
-                            `${u.first_name} ${u.last_name}`.toLowerCase().includes(s)
+                            `${last} ${first}`.includes(s) ||
+                            `${first} ${last}`.includes(s)
                           );
                         });
 
@@ -1326,7 +1336,7 @@ const AdminEvents = () => {
                                   attendanceTab === 'present' ? 'bg-emerald-500 ring-2 ring-emerald-100' :
                                   attendanceTab === 'absent' ? 'bg-rose-500 ring-2 ring-rose-100' : 'bg-slate-300'
                                 }`} />
-                                <span className="truncate">{user.last_name.toUpperCase()} {user.first_name}</span>
+                                <span className="truncate">{((user.last_name || '').toUpperCase() + ' ' + (user.first_name || '')).trim()}</span>
                               </div>
                             ))}
                           </div>
