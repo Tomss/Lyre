@@ -134,11 +134,38 @@ const AdminEvents = () => {
   const [attendanceSearch, setAttendanceSearch] = useState<string>('');
   const [attendanceTab, setAttendanceTab] = useState<'present' | 'absent' | 'unanswered'>('present');
   const [copiedRoster, setCopiedRoster] = useState<boolean>(false);
+  const [hoveredAttendanceEventId, setHoveredAttendanceEventId] = useState<string | null>(null);
+  const [hoverAttendanceCache, setHoverAttendanceCache] = useState<Record<string, AttendanceDetails>>({});
+  const [hoverLoadingMap, setHoverLoadingMap] = useState<Record<string, boolean>>({});
+
+  const handleAttendanceHover = async (eventId: string) => {
+    setHoveredAttendanceEventId(eventId);
+    if (!token || hoverAttendanceCache[eventId] || hoverLoadingMap[eventId]) return;
+
+    setHoverLoadingMap(prev => ({ ...prev, [eventId]: true }));
+    try {
+      const response = await fetch(`${API_URL}/events/${eventId}/attendances`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setHoverAttendanceCache(prev => ({ ...prev, [eventId]: data }));
+      }
+    } catch (e) {
+      // Ignore hover background errors
+    } finally {
+      setHoverLoadingMap(prev => ({ ...prev, [eventId]: false }));
+    }
+  };
+
+  const handleAttendanceLeave = () => {
+    setHoveredAttendanceEventId(null);
+  };
 
   const openAttendanceModal = async (event: Event) => {
     setSelectedAttendanceEvent(event);
     setAttendanceLoading(true);
-    setAttendanceDetails(null);
+    setAttendanceDetails(hoverAttendanceCache[event.id] || null);
     setAttendanceSearch('');
     setAttendanceTab('present');
 
@@ -149,6 +176,7 @@ const AdminEvents = () => {
       if (!response.ok) throw new Error('Erreur lors du chargement des présences');
       const data = await response.json();
       setAttendanceDetails(data);
+      setHoverAttendanceCache(prev => ({ ...prev, [event.id]: data }));
     } catch (err: any) {
       showNotification(err.message, 'error');
     } finally {
@@ -172,7 +200,7 @@ const AdminEvents = () => {
       ...attendanceDetails.presents.map(u => `  • ${u.first_name} ${u.last_name}${u.instruments ? ` (${u.instruments})` : ''}`),
       '',
       `🔴 ABSENTS (${attendanceDetails.absents.length}) :`,
-      ...attendanceDetails.absents.map(u => `  • ${u.first_name} ${u.last_name}${u.attendance_comment ? ` : "${u.attendance_comment}"` : ''}`),
+      ...attendanceDetails.absents.map(u => `  • ${u.first_name} ${u.last_name}${u.instruments ? ` (${u.instruments})` : ''}`),
       '',
       `⚪ SANS RÉPONSE (${attendanceDetails.unanswered.length}) :`,
       ...attendanceDetails.unanswered.map(u => `  • ${u.first_name} ${u.last_name}${u.instruments ? ` (${u.instruments})` : ''}`)
@@ -676,11 +704,12 @@ const AdminEvents = () => {
                             ) : <p className="text-gray-400 text-xs italic">Tous / Aucun</p>}
                           </div>
 
-                          {/* Indicateur Synthétique de Présence */}
+                          {/* Indicateur Synthétique de Présence avec Info-Bulle survol */}
                           <div 
                             onClick={() => openAttendanceModal(event)}
-                            className="flex flex-col min-w-[150px] p-2.5 rounded-xl bg-slate-50/90 hover:bg-indigo-50/60 border border-slate-200/80 hover:border-indigo-200 transition-all cursor-pointer group/att shadow-2xs"
-                            title="Cliquez pour voir la liste nominative des présences"
+                            onMouseEnter={() => handleAttendanceHover(event.id)}
+                            onMouseLeave={handleAttendanceLeave}
+                            className="relative flex flex-col min-w-[155px] p-2.5 rounded-xl bg-slate-50/90 hover:bg-indigo-50/60 border border-slate-200/80 hover:border-indigo-200 transition-all cursor-pointer group/att shadow-2xs"
                           >
                             <div className="flex items-center justify-between text-xs mb-1">
                               <span className="font-bold text-slate-700 group-hover/att:text-indigo-700 flex items-center gap-1">
@@ -717,6 +746,67 @@ const AdminEvents = () => {
                                 {Math.max(0, (event.attendance_total_target || 0) - ((event.attendance_present || 0) + (event.attendance_absent || 0)))} att.
                               </span>
                             </div>
+
+                            {/* Info-Bulle détaillée au survol */}
+                            {hoveredAttendanceEventId === event.id && (
+                              <div 
+                                className="absolute bottom-full right-0 mb-2 w-72 bg-slate-900/95 backdrop-blur-md text-white p-3.5 rounded-2xl shadow-2xl border border-slate-700/70 z-50 text-xs pointer-events-none animate-in fade-in zoom-in-95 duration-150"
+                              >
+                                <div className="font-bold text-slate-100 border-b border-slate-700/60 pb-1.5 mb-2 flex items-center justify-between">
+                                  <span className="truncate max-w-[170px]">{event.title}</span>
+                                  <span className="text-[10px] text-indigo-300 font-bold">{event.attendance_present || 0}/{event.attendance_total_target || 0}</span>
+                                </div>
+
+                                {hoverLoadingMap[event.id] && !hoverAttendanceCache[event.id] ? (
+                                  <div className="py-2 text-center text-slate-400 text-[11px] flex items-center justify-center gap-1.5">
+                                    <div className="w-3 h-3 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin"></div>
+                                    Chargement des présences...
+                                  </div>
+                                ) : hoverAttendanceCache[event.id] ? (
+                                  <div className="space-y-2">
+                                    <div>
+                                      <div className="flex items-center gap-1 font-bold text-emerald-400 text-[11px] mb-0.5">
+                                        <span>🟢 Présents ({hoverAttendanceCache[event.id].presents.length}) :</span>
+                                      </div>
+                                      {hoverAttendanceCache[event.id].presents.length > 0 ? (
+                                        <div className="text-[11px] text-slate-300 line-clamp-3 leading-relaxed">
+                                          {hoverAttendanceCache[event.id].presents.map(u => `${u.first_name} ${u.last_name}`).join(', ')}
+                                        </div>
+                                      ) : (
+                                        <p className="text-[10px] italic text-slate-400">Aucun présent</p>
+                                      )}
+                                    </div>
+
+                                    <div>
+                                      <div className="flex items-center gap-1 font-bold text-rose-400 text-[11px] mb-0.5">
+                                        <span>🔴 Absents ({hoverAttendanceCache[event.id].absents.length}) :</span>
+                                      </div>
+                                      {hoverAttendanceCache[event.id].absents.length > 0 ? (
+                                        <div className="text-[11px] text-slate-300 line-clamp-2 leading-relaxed">
+                                          {hoverAttendanceCache[event.id].absents.map(u => `${u.first_name} ${u.last_name}`).join(', ')}
+                                        </div>
+                                      ) : (
+                                        <p className="text-[10px] italic text-slate-400">Aucun absent</p>
+                                      )}
+                                    </div>
+
+                                    {hoverAttendanceCache[event.id].unanswered.length > 0 && (
+                                      <div className="pt-1.5 border-t border-slate-700/50 text-[10px] text-slate-400">
+                                        ⚪ Sans réponse : {hoverAttendanceCache[event.id].unanswered.length} musicien(s)
+                                      </div>
+                                    )}
+                                  </div>
+                                ) : (
+                                  <div className="text-[11px] text-slate-300">
+                                    {event.attendance_present || 0} présent(s), {event.attendance_absent || 0} absent(s)
+                                  </div>
+                                )}
+
+                                <div className="mt-2 pt-1.5 border-t border-slate-700/60 text-[9px] text-indigo-300 text-center font-medium">
+                                  Cliquez pour ouvrir la liste nominative complète
+                                </div>
+                              </div>
+                            )}
                           </div>
 
                           <div className="flex items-center space-x-2 flex-shrink-0">
@@ -1256,8 +1346,7 @@ const AdminEvents = () => {
                           const s = attendanceSearch.toLowerCase();
                           return (
                             `${u.first_name} ${u.last_name}`.toLowerCase().includes(s) ||
-                            (u.instruments && u.instruments.toLowerCase().includes(s)) ||
-                            (u.attendance_comment && u.attendance_comment.toLowerCase().includes(s))
+                            (u.instruments && u.instruments.toLowerCase().includes(s))
                           );
                         });
 
@@ -1304,18 +1393,13 @@ const AdminEvents = () => {
                               </div>
                             </div>
 
-                            {/* Motif d'absence ou date de confirmation */}
+                            {/* Horodatage de réponse */}
                             <div className="flex items-center sm:text-right">
-                              {attendanceTab === 'absent' && user.attendance_comment ? (
-                                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 border border-rose-200/70 rounded-xl text-xs text-rose-800 font-medium">
-                                  <MessageSquare size={13} className="text-rose-500 flex-shrink-0" />
-                                  <span>{user.attendance_comment}</span>
-                                </div>
-                              ) : attendanceTab === 'present' && user.attendance_updated_at ? (
+                              {user.attendance_updated_at && (
                                 <span className="text-[11px] text-slate-400">
-                                  Confirmé le {new Date(user.attendance_updated_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
+                                  Répondu le {new Date(user.attendance_updated_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
                                 </span>
-                              ) : null}
+                              )}
                             </div>
                           </div>
                         ));
