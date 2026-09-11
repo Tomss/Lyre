@@ -11,7 +11,7 @@ router.use(authenticateToken);
 // GET /api/instruments
 router.get('/', async (req, res) => {
   // @ts-ignore
-  if ((req as any).user.role !== 'Admin' && (!(req as any).user.managedModules || !(req as any).user.managedModules.includes('instruments'))) {
+  if (!['Admin', 'Gestionnaire'].includes((req as any).user?.role)) {
     return res.status(403).json({ message: 'Acces refuse.' });
   }
   try {

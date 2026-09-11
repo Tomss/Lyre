@@ -10,8 +10,8 @@ router.use(authenticateToken);
 // GET /api/orchestras
 router.get('/', async (req, res) => {
   // @ts-ignore
-  const userRole = (req as any).user.role;
-  if (userRole !== 'Admin' && (!(req as any).user.managedModules || !(req as any).user.managedModules.includes('orchestras')) && userRole !== 'Gestionnaire') {
+  const userRole = (req as any).user?.role;
+  if (!['Admin', 'Gestionnaire'].includes(userRole)) {
     return res.status(403).json({ message: 'Acces refuse.' });
   }
   try {

@@ -1,4 +1,4 @@
-﻿import { Router } from 'express';
+import { Router } from 'express';
 import { authenticateToken } from '../middleware/auth';
 import pool from '../db';
 
@@ -6,13 +6,13 @@ const router = Router();
 
 router.use(authenticateToken);
 
-// Route sÃ©curisÃ©e pour rÃ©cupÃ©rer toutes les associations utilisateurs-instruments et utilisateurs-orchestres
+// Route sécurisée pour récupérer toutes les associations utilisateurs-instruments et utilisateurs-orchestres
 router.get('/', async (req, res) => {
   // @ts-ignore
-  const userRole = (req as any).user.role;
+  const userRole = (req as any).user?.role;
 
-  if (userRole !== 'Admin' && (!(req as any).user.managedModules || !(req as any).user.managedModules.includes('userAssociations'))) {
-    return res.status(403).json({ message: 'AccÃ¨s refusÃ©.' });
+  if (!['Admin', 'Gestionnaire'].includes(userRole)) {
+    return res.status(403).json({ message: 'Accès refusé.' });
   }
 
   try {
