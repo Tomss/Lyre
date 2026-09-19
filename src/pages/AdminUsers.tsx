@@ -1167,19 +1167,19 @@ const AdminUsers = () => {
                                         </span>
                                       )}
                                       {em.hasPassword ? (
-                                        <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded-full flex items-center gap-1">
-                                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                        <span className="text-[10px] font-bold bg-green-100 text-green-800 px-1.5 py-0.5 rounded-full flex items-center gap-1">
+                                          <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
                                           Actif
                                         </span>
                                       ) : em.isInvited ? (
-                                        <span className="text-[10px] font-bold bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded-full flex items-center gap-1">
-                                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                                        <span className="text-[10px] font-bold bg-yellow-100 text-yellow-800 px-1.5 py-0.5 rounded-full flex items-center gap-1">
+                                          <span className="w-1.5 h-1.5 rounded-full bg-yellow-500"></span>
                                           Invité
                                         </span>
                                       ) : (
-                                        <span className="text-[10px] font-medium bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded-full flex items-center gap-1">
-                                          <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
-                                          Non invité
+                                        <span className="text-[10px] font-bold bg-red-100 text-red-800 px-1.5 py-0.5 rounded-full flex items-center gap-1">
+                                          <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                                          Inactif
                                         </span>
                                       )}
                                       {user.role !== 'Admin' && (
@@ -1462,19 +1462,19 @@ const AdminUsers = () => {
                                       </span>
                                     )}
                                     {em.hasPassword ? (
-                                      <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full flex items-center gap-1">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                      <span className="text-[10px] font-bold bg-green-100 text-green-800 px-2 py-0.5 rounded-full flex items-center gap-1">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
                                         Actif
                                       </span>
                                     ) : em.isInvited ? (
-                                      <span className="text-[10px] font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full flex items-center gap-1">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                                      <span className="text-[10px] font-bold bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full flex items-center gap-1">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-yellow-500"></span>
                                         Invité
                                       </span>
                                     ) : (
-                                      <span className="text-[10px] font-medium bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full flex items-center gap-1">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
-                                        Non invité
+                                      <span className="text-[10px] font-bold bg-red-100 text-red-800 px-2 py-0.5 rounded-full flex items-center gap-1">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                                        Inactif
                                       </span>
                                     )}
                                   </div>

@@ -497,20 +497,22 @@ router.post('/:profileId/add-email', async (req, res) => {
     `, [normalizedEmail]);
 
     if (existingWithProfiles.length > 0) {
-      const existingProfileIds = existingWithProfiles.map((r: any) => r.profile_id);
-      const [delegationRows]: any = await connection.query(`
-        SELECT pd.id, p2.first_name, p2.last_name
-        FROM profile_delegations pd
-        JOIN profiles p2 ON (pd.child_profile_id = p2.id OR pd.parent_profile_id = p2.id)
-        WHERE (pd.parent_profile_id = ? AND pd.child_profile_id IN (?))
-           OR (pd.parent_profile_id IN (?) AND pd.child_profile_id = ?)
-      `, [profileId, existingProfileIds, existingProfileIds, profileId]);
+      const existingProfileIds = existingWithProfiles.map((r: any) => r.profile_id).filter((pid: string) => pid !== profileId);
+      if (existingProfileIds.length > 0) {
+        const [delegationRows]: any = await connection.query(`
+          SELECT pd.id, p2.first_name, p2.last_name
+          FROM profile_delegations pd
+          JOIN profiles p2 ON p2.id = CASE WHEN pd.parent_profile_id = ? THEN pd.child_profile_id ELSE pd.parent_profile_id END
+          WHERE (pd.parent_profile_id = ? AND pd.child_profile_id IN (?))
+             OR (pd.parent_profile_id IN (?) AND pd.child_profile_id = ?)
+        `, [profileId, profileId, existingProfileIds, existingProfileIds, profileId]);
 
-      if (delegationRows.length > 0) {
-        await connection.rollback();
-        return res.status(400).json({
-          message: `Impossible d'ajouter cet e-mail en compte partagé : ce profil est déjà lié par un Accès délégué avec ${delegationRows[0].first_name} ${delegationRows[0].last_name}. Vous ne pouvez pas cumuler Compte partagé et Accès délégué pour la même personne.`
-        });
+        if (delegationRows.length > 0) {
+          await connection.rollback();
+          return res.status(400).json({
+            message: `Impossible d'ajouter cet e-mail en compte partagé : ce profil est déjà lié par un Accès délégué avec ${delegationRows[0].first_name} ${delegationRows[0].last_name}. Vous ne pouvez pas cumuler Compte partagé et Accès délégué pour la même personne.`
+          });
+        }
       }
 
       if (!confirmShare) {
