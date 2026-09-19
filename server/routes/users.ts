@@ -381,6 +381,11 @@ router.post('/', async (req, res) => {
     // Hasher le mot de passe si fourni
     let password_hash = null;
     if (password) {
+      if (userRole !== 'Admin') {
+        await connection.rollback();
+        return res.status(403).json({ message: 'Seul un Administrateur peut définir manuellement un mot de passe.' });
+      }
+
       const isMinLength = password.length >= 8;
       const hasUppercase = /[A-Z]/.test(password);
       const hasLowercase = /[a-z]/.test(password);
@@ -773,10 +778,34 @@ router.put('/:id', async (req, res) => {
     );
 
     if (password) {
+      if (userRole !== 'Admin') {
+        await connection.rollback();
+        return res.status(403).json({ message: 'Seul un Administrateur peut définir ou forcer directement un mot de passe.' });
+      }
+
+      const isMinLength = password.length >= 8;
+      const hasUppercase = /[A-Z]/.test(password);
+      const hasLowercase = /[a-z]/.test(password);
+      const hasDigit = /[0-9]/.test(password);
+      const hasSpecialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/.test(password);
+
+      if (!isMinLength || !hasUppercase || !hasLowercase || !hasDigit || !hasSpecialChar) {
+        await connection.rollback();
+        return res.status(400).json({ 
+          message: 'Le mot de passe ne respecte pas les exigences de sécurité : au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial.' 
+        });
+      }
+
       const salt = await bcrypt.genSalt(10);
       const password_hash = await bcrypt.hash(password, salt);
       if (effectiveUserId) {
-        await connection.query('UPDATE users SET password_hash = ? WHERE id = ?', [password_hash, effectiveUserId]);
+        await connection.query('UPDATE users SET password_hash = ?, activation_token = NULL, token_expires_at = NULL WHERE id = ?', [password_hash, effectiveUserId]);
+        await connection.query(`
+          UPDATE profiles p
+          JOIN user_profiles up ON p.id = up.profile_id
+          SET p.status = 'Active'
+          WHERE up.user_id = ? AND p.status IN ('Inactive', 'Invited')
+        `, [effectiveUserId]);
       }
       await connection.query('UPDATE profiles SET status = ? WHERE id = ?', ['Active', id]);
     }
@@ -883,6 +912,95 @@ router.delete('/:id', async (req, res) => {
     res.status(500).json({ message: `Erreur lors de la suppression de l\'utilisateur: ${errorMessage}` });
   } finally {
     connection.release();
+  }
+});
+
+// POST /api/users/:id/set-password - Définir/forcer manuellement un mot de passe (Admin uniquement)
+router.post('/:id/set-password', async (req, res) => {
+  // @ts-ignore
+  const userRole = (req as any).user.role;
+  if (userRole !== 'Admin') {
+    return res.status(403).json({ message: 'Seul un Administrateur peut définir ou forcer un mot de passe.' });
+  }
+
+  const { id } = req.params; // profile_id
+  const { userId: targetedUserId, password } = req.body;
+
+  if (!password) {
+    return res.status(400).json({ message: 'Le mot de passe est requis.' });
+  }
+
+  const isMinLength = password.length >= 8;
+  const hasUppercase = /[A-Z]/.test(password);
+  const hasLowercase = /[a-z]/.test(password);
+  const hasDigit = /[0-9]/.test(password);
+  const hasSpecialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/.test(password);
+
+  if (!isMinLength || !hasUppercase || !hasLowercase || !hasDigit || !hasSpecialChar) {
+    return res.status(400).json({ 
+      message: 'Le mot de passe ne respecte pas les exigences de sécurité : au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial.' 
+    });
+  }
+
+  const connection = await pool.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    const [profiles]: any = await connection.query('SELECT id, first_name, last_name, status FROM profiles WHERE id = ?', [id]);
+    if (profiles.length === 0) {
+      await connection.rollback();
+      return res.status(404).json({ message: 'Profil introuvable.' });
+    }
+
+    let targetUserId = targetedUserId;
+    if (!targetUserId) {
+      const [uRows]: any = await connection.query(`
+        SELECT u.id, u.email 
+        FROM user_profiles up
+        JOIN users u ON up.user_id = u.id
+        WHERE up.profile_id = ?
+        ORDER BY up.is_primary DESC
+        LIMIT 1
+      `, [id]);
+      if (uRows.length > 0) {
+        targetUserId = uRows[0].id;
+      }
+    }
+
+    if (!targetUserId) {
+      await connection.rollback();
+      return res.status(404).json({ message: 'Aucun compte email associé trouvé pour ce profil.' });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const password_hash = await bcrypt.hash(password, salt);
+
+    await connection.query(`
+      UPDATE users 
+      SET password_hash = ?, activation_token = NULL, token_expires_at = NULL 
+      WHERE id = ?
+    `, [password_hash, targetUserId]);
+
+    // Mettre à jour en 'Active' tous les profils rattachés à ce compte utilisateur
+    await connection.query(`
+      UPDATE profiles p
+      JOIN user_profiles up ON p.id = up.profile_id
+      SET p.status = 'Active'
+      WHERE up.user_id = ? AND p.status IN ('Inactive', 'Invited')
+    `, [targetUserId]);
+
+    await connection.query('UPDATE profiles SET status = ? WHERE id = ?', ['Active', id]);
+
+    await connection.commit();
+    res.status(200).json({ message: 'Mot de passe défini avec succès. Le compte est immédiatement activé.' });
+
+  } catch (error) {
+    if (connection) await connection.rollback();
+    console.error('Error setting password manually:', error);
+    res.status(500).json({ message: 'Erreur lors de la définition du mot de passe.' });
+  } finally {
+    if (connection) connection.release();
   }
 });
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, FormEvent } from 'react';
-import { ChevronDown,  Edit, Trash2, Users, Mail, MailPlus, User, Shield, X, UserPlus, CheckCircle, Search, ArrowLeft, ChevronRight, Power, Lock, Music, LayoutGrid, AlertTriangle, Plus  } from "lucide-react";
+import { ChevronDown,  Edit, Trash2, Users, Mail, MailPlus, User, Shield, X, UserPlus, CheckCircle, Search, ArrowLeft, ChevronRight, Power, Lock, Music, LayoutGrid, AlertTriangle, Plus, KeyRound, Eye, EyeOff, Copy, Sparkles } from "lucide-react";
 import { useAuth } from '../context/AuthContext';
 import { Navigate, Link } from 'react-router-dom';
 
@@ -64,6 +64,34 @@ interface Notification {
   message: string;
   type: 'success' | 'error';
 }
+
+const generateSecurePassword = () => {
+  const uppers = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+  const lowers = 'abcdefghijkmnopqrstuvwxyz';
+  const digits = '23456789';
+  const specials = '!@#$%^&*_-+=?';
+  const all = uppers + lowers + digits + specials;
+  
+  let pwd = '';
+  pwd += uppers[Math.floor(Math.random() * uppers.length)];
+  pwd += lowers[Math.floor(Math.random() * lowers.length)];
+  pwd += digits[Math.floor(Math.random() * digits.length)];
+  pwd += specials[Math.floor(Math.random() * specials.length)];
+  for (let i = 0; i < 8; i++) {
+    pwd += all[Math.floor(Math.random() * all.length)];
+  }
+  return pwd.split('').sort(() => 0.5 - Math.random()).join('');
+};
+
+const getPasswordRules = (pwd: string) => {
+  return {
+    minLength: pwd.length >= 8,
+    hasUpper: /[A-Z]/.test(pwd),
+    hasLower: /[a-z]/.test(pwd),
+    hasDigit: /[0-9]/.test(pwd),
+    hasSpecial: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/.test(pwd),
+  };
+};
 
 const AdminUsers = () => {
   const { currentUser, token, isAuthenticated } = useAuth();
@@ -143,6 +171,31 @@ const AdminUsers = () => {
     childName: '',
     submitting: false
   });
+  const [showPasswordInForm, setShowPasswordInForm] = useState(false);
+  const [copiedPassword, setCopiedPassword] = useState(false);
+
+  const [setPasswordModal, setSetPasswordModal] = useState<{
+    isOpen: boolean;
+    profileId: string;
+    profileName: string;
+    userId: string;
+    email: string;
+    password: string;
+    showPassword: boolean;
+    submitting: boolean;
+    copied: boolean;
+  }>({
+    isOpen: false,
+    profileId: '',
+    profileName: '',
+    userId: '',
+    email: '',
+    password: '',
+    showPassword: false,
+    submitting: false,
+    copied: false,
+  });
+
   const [notification, setNotification] = useState<Notification>({
     show: false,
     message: '',
@@ -177,7 +230,7 @@ const AdminUsers = () => {
   ];
 
   useEffect(() => {
-    if (showAddForm || deleteConfirmation.isOpen || duplicateEmailDialog.isOpen || addEmailModal.isOpen || shareEmailConfirmModal.isOpen || removeEmailConfirmation.isOpen || removeDelegationConfirmation.isOpen) {
+    if (showAddForm || deleteConfirmation.isOpen || duplicateEmailDialog.isOpen || addEmailModal.isOpen || shareEmailConfirmModal.isOpen || removeEmailConfirmation.isOpen || removeDelegationConfirmation.isOpen || setPasswordModal.isOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
@@ -185,7 +238,7 @@ const AdminUsers = () => {
     return () => {
       document.body.style.overflow = 'unset';
     };
-  }, [showAddForm, deleteConfirmation.isOpen, duplicateEmailDialog.isOpen, addEmailModal.isOpen, shareEmailConfirmModal.isOpen, removeEmailConfirmation.isOpen, removeDelegationConfirmation.isOpen]);
+  }, [showAddForm, deleteConfirmation.isOpen, duplicateEmailDialog.isOpen, addEmailModal.isOpen, shareEmailConfirmModal.isOpen, removeEmailConfirmation.isOpen, removeDelegationConfirmation.isOpen, setPasswordModal.isOpen]);
 
   const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
     setNotification({ show: true, message, type });
@@ -680,6 +733,63 @@ const AdminUsers = () => {
     }
   };
 
+  const handleOpenSetPasswordModal = (user: UserData, targetedUserId?: string, targetEmail?: string) => {
+    const email = targetEmail || user.email;
+    const userId = targetedUserId || '';
+    setSetPasswordModal({
+      isOpen: true,
+      profileId: user.id,
+      profileName: `${user.first_name} ${user.last_name}`,
+      userId,
+      email,
+      password: '',
+      showPassword: false,
+      submitting: false,
+      copied: false,
+    });
+  };
+
+  const handleConfirmSetPassword = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!token || !setPasswordModal.profileId || !setPasswordModal.password) return;
+
+    const rules = getPasswordRules(setPasswordModal.password);
+    if (!rules.minLength || !rules.hasUpper || !rules.hasLower || !rules.hasDigit || !rules.hasSpecial) {
+      showNotification('Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial.', 'error');
+      return;
+    }
+
+    setSetPasswordModal(prev => ({ ...prev, submitting: true }));
+    try {
+      const response = await fetch(`${API_URL}/users/${setPasswordModal.profileId}/set-password`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: setPasswordModal.userId || undefined,
+          password: setPasswordModal.password,
+        }),
+      });
+
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.message || 'Erreur lors de la définition du mot de passe.');
+      }
+
+      const data = await response.json();
+      showNotification(data.message || 'Mot de passe défini avec succès.');
+      setSetPasswordModal(prev => ({ ...prev, isOpen: false, password: '' }));
+      await fetchUsers();
+    } catch (err: any) {
+      console.error(err);
+      showNotification(err.message, 'error');
+    } finally {
+      setSetPasswordModal(prev => ({ ...prev, submitting: false }));
+    }
+  };
+
   // MIGRÉ
   const handleUpdate = async (e: FormEvent) => {
     e.preventDefault();
@@ -762,6 +872,8 @@ const AdminUsers = () => {
     setDelegatedProfileIds(user.delegatedProfiles ? user.delegatedProfiles.map(d => d.id) : []);
     setDelegationSearch('');
     setShowDelegationDropdown(false);
+    setShowPasswordInForm(false);
+    setCopiedPassword(false);
     setFormData({
       firstName: user.first_name,
       lastName: user.last_name,
@@ -783,6 +895,8 @@ const AdminUsers = () => {
     setDelegatedProfileIds([]);
     setDelegationSearch('');
     setShowDelegationDropdown(false);
+    setShowPasswordInForm(false);
+    setCopiedPassword(false);
     setFormData({
       firstName: '',
       lastName: '',
@@ -1197,6 +1311,15 @@ const AdminUsers = () => {
                                           <Mail size={12} />
                                         </button>
                                       )}
+                                      {currentUser?.role === 'Admin' && (
+                                        <button
+                                          onClick={() => handleOpenSetPasswordModal(user, em.userId, em.email)}
+                                          title={`Définir ou forcer le mot de passe pour ${em.email}`}
+                                          className="p-1 text-amber-600 hover:text-amber-800 hover:bg-amber-100 rounded-lg transition-colors cursor-pointer"
+                                        >
+                                          <KeyRound size={12} />
+                                        </button>
+                                      )}
                                       {!em.isPrimary && (
                                         <button
                                           onClick={() => handlePromptRemoveEmail(user.id, em.userId, em.email)}
@@ -1299,6 +1422,15 @@ const AdminUsers = () => {
                               }`}
                             >
                               <Mail size={18} />
+                            </button>
+                          )}
+                          {currentUser?.role === 'Admin' && (
+                            <button 
+                              onClick={() => handleOpenSetPasswordModal(user)} 
+                              title={user.has_password || user.status === 'Active' ? "Définir / forcer le mot de passe" : "Définir un mot de passe (activer directement)"} 
+                              className="p-2 text-amber-600 bg-amber-50 hover:bg-amber-100 rounded-xl transition-all duration-300 hover:scale-110 cursor-pointer"
+                            >
+                              <KeyRound size={18} />
                             </button>
                           )}
                           <button onClick={() => handleEdit(user)} title="Modifier" className="p-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-all duration-300 hover:scale-110"><Edit size={18} /></button>
@@ -1501,6 +1633,17 @@ const AdminUsers = () => {
                                   <Mail size={13} />
                                   {em.hasPassword ? 'Réinitialiser' : em.isInvited ? 'Relancer' : 'Inviter'}
                                 </button>
+                                {currentUser?.role === 'Admin' && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleOpenSetPasswordModal(editingUser, em.userId, em.email)}
+                                    title={`Définir ou modifier directement le mot de passe pour ${em.email}`}
+                                    className="px-2.5 py-1.5 text-xs font-semibold text-amber-700 hover:text-amber-900 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg shadow-sm transition-colors flex items-center gap-1.5 cursor-pointer"
+                                  >
+                                    <KeyRound size={13} className="text-amber-600" />
+                                    Mot de passe
+                                  </button>
+                                )}
                                 {!em.isPrimary && (
                                   <button
                                     type="button"
@@ -1678,7 +1821,7 @@ const AdminUsers = () => {
                     </div>
 
                     <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-4">
                             <div>
                                 <label className="flex items-center text-sm font-semibold text-slate-700 mb-1">
                                     <LayoutGrid size={14} className="mr-2 text-slate-400" /> Rôle
@@ -1692,15 +1835,101 @@ const AdminUsers = () => {
                                     <ChevronDown className="text-slate-400" />
                                 </div>
                             </div>
-                            {formData.role === 'Admin' && (
-                                <div>
-                                    <label className="flex items-center text-sm font-semibold text-red-700 mb-1">
-                                        <Lock size={14} className="mr-2 text-red-400" /> Mot de passe Admin
-                                    </label>
-                                    <input type="password" name="password" value={formData.password} onChange={handleInputChange} placeholder={editingUser ? 'Laisser vide pour ne pas changer' : 'Requis pour Admin'} required={!editingUser && formData.role === 'Admin'} className="w-full px-4 py-2 rounded-xl border border-red-200 focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition bg-red-50/30 focus:bg-white text-sm" />
-                                </div>
-                            )}
                         </div>
+
+                        {currentUser?.role === 'Admin' && (
+                            <div className="p-4 rounded-2xl border border-amber-200 bg-amber-50/40 space-y-3">
+                                <div className="flex items-center justify-between">
+                                    <label className="flex items-center text-sm font-bold text-slate-800">
+                                        <KeyRound size={15} className="mr-2 text-amber-600" />
+                                        {editingUser ? 'Changer / Forcer le mot de passe' : 'Définir un mot de passe manuellement'}
+                                        <span className="ml-2 text-xs font-normal text-slate-500 hidden sm:inline">
+                                            {editingUser ? '(Optionnel - laisser vide pour conserver l\'actuel)' : '(Optionnel - active immédiatement)'}
+                                        </span>
+                                    </label>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            const gen = generateSecurePassword();
+                                            setFormData(prev => ({ ...prev, password: gen }));
+                                            setShowPasswordInForm(true);
+                                        }}
+                                        className="text-xs font-bold text-amber-800 hover:text-amber-900 bg-amber-100/80 hover:bg-amber-100 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
+                                        title="Générer un mot de passe sécurisé respectant toutes les exigences"
+                                    >
+                                        <Sparkles size={12} />
+                                        Générer
+                                    </button>
+                                </div>
+
+                                <div className="relative">
+                                    <input
+                                        type={showPasswordInForm ? "text" : "password"}
+                                        name="password"
+                                        value={formData.password}
+                                        onChange={handleInputChange}
+                                        placeholder={editingUser ? "Nouveau mot de passe (laisser vide pour ne pas changer)" : "Saisir un mot de passe (ou laisser vide pour invitation email)"}
+                                        className="w-full pl-4 pr-20 py-2 rounded-xl border border-amber-200 focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none transition bg-white text-sm"
+                                    />
+                                    <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                                        {formData.password && (
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    navigator.clipboard.writeText(formData.password);
+                                                    setCopiedPassword(true);
+                                                    setTimeout(() => setCopiedPassword(false), 2000);
+                                                }}
+                                                title="Copier le mot de passe"
+                                                className="p-1 text-slate-400 hover:text-slate-600 rounded transition cursor-pointer"
+                                            >
+                                                {copiedPassword ? <CheckCircle size={15} className="text-green-500" /> : <Copy size={15} />}
+                                            </button>
+                                        )}
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPasswordInForm(!showPasswordInForm)}
+                                            className="p-1 text-slate-400 hover:text-slate-600 rounded transition cursor-pointer"
+                                        >
+                                            {showPasswordInForm ? <EyeOff size={15} /> : <Eye size={15} />}
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {formData.password && (
+                                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5 pt-1 text-[11px]">
+                                        {(() => {
+                                            const rules = getPasswordRules(formData.password);
+                                            return (
+                                                <>
+                                                    <span className={`px-2 py-0.5 rounded-md flex items-center gap-1 font-medium ${rules.minLength ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>
+                                                        {rules.minLength ? '✓' : '•'} 8+ car.
+                                                    </span>
+                                                    <span className={`px-2 py-0.5 rounded-md flex items-center gap-1 font-medium ${rules.hasUpper ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>
+                                                        {rules.hasUpper ? '✓' : '•'} Majuscule
+                                                    </span>
+                                                    <span className={`px-2 py-0.5 rounded-md flex items-center gap-1 font-medium ${rules.hasLower ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>
+                                                        {rules.hasLower ? '✓' : '•'} Minuscule
+                                                    </span>
+                                                    <span className={`px-2 py-0.5 rounded-md flex items-center gap-1 font-medium ${rules.hasDigit ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>
+                                                        {rules.hasDigit ? '✓' : '•'} Chiffre
+                                                    </span>
+                                                    <span className={`px-2 py-0.5 rounded-md flex items-center gap-1 font-medium ${rules.hasSpecial ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>
+                                                        {rules.hasSpecial ? '✓' : '•'} Spécial
+                                                    </span>
+                                                </>
+                                            );
+                                        })()}
+                                    </div>
+                                )}
+
+                                <p className="text-xs text-slate-500">
+                                    💡 {editingUser 
+                                        ? "Si vous définissez un nouveau mot de passe, l'ancien token d'invitation est révoqué et le compte passe immédiatement à l'état Actif." 
+                                        : "Par défaut, laissez vide pour que l'utilisateur reçoive une invitation d'activation par email. Si vous saisissez un mot de passe, son compte sera directement Actif."}
+                                </p>
+                            </div>
+                        )}
 
                         {formData.role === 'Gestionnaire' && (
                             <div className="animate-in fade-in slide-in-from-top-2">
@@ -2061,6 +2290,134 @@ const AdminUsers = () => {
                   {addEmailModal.submitting ? 'Partage...' : 'Oui, partager le compte'}
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Quick Set Password Modal */}
+        {setPasswordModal.isOpen && (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-center items-center p-4 animate-in fade-in duration-200">
+            <div className="bg-white rounded-3xl shadow-2xl p-6 sm:p-8 max-w-md w-full border border-slate-100">
+              <div className="flex items-center gap-3 text-amber-600 mb-4">
+                <div className="w-12 h-12 rounded-2xl bg-amber-100 flex items-center justify-center flex-shrink-0">
+                  <KeyRound size={24} className="text-amber-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 leading-tight">Définir le mot de passe</h3>
+                  <p className="text-xs text-slate-500 font-medium">{setPasswordModal.profileName}</p>
+                </div>
+              </div>
+
+              <p className="text-sm text-slate-600 mb-4">
+                Définir ou forcer un mot de passe pour <span className="font-semibold text-slate-800">{setPasswordModal.email}</span>. Le compte passera immédiatement au statut <span className="font-bold text-green-700">Actif</span>.
+              </p>
+
+              <form onSubmit={handleConfirmSetPassword} className="space-y-4">
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-xs font-bold uppercase tracking-wider text-slate-600">
+                      Nouveau mot de passe *
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const gen = generateSecurePassword();
+                        setSetPasswordModal(prev => ({ ...prev, password: gen, showPassword: true }));
+                      }}
+                      className="text-xs font-bold text-amber-800 hover:text-amber-900 bg-amber-100/80 hover:bg-amber-100 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
+                    >
+                      <Sparkles size={12} />
+                      Générer
+                    </button>
+                  </div>
+
+                  <div className="relative">
+                    <input
+                      type={setPasswordModal.showPassword ? "text" : "password"}
+                      value={setPasswordModal.password}
+                      onChange={(e) => setSetPasswordModal(prev => ({ ...prev, password: e.target.value }))}
+                      placeholder="Au moins 8 caractères..."
+                      required
+                      autoFocus
+                      className="w-full pl-4 pr-20 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none transition bg-slate-50/30 focus:bg-white text-sm"
+                    />
+                    <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                      {setPasswordModal.password && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText(setPasswordModal.password);
+                            setSetPasswordModal(prev => ({ ...prev, copied: true }));
+                            setTimeout(() => setSetPasswordModal(prev => ({ ...prev, copied: false })), 2000);
+                          }}
+                          title="Copier le mot de passe"
+                          className="p-1 text-slate-400 hover:text-slate-600 rounded transition cursor-pointer"
+                        >
+                          {setPasswordModal.copied ? <CheckCircle size={16} className="text-green-500" /> : <Copy size={16} />}
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => setSetPasswordModal(prev => ({ ...prev, showPassword: !prev.showPassword }))}
+                        className="p-1 text-slate-400 hover:text-slate-600 rounded transition cursor-pointer"
+                      >
+                        {setPasswordModal.showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  {setPasswordModal.password && (
+                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-1 pt-2 text-[10px]">
+                      {(() => {
+                        const rules = getPasswordRules(setPasswordModal.password);
+                        return (
+                          <>
+                            <span className={`px-1.5 py-0.5 rounded text-center font-medium ${rules.minLength ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>
+                              {rules.minLength ? '✓' : '•'} 8+ car.
+                            </span>
+                            <span className={`px-1.5 py-0.5 rounded text-center font-medium ${rules.hasUpper ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>
+                              {rules.hasUpper ? '✓' : '•'} Majuscule
+                            </span>
+                            <span className={`px-1.5 py-0.5 rounded text-center font-medium ${rules.hasLower ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>
+                              {rules.hasLower ? '✓' : '•'} Minuscule
+                            </span>
+                            <span className={`px-1.5 py-0.5 rounded text-center font-medium ${rules.hasDigit ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>
+                              {rules.hasDigit ? '✓' : '•'} Chiffre
+                            </span>
+                            <span className={`px-1.5 py-0.5 rounded text-center font-medium ${rules.hasSpecial ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>
+                              {rules.hasSpecial ? '✓' : '•'} Spécial
+                            </span>
+                          </>
+                        );
+                      })()}
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => setSetPasswordModal(prev => ({ ...prev, isOpen: false, password: '' }))}
+                    className="px-4 py-2 text-sm font-semibold text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition cursor-pointer"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={setPasswordModal.submitting || !setPasswordModal.password}
+                    className="px-5 py-2 text-sm font-bold text-white bg-amber-600 hover:bg-amber-700 disabled:opacity-50 rounded-xl transition shadow-lg shadow-amber-200 flex items-center gap-2 cursor-pointer"
+                  >
+                    {setPasswordModal.submitting ? (
+                      <>
+                        <div className="animate-spin rounded-full h-3.5 w-3.5 border-2 border-white border-t-transparent" />
+                        Enregistrement...
+                      </>
+                    ) : (
+                      'Enregistrer et Activer'
+                    )}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}
