@@ -458,7 +458,7 @@ router.post('/:profileId/add-email', async (req, res) => {
   }
 
   const { profileId } = req.params;
-  const { email } = req.body;
+  const { email, confirmShare } = req.body;
 
   if (!email || !email.trim()) {
     return res.status(400).json({ message: 'Adresse email requise.' });
@@ -485,6 +485,28 @@ router.post('/:profileId/add-email', async (req, res) => {
     if (existingLink.length > 0) {
       await connection.rollback();
       return res.status(400).json({ message: 'Cette adresse email est déjà associée à ce profil.' });
+    }
+
+    // Vérifier si cet e-mail est déjà utilisé par un ou plusieurs autres profils
+    const [existingWithProfiles]: any = await connection.query(`
+      SELECT u.id as user_id, p.id as profile_id, p.first_name, p.last_name
+      FROM users u
+      JOIN user_profiles up ON u.id = up.user_id
+      JOIN profiles p ON up.profile_id = p.id
+      WHERE LOWER(u.email) = ?
+    `, [normalizedEmail]);
+
+    if (existingWithProfiles.length > 0 && !confirmShare) {
+      await connection.rollback();
+      return res.status(409).json({
+        code: 'EMAIL_ALREADY_USED',
+        message: 'Cet e-mail est déjà associé à un autre musicien.',
+        existingProfiles: existingWithProfiles.map((r: any) => ({
+          id: r.profile_id,
+          firstName: r.first_name,
+          lastName: r.last_name
+        }))
+      });
     }
 
     const [existingUsers]: any = await connection.query('SELECT id FROM users WHERE LOWER(email) = ?', [normalizedEmail]);

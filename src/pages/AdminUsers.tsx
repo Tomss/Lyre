@@ -106,6 +106,17 @@ const AdminUsers = () => {
     email: '',
     submitting: false
   });
+  const [shareEmailConfirmModal, setShareEmailConfirmModal] = useState<{
+    isOpen: boolean;
+    targetProfile: UserData | null;
+    email: string;
+    existingProfiles: { id: string; firstName: string; lastName: string }[];
+  }>({
+    isOpen: false,
+    targetProfile: null,
+    email: '',
+    existingProfiles: [],
+  });
   const [removeEmailConfirmation, setRemoveEmailConfirmation] = useState<{
     isOpen: boolean;
     profileId: string;
@@ -153,7 +164,7 @@ const AdminUsers = () => {
   ];
 
   useEffect(() => {
-    if (showAddForm || deleteConfirmation.isOpen || duplicateEmailDialog.isOpen || addEmailModal.isOpen || removeEmailConfirmation.isOpen) {
+    if (showAddForm || deleteConfirmation.isOpen || duplicateEmailDialog.isOpen || addEmailModal.isOpen || shareEmailConfirmModal.isOpen || removeEmailConfirmation.isOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
@@ -161,7 +172,7 @@ const AdminUsers = () => {
     return () => {
       document.body.style.overflow = 'unset';
     };
-  }, [showAddForm, deleteConfirmation.isOpen, duplicateEmailDialog.isOpen, addEmailModal.isOpen, removeEmailConfirmation.isOpen]);
+  }, [showAddForm, deleteConfirmation.isOpen, duplicateEmailDialog.isOpen, addEmailModal.isOpen, shareEmailConfirmModal.isOpen, removeEmailConfirmation.isOpen]);
 
   const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
     setNotification({ show: true, message, type });
@@ -516,21 +527,43 @@ const AdminUsers = () => {
     });
   };
 
-  const handleSubmitAddEmail = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!addEmailModal.profile || !token) return;
+  const handleSubmitAddEmail = async (e?: FormEvent, forceConfirm: boolean = false) => {
+    if (e) e.preventDefault();
+    const profile = shareEmailConfirmModal.isOpen && shareEmailConfirmModal.targetProfile 
+      ? shareEmailConfirmModal.targetProfile 
+      : addEmailModal.profile;
+    const emailToSubmit = (shareEmailConfirmModal.isOpen ? shareEmailConfirmModal.email : addEmailModal.email).trim();
+
+    if (!profile || !token || !emailToSubmit) return;
     setAddEmailModal(prev => ({ ...prev, submitting: true }));
+
     try {
-      const response = await fetch(`${API_URL}/users/${addEmailModal.profile.id}/add-email`, {
+      const response = await fetch(`${API_URL}/users/${profile.id}/add-email`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          email: addEmailModal.email.trim(),
+          email: emailToSubmit,
+          confirmShare: forceConfirm,
         }),
       });
+
+      if (response.status === 409) {
+        const errorData = await response.json();
+        if (errorData.code === 'EMAIL_ALREADY_USED') {
+          setShareEmailConfirmModal({
+            isOpen: true,
+            targetProfile: profile,
+            email: emailToSubmit,
+            existingProfiles: errorData.existingProfiles || [],
+          });
+          setAddEmailModal(prev => ({ ...prev, submitting: false }));
+          return;
+        }
+        throw new Error(errorData.message || 'Erreur lors de l\'ajout de l\'e-mail');
+      }
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -540,7 +573,16 @@ const AdminUsers = () => {
       const result = await response.json();
       showNotification(result.message || 'Adresse e-mail rattachée avec succès');
       setAddEmailModal({ isOpen: false, profile: null, email: '', submitting: false });
+      setShareEmailConfirmModal({ isOpen: false, targetProfile: null, email: '', existingProfiles: [] });
       await fetchUsers();
+      if (editingUser && editingUser.id === profile.id) {
+        const res = await fetch(`${API_URL}/users`, { headers: { 'Authorization': `Bearer ${token}` } });
+        if (res.ok) {
+          const freshUsers: UserData[] = await res.json();
+          const freshEditing = freshUsers.find(u => u.id === editingUser.id);
+          if (freshEditing) setEditingUser(freshEditing);
+        }
+      }
     } catch (err: any) {
       console.error('Erreur add-email:', err);
       showNotification(err.message, 'error');
@@ -1831,6 +1873,58 @@ const AdminUsers = () => {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* Confirm Share Email Modal */}
+        {shareEmailConfirmModal.isOpen && shareEmailConfirmModal.targetProfile && (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-center items-center p-4 animate-in fade-in duration-200">
+            <div className="bg-white rounded-3xl shadow-2xl p-6 sm:p-8 max-w-lg w-full border border-slate-100">
+              <div className="flex items-center gap-3 text-purple-600 mb-4">
+                <div className="w-12 h-12 rounded-2xl bg-purple-100 flex items-center justify-center flex-shrink-0">
+                  <Users className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black text-slate-800">Partager ce compte ?</h3>
+                  <p className="text-xs text-slate-500 font-medium">{shareEmailConfirmModal.email}</p>
+                </div>
+              </div>
+
+              <div className="space-y-4 text-sm text-slate-600 mb-6">
+                <p>
+                  Cette adresse e-mail est déjà utilisée par :
+                </p>
+                <div className="p-3 bg-purple-50/70 border border-purple-200/60 rounded-2xl space-y-1.5">
+                  {shareEmailConfirmModal.existingProfiles.map(p => (
+                    <div key={p.id} className="font-bold text-purple-900 flex items-center gap-2">
+                      <User size={15} className="text-purple-600" />
+                      <span>{p.firstName} {p.lastName}</span>
+                    </div>
+                  ))}
+                </div>
+                <p>
+                  Souhaitez-vous partager l'accès de ce compte avec <strong className="text-slate-800">{shareEmailConfirmModal.targetProfile.first_name} {shareEmailConfirmModal.targetProfile.last_name}</strong> ?
+                </p>
+              </div>
+
+              <div className="flex flex-col sm:flex-row justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShareEmailConfirmModal({ isOpen: false, targetProfile: null, email: '', existingProfiles: [] })}
+                  className="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 font-bold text-sm transition cursor-pointer"
+                >
+                  Annuler
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSubmitAddEmail(undefined, true)}
+                  disabled={addEmailModal.submitting}
+                  className="px-6 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-sm shadow-lg shadow-purple-200 transition flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  {addEmailModal.submitting ? 'Partage...' : 'Oui, partager le compte'}
+                </button>
+              </div>
             </div>
           </div>
         )}
