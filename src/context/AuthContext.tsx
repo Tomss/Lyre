@@ -3,19 +3,35 @@ import { useNavigate } from 'react-router-dom';
 import { ShieldAlert, Clock, LogOut, CheckCircle2 } from 'lucide-react';
 import { API_URL } from '../config';
 
-interface User {
+export interface AvailableProfile {
   id: string;
+  firstName: string;
+  lastName: string;
+  role: string;
+  instruments?: string | null;
+}
+
+export interface User {
+  id: string;          // profile_id actif
+  userId?: string;      // account user_id
   email: string;
   firstName: string;
   lastName: string;
   role: string;
   managedModules?: string[];
+  availableProfiles?: AvailableProfile[];
+}
+
+export interface LoginResult {
+  hasMultipleProfiles: boolean;
+  availableProfiles: AvailableProfile[];
 }
 
 interface AuthContextType {
   currentUser: User | null;
   token: string | null;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<LoginResult>;
+  switchProfile: (profileId: string) => Promise<void>;
   logout: (shouldNavigate?: boolean, reason?: string) => void;
   loading: boolean;
   isAuthenticated: boolean;
@@ -88,8 +104,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setToken(null);
           setShowWarningModal(false);
           navigate('/');
-        } else if (event.data?.type === 'LOGIN') {
-          console.log('[AuthContext] Received LOGIN signal from another tab');
+        } else if (event.data?.type === 'LOGIN' || event.data?.type === 'PROFILE_SWITCHED') {
+          console.log(`[AuthContext] Received ${event.data.type} signal from another tab`);
           const storedUser = localStorage.getItem('user');
           const storedToken = localStorage.getItem('token');
           if (storedUser && storedToken) {
@@ -215,7 +231,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [token, logout, showWarningModal]);
 
   // Login handler
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string): Promise<LoginResult> => {
     try {
       const response = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
@@ -235,7 +251,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         throw new Error(errorMessage);
       }
 
-      const { user, token } = await response.json();
+      const data = await response.json();
+      const { user, token, hasMultipleProfiles, availableProfiles } = data;
 
       setCurrentUser(user);
       setToken(token);
@@ -251,7 +268,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // Ignore
       }
 
-      navigate('/dashboard');
+      // Si le compte a un seul profil, on redirige directement vers le dashboard
+      if (!hasMultipleProfiles) {
+        navigate('/dashboard');
+      }
+
+      return {
+        hasMultipleProfiles: Boolean(hasMultipleProfiles),
+        availableProfiles: availableProfiles || []
+      };
 
     } catch (error) {
       console.error("[AuthContext.tsx] An error occurred in login function:", error);
@@ -259,10 +284,46 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  // Switch Profile handler (1-click profile switcher)
+  const switchProfile = async (profileId: string) => {
+    if (!token) return;
+    try {
+      const response = await fetch(`${API_URL}/auth/switch-profile`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ profileId })
+      });
+
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.message || 'Erreur lors du changement de profil');
+      }
+
+      const { user, token: newToken } = await response.json();
+      setCurrentUser(user);
+      setToken(newToken);
+      localStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem('token', newToken);
+      lastActivityRef.current = Date.now();
+
+      try {
+        broadcastChannelRef.current?.postMessage({ type: 'PROFILE_SWITCHED' });
+      } catch (e) {}
+
+    } catch (err) {
+      console.error('[AuthContext] Error switching profile:', err);
+      throw err;
+    }
+  };
+
   const value = {
     currentUser,
     token,
     login,
+    switchProfile,
     logout,
     loading,
     isAuthenticated: !!token,

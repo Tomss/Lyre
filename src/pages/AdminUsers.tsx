@@ -1,9 +1,24 @@
 import React, { useState, useEffect, FormEvent } from 'react';
-import { ChevronDown,  Edit, Trash2, Users, Mail, User, Shield, X, UserPlus, CheckCircle, Search, ArrowLeft, ChevronRight, Power, Lock, Music, LayoutGrid  } from "lucide-react";
+import { ChevronDown,  Edit, Trash2, Users, Mail, User, Shield, X, UserPlus, CheckCircle, Search, ArrowLeft, ChevronRight, Power, Lock, Music, LayoutGrid, AlertTriangle, Plus  } from "lucide-react";
 import { useAuth } from '../context/AuthContext';
 import { Navigate, Link } from 'react-router-dom';
 
 import { API_URL } from '../config';
+
+export interface AssociatedEmail {
+  userId: string;
+  email: string;
+  isPrimary: boolean;
+  hasPassword: boolean;
+  lastLogin: string | null;
+}
+
+export interface SharedProfile {
+  profileId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+}
 
 interface UserData {
   id: string;
@@ -15,6 +30,8 @@ interface UserData {
   status?: 'Inactive' | 'Invited' | 'Active';
   has_password: boolean;
   last_login?: string | null;
+  emails?: AssociatedEmail[];
+  sharedWith?: SharedProfile[];
 }
 
 interface Instrument {
@@ -58,6 +75,30 @@ const AdminUsers = () => {
     isOpen: false,
     user: null,
   });
+  const [duplicateEmailDialog, setDuplicateEmailDialog] = useState<{
+    isOpen: boolean;
+    email: string;
+    existingUserId: string;
+    existingProfiles: { id: string; firstName: string; lastName: string }[];
+  }>({
+    isOpen: false,
+    email: '',
+    existingUserId: '',
+    existingProfiles: []
+  });
+  const [addEmailModal, setAddEmailModal] = useState<{
+    isOpen: boolean;
+    profile: UserData | null;
+    email: string;
+    password: string;
+    submitting: boolean;
+  }>({
+    isOpen: false,
+    profile: null,
+    email: '',
+    password: '',
+    submitting: false
+  });
   const [notification, setNotification] = useState<Notification>({
     show: false,
     message: '',
@@ -88,7 +129,7 @@ const AdminUsers = () => {
   ];
 
   useEffect(() => {
-    if (showAddForm || deleteConfirmation.isOpen) {
+    if (showAddForm || deleteConfirmation.isOpen || duplicateEmailDialog.isOpen || addEmailModal.isOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
@@ -96,7 +137,7 @@ const AdminUsers = () => {
     return () => {
       document.body.style.overflow = 'unset';
     };
-  }, [showAddForm, deleteConfirmation.isOpen]);
+  }, [showAddForm, deleteConfirmation.isOpen, duplicateEmailDialog.isOpen, addEmailModal.isOpen]);
 
   const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
     setNotification({ show: true, message, type });
@@ -214,6 +255,15 @@ const AdminUsers = () => {
     }
   }, [users]);
 
+  useEffect(() => {
+    if (editingUser) {
+      const updated = users.find(u => u.id === editingUser.id);
+      if (updated) {
+        setEditingUser(updated);
+      }
+    }
+  }, [users]);
+
   // ... Le reste du composant reste inchangé pour l'instant
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -248,8 +298,8 @@ const AdminUsers = () => {
     }));
   };
 
-  const handleInvite = async (userId: string) => {
-    console.log(`[Invitation] Triggered for user ${userId}`);
+  const handleInvite = async (profileId: string, targetUserId?: string) => {
+    console.log(`[Invitation] Triggered for profile ${profileId}, targetUserId: ${targetUserId || 'primary'}`);
     if (!token) {
       console.error("[Invitation] Error: Token is missing!");
       showNotification("Erreur d'authentification : jeton manquant.", "error");
@@ -257,11 +307,13 @@ const AdminUsers = () => {
     }
     setLoading(true);
     try {
-      const response = await fetch(`${API_URL}/users/${userId}/invite`, {
+      const response = await fetch(`${API_URL}/users/${profileId}/invite`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
+        body: JSON.stringify(targetUserId ? { userId: targetUserId } : {}),
       });
 
       if (!response.ok) {
@@ -352,6 +404,21 @@ const AdminUsers = () => {
         body: JSON.stringify(formData),
       });
 
+      if (response.status === 409) {
+        const errorData = await response.json();
+        if (errorData.code === 'EMAIL_ALREADY_EXISTS') {
+          setDuplicateEmailDialog({
+            isOpen: true,
+            email: formData.email,
+            existingUserId: errorData.existingUserId,
+            existingProfiles: errorData.existingProfiles || [],
+          });
+          setSubmitting(false);
+          return;
+        }
+        throw new Error(errorData.message || 'Erreur de création');
+      }
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Erreur de création');
@@ -367,6 +434,115 @@ const AdminUsers = () => {
       showNotification(err.message, 'error');
     }
     setSubmitting(false);
+  };
+
+  const handleConfirmLinkProfile = async () => {
+    if (!duplicateEmailDialog.existingUserId || !token) return;
+    setSubmitting(true);
+    try {
+      const response = await fetch(`${API_URL}/users`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...formData,
+          linkToExistingUserId: duplicateEmailDialog.existingUserId,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Erreur lors du rattachement');
+      }
+
+      const result = await response.json();
+      showNotification(result.message || 'Profil rattaché avec succès');
+      setDuplicateEmailDialog({ isOpen: false, email: '', existingUserId: '', existingProfiles: [] });
+      cancelEdit();
+      fetchUsers();
+      fetchAllUserAssociations();
+    } catch (err: any) {
+      console.error('Erreur rattachement:', err);
+      showNotification(err.message, 'error');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleCancelLinkProfile = () => {
+    setDuplicateEmailDialog({ isOpen: false, email: '', existingUserId: '', existingProfiles: [] });
+  };
+
+  const handleOpenAddEmail = (user: UserData) => {
+    setAddEmailModal({
+      isOpen: true,
+      profile: user,
+      email: '',
+      password: '',
+      submitting: false,
+    });
+  };
+
+  const handleSubmitAddEmail = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!addEmailModal.profile || !token) return;
+    setAddEmailModal(prev => ({ ...prev, submitting: true }));
+    try {
+      const response = await fetch(`${API_URL}/users/${addEmailModal.profile.id}/add-email`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: addEmailModal.email.trim(),
+          password: addEmailModal.password ? addEmailModal.password.trim() : undefined,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Erreur lors de l\'ajout de l\'e-mail');
+      }
+
+      const result = await response.json();
+      showNotification(result.message || 'Adresse e-mail rattachée avec succès');
+      setAddEmailModal({ isOpen: false, profile: null, email: '', password: '', submitting: false });
+      await fetchUsers();
+    } catch (err: any) {
+      console.error('Erreur add-email:', err);
+      showNotification(err.message, 'error');
+      setAddEmailModal(prev => ({ ...prev, submitting: false }));
+    }
+  };
+
+  const handleRemoveEmail = async (profileId: string, userId: string, email: string) => {
+    if (!token) return;
+    if (!window.confirm(`Êtes-vous sûr de vouloir dissocier l'adresse email "${email}" de ce profil ?`)) {
+      return;
+    }
+    try {
+      const response = await fetch(`${API_URL}/users/${profileId}/emails/${userId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Erreur lors de la dissociation de l\'e-mail');
+      }
+
+      const result = await response.json();
+      showNotification(result.message || 'E-mail dissocié');
+      await fetchUsers();
+    } catch (err: any) {
+      console.error('Erreur remove-email:', err);
+      showNotification(err.message, 'error');
+    }
   };
 
   // MIGRÉ
@@ -774,17 +950,74 @@ const AdminUsers = () => {
                     {userList.map(user => (
                       <div key={user.id} className={`p-4 grid grid-cols-1 md:grid-cols-12 gap-4 items-start md:items-center hover:bg-slate-50/50 transition-colors duration-200`}>
                         <div className="md:col-span-6">
-                          <div className="flex items-center mb-2">
-                            <p className="font-bold text-lg text-slate-800 uppercase leading-tight mr-3">{user.last_name} {user.first_name}</p>
+                          <div className="flex flex-wrap items-center gap-2 mb-2">
+                            <p className="font-bold text-lg text-slate-800 uppercase leading-tight mr-1">{user.last_name} {user.first_name}</p>
                             <span className={`px-2.5 py-1 text-xs font-bold rounded-full ${style.badgeSimple}`}>{user.role}</span>
-                            <div className="ml-3">
+                            <div>
                               {getStatusBadge(user)}
                             </div>
+                            {user.sharedWith && user.sharedWith.length > 0 && (
+                              <span 
+                                className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-200 shadow-sm"
+                                title={`Compte partagé avec : ${user.sharedWith.map(s => `${s.firstName} ${s.lastName}`).join(', ')}`}
+                              >
+                                <Users size={12} className="text-purple-500" />
+                                Compte partagé ({user.sharedWith.map(s => s.firstName).join(', ')})
+                              </span>
+                            )}
+                            {user.emails && user.emails.length > 1 && (
+                              <span 
+                                className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-cyan-50 text-cyan-700 border border-cyan-200 shadow-sm"
+                                title={user.emails.map(e => e.email).join(', ')}
+                              >
+                                <Mail size={12} className="text-cyan-500" />
+                                Multi-accès ({user.emails.length} e-mails)
+                              </span>
+                            )}
                           </div>
                           <div className="flex flex-col space-y-1">
-                            <div className="flex items-center text-gray-600 text-sm">
-                              <Mail size={14} className="mr-2 text-indigo-400" /> {user.email}
-                            </div>
+                            {user.emails && user.emails.length > 1 ? (
+                              <div className="space-y-1.5 my-1">
+                                {user.emails.map(em => (
+                                  <div key={em.userId} className="flex flex-wrap items-center text-xs text-slate-600 gap-2 bg-slate-50/80 px-2.5 py-1 rounded-xl border border-slate-100 max-w-fit">
+                                    <Mail size={12} className={em.isPrimary ? "text-indigo-500" : "text-cyan-500"} />
+                                    <span className="font-semibold text-slate-700">{em.email}</span>
+                                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                                      em.isPrimary ? 'bg-indigo-100 text-indigo-700' : 'bg-cyan-100 text-cyan-700'
+                                    }`}>
+                                      {em.isPrimary ? 'Principal' : 'Secondaire'}
+                                    </span>
+                                    {!em.hasPassword && (
+                                      <span className="text-[10px] font-medium bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded-full">
+                                        Sans mot de passe
+                                      </span>
+                                    )}
+                                    {user.role !== 'Admin' && (
+                                      <button
+                                        onClick={() => handleInvite(user.id, em.userId)}
+                                        title={`Envoyer une invitation d'activation à ${em.email}`}
+                                        className="p-1 text-indigo-600 hover:text-indigo-800 hover:bg-indigo-100 rounded-lg transition-colors"
+                                      >
+                                        <Mail size={12} />
+                                      </button>
+                                    )}
+                                    {!em.isPrimary && (
+                                      <button
+                                        onClick={() => handleRemoveEmail(user.id, em.userId, em.email)}
+                                        title={`Dissocier l'email ${em.email}`}
+                                        className="p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+                                      >
+                                        <X size={12} />
+                                      </button>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <div className="flex items-center text-gray-600 text-sm">
+                                <Mail size={14} className="mr-2 text-indigo-400" /> {user.email}
+                              </div>
+                            )}
                             <div className="flex items-center text-[10px] font-bold uppercase tracking-wider">
                               {user.last_login ? (
                                 <>
@@ -829,7 +1062,14 @@ const AdminUsers = () => {
                           ) : <p className="text-gray-400 italic text-xs">Aucun</p>}
                         </div>
 
-                        <div className="md:col-span-2 flex items-center justify-end space-x-3">
+                        <div className="md:col-span-2 flex items-center justify-end space-x-2">
+                          <button 
+                            onClick={() => handleOpenAddEmail(user)} 
+                            title="Ajouter un autre e-mail / parent (Multi-accès)" 
+                            className="p-2 text-cyan-600 bg-cyan-50 hover:bg-cyan-100 rounded-xl transition-all duration-300 hover:scale-110"
+                          >
+                            <Plus size={18} />
+                          </button>
                           {user.role !== 'Admin' && (
                             <button 
                               onClick={() => handleInvite(user.id)} 
@@ -906,6 +1146,97 @@ const AdminUsers = () => {
                         </div>
                     </div>
                 </div>
+
+                {/* Section Multi-accès / Comptes partagés (si mode édition) */}
+                {editingUser && (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between text-indigo-600 mb-1">
+                      <div className="flex items-center space-x-2">
+                        <Mail size={16} />
+                        <h3 className="text-xs font-bold uppercase tracking-wider">Accès & Adresses e-mail (Multi-accès)</h3>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleOpenAddEmail(editingUser)}
+                        className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+                      >
+                        <Plus size={14} />
+                        Ajouter un e-mail / parent
+                      </button>
+                    </div>
+
+                    <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-3">
+                      <p className="text-xs text-slate-500">
+                        Permet à plusieurs personnes (ex: parents séparés) d'accéder au profil de ce musicien avec des identifiants distincts.
+                      </p>
+
+                      {editingUser.emails && editingUser.emails.length > 0 ? (
+                        <div className="space-y-2">
+                          {editingUser.emails.map((em) => (
+                            <div key={em.userId} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-xl border border-slate-100 bg-slate-50/50 gap-2">
+                              <div className="flex items-center gap-3">
+                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${em.isPrimary ? 'bg-indigo-100 text-indigo-600' : 'bg-cyan-100 text-cyan-600'}`}>
+                                  <Mail size={16} />
+                                </div>
+                                <div className="min-w-0">
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <span className="font-semibold text-sm text-slate-800 break-all">{em.email}</span>
+                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${em.isPrimary ? 'bg-indigo-100 text-indigo-700' : 'bg-cyan-100 text-cyan-700'}`}>
+                                      {em.isPrimary ? 'Principal' : 'Secondaire'}
+                                    </span>
+                                  </div>
+                                  <p className="text-[11px] text-slate-400 mt-0.5">
+                                    {em.hasPassword ? '✓ Mot de passe configuré' : '⚠️ Mot de passe non défini (invitation requise)'}
+                                    {em.lastLogin && ` • Connexion : ${new Date(em.lastLogin).toLocaleDateString('fr-FR')}`}
+                                  </p>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-2 self-end sm:self-center">
+                                <button
+                                  type="button"
+                                  onClick={() => handleInvite(editingUser.id, em.userId)}
+                                  title="Envoyer une invitation d'activation"
+                                  className="px-2.5 py-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-800 bg-white border border-slate-200 hover:border-indigo-300 rounded-lg shadow-sm transition-colors flex items-center gap-1.5 cursor-pointer"
+                                >
+                                  <Mail size={13} />
+                                  Inviter
+                                </button>
+                                {!em.isPrimary && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemoveEmail(editingUser.id, em.userId, em.email)}
+                                    title="Dissocier cet e-mail"
+                                    className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                                  >
+                                    <Trash2 size={15} />
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-xs text-slate-400 italic">Aucun e-mail supplémentaire associé.</p>
+                      )}
+
+                      {editingUser.sharedWith && editingUser.sharedWith.length > 0 && (
+                        <div className="p-3 bg-purple-50/70 border border-purple-200/60 rounded-xl text-xs text-purple-900 mt-2">
+                          <p className="font-bold flex items-center gap-1.5">
+                            <Users size={14} className="text-purple-600" />
+                            Compte partagé avec :
+                          </p>
+                          <p className="mt-1 text-purple-700 font-semibold">
+                            {editingUser.sharedWith.map(s => `${s.firstName} ${s.lastName}`).join(', ')}
+                          </p>
+                          <p className="text-[11px] text-purple-500 mt-0.5">
+                            Ces profils partagent ce même compte de connexion ({editingUser.email}) avec possibilité de basculer en 1 clic.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 {/* Section: Rôle & Permissions */}
                 <div className="space-y-4">
@@ -1039,6 +1370,145 @@ const AdminUsers = () => {
                 <button onClick={cancelDelete} className="px-6 py-2 rounded-lg border hover:bg-gray-100">Annuler</button>
                 <button onClick={handleDelete} className="bg-red-600 text-white px-6 py-2 rounded-lg shadow hover:bg-red-700">Supprimer</button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Duplicate Email Confirmation Modal */}
+        {duplicateEmailDialog.isOpen && (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-center items-center p-4 animate-in fade-in duration-200">
+            <div className="bg-white rounded-3xl shadow-2xl p-6 sm:p-8 max-w-lg w-full border border-slate-100">
+              <div className="flex items-center gap-3 text-amber-600 mb-4">
+                <div className="w-12 h-12 rounded-2xl bg-amber-100 flex items-center justify-center flex-shrink-0">
+                  <AlertTriangle className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black text-slate-800">Email déjà utilisé</h3>
+                  <p className="text-xs text-slate-500">Compte existant détecté</p>
+                </div>
+              </div>
+
+              <div className="space-y-4 text-sm text-slate-600 mb-6">
+                <p>
+                  L'adresse email <strong className="text-slate-800">{duplicateEmailDialog.email}</strong> est déjà associée au compte de :
+                </p>
+                <div className="p-3 bg-amber-50/70 border border-amber-200/60 rounded-2xl space-y-1.5">
+                  {duplicateEmailDialog.existingProfiles.map(p => (
+                    <div key={p.id} className="font-bold text-amber-900 flex items-center gap-2">
+                      <User size={15} className="text-amber-600" />
+                      <span>{p.firstName} {p.lastName}</span>
+                    </div>
+                  ))}
+                </div>
+                <p>
+                  Souhaitez-vous <strong className="text-indigo-600">rattacher ce nouveau profil ({formData.firstName} {formData.lastName}) à ce même compte</strong> ?
+                </p>
+                <div className="text-xs text-slate-600 bg-slate-50 p-3.5 rounded-2xl border border-slate-100 space-y-1">
+                  <p className="font-semibold text-slate-700">💡 Compte partagé :</p>
+                  <p>Les musiciens utiliseront les mêmes identifiants (adresse e-mail et mot de passe existant). Lors de la connexion, un sélecteur s'affichera et ils pourront basculer en un clic.</p>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={handleCancelLinkProfile}
+                  className="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 font-bold text-sm transition cursor-pointer"
+                >
+                  Non, modifier l'e-mail
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmLinkProfile}
+                  disabled={submitting}
+                  className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-lg shadow-indigo-200 transition flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  {submitting ? 'Rattachement...' : 'Oui, rattacher à ce compte'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Add Secondary Email Modal */}
+        {addEmailModal.isOpen && addEmailModal.profile && (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-center items-center p-4 animate-in fade-in duration-200">
+            <div className="bg-white rounded-3xl shadow-2xl p-6 sm:p-8 max-w-lg w-full border border-slate-100">
+              <div className="flex justify-between items-start mb-4">
+                <div className="flex items-center gap-3 text-cyan-600">
+                  <div className="w-12 h-12 rounded-2xl bg-cyan-100 flex items-center justify-center flex-shrink-0">
+                    <Mail className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-black text-slate-800">Ajouter un accès e-mail</h3>
+                    <p className="text-xs text-slate-500">Pour {addEmailModal.profile.first_name} {addEmailModal.profile.last_name}</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setAddEmailModal({ isOpen: false, profile: null, email: '', password: '', submitting: false })}
+                  className="p-2 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 cursor-pointer"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <form onSubmit={handleSubmitAddEmail} className="space-y-4">
+                <p className="text-sm text-slate-600">
+                  Associez une adresse email supplémentaire (ex: 2e parent séparé) pour lui donner un accès indépendant au planning, aux partitions et aux présences de ce musicien.
+                </p>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                    Adresse e-mail supplémentaire *
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    value={addEmailModal.email}
+                    onChange={(e) => setAddEmailModal(prev => ({ ...prev, email: e.target.value }))}
+                    placeholder="ex: parent2@gmail.com"
+                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                    Mot de passe initial (optionnel)
+                  </label>
+                  <input
+                    type="password"
+                    value={addEmailModal.password}
+                    onChange={(e) => setAddEmailModal(prev => ({ ...prev, password: e.target.value }))}
+                    placeholder="Laisser vide pour inviter par email"
+                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition text-sm"
+                  />
+                </div>
+
+                <div className="p-3.5 bg-amber-50/80 border border-amber-200/70 rounded-2xl text-xs text-amber-900 flex items-start gap-2.5">
+                  <Lock size={16} className="text-amber-600 flex-shrink-0 mt-0.5" />
+                  <p>
+                    <strong>Contrôle des invitations :</strong> Aucun e-mail d'activation ne sera envoyé automatiquement. Vous pourrez envoyer l'invitation manuellement quand vous le souhaiterez à l'aide du bouton dédié.
+                  </p>
+                </div>
+
+                <div className="flex justify-end gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setAddEmailModal({ isOpen: false, profile: null, email: '', password: '', submitting: false })}
+                    className="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 font-bold text-sm transition cursor-pointer"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={addEmailModal.submitting}
+                    className="px-6 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-700 text-white font-bold text-sm shadow-lg shadow-cyan-200 transition flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    {addEmailModal.submitting ? 'Enregistrement...' : 'Associer cet e-mail'}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}

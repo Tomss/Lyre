@@ -91,45 +91,61 @@ router.post('/login', async (req: Request, res: Response) => {
     // Login successful -> clear failed attempts counter
     loginAttempts.delete(rateLimitKey);
 
-    // 4. Récupérer le profil et vérifier le statut
-    const [profileRows] = await pool.query<any[]>(`
-      SELECT u.id, u.email, p.first_name, p.last_name, p.role, p.managed_modules, p.status
-      FROM users u
-      JOIN profiles p ON u.id = p.id
-      WHERE u.id = ?
+    // 4. Récupérer tous les profils associés au compte
+    let [profileRows] = await pool.query<any[]>(`
+      SELECT p.id, p.first_name, p.last_name, p.role, p.managed_modules, p.status, COALESCE(up.is_primary, 0) as is_primary,
+             (SELECT GROUP_CONCAT(i.name SEPARATOR ', ') FROM user_instruments ui JOIN instruments i ON ui.instrument_id = i.id WHERE ui.user_id = p.id) AS instruments
+      FROM user_profiles up
+      JOIN profiles p ON up.profile_id = p.id
+      WHERE up.user_id = ?
+      ORDER BY up.is_primary DESC, p.last_name ASC, p.first_name ASC
     `, [user.id]);
 
+    // Fallback si la table user_profiles n'a pas encore ce user
     if (profileRows.length === 0) {
-      return res.status(500).json({ message: 'Profil utilisateur introuvable.' });
+      const [fallbackRows] = await pool.query<any[]>(`
+        SELECT p.id, p.first_name, p.last_name, p.role, p.managed_modules, p.status, 1 as is_primary,
+               (SELECT GROUP_CONCAT(i.name SEPARATOR ', ') FROM user_instruments ui JOIN instruments i ON ui.instrument_id = i.id WHERE ui.user_id = p.id) AS instruments
+        FROM profiles p
+        WHERE p.id = ?
+      `, [user.id]);
+      profileRows = fallbackRows;
     }
 
-    const { first_name, last_name, role, managed_modules, status } = profileRows[0];
+    if (profileRows.length === 0) {
+      return res.status(500).json({ message: 'Aucun profil musicien associé à ce compte.' });
+    }
 
-    if (status !== 'Active') {
-      console.log(`[Login] Échec: Compte inactif (${status}) pour ${email}`);
+    const activeProfiles = profileRows.filter(p => p.status === 'Active');
+    if (activeProfiles.length === 0) {
+      console.log(`[Login] Échec: Aucun profil actif pour ${email}`);
       return res.status(403).json({ message: 'Compte inactif ou en attente d\'activation.' });
     }
+
+    // Sélection du profil par défaut (le primaire ou le premier actif)
+    const activeProfile = activeProfiles.find(p => p.is_primary) || activeProfiles[0];
 
     // 5. Mettre à jour la date de dernière connexion
     await pool.query('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?', [user.id]);
 
-    console.log(`[Login] Succès pour ${email} (${role})`);
+    console.log(`[Login] Succès pour ${email} (${activeProfile.role} - Profil: ${activeProfile.first_name} ${activeProfile.last_name})`);
 
-    // Parse managed_modules JSON if it exists (it comes as a string from MySQL sometimes depending on the driver version)
+    // Parse managed_modules JSON
     let parsedModules = [];
-    if (managed_modules) {
+    if (activeProfile.managed_modules) {
         try {
-            parsedModules = typeof managed_modules === 'string' ? JSON.parse(managed_modules) : managed_modules;
+            parsedModules = typeof activeProfile.managed_modules === 'string' ? JSON.parse(activeProfile.managed_modules) : activeProfile.managed_modules;
         } catch (e) {
             console.error("Failed to parse managed_modules:", e);
         }
     }
 
-    // 4. Créer le JWT
+    // 6. Créer le JWT avec id = activeProfile.id et userId = user.id
     const payload = {
-      id: user.id,
+      id: activeProfile.id,
+      userId: user.id,
       email: user.email,
-      role: role,
+      role: activeProfile.role,
       managedModules: parsedModules,
     };
 
@@ -140,17 +156,29 @@ router.post('/login', async (req: Request, res: Response) => {
 
     const token = jwt.sign(payload, secret, { expiresIn: '1d' });
 
-    // 5. Envoyer la réponse
+    const availableProfiles = activeProfiles.map(p => ({
+      id: p.id,
+      firstName: p.first_name,
+      lastName: p.last_name,
+      role: p.role,
+      instruments: p.instruments || null
+    }));
+
+    // 7. Envoyer la réponse
     res.json({
       token,
       user: {
-        id: user.id,
+        id: activeProfile.id,
+        userId: user.id,
         email: user.email,
-        firstName: first_name,
-        lastName: last_name,
-        role: role,
-        managedModules: parsedModules
+        firstName: activeProfile.first_name,
+        lastName: activeProfile.last_name,
+        role: activeProfile.role,
+        managedModules: parsedModules,
+        availableProfiles
       },
+      hasMultipleProfiles: availableProfiles.length > 1,
+      availableProfiles
     });
 
   } catch (error) {
@@ -159,24 +187,175 @@ router.post('/login', async (req: Request, res: Response) => {
   }
 });
 
-// GET /api/auth/me - Vérifier le token et récupérer l'utilisateur
-router.get('/me', authenticateToken, (req, res) => {
-  // On force TypeScript à accepter que 'user' contient bien nos données personnalisées
+// POST /api/auth/switch-profile - Basculer vers un autre profil associé au compte
+router.post('/switch-profile', authenticateToken, async (req: Request, res: Response) => {
+  const { profileId } = req.body;
+  const currentTokenUser: any = (req as any).user;
+
+  if (!profileId) {
+    return res.status(400).json({ message: 'ID du profil requis.' });
+  }
+
+  try {
+    // Identifier l'identifiant de compte (userId)
+    let accountUserId = currentTokenUser.userId;
+    if (!accountUserId) {
+      const [upRows]: any = await pool.query(
+        'SELECT user_id FROM user_profiles WHERE profile_id = ? LIMIT 1',
+        [currentTokenUser.id]
+      );
+      accountUserId = upRows.length > 0 ? upRows[0].user_id : currentTokenUser.id;
+    }
+
+    // Vérifier que le compte a bien accès au profileId demandé et qu'il est actif
+    const [allowedRows]: any = await pool.query(`
+      SELECT p.id, p.first_name, p.last_name, p.role, p.managed_modules, p.status, u.email
+      FROM user_profiles up
+      JOIN profiles p ON up.profile_id = p.id
+      JOIN users u ON up.user_id = u.id
+      WHERE up.user_id = ? AND up.profile_id = ? AND p.status = 'Active'
+    `, [accountUserId, profileId]);
+
+    if (allowedRows.length === 0) {
+      return res.status(403).json({ message: 'Profil non autorisé ou inactif.' });
+    }
+
+    const selectedProfile = allowedRows[0];
+
+    // Récupérer la liste complète des profils actifs pour ce compte
+    const [allProfiles]: any = await pool.query(`
+      SELECT p.id, p.first_name, p.last_name, p.role,
+             (SELECT GROUP_CONCAT(i.name SEPARATOR ', ') FROM user_instruments ui JOIN instruments i ON ui.instrument_id = i.id WHERE ui.user_id = p.id) AS instruments
+      FROM user_profiles up
+      JOIN profiles p ON up.profile_id = p.id
+      WHERE up.user_id = ? AND p.status = 'Active'
+      ORDER BY up.is_primary DESC, p.last_name ASC, p.first_name ASC
+    `, [accountUserId]);
+
+    let parsedModules = [];
+    if (selectedProfile.managed_modules) {
+      try {
+        parsedModules = typeof selectedProfile.managed_modules === 'string'
+          ? JSON.parse(selectedProfile.managed_modules)
+          : selectedProfile.managed_modules;
+      } catch (e) {
+        console.error("Failed to parse managed_modules:", e);
+      }
+    }
+
+    const payload = {
+      id: selectedProfile.id,
+      userId: accountUserId,
+      email: selectedProfile.email,
+      role: selectedProfile.role,
+      managedModules: parsedModules,
+    };
+
+    const secret = process.env.JWT_SECRET;
+    if (!secret) throw new Error('JWT_SECRET is not defined');
+
+    const newToken = jwt.sign(payload, secret, { expiresIn: '1d' });
+
+    res.json({
+      token: newToken,
+      user: {
+        id: selectedProfile.id,
+        userId: accountUserId,
+        email: selectedProfile.email,
+        firstName: selectedProfile.first_name,
+        lastName: selectedProfile.last_name,
+        role: selectedProfile.role,
+        managedModules: parsedModules,
+        availableProfiles: allProfiles.map((pr: any) => ({
+          id: pr.id,
+          firstName: pr.first_name,
+          lastName: pr.last_name,
+          role: pr.role,
+          instruments: pr.instruments || null
+        }))
+      }
+    });
+  } catch (error) {
+    console.error('Error switching profile:', error);
+    res.status(500).json({ message: 'Erreur lors du changement de profil.' });
+  }
+});
+
+// GET /api/auth/me - Vérifier le token et récupérer l'utilisateur avec ses profils
+router.get('/me', authenticateToken, async (req, res) => {
   const user: any = (req as any).user;
 
   if (!user) {
     return res.status(401).json({ message: 'User not found in token' });
   }
 
-  // Return user info similar to login
-  res.json({
-    user: {
-      id: user.id || '',
-      email: user.email || '',
-      role: user.role || 'User',
-      managedModules: user.managedModules || [],
+  try {
+    let accountUserId = user.userId;
+    if (!accountUserId) {
+      const [upRows]: any = await pool.query(
+        'SELECT user_id FROM user_profiles WHERE profile_id = ? LIMIT 1',
+        [user.id]
+      );
+      accountUserId = upRows.length > 0 ? upRows[0].user_id : user.id;
     }
-  });
+
+    const [allProfiles]: any = await pool.query(`
+      SELECT p.id, p.first_name, p.last_name, p.role,
+             (SELECT GROUP_CONCAT(i.name SEPARATOR ', ') FROM user_instruments ui JOIN instruments i ON ui.instrument_id = i.id WHERE ui.user_id = p.id) AS instruments
+      FROM user_profiles up
+      JOIN profiles p ON up.profile_id = p.id
+      WHERE up.user_id = ? AND p.status = 'Active'
+      ORDER BY up.is_primary DESC, p.last_name ASC, p.first_name ASC
+    `, [accountUserId]);
+
+    const [currentP]: any = await pool.query(`
+      SELECT p.id, p.first_name, p.last_name, p.role, p.managed_modules, p.status, u.email
+      FROM profiles p
+      LEFT JOIN user_profiles up ON p.id = up.profile_id AND up.user_id = ?
+      LEFT JOIN users u ON u.id = ?
+      WHERE p.id = ?
+    `, [accountUserId, accountUserId, user.id]);
+
+    const active = currentP[0] || {};
+    let parsedModules = [];
+    if (active.managed_modules) {
+      try {
+        parsedModules = typeof active.managed_modules === 'string'
+          ? JSON.parse(active.managed_modules)
+          : active.managed_modules;
+      } catch (e) {}
+    }
+
+    res.json({
+      user: {
+        id: user.id || '',
+        userId: accountUserId,
+        email: active.email || user.email || '',
+        firstName: active.first_name || '',
+        lastName: active.last_name || '',
+        role: active.role || user.role || 'Membre',
+        managedModules: parsedModules.length > 0 ? parsedModules : (user.managedModules || []),
+        availableProfiles: allProfiles.map((pr: any) => ({
+          id: pr.id,
+          firstName: pr.first_name,
+          lastName: pr.last_name,
+          role: pr.role,
+          instruments: pr.instruments || null
+        }))
+      }
+    });
+  } catch (err) {
+    console.error('Error in /me:', err);
+    res.json({
+      user: {
+        id: user.id || '',
+        email: user.email || '',
+        role: user.role || 'Membre',
+        managedModules: user.managedModules || [],
+        availableProfiles: []
+      }
+    });
+  }
 });
 
 // POST /api/auth/activate - Activer un compte

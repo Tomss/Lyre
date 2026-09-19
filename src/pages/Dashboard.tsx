@@ -7,7 +7,9 @@ import { useAuth } from '../context/AuthContext';
 import { API_URL } from '../config';
 
 const Dashboard = () => {
-  const { currentUser, logout, token } = useAuth();
+  const { currentUser, logout, token, switchProfile } = useAuth();
+  const [isProfileSwitcherOpen, setIsProfileSwitcherOpen] = React.useState(false);
+  const [switchingProfile, setSwitchingProfile] = React.useState(false);
   const [userInstruments, setUserInstruments] = React.useState<any[]>([]);
   const [userOrchestras, setUserOrchestras] = React.useState<any[]>([]);
   const [userEvents, setUserEvents] = React.useState<any[]>([]);
@@ -88,10 +90,13 @@ const Dashboard = () => {
       if (isNotificationsOpen && !target.closest('.notifications-container')) {
         setIsNotificationsOpen(false);
       }
+      if (isProfileSwitcherOpen && !target.closest('.profile-switcher-container')) {
+        setIsProfileSwitcherOpen(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isNotificationsOpen]);
+  }, [isNotificationsOpen, isProfileSwitcherOpen]);
 
   const handleSetAttendance = async (eventId: string, status: 'present' | 'absent') => {
     if (!token) return;
@@ -128,6 +133,20 @@ const Dashboard = () => {
       fetchDashboardData(true);
     } finally {
       setSavingAttendance(prev => ({ ...prev, [eventId]: false }));
+    }
+  };
+
+  const handleProfileSwitch = async (profileId: string) => {
+    if (profileId === currentUser?.id || switchingProfile) return;
+    try {
+      setSwitchingProfile(true);
+      await switchProfile(profileId);
+      setIsProfileSwitcherOpen(false);
+    } catch (err: any) {
+      console.error('Failed to switch profile:', err);
+      alert(err.message || 'Erreur lors du changement de profil');
+    } finally {
+      setSwitchingProfile(false);
     }
   };
 
@@ -482,6 +501,82 @@ const Dashboard = () => {
                         )}
                     </div>
 
+                    {/* Profile Switcher (if shared account with multiple profiles) */}
+                    {currentUser.availableProfiles && currentUser.availableProfiles.length > 1 && (
+                        <div className="relative profile-switcher-container">
+                            <button
+                                onClick={() => setIsProfileSwitcherOpen(!isProfileSwitcherOpen)}
+                                disabled={switchingProfile}
+                                className={`px-4 py-2.5 rounded-xl border transition-all duration-300 flex items-center gap-2.5 h-[52px] ${
+                                    isProfileSwitcherOpen 
+                                        ? 'bg-amber-500 border-amber-500 text-white shadow-lg' 
+                                        : 'bg-white border-slate-200 text-slate-700 hover:border-amber-300 hover:bg-amber-50/50 shadow-sm'
+                                }`}
+                                title="Changer de profil"
+                            >
+                                <div className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs ${
+                                    isProfileSwitcherOpen ? 'bg-white/20 text-white' : 'bg-amber-100 text-amber-700'
+                                }`}>
+                                    {switchingProfile ? (
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                    ) : (
+                                        `${currentUser.firstName?.[0] || ''}${currentUser.lastName?.[0] || ''}`
+                                    )}
+                                </div>
+                                <div className="text-left hidden sm:block">
+                                    <p className={`text-[10px] font-bold uppercase tracking-wider leading-none ${
+                                        isProfileSwitcherOpen ? 'text-amber-100' : 'text-slate-400'
+                                    }`}>Profil actif</p>
+                                    <p className={`text-xs font-bold truncate max-w-[120px] ${
+                                        isProfileSwitcherOpen ? 'text-white' : 'text-slate-800'
+                                    }`}>{currentUser.firstName} {currentUser.lastName}</p>
+                                </div>
+                                <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${
+                                    isProfileSwitcherOpen ? 'rotate-180 text-white' : 'text-slate-400'
+                                }`} />
+                            </button>
+
+                            {isProfileSwitcherOpen && (
+                                <div className="absolute right-0 mt-3 w-72 bg-white rounded-2xl shadow-2xl border border-slate-200 z-[100] p-2 animate-in fade-in zoom-in-95 duration-200 origin-top-right">
+                                    <div className="px-3 py-2 border-b border-slate-100">
+                                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Changer de profil</p>
+                                        <p className="text-xs text-slate-500 mt-0.5">Compte partagé ({currentUser.availableProfiles.length} profils)</p>
+                                    </div>
+                                    <div className="py-1 space-y-1">
+                                        {currentUser.availableProfiles.map((p) => {
+                                            const isActive = p.id === currentUser.id;
+                                            return (
+                                                <button
+                                                    key={p.id}
+                                                    onClick={() => handleProfileSwitch(p.id)}
+                                                    disabled={isActive || switchingProfile}
+                                                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all ${
+                                                        isActive 
+                                                            ? 'bg-amber-50 text-amber-900 font-bold cursor-default' 
+                                                            : 'hover:bg-slate-50 text-slate-700 font-medium cursor-pointer'
+                                                    }`}
+                                                >
+                                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
+                                                        isActive ? 'bg-amber-500 text-white' : 'bg-slate-100 text-slate-600'
+                                                    }`}>
+                                                        {p.firstName?.[0] || ''}{p.lastName?.[0] || ''}
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="text-sm truncate font-semibold">{p.firstName} {p.lastName}</p>
+                                                        <p className="text-[11px] text-slate-400 capitalize">{p.role}</p>
+                                                    </div>
+                                                    {isActive && (
+                                                        <span className="text-xs font-bold text-amber-600 bg-amber-100 px-2 py-0.5 rounded-full">Actif</span>
+                                                    )}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
                     <button
                         onClick={() => logout()}
                         className="inline-flex items-center justify-center space-x-2 bg-slate-900 hover:bg-teal-600 text-white font-semibold px-6 py-3 rounded-xl transition-all duration-300 shadow-lg hover:shadow-teal-500/20"
@@ -535,6 +630,31 @@ const Dashboard = () => {
                   {currentUser.role}
                 </span>
               </div>
+
+              {currentUser.availableProfiles && currentUser.availableProfiles.length > 1 && (
+                <div className="pt-2 border-t border-slate-50">
+                  <p className="text-[10px] font-bold text-amber-600 uppercase tracking-widest leading-none mb-2">
+                    Compte Partagé ({currentUser.availableProfiles.length} profils)
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {currentUser.availableProfiles.map(p => (
+                      <button
+                        key={p.id}
+                        onClick={() => handleProfileSwitch(p.id)}
+                        disabled={p.id === currentUser.id || switchingProfile}
+                        className={`px-2.5 py-1.5 rounded-xl text-xs transition-all flex items-center gap-1.5 ${
+                          p.id === currentUser.id
+                            ? 'bg-amber-500 text-white font-bold shadow-sm'
+                            : 'bg-slate-100 text-slate-700 hover:bg-amber-50 hover:text-amber-700 font-medium cursor-pointer'
+                        }`}
+                      >
+                        <span>{p.firstName} {p.lastName}</span>
+                        {p.id === currentUser.id && <span>✓</span>}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

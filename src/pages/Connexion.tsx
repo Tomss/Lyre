@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Eye, 
   EyeOff, 
@@ -8,9 +9,11 @@ import {
   CheckCircle2, 
   KeyRound,
   Lock,
-  Mail
+  Mail,
+  Users,
+  ArrowRight
 } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth, AvailableProfile } from '../context/AuthContext';
 import { API_URL } from '../config';
 
 const Connexion = () => {
@@ -20,13 +23,24 @@ const Connexion = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Profile selection state (si plusieurs profils sont liés au même compte)
+  const [profileSelection, setProfileSelection] = useState<{
+    isOpen: boolean;
+    profiles: AvailableProfile[];
+  }>({
+    isOpen: false,
+    profiles: []
+  });
+  const [selectingProfileId, setSelectingProfileId] = useState<string | null>(null);
+
   // Forgot password modal state
   const [showResetModal, setShowResetModal] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
   const [resetLoading, setResetLoading] = useState(false);
   const [resetStatus, setResetStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
-  const { login } = useAuth();
+  const { login, switchProfile } = useAuth();
+  const navigate = useNavigate();
 
   const handleLogin = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -34,13 +48,32 @@ const Connexion = () => {
     setError(null);
 
     try {
-      await login(email, password);
+      const res = await login(email, password);
+      if (res.hasMultipleProfiles && res.availableProfiles.length > 1) {
+        setProfileSelection({
+          isOpen: true,
+          profiles: res.availableProfiles
+        });
+      }
     } catch (err: any) {
       console.error('[Connexion.tsx] Login failed:', err);
       const msg = err.message || 'Une erreur est survenue lors de la connexion.';
       setError(msg);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSelectProfile = async (profileId: string) => {
+    setSelectingProfileId(profileId);
+    try {
+      await switchProfile(profileId);
+      navigate('/dashboard');
+    } catch (err) {
+      console.error('Failed to switch to chosen profile:', err);
+      navigate('/dashboard');
+    } finally {
+      setSelectingProfileId(null);
     }
   };
 
@@ -101,100 +134,158 @@ const Connexion = () => {
         <div className="bg-white/90 backdrop-blur-xl shadow-2xl shadow-teal-900/5 rounded-3xl border border-slate-200/80 p-8 sm:p-10 relative overflow-hidden transition-all">
           <div className="h-1.5 w-full bg-gradient-to-r from-teal-500 via-teal-600 to-slate-800 absolute top-0 left-0 right-0" />
 
-          <form onSubmit={handleLogin} className="space-y-6 pt-1">
-            
-            {/* Email Field */}
-            <div>
-              <label htmlFor="email" className="block text-sm font-bold text-slate-800 mb-2">
-                Adresse e-mail
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                  <Mail className="w-4 h-4" />
+          {profileSelection.isOpen ? (
+            <div className="pt-2 animate-in fade-in zoom-in-95 duration-200">
+              <div className="text-center mb-6">
+                <div className="w-12 h-12 rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center mx-auto mb-3 border border-teal-100 shadow-xs">
+                  <Users className="w-6 h-6" />
                 </div>
-                <input
-                  id="email"
-                  type="email"
-                  placeholder="votre@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  autoComplete="email"
-                  className="w-full pl-10 pr-4 py-3.5 bg-slate-50/60 border border-slate-200 rounded-xl text-slate-900 text-sm font-medium placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 focus:bg-white transition-all shadow-sm"
-                />
+                <h2 className="text-xl font-extrabold text-slate-800 tracking-tight">
+                  Qui souhaite se connecter ?
+                </h2>
+                <p className="text-xs text-slate-500 mt-1">
+                  Plusieurs profils musiciens sont rattachés à ce compte. Choisissez le vôtre pour continuer :
+                </p>
               </div>
+
+              <div className="space-y-2.5 max-h-[320px] overflow-y-auto pr-1">
+                {profileSelection.profiles.map((p) => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => handleSelectProfile(p.id)}
+                    disabled={selectingProfileId !== null}
+                    className="w-full p-3.5 rounded-2xl border border-slate-200/90 hover:border-teal-500 bg-slate-50/70 hover:bg-teal-50/40 transition-all flex items-center justify-between text-left group cursor-pointer shadow-xs hover:shadow-md disabled:opacity-50"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500 to-slate-800 text-white font-bold flex items-center justify-center text-xs shadow-sm group-hover:scale-105 transition-transform flex-shrink-0">
+                        {p.firstName?.[0]}{p.lastName?.[0]}
+                      </div>
+                      <div className="min-w-0">
+                        <h4 className="font-bold text-slate-800 text-sm group-hover:text-teal-700 transition-colors truncate">
+                          {p.firstName} {p.lastName}
+                        </h4>
+                        <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-0.5 truncate">
+                          {p.instruments ? (
+                            <span className="text-teal-700 font-medium truncate">🎺 {p.instruments}</span>
+                          ) : (
+                            <span className="text-slate-500 font-medium">{p.role}</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex-shrink-0 ml-2">
+                      {selectingProfileId === p.id ? (
+                        <Loader2 className="w-4 h-4 text-teal-600 animate-spin" />
+                      ) : (
+                        <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-teal-600 group-hover:translate-x-1 transition-all" />
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              <p className="text-[11px] text-slate-400 text-center mt-5">
+                💡 Vous pourrez également basculer d'un profil à l'autre en un clic depuis votre espace membre.
+              </p>
             </div>
-
-            {/* Password Field */}
-            <div>
-              <label htmlFor="password" className="block text-sm font-bold text-slate-800 mb-2">
-                Mot de passe
-              </label>
-
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                  <Lock className="w-4 h-4" />
+          ) : (
+            <form onSubmit={handleLogin} className="space-y-6 pt-1">
+              
+              {/* Email Field */}
+              <div>
+                <label htmlFor="email" className="block text-sm font-bold text-slate-800 mb-2">
+                  Adresse e-mail
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                    <Mail className="w-4 h-4" />
+                  </div>
+                  <input
+                    id="email"
+                    type="email"
+                    placeholder="votre@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    autoComplete="email"
+                    className="w-full pl-10 pr-4 py-3.5 bg-slate-50/60 border border-slate-200 rounded-xl text-slate-900 text-sm font-medium placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 focus:bg-white transition-all shadow-sm"
+                  />
                 </div>
-                <input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  autoComplete="current-password"
-                  className="w-full pl-10 pr-11 py-3.5 bg-slate-50/60 border border-slate-200 rounded-xl text-slate-900 text-sm font-medium placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 focus:bg-white transition-all shadow-sm"
-                />
-                <button
-                  type="button"
-                  tabIndex={-1}
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
-                  title={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
-                >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
               </div>
 
-              <div className="flex justify-end mt-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setResetEmail(email);
-                    setResetStatus(null);
-                    setShowResetModal(true);
-                  }}
-                  className="text-xs font-semibold text-teal-600 hover:text-teal-700 transition-colors cursor-pointer"
-                >
-                  Mot de passe oublié ?
-                </button>
-              </div>
-            </div>
+              {/* Password Field */}
+              <div>
+                <label htmlFor="password" className="block text-sm font-bold text-slate-800 mb-2">
+                  Mot de passe
+                </label>
 
-            {/* Error Banner */}
-            {error && (
-              <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-3 text-rose-800 text-xs font-medium">
-                <AlertCircle className="w-5 h-5 text-rose-500 flex-shrink-0 mt-0.5" />
-                <p className="leading-relaxed">{error}</p>
-              </div>
-            )}
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                    <Lock className="w-4 h-4" />
+                  </div>
+                  <input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    autoComplete="current-password"
+                    className="w-full pl-10 pr-11 py-3.5 bg-slate-50/60 border border-slate-200 rounded-xl text-slate-900 text-sm font-medium placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 focus:bg-white transition-all shadow-sm"
+                  />
+                  <button
+                    type="button"
+                    tabIndex={-1}
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
+                    title={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
 
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-teal-600 hover:bg-teal-700 active:scale-[0.99] text-white font-bold py-3.5 px-6 rounded-xl shadow-lg shadow-teal-600/20 hover:shadow-teal-600/30 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-sm"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  <span>Connexion en cours...</span>
-                </>
-              ) : (
-                <span>Se connecter</span>
+                <div className="flex justify-end mt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setResetEmail(email);
+                      setResetStatus(null);
+                      setShowResetModal(true);
+                    }}
+                    className="text-xs font-semibold text-teal-600 hover:text-teal-700 transition-colors cursor-pointer"
+                  >
+                    Mot de passe oublié ?
+                  </button>
+                </div>
+              </div>
+
+              {/* Error Banner */}
+              {error && (
+                <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-3 text-rose-800 text-xs font-medium">
+                  <AlertCircle className="w-5 h-5 text-rose-500 flex-shrink-0 mt-0.5" />
+                  <p className="leading-relaxed">{error}</p>
+                </div>
               )}
-            </button>
-          </form>
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-teal-600 hover:bg-teal-700 active:scale-[0.99] text-white font-bold py-3.5 px-6 rounded-xl shadow-lg shadow-teal-600/20 hover:shadow-teal-600/30 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-sm"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <span>Connexion en cours...</span>
+                  </>
+                ) : (
+                  <span>Se connecter</span>
+                )}
+              </button>
+            </form>
+          )}
         </div>
 
       </div>

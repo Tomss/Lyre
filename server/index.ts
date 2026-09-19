@@ -332,6 +332,73 @@ dotenv.config();
       console.warn('[Migration Warning] Harmonisation collation event_attendances:', collErr.message);
     }
 
+    // Migration: Table user_profiles (Multi-profils & Multi-accès)
+    const [userProfilesTables]: any = await pool.query(`
+      SELECT COUNT(*) as count 
+      FROM information_schema.TABLES 
+      WHERE TABLE_SCHEMA = DATABASE() 
+      AND TABLE_NAME = 'user_profiles'
+    `);
+
+    if (userProfilesTables[0].count === 0) {
+      console.log('[Migration] Création de la table user_profiles...');
+      await pool.query(`
+        CREATE TABLE user_profiles (
+          id VARCHAR(36) PRIMARY KEY,
+          user_id VARCHAR(36) NOT NULL,
+          profile_id VARCHAR(36) NOT NULL,
+          is_primary BOOLEAN DEFAULT 0,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          UNIQUE KEY unique_user_profile (user_id, profile_id),
+          INDEX idx_user_id (user_id),
+          INDEX idx_profile_id (profile_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+      `);
+      console.log('[Migration] Table user_profiles créée avec succès.');
+
+      console.log('[Migration] Migration des profils existants vers user_profiles...');
+      await pool.query(`
+        INSERT IGNORE INTO user_profiles (id, user_id, profile_id, is_primary)
+        SELECT UUID(), u.id, p.id, 1
+        FROM users u
+        JOIN profiles p ON u.id = p.id;
+      `);
+      console.log('[Migration] Succès : profils existants associés dans user_profiles.');
+    }
+
+    // Retirer la contrainte 1-à-1 stricte profiles_id_fkey si elle existe encore
+    try {
+      const [fkRows]: any = await pool.query(`
+        SELECT CONSTRAINT_NAME 
+        FROM information_schema.TABLE_CONSTRAINTS 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = 'profiles' 
+        AND CONSTRAINT_NAME = 'profiles_id_fkey'
+      `);
+      if (fkRows.length > 0) {
+        console.log('[Migration] Suppression de la contrainte 1-à-1 profiles_id_fkey...');
+        await pool.query('ALTER TABLE profiles DROP FOREIGN KEY profiles_id_fkey');
+        console.log('[Migration] Contrainte profiles_id_fkey supprimée.');
+      }
+    } catch (fkErr: any) {
+      console.warn('[Migration Warning] Vérification FK profiles_id_fkey:', fkErr.message);
+    }
+
+    // Auto-harmonisation de la collation de user_profiles
+    try {
+      const [userCols]: any = await pool.query(`
+        SELECT COLLATION_NAME 
+        FROM information_schema.COLUMNS 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = 'users' 
+        AND COLUMN_NAME = 'id'
+      `);
+      const targetCollation = userCols[0]?.COLLATION_NAME || 'utf8mb4_0900_ai_ci';
+      await pool.query(`ALTER TABLE user_profiles CONVERT TO CHARACTER SET utf8mb4 COLLATE ${targetCollation}`);
+    } catch (collErr: any) {
+      console.warn('[Migration Warning] Harmonisation collation user_profiles:', collErr.message);
+    }
+
   } catch (e) {
     console.error('[Emergency/Migration] Erreur:', e);
   }
