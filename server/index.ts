@@ -399,6 +399,70 @@ dotenv.config();
       console.warn('[Migration Warning] Harmonisation collation user_profiles:', collErr.message);
     }
 
+    // Migration: Table profile_delegations (Délégations unidirectionnelles de profils)
+    try {
+      const [delegationTables]: any = await pool.query(`
+        SELECT COUNT(*) as count 
+        FROM information_schema.TABLES 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = 'profile_delegations'
+      `);
+
+      let targetCollation = 'utf8mb4_0900_ai_ci';
+      try {
+        const [profCols]: any = await pool.query(`
+          SELECT COLLATION_NAME 
+          FROM information_schema.COLUMNS 
+          WHERE TABLE_SCHEMA = DATABASE() 
+          AND TABLE_NAME = 'profiles' 
+          AND COLUMN_NAME = 'id'
+        `);
+        if (profCols.length > 0 && profCols[0]?.COLLATION_NAME) {
+          targetCollation = profCols[0].COLLATION_NAME;
+        }
+      } catch (e) {}
+
+      if (delegationTables[0].count === 0) {
+        console.log('[Migration] Création de la table profile_delegations...');
+        try {
+          await pool.query(`
+            CREATE TABLE profile_delegations (
+              id VARCHAR(36) PRIMARY KEY,
+              parent_profile_id VARCHAR(36) NOT NULL,
+              child_profile_id VARCHAR(36) NOT NULL,
+              created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+              UNIQUE KEY unique_delegation (parent_profile_id, child_profile_id),
+              INDEX idx_parent (parent_profile_id),
+              INDEX idx_child (child_profile_id),
+              CONSTRAINT fk_parent_profile FOREIGN KEY (parent_profile_id) REFERENCES profiles(id) ON DELETE CASCADE,
+              CONSTRAINT fk_child_profile FOREIGN KEY (child_profile_id) REFERENCES profiles(id) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=${targetCollation};
+          `);
+          console.log('[Migration] Table profile_delegations créée avec succès (avec FK).');
+        } catch (fkErr: any) {
+          console.warn('[Migration Warning] Échec création avec FK, essai sans FK:', fkErr.message);
+          await pool.query(`
+            CREATE TABLE IF NOT EXISTS profile_delegations (
+              id VARCHAR(36) PRIMARY KEY,
+              parent_profile_id VARCHAR(36) NOT NULL,
+              child_profile_id VARCHAR(36) NOT NULL,
+              created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+              UNIQUE KEY unique_delegation (parent_profile_id, child_profile_id),
+              INDEX idx_parent (parent_profile_id),
+              INDEX idx_child (child_profile_id)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=${targetCollation};
+          `);
+          console.log('[Migration] Table profile_delegations créée avec succès (sans FK).');
+        }
+      } else {
+        try {
+          await pool.query(`ALTER TABLE profile_delegations CONVERT TO CHARACTER SET utf8mb4 COLLATE ${targetCollation}`);
+        } catch (e) {}
+      }
+    } catch (delErr: any) {
+      console.warn('[Migration Warning] profile_delegations:', delErr.message);
+    }
+
   } catch (e) {
     console.error('[Emergency/Migration] Erreur:', e);
   }

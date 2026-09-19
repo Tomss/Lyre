@@ -27,6 +27,66 @@ setInterval(() => {
   }
 }, LOCKOUT_WINDOW);
 
+// Helper pour récupérer tous les profils accessibles (directs + délégués) pour un compte
+const getAccessibleProfilesForAccount = async (accountUserId: string) => {
+  let directProfiles: any[] = [];
+  try {
+    const [rows]: any = await pool.query(`
+      SELECT p.id, p.first_name, p.last_name, p.role, p.managed_modules, p.status, COALESCE(up.is_primary, 0) as is_primary,
+             (SELECT GROUP_CONCAT(i.name SEPARATOR ', ') FROM user_instruments ui JOIN instruments i ON ui.instrument_id = i.id WHERE ui.user_id = p.id) AS instruments
+      FROM user_profiles up
+      JOIN profiles p ON up.profile_id = p.id
+      WHERE up.user_id = ?
+      ORDER BY up.is_primary DESC, p.last_name ASC, p.first_name ASC
+    `, [accountUserId]);
+    directProfiles = rows;
+  } catch (err: any) {
+    console.warn('[Auth] Erreur query user_profiles:', err.message);
+  }
+
+  if (directProfiles.length === 0) {
+    try {
+      const [fallbackRows]: any = await pool.query(`
+        SELECT p.id, p.first_name, p.last_name, p.role, p.managed_modules, p.status, 1 as is_primary,
+               (SELECT GROUP_CONCAT(i.name SEPARATOR ', ') FROM user_instruments ui JOIN instruments i ON ui.instrument_id = i.id WHERE ui.user_id = p.id) AS instruments
+        FROM profiles p
+        WHERE p.id = ?
+      `, [accountUserId]);
+      directProfiles = fallbackRows;
+    } catch (fallbackErr: any) {
+      console.warn('[Auth] Erreur query fallback profiles:', fallbackErr.message);
+    }
+  }
+
+  const directIds = directProfiles.map((p: any) => p.id);
+  let delegatedProfiles: any[] = [];
+  if (directIds.length > 0) {
+    try {
+      const [delRows]: any = await pool.query(`
+        SELECT p.id, p.first_name, p.last_name, p.role, p.managed_modules, p.status, 0 as is_primary,
+               (SELECT GROUP_CONCAT(i.name SEPARATOR ', ') FROM user_instruments ui JOIN instruments i ON ui.instrument_id = i.id WHERE ui.user_id = p.id) AS instruments
+        FROM profile_delegations pd
+        JOIN profiles p ON pd.child_profile_id = p.id
+        WHERE pd.parent_profile_id IN (?) AND p.status = 'Active'
+        ORDER BY p.last_name ASC, p.first_name ASC
+      `, [directIds]);
+      delegatedProfiles = delRows;
+    } catch (delErr: any) {
+      console.warn('[Auth Warning] Erreur récupération délégations (table en cours de migration):', delErr.message);
+    }
+  }
+
+  const seen = new Set<string>();
+  const combined: any[] = [];
+  for (const p of [...directProfiles, ...delegatedProfiles]) {
+    if (!seen.has(p.id)) {
+      seen.add(p.id);
+      combined.push(p);
+    }
+  }
+  return combined;
+};
+
 router.post('/login', async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
@@ -90,52 +150,6 @@ router.post('/login', async (req: Request, res: Response) => {
 
     // Login successful -> clear failed attempts counter
     loginAttempts.delete(rateLimitKey);
-
-    // Helper pour récupérer tous les profils accessibles (directs + délégués) pour un compte
-    const getAccessibleProfilesForAccount = async (accountUserId: string) => {
-      let [directProfiles]: any = await pool.query(`
-        SELECT p.id, p.first_name, p.last_name, p.role, p.managed_modules, p.status, COALESCE(up.is_primary, 0) as is_primary,
-               (SELECT GROUP_CONCAT(i.name SEPARATOR ', ') FROM user_instruments ui JOIN instruments i ON ui.instrument_id = i.id WHERE ui.user_id = p.id) AS instruments
-        FROM user_profiles up
-        JOIN profiles p ON up.profile_id = p.id
-        WHERE up.user_id = ?
-        ORDER BY up.is_primary DESC, p.last_name ASC, p.first_name ASC
-      `, [accountUserId]);
-
-      if (directProfiles.length === 0) {
-        const [fallbackRows]: any = await pool.query(`
-          SELECT p.id, p.first_name, p.last_name, p.role, p.managed_modules, p.status, 1 as is_primary,
-                 (SELECT GROUP_CONCAT(i.name SEPARATOR ', ') FROM user_instruments ui JOIN instruments i ON ui.instrument_id = i.id WHERE ui.user_id = p.id) AS instruments
-          FROM profiles p
-          WHERE p.id = ?
-        `, [accountUserId]);
-        directProfiles = fallbackRows;
-      }
-
-      const directIds = directProfiles.map((p: any) => p.id);
-      let delegatedProfiles: any[] = [];
-      if (directIds.length > 0) {
-        const [delRows]: any = await pool.query(`
-          SELECT p.id, p.first_name, p.last_name, p.role, p.managed_modules, p.status, 0 as is_primary,
-                 (SELECT GROUP_CONCAT(i.name SEPARATOR ', ') FROM user_instruments ui JOIN instruments i ON ui.instrument_id = i.id WHERE ui.user_id = p.id) AS instruments
-          FROM profile_delegations pd
-          JOIN profiles p ON pd.child_profile_id = p.id
-          WHERE pd.parent_profile_id IN (?) AND p.status = 'Active'
-          ORDER BY p.last_name ASC, p.first_name ASC
-        `, [directIds]);
-        delegatedProfiles = delRows;
-      }
-
-      const seen = new Set<string>();
-      const combined: any[] = [];
-      for (const p of [...directProfiles, ...delegatedProfiles]) {
-        if (!seen.has(p.id)) {
-          seen.add(p.id);
-          combined.push(p);
-        }
-      }
-      return combined;
-    };
 
     // 4. Récupérer tous les profils accessibles (directs + délégués)
     const profileRows = await getAccessibleProfilesForAccount(user.id);
@@ -209,57 +223,11 @@ router.post('/login', async (req: Request, res: Response) => {
       availableProfiles
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Login error:', error);
-    res.status(500).json({ message: 'Erreur interne du serveur.' });
+    res.status(500).json({ message: error?.message || 'Erreur interne du serveur.' });
   }
 });
-
-// Helper de récupération de profils accessibles réutilisé pour les routes suivantes
-const getAccessibleProfilesForAccount = async (accountUserId: string) => {
-  let [directProfiles]: any = await pool.query(`
-    SELECT p.id, p.first_name, p.last_name, p.role, p.managed_modules, p.status, COALESCE(up.is_primary, 0) as is_primary,
-           (SELECT GROUP_CONCAT(i.name SEPARATOR ', ') FROM user_instruments ui JOIN instruments i ON ui.instrument_id = i.id WHERE ui.user_id = p.id) AS instruments
-    FROM user_profiles up
-    JOIN profiles p ON up.profile_id = p.id
-    WHERE up.user_id = ?
-    ORDER BY up.is_primary DESC, p.last_name ASC, p.first_name ASC
-  `, [accountUserId]);
-
-  if (directProfiles.length === 0) {
-    const [fallbackRows]: any = await pool.query(`
-      SELECT p.id, p.first_name, p.last_name, p.role, p.managed_modules, p.status, 1 as is_primary,
-             (SELECT GROUP_CONCAT(i.name SEPARATOR ', ') FROM user_instruments ui JOIN instruments i ON ui.instrument_id = i.id WHERE ui.user_id = p.id) AS instruments
-      FROM profiles p
-      WHERE p.id = ?
-    `, [accountUserId]);
-    directProfiles = fallbackRows;
-  }
-
-  const directIds = directProfiles.map((p: any) => p.id);
-  let delegatedProfiles: any[] = [];
-  if (directIds.length > 0) {
-    const [delRows]: any = await pool.query(`
-      SELECT p.id, p.first_name, p.last_name, p.role, p.managed_modules, p.status, 0 as is_primary,
-             (SELECT GROUP_CONCAT(i.name SEPARATOR ', ') FROM user_instruments ui JOIN instruments i ON ui.instrument_id = i.id WHERE ui.user_id = p.id) AS instruments
-      FROM profile_delegations pd
-      JOIN profiles p ON pd.child_profile_id = p.id
-      WHERE pd.parent_profile_id IN (?) AND p.status = 'Active'
-      ORDER BY p.last_name ASC, p.first_name ASC
-    `, [directIds]);
-    delegatedProfiles = delRows;
-  }
-
-  const seen = new Set<string>();
-  const combined: any[] = [];
-  for (const p of [...directProfiles, ...delegatedProfiles]) {
-    if (!seen.has(p.id)) {
-      seen.add(p.id);
-      combined.push(p);
-    }
-  }
-  return combined;
-};
 
 // POST /api/auth/switch-profile - Basculer vers un autre profil associé au compte (direct ou délégué)
 router.post('/switch-profile', authenticateToken, async (req: Request, res: Response) => {

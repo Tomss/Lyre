@@ -131,13 +131,19 @@ router.get('/', async (req, res) => {
     }
 
     // Récupérer les délégations d'accès unidirectionnelles
-    const [delegationRows]: any = await pool.query(`
-      SELECT pd.parent_profile_id, pd.child_profile_id, 
-             cp.first_name as child_first_name, cp.last_name as child_last_name, cp.role as child_role
-      FROM profile_delegations pd
-      JOIN profiles cp ON pd.child_profile_id = cp.id
-      ORDER BY cp.last_name ASC, cp.first_name ASC
-    `);
+    let delegationRows: any[] = [];
+    try {
+      const [rows]: any = await pool.query(`
+        SELECT pd.parent_profile_id, pd.child_profile_id, 
+               cp.first_name as child_first_name, cp.last_name as child_last_name, cp.role as child_role
+        FROM profile_delegations pd
+        JOIN profiles cp ON pd.child_profile_id = cp.id
+        ORDER BY cp.last_name ASC, cp.first_name ASC
+      `);
+      delegationRows = rows;
+    } catch (delErr: any) {
+      console.warn('[Users Warning] Erreur récupération délégations (table en cours de migration):', delErr.message);
+    }
 
     const delegationsByParent = new Map<string, any[]>();
     for (const d of delegationRows) {
