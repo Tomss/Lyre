@@ -1,5 +1,5 @@
 import React, { useState, useEffect, FormEvent } from 'react';
-import { ChevronDown,  Edit, Trash2, Users, Mail, User, Shield, X, UserPlus, CheckCircle, Search, ArrowLeft, ChevronRight, Power, Lock, Music, LayoutGrid, AlertTriangle, Plus  } from "lucide-react";
+import { ChevronDown,  Edit, Trash2, Users, Mail, MailPlus, User, Shield, X, UserPlus, CheckCircle, Search, ArrowLeft, ChevronRight, Power, Lock, Music, LayoutGrid, AlertTriangle, Plus  } from "lucide-react";
 import { useAuth } from '../context/AuthContext';
 import { Navigate, Link } from 'react-router-dom';
 
@@ -1028,7 +1028,7 @@ const AdminUsers = () => {
                                 title={user.emails.map(e => e.email).join(', ')}
                               >
                                 <Mail size={12} className="text-cyan-500" />
-                                Multi-accès ({user.emails.length} e-mails)
+                                Multi-accès
                               </span>
                             )}
                             {user.delegatedProfiles && user.delegatedProfiles.length > 0 && (
@@ -1037,7 +1037,7 @@ const AdminUsers = () => {
                                 title={`Accès délégué à : ${user.delegatedProfiles.map(d => `${d.firstName} ${d.lastName}`).join(', ')}`}
                               >
                                 <Shield size={12} className="text-amber-500" />
-                                Accès délégué ({user.delegatedProfiles.map(d => d.firstName).join(', ')})
+                                Accès délégué
                               </span>
                             )}
                           </div>
@@ -1101,6 +1101,19 @@ const AdminUsers = () => {
                                 <Mail size={14} className="mr-2 text-indigo-400" /> {user.email}
                               </div>
                             )}
+                            {user.delegatedProfiles && user.delegatedProfiles.length > 0 && (
+                              <div className="flex flex-wrap items-center gap-1.5 my-1">
+                                {user.delegatedProfiles.map(dp => (
+                                  <div key={dp.id} className="flex items-center text-xs text-amber-800 gap-1.5 bg-amber-50/80 px-2.5 py-1 rounded-xl border border-amber-200/80 max-w-fit shadow-xs">
+                                    <Shield size={12} className="text-amber-600" />
+                                    <span className="font-semibold text-slate-700">{dp.firstName} {dp.lastName}</span>
+                                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800">
+                                      {dp.role}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
                             <div className="flex items-center text-[10px] font-bold uppercase tracking-wider">
                               {user.last_login ? (
                                 <>
@@ -1151,7 +1164,7 @@ const AdminUsers = () => {
                             title="Ajouter un autre e-mail" 
                             className="p-2 text-cyan-600 bg-cyan-50 hover:bg-cyan-100 rounded-xl transition-all duration-300 hover:scale-110 cursor-pointer"
                           >
-                            <Plus size={18} />
+                            <MailPlus size={18} />
                           </button>
                           {user.role !== 'Admin' && (
                             <button 
@@ -1383,110 +1396,6 @@ const AdminUsers = () => {
                   </div>
                 )}
 
-                {/* Section: Rôle & Permissions */}
-                <div className="space-y-4">
-                    <div className="flex items-center space-x-2 text-indigo-600 mb-1">
-                        <Shield size={16} />
-                        <h3 className="text-xs font-bold uppercase tracking-wider">Rôle & Permissions</h3>
-                    </div>
-
-                    <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label className="flex items-center text-sm font-semibold text-slate-700 mb-1">
-                                    <LayoutGrid size={14} className="mr-2 text-slate-400" /> Rôle
-                                </label>
-                                <div className="relative">
-                                    <select name="role" value={formData.role} onChange={handleInputChange} className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-slate-50/30 focus:bg-white appearance-none text-sm">
-                                        <option value="Membre">👤 Membre</option>
-                                        <option value="Gestionnaire">🛠️ Gestionnaire</option>
-                                        <option value="Admin">⚡ Admin</option>
-                                    </select>
-                                    <ChevronDown className="text-slate-400" />
-                                </div>
-                            </div>
-                            {formData.role === 'Admin' && (
-                                <div>
-                                    <label className="flex items-center text-sm font-semibold text-red-700 mb-1">
-                                        <Lock size={14} className="mr-2 text-red-400" /> Mot de passe Admin
-                                    </label>
-                                    <input type="password" name="password" value={formData.password} onChange={handleInputChange} placeholder={editingUser ? 'Laisser vide pour ne pas changer' : 'Requis pour Admin'} required={!editingUser && formData.role === 'Admin'} className="w-full px-4 py-2 rounded-xl border border-red-200 focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition bg-red-50/30 focus:bg-white text-sm" />
-                                </div>
-                            )}
-                        </div>
-
-                        {formData.role === 'Gestionnaire' && (
-                            <div className="animate-in fade-in slide-in-from-top-2">
-                                <label className="flex items-center text-sm font-semibold text-slate-700 mb-2">
-                                    <CheckCircle size={14} className="mr-2 text-slate-400" /> Modules gérés
-                                </label>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-3 bg-slate-50/50 rounded-xl border border-slate-100">
-                                    {availableModules.map(module => (
-                                        <label key={module.id} className="flex items-center space-x-2 cursor-pointer group p-1">
-                                            <input 
-                                                type="checkbox" 
-                                                checked={formData.managedModules.includes(module.id)} 
-                                                onChange={(e) => handleModuleChange(module.id, e.target.checked)} 
-                                                className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 accent-indigo-600 cursor-pointer" 
-                                            />
-                                            <span className="text-slate-600 text-xs group-hover:text-indigo-600 transition-colors">{module.label}</span>
-                                        </label>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                {/* Section: Orchestres & Instruments */}
-                <div className="space-y-4">
-                    <div className="flex items-center space-x-2 text-indigo-600 mb-1">
-                        <Users size={16} />
-                        <h3 className="text-xs font-bold uppercase tracking-wider">Orchestres & Instruments</h3>
-                    </div>
-
-                    <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label className="flex items-center text-sm font-semibold text-slate-700 mb-2">
-                                    <Users size={14} className="mr-2 text-slate-400" /> Orchestres
-                                </label>
-                                <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto p-2 bg-slate-50/50 rounded-xl border border-slate-100 shadow-inner">
-                                    {orchestras.map(orchestra => (
-                                        <label key={orchestra.id} className="flex items-center space-x-2 bg-white px-3 py-1.5 rounded-lg border border-slate-100 shadow-sm cursor-pointer group hover:border-indigo-200 hover:bg-indigo-50/30 transition-all">
-                                            <input 
-                                                type="checkbox" 
-                                                checked={formData.orchestras.includes(orchestra.id)} 
-                                                onChange={(e) => handleOrchestraChange(orchestra.id, e.target.checked)} 
-                                                className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 accent-indigo-600" 
-                                            />
-                                            <span className="text-xs font-medium text-slate-600 group-hover:text-indigo-700">{orchestra.name}</span>
-                                        </label>
-                                    ))}
-                                </div>
-                            </div>
-                            <div>
-                                <label className="flex items-center text-sm font-semibold text-slate-700 mb-2">
-                                    <Music size={14} className="mr-2 text-slate-400" /> Instruments
-                                </label>
-                                <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto p-2 bg-slate-50/50 rounded-xl border border-slate-100 shadow-inner">
-                                    {instruments.map(instrument => (
-                                        <label key={instrument.id} className="flex items-center space-x-2 bg-white px-3 py-1.5 rounded-lg border border-slate-100 shadow-sm cursor-pointer group hover:border-emerald-200 hover:bg-emerald-50/30 transition-all">
-                                            <input 
-                                                type="checkbox" 
-                                                checked={formData.instruments.includes(instrument.id)} 
-                                                onChange={(e) => handleInstrumentChange(instrument.id, e.target.checked)} 
-                                                className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 accent-emerald-600" 
-                                            />
-                                            <span className="text-xs font-medium text-slate-600 group-hover:text-emerald-700">{instrument.name}</span>
-                                        </label>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 {/* Section: Accès délégués */}
                 <div className="space-y-4">
                     <div className="flex items-center space-x-2 text-indigo-600 mb-1">
@@ -1495,10 +1404,6 @@ const AdminUsers = () => {
                     </div>
 
                     <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-3">
-                        <label className="text-xs font-medium text-slate-600 block">
-                            Sélectionnez les profils auxquels ce compte pourra accéder et basculer (délégation unidirectionnelle) :
-                        </label>
-
                         {/* Selected profiles tags */}
                         {delegatedProfileIds.length > 0 && (
                             <div className="flex flex-wrap gap-2 mb-2">
@@ -1620,6 +1525,110 @@ const AdminUsers = () => {
                                     </div>
                                 </>
                             )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Section: Rôle & Permissions */}
+                <div className="space-y-4">
+                    <div className="flex items-center space-x-2 text-indigo-600 mb-1">
+                        <Shield size={16} />
+                        <h3 className="text-xs font-bold uppercase tracking-wider">Rôle & Permissions</h3>
+                    </div>
+
+                    <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label className="flex items-center text-sm font-semibold text-slate-700 mb-1">
+                                    <LayoutGrid size={14} className="mr-2 text-slate-400" /> Rôle
+                                </label>
+                                <div className="relative">
+                                    <select name="role" value={formData.role} onChange={handleInputChange} className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-slate-50/30 focus:bg-white appearance-none text-sm">
+                                        <option value="Membre">👤 Membre</option>
+                                        <option value="Gestionnaire">🛠️ Gestionnaire</option>
+                                        <option value="Admin">⚡ Admin</option>
+                                    </select>
+                                    <ChevronDown className="text-slate-400" />
+                                </div>
+                            </div>
+                            {formData.role === 'Admin' && (
+                                <div>
+                                    <label className="flex items-center text-sm font-semibold text-red-700 mb-1">
+                                        <Lock size={14} className="mr-2 text-red-400" /> Mot de passe Admin
+                                    </label>
+                                    <input type="password" name="password" value={formData.password} onChange={handleInputChange} placeholder={editingUser ? 'Laisser vide pour ne pas changer' : 'Requis pour Admin'} required={!editingUser && formData.role === 'Admin'} className="w-full px-4 py-2 rounded-xl border border-red-200 focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition bg-red-50/30 focus:bg-white text-sm" />
+                                </div>
+                            )}
+                        </div>
+
+                        {formData.role === 'Gestionnaire' && (
+                            <div className="animate-in fade-in slide-in-from-top-2">
+                                <label className="flex items-center text-sm font-semibold text-slate-700 mb-2">
+                                    <CheckCircle size={14} className="mr-2 text-slate-400" /> Modules gérés
+                                </label>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-3 bg-slate-50/50 rounded-xl border border-slate-100">
+                                    {availableModules.map(module => (
+                                        <label key={module.id} className="flex items-center space-x-2 cursor-pointer group p-1">
+                                            <input 
+                                                type="checkbox" 
+                                                checked={formData.managedModules.includes(module.id)} 
+                                                onChange={(e) => handleModuleChange(module.id, e.target.checked)} 
+                                                className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 accent-indigo-600 cursor-pointer" 
+                                            />
+                                            <span className="text-slate-600 text-xs group-hover:text-indigo-600 transition-colors">{module.label}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Section: Orchestres & Instruments */}
+                <div className="space-y-4">
+                    <div className="flex items-center space-x-2 text-indigo-600 mb-1">
+                        <Users size={16} />
+                        <h3 className="text-xs font-bold uppercase tracking-wider">Orchestres & Instruments</h3>
+                    </div>
+
+                    <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label className="flex items-center text-sm font-semibold text-slate-700 mb-2">
+                                    <Users size={14} className="mr-2 text-slate-400" /> Orchestres
+                                </label>
+                                <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto p-2 bg-slate-50/50 rounded-xl border border-slate-100 shadow-inner">
+                                    {orchestras.map(orchestra => (
+                                        <label key={orchestra.id} className="flex items-center space-x-2 bg-white px-3 py-1.5 rounded-lg border border-slate-100 shadow-sm cursor-pointer group hover:border-indigo-200 hover:bg-indigo-50/30 transition-all">
+                                            <input 
+                                                type="checkbox" 
+                                                checked={formData.orchestras.includes(orchestra.id)} 
+                                                onChange={(e) => handleOrchestraChange(orchestra.id, e.target.checked)} 
+                                                className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 accent-indigo-600" 
+                                            />
+                                            <span className="text-xs font-medium text-slate-600 group-hover:text-indigo-700">{orchestra.name}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+                            <div>
+                                <label className="flex items-center text-sm font-semibold text-slate-700 mb-2">
+                                    <Music size={14} className="mr-2 text-slate-400" /> Instruments
+                                </label>
+                                <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto p-2 bg-slate-50/50 rounded-xl border border-slate-100 shadow-inner">
+                                    {instruments.map(instrument => (
+                                        <label key={instrument.id} className="flex items-center space-x-2 bg-white px-3 py-1.5 rounded-lg border border-slate-100 shadow-sm cursor-pointer group hover:border-emerald-200 hover:bg-emerald-50/30 transition-all">
+                                            <input 
+                                                type="checkbox" 
+                                                checked={formData.instruments.includes(instrument.id)} 
+                                                onChange={(e) => handleInstrumentChange(instrument.id, e.target.checked)} 
+                                                className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 accent-emerald-600" 
+                                            />
+                                            <span className="text-xs font-medium text-slate-600 group-hover:text-emerald-700">{instrument.name}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
