@@ -1110,11 +1110,11 @@ const AdminUsers = () => {
                             </div>
                             {user.sharedWith && user.sharedWith.length > 0 && (
                               <span 
-                                className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-200 shadow-sm"
+                                className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-200 shadow-sm"
                                 title={`Compte partagé avec : ${user.sharedWith.map(s => `${s.firstName} ${s.lastName}`).join(', ')}`}
                               >
                                 <Users size={12} className="text-purple-500" />
-                                Compte partagé
+                                Partagé avec {user.sharedWith.map(s => `${s.firstName} ${s.lastName}`).join(', ')}
                               </span>
                             )}
                             {user.emails && user.emails.length > 1 && (
@@ -1152,18 +1152,18 @@ const AdminUsers = () => {
                                         <Mail size={12} className={em.isPrimary ? "text-indigo-500" : "text-cyan-500"} />
                                       )}
                                       <span className={`font-semibold ${isShared ? 'text-purple-950' : 'text-slate-700'}`}>{em.email}</span>
-                                      {isShared ? (
+                                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                                        em.isPrimary ? 'bg-indigo-100 text-indigo-700' : 'bg-cyan-100 text-cyan-700'
+                                      }`}>
+                                        {em.isPrimary ? 'Principal' : 'Secondaire'}
+                                      </span>
+                                      {isShared && (
                                         <span 
                                           className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-800 border border-purple-200 flex items-center gap-1"
                                           title={`Compte partagé avec : ${sharedWithUsers.map(s => `${s.firstName} ${s.lastName}`).join(', ')}`}
                                         >
-                                          Partagé
-                                        </span>
-                                      ) : (
-                                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
-                                          em.isPrimary ? 'bg-indigo-100 text-indigo-700' : 'bg-cyan-100 text-cyan-700'
-                                        }`}>
-                                          {em.isPrimary ? 'Principal' : 'Secondaire'}
+                                          <Users size={11} className="text-purple-600" />
+                                          Partagé avec {sharedWithUsers.map(s => `${s.firstName} ${s.lastName}`).join(', ')}
                                         </span>
                                       )}
                                       {em.hasPassword ? (
@@ -1448,17 +1448,16 @@ const AdminUsers = () => {
                                 <div className="min-w-0">
                                   <div className="flex items-center gap-2 flex-wrap">
                                     <span className="font-semibold text-sm text-slate-800 break-all">{em.email}</span>
-                                    {isShared ? (
+                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${em.isPrimary ? 'bg-indigo-100 text-indigo-700' : 'bg-cyan-100 text-cyan-700'}`}>
+                                      {em.isPrimary ? 'Principal' : 'Secondaire'}
+                                    </span>
+                                    {isShared && (
                                       <span 
                                         className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 border border-purple-200 flex items-center gap-1"
                                         title={`Compte partagé avec : ${sharedWithUsers.map(s => `${s.firstName} ${s.lastName}`).join(', ')}`}
                                       >
                                         <Users size={11} className="text-purple-600" />
-                                        Partagé
-                                      </span>
-                                    ) : (
-                                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${em.isPrimary ? 'bg-indigo-100 text-indigo-700' : 'bg-cyan-100 text-cyan-700'}`}>
-                                        {em.isPrimary ? 'Principal' : 'Secondaire'}
+                                        Partagé avec {sharedWithUsers.map(s => `${s.firstName} ${s.lastName}`).join(', ')}
                                       </span>
                                     )}
                                     {em.hasPassword ? (
