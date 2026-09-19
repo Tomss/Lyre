@@ -1110,11 +1110,11 @@ const AdminUsers = () => {
                             </div>
                             {user.sharedWith && user.sharedWith.length > 0 && (
                               <span 
-                                className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-200 shadow-sm"
+                                className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-200 shadow-sm"
                                 title={`Compte partagé avec : ${user.sharedWith.map(s => `${s.firstName} ${s.lastName}`).join(', ')}`}
                               >
                                 <Users size={12} className="text-purple-500" />
-                                Partagé avec {user.sharedWith.map(s => `${s.firstName} ${s.lastName}`).join(', ')}
+                                Partagé
                               </span>
                             )}
                             {user.emails && user.emails.length > 1 && (
