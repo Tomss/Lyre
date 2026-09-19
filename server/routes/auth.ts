@@ -91,26 +91,54 @@ router.post('/login', async (req: Request, res: Response) => {
     // Login successful -> clear failed attempts counter
     loginAttempts.delete(rateLimitKey);
 
-    // 4. Récupérer tous les profils associés au compte
-    let [profileRows] = await pool.query<any[]>(`
-      SELECT p.id, p.first_name, p.last_name, p.role, p.managed_modules, p.status, COALESCE(up.is_primary, 0) as is_primary,
-             (SELECT GROUP_CONCAT(i.name SEPARATOR ', ') FROM user_instruments ui JOIN instruments i ON ui.instrument_id = i.id WHERE ui.user_id = p.id) AS instruments
-      FROM user_profiles up
-      JOIN profiles p ON up.profile_id = p.id
-      WHERE up.user_id = ?
-      ORDER BY up.is_primary DESC, p.last_name ASC, p.first_name ASC
-    `, [user.id]);
-
-    // Fallback si la table user_profiles n'a pas encore ce user
-    if (profileRows.length === 0) {
-      const [fallbackRows] = await pool.query<any[]>(`
-        SELECT p.id, p.first_name, p.last_name, p.role, p.managed_modules, p.status, 1 as is_primary,
+    // Helper pour récupérer tous les profils accessibles (directs + délégués) pour un compte
+    const getAccessibleProfilesForAccount = async (accountUserId: string) => {
+      let [directProfiles]: any = await pool.query(`
+        SELECT p.id, p.first_name, p.last_name, p.role, p.managed_modules, p.status, COALESCE(up.is_primary, 0) as is_primary,
                (SELECT GROUP_CONCAT(i.name SEPARATOR ', ') FROM user_instruments ui JOIN instruments i ON ui.instrument_id = i.id WHERE ui.user_id = p.id) AS instruments
-        FROM profiles p
-        WHERE p.id = ?
-      `, [user.id]);
-      profileRows = fallbackRows;
-    }
+        FROM user_profiles up
+        JOIN profiles p ON up.profile_id = p.id
+        WHERE up.user_id = ?
+        ORDER BY up.is_primary DESC, p.last_name ASC, p.first_name ASC
+      `, [accountUserId]);
+
+      if (directProfiles.length === 0) {
+        const [fallbackRows]: any = await pool.query(`
+          SELECT p.id, p.first_name, p.last_name, p.role, p.managed_modules, p.status, 1 as is_primary,
+                 (SELECT GROUP_CONCAT(i.name SEPARATOR ', ') FROM user_instruments ui JOIN instruments i ON ui.instrument_id = i.id WHERE ui.user_id = p.id) AS instruments
+          FROM profiles p
+          WHERE p.id = ?
+        `, [accountUserId]);
+        directProfiles = fallbackRows;
+      }
+
+      const directIds = directProfiles.map((p: any) => p.id);
+      let delegatedProfiles: any[] = [];
+      if (directIds.length > 0) {
+        const [delRows]: any = await pool.query(`
+          SELECT p.id, p.first_name, p.last_name, p.role, p.managed_modules, p.status, 0 as is_primary,
+                 (SELECT GROUP_CONCAT(i.name SEPARATOR ', ') FROM user_instruments ui JOIN instruments i ON ui.instrument_id = i.id WHERE ui.user_id = p.id) AS instruments
+          FROM profile_delegations pd
+          JOIN profiles p ON pd.child_profile_id = p.id
+          WHERE pd.parent_profile_id IN (?) AND p.status = 'Active'
+          ORDER BY p.last_name ASC, p.first_name ASC
+        `, [directIds]);
+        delegatedProfiles = delRows;
+      }
+
+      const seen = new Set<string>();
+      const combined: any[] = [];
+      for (const p of [...directProfiles, ...delegatedProfiles]) {
+        if (!seen.has(p.id)) {
+          seen.add(p.id);
+          combined.push(p);
+        }
+      }
+      return combined;
+    };
+
+    // 4. Récupérer tous les profils accessibles (directs + délégués)
+    const profileRows = await getAccessibleProfilesForAccount(user.id);
 
     if (profileRows.length === 0) {
       return res.status(500).json({ message: 'Aucun profil musicien associé à ce compte.' });
@@ -187,7 +215,53 @@ router.post('/login', async (req: Request, res: Response) => {
   }
 });
 
-// POST /api/auth/switch-profile - Basculer vers un autre profil associé au compte
+// Helper de récupération de profils accessibles réutilisé pour les routes suivantes
+const getAccessibleProfilesForAccount = async (accountUserId: string) => {
+  let [directProfiles]: any = await pool.query(`
+    SELECT p.id, p.first_name, p.last_name, p.role, p.managed_modules, p.status, COALESCE(up.is_primary, 0) as is_primary,
+           (SELECT GROUP_CONCAT(i.name SEPARATOR ', ') FROM user_instruments ui JOIN instruments i ON ui.instrument_id = i.id WHERE ui.user_id = p.id) AS instruments
+    FROM user_profiles up
+    JOIN profiles p ON up.profile_id = p.id
+    WHERE up.user_id = ?
+    ORDER BY up.is_primary DESC, p.last_name ASC, p.first_name ASC
+  `, [accountUserId]);
+
+  if (directProfiles.length === 0) {
+    const [fallbackRows]: any = await pool.query(`
+      SELECT p.id, p.first_name, p.last_name, p.role, p.managed_modules, p.status, 1 as is_primary,
+             (SELECT GROUP_CONCAT(i.name SEPARATOR ', ') FROM user_instruments ui JOIN instruments i ON ui.instrument_id = i.id WHERE ui.user_id = p.id) AS instruments
+      FROM profiles p
+      WHERE p.id = ?
+    `, [accountUserId]);
+    directProfiles = fallbackRows;
+  }
+
+  const directIds = directProfiles.map((p: any) => p.id);
+  let delegatedProfiles: any[] = [];
+  if (directIds.length > 0) {
+    const [delRows]: any = await pool.query(`
+      SELECT p.id, p.first_name, p.last_name, p.role, p.managed_modules, p.status, 0 as is_primary,
+             (SELECT GROUP_CONCAT(i.name SEPARATOR ', ') FROM user_instruments ui JOIN instruments i ON ui.instrument_id = i.id WHERE ui.user_id = p.id) AS instruments
+      FROM profile_delegations pd
+      JOIN profiles p ON pd.child_profile_id = p.id
+      WHERE pd.parent_profile_id IN (?) AND p.status = 'Active'
+      ORDER BY p.last_name ASC, p.first_name ASC
+    `, [directIds]);
+    delegatedProfiles = delRows;
+  }
+
+  const seen = new Set<string>();
+  const combined: any[] = [];
+  for (const p of [...directProfiles, ...delegatedProfiles]) {
+    if (!seen.has(p.id)) {
+      seen.add(p.id);
+      combined.push(p);
+    }
+  }
+  return combined;
+};
+
+// POST /api/auth/switch-profile - Basculer vers un autre profil associé au compte (direct ou délégué)
 router.post('/switch-profile', authenticateToken, async (req: Request, res: Response) => {
   const { profileId } = req.body;
   const currentTokenUser: any = (req as any).user;
@@ -207,30 +281,16 @@ router.post('/switch-profile', authenticateToken, async (req: Request, res: Resp
       accountUserId = upRows.length > 0 ? upRows[0].user_id : currentTokenUser.id;
     }
 
-    // Vérifier que le compte a bien accès au profileId demandé et qu'il est actif
-    const [allowedRows]: any = await pool.query(`
-      SELECT p.id, p.first_name, p.last_name, p.role, p.managed_modules, p.status, u.email
-      FROM user_profiles up
-      JOIN profiles p ON up.profile_id = p.id
-      JOIN users u ON up.user_id = u.id
-      WHERE up.user_id = ? AND up.profile_id = ? AND p.status = 'Active'
-    `, [accountUserId, profileId]);
+    const accessibleProfiles = await getAccessibleProfilesForAccount(accountUserId);
+    const selectedProfile = accessibleProfiles.find((p: any) => p.id === profileId && p.status === 'Active');
 
-    if (allowedRows.length === 0) {
+    if (!selectedProfile) {
       return res.status(403).json({ message: 'Profil non autorisé ou inactif.' });
     }
 
-    const selectedProfile = allowedRows[0];
-
-    // Récupérer la liste complète des profils actifs pour ce compte
-    const [allProfiles]: any = await pool.query(`
-      SELECT p.id, p.first_name, p.last_name, p.role,
-             (SELECT GROUP_CONCAT(i.name SEPARATOR ', ') FROM user_instruments ui JOIN instruments i ON ui.instrument_id = i.id WHERE ui.user_id = p.id) AS instruments
-      FROM user_profiles up
-      JOIN profiles p ON up.profile_id = p.id
-      WHERE up.user_id = ? AND p.status = 'Active'
-      ORDER BY up.is_primary DESC, p.last_name ASC, p.first_name ASC
-    `, [accountUserId]);
+    // Récupérer l'email du compte
+    const [userRows]: any = await pool.query('SELECT email FROM users WHERE id = ?', [accountUserId]);
+    const userEmail = userRows.length > 0 ? userRows[0].email : (currentTokenUser.email || '');
 
     let parsedModules = [];
     if (selectedProfile.managed_modules) {
@@ -246,7 +306,7 @@ router.post('/switch-profile', authenticateToken, async (req: Request, res: Resp
     const payload = {
       id: selectedProfile.id,
       userId: accountUserId,
-      email: selectedProfile.email,
+      email: userEmail,
       role: selectedProfile.role,
       managedModules: parsedModules,
     };
@@ -256,17 +316,19 @@ router.post('/switch-profile', authenticateToken, async (req: Request, res: Resp
 
     const newToken = jwt.sign(payload, secret, { expiresIn: '1d' });
 
+    const activeAccessibleProfiles = accessibleProfiles.filter((p: any) => p.status === 'Active');
+
     res.json({
       token: newToken,
       user: {
         id: selectedProfile.id,
         userId: accountUserId,
-        email: selectedProfile.email,
+        email: userEmail,
         firstName: selectedProfile.first_name,
         lastName: selectedProfile.last_name,
         role: selectedProfile.role,
         managedModules: parsedModules,
-        availableProfiles: allProfiles.map((pr: any) => ({
+        availableProfiles: activeAccessibleProfiles.map((pr: any) => ({
           id: pr.id,
           firstName: pr.first_name,
           lastName: pr.last_name,
@@ -299,22 +361,15 @@ router.get('/me', authenticateToken, async (req, res) => {
       accountUserId = upRows.length > 0 ? upRows[0].user_id : user.id;
     }
 
-    const [allProfiles]: any = await pool.query(`
-      SELECT p.id, p.first_name, p.last_name, p.role,
-             (SELECT GROUP_CONCAT(i.name SEPARATOR ', ') FROM user_instruments ui JOIN instruments i ON ui.instrument_id = i.id WHERE ui.user_id = p.id) AS instruments
-      FROM user_profiles up
-      JOIN profiles p ON up.profile_id = p.id
-      WHERE up.user_id = ? AND p.status = 'Active'
-      ORDER BY up.is_primary DESC, p.last_name ASC, p.first_name ASC
-    `, [accountUserId]);
+    const accessibleProfiles = await getAccessibleProfilesForAccount(accountUserId);
+    const activeAccessibleProfiles = accessibleProfiles.filter((p: any) => p.status === 'Active');
 
     const [currentP]: any = await pool.query(`
       SELECT p.id, p.first_name, p.last_name, p.role, p.managed_modules, p.status, u.email
       FROM profiles p
-      LEFT JOIN user_profiles up ON p.id = up.profile_id AND up.user_id = ?
       LEFT JOIN users u ON u.id = ?
       WHERE p.id = ?
-    `, [accountUserId, accountUserId, user.id]);
+    `, [accountUserId, user.id]);
 
     const active = currentP[0] || {};
     let parsedModules = [];
@@ -335,7 +390,7 @@ router.get('/me', authenticateToken, async (req, res) => {
         lastName: active.last_name || '',
         role: active.role || user.role || 'Membre',
         managedModules: parsedModules.length > 0 ? parsedModules : (user.managedModules || []),
-        availableProfiles: allProfiles.map((pr: any) => ({
+        availableProfiles: activeAccessibleProfiles.map((pr: any) => ({
           id: pr.id,
           firstName: pr.first_name,
           lastName: pr.last_name,

@@ -21,6 +21,13 @@ export interface SharedProfile {
   email: string;
 }
 
+export interface DelegatedProfile {
+  id: string;
+  firstName: string;
+  lastName: string;
+  role: string;
+}
+
 interface UserData {
   id: string;
   first_name: string;
@@ -33,6 +40,7 @@ interface UserData {
   last_login?: string | null;
   emails?: AssociatedEmail[];
   sharedWith?: SharedProfile[];
+  delegatedProfiles?: DelegatedProfile[];
 }
 
 interface Instrument {
@@ -128,6 +136,9 @@ const AdminUsers = () => {
     status: 'Inactive' as 'Inactive' | 'Invited' | 'Active',
   });
   const [secondaryEmails, setSecondaryEmails] = useState<string[]>([]);
+  const [delegatedProfileIds, setDelegatedProfileIds] = useState<string[]>([]);
+  const [delegationSearch, setDelegationSearch] = useState('');
+  const [showDelegationDropdown, setShowDelegationDropdown] = useState(false);
 
   const availableModules = [
     { id: 'news', label: 'Actualités & Événements' },
@@ -417,6 +428,7 @@ const AdminUsers = () => {
         body: JSON.stringify({
           ...formData,
           secondaryEmails: secondaryEmails.map(e => e.trim()).filter(e => e.length > 0),
+          delegatedProfileIds,
         }),
       });
 
@@ -468,6 +480,7 @@ const AdminUsers = () => {
           ...formData,
           secondaryEmails: secondaryEmails.map(e => e.trim()).filter(e => e.length > 0),
           linkToExistingUserId: duplicateEmailDialog.existingUserId,
+          delegatedProfileIds,
         }),
       });
 
@@ -584,7 +597,10 @@ const AdminUsers = () => {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          delegatedProfileIds,
+        }),
       });
 
       if (!response.ok) {
@@ -648,6 +664,9 @@ const AdminUsers = () => {
     const userOrcs = userOrchestras[user.id] || [];
     setEditingUser(user);
     setSecondaryEmails([]);
+    setDelegatedProfileIds(user.delegatedProfiles ? user.delegatedProfiles.map(d => d.id) : []);
+    setDelegationSearch('');
+    setShowDelegationDropdown(false);
     setFormData({
       firstName: user.first_name,
       lastName: user.last_name,
@@ -666,6 +685,9 @@ const AdminUsers = () => {
     setEditingUser(null);
     setShowAddForm(false);
     setSecondaryEmails([]);
+    setDelegatedProfileIds([]);
+    setDelegationSearch('');
+    setShowDelegationDropdown(false);
     setFormData({
       firstName: '',
       lastName: '',
@@ -1007,6 +1029,15 @@ const AdminUsers = () => {
                               >
                                 <Mail size={12} className="text-cyan-500" />
                                 Multi-accès ({user.emails.length} e-mails)
+                              </span>
+                            )}
+                            {user.delegatedProfiles && user.delegatedProfiles.length > 0 && (
+                              <span 
+                                className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 shadow-sm"
+                                title={`Accès délégué à : ${user.delegatedProfiles.map(d => `${d.firstName} ${d.lastName}`).join(', ')}`}
+                              >
+                                <Shield size={12} className="text-amber-500" />
+                                Accès délégué ({user.delegatedProfiles.map(d => d.firstName).join(', ')})
                               </span>
                             )}
                           </div>
@@ -1452,6 +1483,143 @@ const AdminUsers = () => {
                                     ))}
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Section: Accès délégués */}
+                <div className="space-y-4">
+                    <div className="flex items-center space-x-2 text-indigo-600 mb-1">
+                        <Shield size={16} />
+                        <h3 className="text-xs font-bold uppercase tracking-wider">Accès délégués</h3>
+                    </div>
+
+                    <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-3">
+                        <label className="text-xs font-medium text-slate-600 block">
+                            Sélectionnez les profils auxquels ce compte pourra accéder et basculer (délégation unidirectionnelle) :
+                        </label>
+
+                        {/* Selected profiles tags */}
+                        {delegatedProfileIds.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mb-2">
+                                {delegatedProfileIds.map(childId => {
+                                    const childUser = users.find(u => u.id === childId);
+                                    return (
+                                        <span key={childId} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 shadow-sm">
+                                            <User size={12} className="text-indigo-500" />
+                                            {childUser ? `${childUser.first_name} ${childUser.last_name} (${childUser.role})` : childId}
+                                            <button
+                                                type="button"
+                                                onClick={() => setDelegatedProfileIds(prev => prev.filter(id => id !== childId))}
+                                                className="hover:bg-indigo-200 text-indigo-500 hover:text-indigo-800 rounded-full p-0.5 transition cursor-pointer"
+                                            >
+                                                <X size={13} />
+                                            </button>
+                                        </span>
+                                    );
+                                })}
+                            </div>
+                        )}
+
+                        {/* Search input for delegation */}
+                        <div className="relative">
+                            <div className="relative">
+                                <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                                <input
+                                    type="text"
+                                    value={delegationSearch}
+                                    onChange={(e) => {
+                                        setDelegationSearch(e.target.value);
+                                        setShowDelegationDropdown(true);
+                                    }}
+                                    onFocus={() => setShowDelegationDropdown(true)}
+                                    placeholder="Rechercher un musicien (nom, prénom...)"
+                                    className="w-full pl-9 pr-8 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-slate-50/30 focus:bg-white text-sm"
+                                />
+                                {delegationSearch && (
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setDelegationSearch('');
+                                            setShowDelegationDropdown(false);
+                                        }}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                                    >
+                                        <X size={14} />
+                                    </button>
+                                )}
+                            </div>
+
+                            {/* Dropdown list */}
+                            {showDelegationDropdown && (
+                                <>
+                                    <div 
+                                        className="fixed inset-0 z-10" 
+                                        onClick={() => setShowDelegationDropdown(false)}
+                                    />
+                                    <div className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-2xl shadow-xl max-h-48 overflow-y-auto z-20 divide-y divide-slate-100">
+                                        {users
+                                            .filter(u => {
+                                                if (editingUser && u.id === editingUser.id) return false;
+                                                if (delegatedProfileIds.includes(u.id)) return false;
+                                                if (!delegationSearch.trim()) return true;
+                                                const term = delegationSearch.toLowerCase();
+                                                return (
+                                                    u.first_name.toLowerCase().includes(term) ||
+                                                    u.last_name.toLowerCase().includes(term) ||
+                                                    u.email.toLowerCase().includes(term) ||
+                                                    u.role.toLowerCase().includes(term)
+                                                );
+                                            })
+                                            .slice(0, 10)
+                                            .map(candidate => (
+                                                <button
+                                                    key={candidate.id}
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setDelegatedProfileIds(prev => [...prev, candidate.id]);
+                                                        setDelegationSearch('');
+                                                        setShowDelegationDropdown(false);
+                                                    }}
+                                                    className="w-full px-4 py-2.5 text-left flex items-center justify-between hover:bg-indigo-50/60 transition group cursor-pointer"
+                                                >
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-slate-600 group-hover:bg-indigo-100 group-hover:text-indigo-600 transition">
+                                                            <User size={14} />
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-xs font-bold text-slate-800 group-hover:text-indigo-950">
+                                                                {candidate.first_name} {candidate.last_name}
+                                                            </p>
+                                                            <p className="text-[11px] text-slate-400">
+                                                                {candidate.email}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 group-hover:bg-indigo-100 group-hover:text-indigo-700">
+                                                        {candidate.role}
+                                                    </span>
+                                                </button>
+                                            ))}
+                                        {users.filter(u => {
+                                            if (editingUser && u.id === editingUser.id) return false;
+                                            if (delegatedProfileIds.includes(u.id)) return false;
+                                            if (!delegationSearch.trim()) return true;
+                                            const term = delegationSearch.toLowerCase();
+                                            return (
+                                                u.first_name.toLowerCase().includes(term) ||
+                                                u.last_name.toLowerCase().includes(term) ||
+                                                u.email.toLowerCase().includes(term) ||
+                                                u.role.toLowerCase().includes(term)
+                                            );
+                                        }).length === 0 && (
+                                            <div className="p-3 text-center text-xs text-slate-400 italic">
+                                                Aucun profil disponible ou trouvé
+                                            </div>
+                                        )}
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>

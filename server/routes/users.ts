@@ -130,6 +130,28 @@ router.get('/', async (req, res) => {
       }
     }
 
+    // Récupérer les délégations d'accès unidirectionnelles
+    const [delegationRows]: any = await pool.query(`
+      SELECT pd.parent_profile_id, pd.child_profile_id, 
+             cp.first_name as child_first_name, cp.last_name as child_last_name, cp.role as child_role
+      FROM profile_delegations pd
+      JOIN profiles cp ON pd.child_profile_id = cp.id
+      ORDER BY cp.last_name ASC, cp.first_name ASC
+    `);
+
+    const delegationsByParent = new Map<string, any[]>();
+    for (const d of delegationRows) {
+      if (!delegationsByParent.has(d.parent_profile_id)) {
+        delegationsByParent.set(d.parent_profile_id, []);
+      }
+      delegationsByParent.get(d.parent_profile_id)!.push({
+        id: d.child_profile_id,
+        firstName: d.child_first_name,
+        lastName: d.child_last_name,
+        role: d.child_role
+      });
+    }
+
     const parsedUsers = profiles.map((p: any) => {
       let parsedModules = [];
       if (p.managed_modules) {
@@ -150,13 +172,15 @@ router.get('/', async (req, res) => {
       }] : []);
 
       const sharedWith = sharedByProfile.get(p.id) || [];
+      const delegatedProfiles = delegationsByParent.get(p.id) || [];
 
       return {
         ...p,
         has_password: Boolean(p.has_password),
         managed_modules: parsedModules,
         emails,
-        sharedWith
+        sharedWith,
+        delegatedProfiles
       };
     });
 
@@ -223,7 +247,7 @@ router.post('/', async (req, res) => {
     return res.status(403).json({ message: 'Accès refusé.' });
   }
 
-  const { email, password, firstName, lastName, role, instruments, orchestras, managedModules, linkToExistingUserId, secondaryEmails } = req.body;
+  const { email, password, firstName, lastName, role, instruments, orchestras, managedModules, linkToExistingUserId, secondaryEmails, delegatedProfileIds } = req.body;
 
   if (!email || !firstName || !lastName || !role) {
     return res.status(400).json({ message: 'Les informations utilisateur de base sont requises.' });
@@ -237,6 +261,19 @@ router.post('/', async (req, res) => {
     await connection.beginTransaction();
 
     const newProfileId = crypto.randomUUID();
+
+    const attachDelegatedProfiles = async () => {
+      if (Array.isArray(delegatedProfileIds) && delegatedProfileIds.length > 0) {
+        for (const childId of delegatedProfileIds) {
+          if (childId && childId !== newProfileId) {
+            await connection.query(
+              'INSERT IGNORE INTO profile_delegations (id, parent_profile_id, child_profile_id) VALUES (?, ?, ?)',
+              [crypto.randomUUID(), newProfileId, childId]
+            );
+          }
+        }
+      }
+    };
 
     const attachSecondaryEmails = async () => {
       if (Array.isArray(secondaryEmails) && secondaryEmails.length > 0) {
@@ -291,6 +328,9 @@ router.post('/', async (req, res) => {
 
       // Attacher les adresses secondaires s'il y en a
       await attachSecondaryEmails();
+
+      // Attacher les délégations d'accès
+      await attachDelegatedProfiles();
 
       // Associer instruments et orchestres
       if (instruments && instruments.length > 0) {
@@ -373,6 +413,9 @@ router.post('/', async (req, res) => {
 
     // Attacher les adresses secondaires s'il y en a
     await attachSecondaryEmails();
+
+    // Attacher les délégations d'accès
+    await attachDelegatedProfiles();
 
     if (instruments && instruments.length > 0) {
       const instrumentValues = instruments.map((instId: string) => [crypto.randomUUID(), newProfileId, instId]);
@@ -529,7 +572,7 @@ router.put('/:id', async (req, res) => {
   }
 
   const { id } = req.params; // profile_id
-  const { firstName, lastName, email, role, managedModules, instruments, orchestras, password, status } = req.body;
+  const { firstName, lastName, email, role, managedModules, instruments, orchestras, password, status, delegatedProfileIds } = req.body;
 
   if (!firstName || !lastName || !role || !email) {
     return res.status(400).json({ message: 'Les informations de base (prénom, nom, rôle, email) sont requises.' });
@@ -590,6 +633,19 @@ router.put('/:id', async (req, res) => {
     if (orchestras && orchestras.length > 0) {
       const orchestraValues = orchestras.map((orchId: string) => [crypto.randomUUID(), id, orchId]);
       await connection.query('INSERT INTO user_orchestras (id, user_id, orchestra_id) VALUES ?', [orchestraValues]);
+    }
+
+    // Synchroniser les accès délégués (délégations unidirectionnelles accordées à ce profil)
+    if (Array.isArray(delegatedProfileIds)) {
+      await connection.query('DELETE FROM profile_delegations WHERE parent_profile_id = ?', [id]);
+      for (const childId of delegatedProfileIds) {
+        if (childId && childId !== id) {
+          await connection.query(
+            'INSERT IGNORE INTO profile_delegations (id, parent_profile_id, child_profile_id) VALUES (?, ?, ?)',
+            [crypto.randomUUID(), id, childId]
+          );
+        }
+      }
     }
 
     await connection.commit();
