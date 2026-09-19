@@ -668,18 +668,73 @@ router.put('/:id', async (req, res) => {
     `, [id]);
 
     const primaryUserId = primaryLink.length > 0 ? primaryLink[0].user_id : id;
+    const currentEmail = primaryLink.length > 0 ? (primaryLink[0].email || '').toLowerCase() : '';
+    let effectiveUserId = primaryUserId;
+
+    if (normalizedEmail !== currentEmail) {
+      // Vérifier si la nouvelle adresse appartient déjà à un compte existant
+      const [existingUsers]: any = await connection.query(`
+        SELECT id, email, password_hash FROM users WHERE LOWER(email) = ?
+      `, [normalizedEmail]);
+
+      if (existingUsers.length > 0 && existingUsers[0].id !== primaryUserId) {
+        const targetUserId = existingUsers[0].id;
+
+        // Vérifier l'absence de conflit avec un accès délégué
+        const [conflictDelegations]: any = await connection.query(`
+          SELECT pd.id, p.first_name, p.last_name
+          FROM profile_delegations pd
+          JOIN user_profiles up ON (
+            (pd.parent_profile_id = up.profile_id AND pd.child_profile_id = ?) OR
+            (pd.child_profile_id = up.profile_id AND pd.parent_profile_id = ?)
+          )
+          JOIN profiles p ON up.profile_id = p.id
+          WHERE up.user_id = ?
+        `, [id, id, targetUserId]);
+
+        if (conflictDelegations.length > 0) {
+          await connection.rollback();
+          return res.status(400).json({
+            message: `Impossible d'associer cet e-mail : ce profil a déjà un Accès délégué avec ${conflictDelegations[0].first_name} ${conflictDelegations[0].last_name}. Vous ne pouvez pas cumuler Compte partagé et Accès délégué pour la même personne.`
+          });
+        }
+
+        // Retirer l'ancienne liaison primaire de ce profil
+        await connection.query('DELETE FROM user_profiles WHERE user_id = ? AND profile_id = ?', [primaryUserId, id]);
+
+        // Nettoyer l'ancien compte s'il n'est plus utilisé par aucun profil
+        const [remainingLinks]: any = await connection.query('SELECT id FROM user_profiles WHERE user_id = ?', [primaryUserId]);
+        if (remainingLinks.length === 0) {
+          await connection.query('DELETE FROM users WHERE id = ?', [primaryUserId]);
+        }
+
+        // Rattacher ce profil au compte existant en tant que primaire
+        const [alreadyLinked]: any = await connection.query(
+          'SELECT id FROM user_profiles WHERE user_id = ? AND profile_id = ?',
+          [targetUserId, id]
+        );
+        if (alreadyLinked.length > 0) {
+          await connection.query('UPDATE user_profiles SET is_primary = 1 WHERE user_id = ? AND profile_id = ?', [targetUserId, id]);
+        } else {
+          await connection.query(
+            'INSERT INTO user_profiles (id, user_id, profile_id, is_primary) VALUES (?, ?, ?, 1)',
+            [crypto.randomUUID(), targetUserId, id]
+          );
+        }
+
+        effectiveUserId = targetUserId;
+      } else if (primaryUserId) {
+        await connection.query('UPDATE users SET email = ? WHERE id = ?', [normalizedEmail, primaryUserId]);
+      }
+    }
 
     if (status === 'Active' && !password) {
-      const [userRows]: any = await connection.query('SELECT password_hash FROM users WHERE id = ?', [primaryUserId]);
+      const [userRows]: any = await connection.query('SELECT password_hash FROM users WHERE id = ?', [effectiveUserId]);
       if (userRows.length > 0 && !userRows[0].password_hash) {
         await connection.rollback();
         connection.release();
         return res.status(400).json({ message: "Impossible de passer en 'Actif' un utilisateur qui n'a pas encore de mot de passe. L'utilisateur doit d'abord l'activer via son mail ou vous devez lui en définir un." });
       }
-    }
-
-    if (primaryUserId) {
-      await connection.query('UPDATE users SET email = ? WHERE id = ?', [normalizedEmail, primaryUserId]);
     }
 
     const modulesJson = JSON.stringify(managedModules || []);
@@ -691,8 +746,8 @@ router.put('/:id', async (req, res) => {
     if (password) {
       const salt = await bcrypt.genSalt(10);
       const password_hash = await bcrypt.hash(password, salt);
-      if (primaryUserId) {
-        await connection.query('UPDATE users SET password_hash = ? WHERE id = ?', [password_hash, primaryUserId]);
+      if (effectiveUserId) {
+        await connection.query('UPDATE users SET password_hash = ? WHERE id = ?', [password_hash, effectiveUserId]);
       }
       await connection.query('UPDATE profiles SET status = ? WHERE id = ?', ['Active', id]);
     }
@@ -735,10 +790,14 @@ router.put('/:id', async (req, res) => {
     await connection.commit();
     res.status(200).json({ message: 'Utilisateur mis à jour avec succès.' });
 
-  } catch (error) {
+  } catch (error: any) {
     await connection.rollback();
     console.error(`Error updating user with id ${id}:`, error);
-    res.status(500).json({ message: 'Erreur lors de la mise à jour de l\'utilisateur.' });
+    if (error.code === 'ER_DUP_ENTRY') {
+      return res.status(409).json({ message: 'Cette adresse e-mail est déjà utilisée.' });
+    }
+    const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue.';
+    res.status(500).json({ message: `Erreur lors de la mise à jour de l'utilisateur: ${errorMessage}` });
   } finally {
     connection.release();
   }
