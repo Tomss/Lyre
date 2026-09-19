@@ -1137,7 +1137,7 @@ const AdminUsers = () => {
                             )}
                           </div>
                           <div className="flex flex-col space-y-1">
-                            {user.emails && user.emails.length > 1 ? (
+                            {user.emails && (user.emails.length > 1 || (user.sharedWith && user.sharedWith.length > 0)) ? (
                               <div className="space-y-1.5 my-1">
                                 {user.emails.map(em => {
                                   const sharedWithUsers = user.sharedWith?.filter(s => s.email.toLowerCase() === em.email.toLowerCase()) || [];
