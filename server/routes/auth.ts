@@ -158,10 +158,30 @@ router.post('/login', async (req: Request, res: Response) => {
       return res.status(500).json({ message: 'Aucun profil musicien associé à ce compte.' });
     }
 
-    const activeProfiles = profileRows.filter(p => p.status === 'Active');
+    let activeProfiles = profileRows.filter(p => p.status === 'Active');
     if (activeProfiles.length === 0) {
-      console.log(`[Login] Échec: Aucun profil actif pour ${email}`);
-      return res.status(403).json({ message: 'Compte inactif ou en attente d\'activation.' });
+      // Auto-activation si le compte possède un mot de passe valide
+      if (user.password_hash) {
+        await pool.query(`
+          UPDATE profiles p
+          JOIN user_profiles up ON p.id = up.profile_id
+          SET p.status = 'Active'
+          WHERE up.user_id = ?
+        `, [user.id]);
+        await pool.query('UPDATE profiles SET status = \'Active\' WHERE id = ?', [user.id]);
+
+        for (const p of profileRows) {
+          if (p.access_type === 'direct') {
+            p.status = 'Active';
+          }
+        }
+        activeProfiles = profileRows.filter(p => p.status === 'Active');
+      }
+
+      if (activeProfiles.length === 0) {
+        console.log(`[Login] Échec: Aucun profil actif pour ${email}`);
+        return res.status(403).json({ message: 'Compte inactif ou en attente d\'activation.' });
+      }
     }
 
     // Sélection du profil par défaut (le primaire ou le premier actif)
@@ -438,7 +458,14 @@ router.post('/activate', async (req, res) => {
       WHERE id = ?
     `, [password_hash, user.id]);
 
-    // Update profile status
+    // Update profile status (support user_profiles link and legacy direct id)
+    await connection.query(`
+      UPDATE profiles p
+      JOIN user_profiles up ON p.id = up.profile_id
+      SET p.status = 'Active' 
+      WHERE up.user_id = ?
+    `, [user.id]);
+
     await connection.query(`
       UPDATE profiles 
       SET status = 'Active' 
@@ -467,10 +494,13 @@ router.post('/request-password-reset', async (req, res) => {
 
   try {
     const [userRows] = await pool.query<any[]>(`
-      SELECT u.id, u.email, p.first_name 
+      SELECT u.id, u.email, COALESCE(p.first_name, '') as first_name 
       FROM users u 
-      JOIN profiles p ON u.id = p.id 
-      WHERE u.email = ?
+      LEFT JOIN user_profiles up ON u.id = up.user_id
+      LEFT JOIN profiles p ON up.profile_id = p.id 
+      WHERE LOWER(u.email) = LOWER(?)
+      ORDER BY up.is_primary DESC
+      LIMIT 1
     `, [email]);
 
     if (userRows.length === 0) {

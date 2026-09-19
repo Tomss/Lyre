@@ -472,6 +472,20 @@ dotenv.config();
       console.warn('[Migration Warning] profile_delegations:', delErr.message);
     }
 
+    // Harmonisation des statuts : activer les profils dont le compte associé a déjà un mot de passe défini
+    try {
+      await pool.query(`
+        UPDATE profiles p
+        JOIN user_profiles up ON p.id = up.profile_id
+        JOIN users u ON up.user_id = u.id
+        SET p.status = 'Active'
+        WHERE u.password_hash IS NOT NULL AND p.status != 'Active'
+      `);
+      console.log('[Migration] Harmonisation des statuts des profils actifs effectuée.');
+    } catch (actErr: any) {
+      console.warn('[Migration Warning] Harmonisation statuts:', actErr.message);
+    }
+
   } catch (e) {
     console.error('[Emergency/Migration] Erreur:', e);
   }

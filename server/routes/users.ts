@@ -764,7 +764,12 @@ router.delete('/:id', async (req, res) => {
 
     const [links]: any = await connection.query('SELECT user_id FROM user_profiles WHERE profile_id = ?', [id]);
     const linkedUserIds = links.map((l: any) => l.user_id);
+    const [directUsers]: any = await connection.query('SELECT id FROM users WHERE id = ?', [id]);
+    for (const du of directUsers) {
+      if (!linkedUserIds.includes(du.id)) linkedUserIds.push(du.id);
+    }
 
+    await connection.execute('DELETE FROM profile_delegations WHERE parent_profile_id = ? OR child_profile_id = ?', [id, id]);
     await connection.execute('DELETE FROM user_instruments WHERE user_id = ?', [id]);
     await connection.execute('DELETE FROM user_orchestras WHERE user_id = ?', [id]);
     await connection.execute('DELETE FROM event_attendances WHERE user_id = ?', [id]);
