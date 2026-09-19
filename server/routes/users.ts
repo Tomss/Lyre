@@ -512,6 +512,12 @@ router.post('/:profileId/add-email', async (req, res) => {
     const [existingUsers]: any = await connection.query('SELECT id FROM users WHERE LOWER(email) = ?', [normalizedEmail]);
     let targetUserId = '';
 
+    // Si le compte existait mais n'était lié à aucun profil (orphelin), on le nettoie pour repartir sur une invitation propre
+    if (existingUsers.length > 0 && existingWithProfiles.length === 0) {
+      await connection.query('DELETE FROM users WHERE LOWER(email) = ?', [normalizedEmail]);
+      existingUsers.length = 0;
+    }
+
     if (existingUsers.length > 0) {
       targetUserId = existingUsers[0].id;
     } else {
@@ -573,10 +579,8 @@ router.delete('/:profileId/emails/:userId', async (req, res) => {
 
     const [remainingProfiles]: any = await connection.query('SELECT id FROM user_profiles WHERE user_id = ?', [userId]);
     if (remainingProfiles.length === 0) {
-      const [userRow]: any = await connection.query('SELECT password_hash FROM users WHERE id = ?', [userId]);
-      if (userRow.length > 0 && !userRow[0].password_hash) {
-        await connection.query('DELETE FROM users WHERE id = ?', [userId]);
-      }
+      // Le compte n'est rattaché à plus aucun profil : suppression totale pour ne pas laisser de compte fantôme actif
+      await connection.query('DELETE FROM users WHERE id = ?', [userId]);
     }
 
     await connection.commit();
@@ -588,6 +592,28 @@ router.delete('/:profileId/emails/:userId', async (req, res) => {
     res.status(500).json({ message: 'Erreur lors du retrait de l\'accès email.' });
   } finally {
     connection.release();
+  }
+});
+
+// DELETE /api/users/:parentProfileId/delegations/:childProfileId - Retirer une délégation d'accès
+router.delete('/:parentProfileId/delegations/:childProfileId', async (req, res) => {
+  // @ts-ignore
+  const userRole = (req as any).user.role;
+  if (userRole !== 'Admin' && (!(req as any).user.managedModules || !(req as any).user.managedModules.includes('users'))) {
+    return res.status(403).json({ message: 'Accès refusé.' });
+  }
+
+  const { parentProfileId, childProfileId } = req.params;
+
+  try {
+    await pool.query(
+      'DELETE FROM profile_delegations WHERE parent_profile_id = ? AND child_profile_id = ?',
+      [parentProfileId, childProfileId]
+    );
+    res.json({ message: 'Accès délégué retiré avec succès.' });
+  } catch (error) {
+    console.error('Error removing delegation:', error);
+    res.status(500).json({ message: 'Erreur lors du retrait de l\'accès délégué.' });
   }
 });
 
