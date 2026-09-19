@@ -1019,7 +1019,7 @@ const AdminUsers = () => {
                                 title={`Compte partagé avec : ${user.sharedWith.map(s => `${s.firstName} ${s.lastName}`).join(', ')}`}
                               >
                                 <Users size={12} className="text-purple-500" />
-                                Compte partagé ({user.sharedWith.map(s => s.firstName).join(', ')})
+                                Compte partagé
                               </span>
                             )}
                             {user.emails && user.emails.length > 1 && (
