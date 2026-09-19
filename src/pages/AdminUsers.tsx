@@ -99,6 +99,19 @@ const AdminUsers = () => {
     password: '',
     submitting: false
   });
+  const [removeEmailConfirmation, setRemoveEmailConfirmation] = useState<{
+    isOpen: boolean;
+    profileId: string;
+    userId: string;
+    email: string;
+    submitting: boolean;
+  }>({
+    isOpen: false,
+    profileId: '',
+    userId: '',
+    email: '',
+    submitting: false
+  });
   const [notification, setNotification] = useState<Notification>({
     show: false,
     message: '',
@@ -130,7 +143,7 @@ const AdminUsers = () => {
   ];
 
   useEffect(() => {
-    if (showAddForm || deleteConfirmation.isOpen || duplicateEmailDialog.isOpen || addEmailModal.isOpen) {
+    if (showAddForm || deleteConfirmation.isOpen || duplicateEmailDialog.isOpen || addEmailModal.isOpen || removeEmailConfirmation.isOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
@@ -138,7 +151,7 @@ const AdminUsers = () => {
     return () => {
       document.body.style.overflow = 'unset';
     };
-  }, [showAddForm, deleteConfirmation.isOpen, duplicateEmailDialog.isOpen, addEmailModal.isOpen]);
+  }, [showAddForm, deleteConfirmation.isOpen, duplicateEmailDialog.isOpen, addEmailModal.isOpen, removeEmailConfirmation.isOpen]);
 
   const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
     setNotification({ show: true, message, type });
@@ -525,13 +538,21 @@ const AdminUsers = () => {
     }
   };
 
-  const handleRemoveEmail = async (profileId: string, userId: string, email: string) => {
-    if (!token) return;
-    if (!window.confirm(`Êtes-vous sûr de vouloir dissocier l'adresse email "${email}" de ce profil ?`)) {
-      return;
-    }
+  const handlePromptRemoveEmail = (profileId: string, userId: string, email: string) => {
+    setRemoveEmailConfirmation({
+      isOpen: true,
+      profileId,
+      userId,
+      email,
+      submitting: false,
+    });
+  };
+
+  const handleConfirmRemoveEmail = async () => {
+    if (!token || !removeEmailConfirmation.profileId || !removeEmailConfirmation.userId) return;
+    setRemoveEmailConfirmation(prev => ({ ...prev, submitting: true }));
     try {
-      const response = await fetch(`${API_URL}/users/${profileId}/emails/${userId}`, {
+      const response = await fetch(`${API_URL}/users/${removeEmailConfirmation.profileId}/emails/${removeEmailConfirmation.userId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -545,10 +566,12 @@ const AdminUsers = () => {
 
       const result = await response.json();
       showNotification(result.message || 'E-mail dissocié');
+      setRemoveEmailConfirmation({ isOpen: false, profileId: '', userId: '', email: '', submitting: false });
       await fetchUsers();
     } catch (err: any) {
       console.error('Erreur remove-email:', err);
       showNotification(err.message, 'error');
+      setRemoveEmailConfirmation(prev => ({ ...prev, submitting: false }));
     }
   };
 
@@ -1012,9 +1035,9 @@ const AdminUsers = () => {
                                     )}
                                     {!em.isPrimary && (
                                       <button
-                                        onClick={() => handleRemoveEmail(user.id, em.userId, em.email)}
+                                        onClick={() => handlePromptRemoveEmail(user.id, em.userId, em.email)}
                                         title={`Dissocier l'email ${em.email}`}
-                                        className="p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+                                        className="p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
                                       >
                                         <X size={12} />
                                       </button>
@@ -1074,8 +1097,8 @@ const AdminUsers = () => {
                         <div className="md:col-span-2 flex items-center justify-end space-x-2">
                           <button 
                             onClick={() => handleOpenAddEmail(user)} 
-                            title="Ajouter un autre e-mail / parent (Multi-accès)" 
-                            className="p-2 text-cyan-600 bg-cyan-50 hover:bg-cyan-100 rounded-xl transition-all duration-300 hover:scale-110"
+                            title="Ajouter un autre e-mail" 
+                            className="p-2 text-cyan-600 bg-cyan-50 hover:bg-cyan-100 rounded-xl transition-all duration-300 hover:scale-110 cursor-pointer"
                           >
                             <Plus size={18} />
                           </button>
@@ -1159,7 +1182,7 @@ const AdminUsers = () => {
                             <div className="flex items-center justify-between">
                               <label className="flex items-center text-xs font-bold uppercase tracking-wider text-slate-600">
                                 <Mail size={13} className="mr-1.5 text-cyan-500" />
-                                2e adresse e-mail / parent (Multi-accès)
+                                Adresse e-mail supplémentaire
                               </label>
                               <button
                                 type="button"
@@ -1167,11 +1190,11 @@ const AdminUsers = () => {
                                 className="text-xs font-bold text-cyan-600 hover:text-cyan-800 bg-cyan-50 hover:bg-cyan-100 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
                               >
                                 <Plus size={13} />
-                                + Ajouter une adresse
+                                + Ajouter un autre e-mail
                               </button>
                             </div>
 
-                            {secondaryEmails.length > 0 ? (
+                            {secondaryEmails.length > 0 && (
                               <div className="space-y-2">
                                 {secondaryEmails.map((secEmail, idx) => (
                                   <div key={idx} className="flex items-center gap-2">
@@ -1182,7 +1205,7 @@ const AdminUsers = () => {
                                         const val = e.target.value;
                                         setSecondaryEmails(prev => prev.map((item, i) => i === idx ? val : item));
                                       }}
-                                      placeholder="ex: autre.parent@gmail.com"
+                                      placeholder="ex: deuxieme.adresse@email.com"
                                       className="flex-1 px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition bg-slate-50/30 focus:bg-white text-sm"
                                     />
                                     <button
@@ -1196,10 +1219,6 @@ const AdminUsers = () => {
                                   </div>
                                 ))}
                               </div>
-                            ) : (
-                              <p className="text-[11px] text-slate-400 italic">
-                                Pour associer 2 adresses e-mails dès la création (ex: parents séparés), cliquez sur <strong>+ Ajouter une adresse</strong>.
-                              </p>
                             )}
                           </div>
                         )}
@@ -1212,7 +1231,7 @@ const AdminUsers = () => {
                     <div className="flex items-center justify-between text-indigo-600 mb-1">
                       <div className="flex items-center space-x-2">
                         <Mail size={16} />
-                        <h3 className="text-xs font-bold uppercase tracking-wider">Accès & Adresses e-mail (Multi-accès)</h3>
+                        <h3 className="text-xs font-bold uppercase tracking-wider">Accès & Adresses e-mail</h3>
                       </div>
                       <button
                         type="button"
@@ -1220,15 +1239,11 @@ const AdminUsers = () => {
                         className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
                       >
                         <Plus size={14} />
-                        Ajouter un e-mail / parent
+                        Ajouter un autre e-mail
                       </button>
                     </div>
 
                     <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-3">
-                      <p className="text-xs text-slate-500">
-                        Permet à plusieurs personnes (ex: parents séparés) d'accéder au profil de ce musicien avec des identifiants distincts.
-                      </p>
-
                       {editingUser.emails && editingUser.emails.length > 0 ? (
                         <div className="space-y-2">
                           {editingUser.emails.map((em) => (
@@ -1264,7 +1279,7 @@ const AdminUsers = () => {
                                 {!em.isPrimary && (
                                   <button
                                     type="button"
-                                    onClick={() => handleRemoveEmail(editingUser.id, em.userId, em.email)}
+                                    onClick={() => handlePromptRemoveEmail(editingUser.id, em.userId, em.email)}
                                     title="Dissocier cet e-mail"
                                     className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
                                   >
@@ -1287,9 +1302,6 @@ const AdminUsers = () => {
                           </p>
                           <p className="mt-1 text-purple-700 font-semibold">
                             {editingUser.sharedWith.map(s => `${s.firstName} ${s.lastName}`).join(', ')}
-                          </p>
-                          <p className="text-[11px] text-purple-500 mt-0.5">
-                            Ces profils partagent ce même compte de connexion ({editingUser.email}) avec possibilité de basculer en 1 clic.
                           </p>
                         </div>
                       )}
@@ -1421,13 +1433,72 @@ const AdminUsers = () => {
 
         {/* Delete Confirmation Modal */}
         {deleteConfirmation.isOpen && (
-          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-center items-center p-4">
-            <div className="bg-white rounded-lg shadow-xl p-8 m-4 max-w-md w-full">
-              <h3 className="text-2xl font-bold text-gray-800 mb-4">Confirmer la suppression</h3>
-              <p className="text-gray-600 mb-6">Êtes-vous sûr de vouloir supprimer l'utilisateur <span className="font-bold">{deleteConfirmation.user?.first_name} {deleteConfirmation.user?.last_name}</span> ? Cette action est irréversible.</p>
-              <div className="flex justify-end space-x-4">
-                <button onClick={cancelDelete} className="px-6 py-2 rounded-lg border hover:bg-gray-100">Annuler</button>
-                <button onClick={handleDelete} className="bg-red-600 text-white px-6 py-2 rounded-lg shadow hover:bg-red-700">Supprimer</button>
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-center items-center p-4 animate-in fade-in duration-200">
+            <div className="bg-white rounded-3xl shadow-2xl p-6 sm:p-8 max-w-md w-full border border-slate-100">
+              <div className="flex items-center gap-3 text-rose-600 mb-4">
+                <div className="w-12 h-12 rounded-2xl bg-rose-100 flex items-center justify-center flex-shrink-0">
+                  <Trash2 className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black text-slate-800">Confirmer la suppression</h3>
+                  <p className="text-xs text-slate-500">Action irréversible</p>
+                </div>
+              </div>
+              <p className="text-slate-600 text-sm mb-6">
+                Êtes-vous sûr de vouloir supprimer le profil de <strong className="text-slate-800">{deleteConfirmation.user?.first_name} {deleteConfirmation.user?.last_name}</strong> ? Cette action est irréversible.
+              </p>
+              <div className="flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={cancelDelete}
+                  className="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 font-bold text-sm transition cursor-pointer"
+                >
+                  Annuler
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDelete}
+                  className="px-6 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-sm shadow-lg shadow-rose-200 transition cursor-pointer"
+                >
+                  Supprimer
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Remove Secondary Email Confirmation Modal */}
+        {removeEmailConfirmation.isOpen && (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-center items-center p-4 animate-in fade-in duration-200">
+            <div className="bg-white rounded-3xl shadow-2xl p-6 sm:p-8 max-w-md w-full border border-slate-100">
+              <div className="flex items-center gap-3 text-rose-600 mb-4">
+                <div className="w-12 h-12 rounded-2xl bg-rose-100 flex items-center justify-center flex-shrink-0">
+                  <Trash2 className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black text-slate-800">Dissocier l'adresse e-mail</h3>
+                  <p className="text-xs text-slate-500">Accès supplémentaire</p>
+                </div>
+              </div>
+              <p className="text-sm text-slate-600 mb-6">
+                Êtes-vous sûr de vouloir dissocier l'adresse email <strong className="text-slate-800">{removeEmailConfirmation.email}</strong> de ce profil ?
+              </p>
+              <div className="flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setRemoveEmailConfirmation({ isOpen: false, profileId: '', userId: '', email: '', submitting: false })}
+                  className="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 font-bold text-sm transition cursor-pointer"
+                >
+                  Annuler
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmRemoveEmail}
+                  disabled={removeEmailConfirmation.submitting}
+                  className="px-6 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-sm shadow-lg shadow-rose-200 transition flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  {removeEmailConfirmation.submitting ? 'Dissociation...' : 'Dissocier l\'adresse'}
+                </button>
               </div>
             </div>
           </div>
@@ -1462,10 +1533,6 @@ const AdminUsers = () => {
                 <p>
                   Souhaitez-vous <strong className="text-indigo-600">rattacher ce nouveau profil ({formData.firstName} {formData.lastName}) à ce même compte</strong> ?
                 </p>
-                <div className="text-xs text-slate-600 bg-slate-50 p-3.5 rounded-2xl border border-slate-100 space-y-1">
-                  <p className="font-semibold text-slate-700">💡 Compte partagé :</p>
-                  <p>Les musiciens utiliseront les mêmes identifiants (adresse e-mail et mot de passe existant). Lors de la connexion, un sélecteur s'affichera et ils pourront basculer en un clic.</p>
-                </div>
               </div>
 
               <div className="flex flex-col sm:flex-row justify-end gap-3">
@@ -1499,7 +1566,7 @@ const AdminUsers = () => {
                     <Mail className="w-6 h-6" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-black text-slate-800">Ajouter un accès e-mail</h3>
+                    <h3 className="text-xl font-black text-slate-800">Ajouter un autre e-mail</h3>
                     <p className="text-xs text-slate-500">Pour {addEmailModal.profile.first_name} {addEmailModal.profile.last_name}</p>
                   </div>
                 </div>
@@ -1513,10 +1580,6 @@ const AdminUsers = () => {
               </div>
 
               <form onSubmit={handleSubmitAddEmail} className="space-y-4">
-                <p className="text-sm text-slate-600">
-                  Associez une adresse email supplémentaire (ex: 2e parent séparé) pour lui donner un accès indépendant au planning, aux partitions et aux présences de ce musicien.
-                </p>
-
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
                     Adresse e-mail supplémentaire *
@@ -1526,7 +1589,7 @@ const AdminUsers = () => {
                     required
                     value={addEmailModal.email}
                     onChange={(e) => setAddEmailModal(prev => ({ ...prev, email: e.target.value }))}
-                    placeholder="ex: parent2@gmail.com"
+                    placeholder="ex: deuxieme.adresse@email.com"
                     className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition text-sm"
                   />
                 </div>
@@ -1542,13 +1605,6 @@ const AdminUsers = () => {
                     placeholder="Laisser vide pour inviter par email"
                     className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition text-sm"
                   />
-                </div>
-
-                <div className="p-3.5 bg-amber-50/80 border border-amber-200/70 rounded-2xl text-xs text-amber-900 flex items-start gap-2.5">
-                  <Lock size={16} className="text-amber-600 flex-shrink-0 mt-0.5" />
-                  <p>
-                    <strong>Contrôle des invitations :</strong> Aucun e-mail d'activation ne sera envoyé automatiquement. Vous pourrez envoyer l'invitation manuellement quand vous le souhaiterez à l'aide du bouton dédié.
-                  </p>
                 </div>
 
                 <div className="flex justify-end gap-3 pt-2">

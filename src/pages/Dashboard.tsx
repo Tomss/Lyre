@@ -144,7 +144,6 @@ const Dashboard = () => {
       setIsProfileSwitcherOpen(false);
     } catch (err: any) {
       console.error('Failed to switch profile:', err);
-      alert(err.message || 'Erreur lors du changement de profil');
     } finally {
       setSwitchingProfile(false);
     }
