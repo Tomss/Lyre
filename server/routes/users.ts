@@ -672,6 +672,13 @@ router.put('/:id', async (req, res) => {
     let effectiveUserId = primaryUserId;
 
     if (normalizedEmail !== currentEmail) {
+      // Vérifier si le compte actuel est partagé avec d'autres profils
+      const [otherProfiles]: any = await connection.query(
+        'SELECT profile_id FROM user_profiles WHERE user_id = ? AND profile_id != ?',
+        [primaryUserId, id]
+      );
+      const isCurrentlyShared = otherProfiles.length > 0;
+
       // Vérifier si la nouvelle adresse appartient déjà à un compte existant
       const [existingUsers]: any = await connection.query(`
         SELECT id, email, password_hash FROM users WHERE LOWER(email) = ?
@@ -723,7 +730,29 @@ router.put('/:id', async (req, res) => {
         }
 
         effectiveUserId = targetUserId;
+      } else if (isCurrentlyShared) {
+        // Le compte était partagé et la nouvelle adresse est nouvelle :
+        // On dissocie ce profil pour lui créer son propre compte personnel indépendant
+        const newUserId = crypto.randomUUID();
+        const passwordHashToKeep = password ? null : (primaryLink[0]?.password_hash || null);
+
+        await connection.query(
+          'INSERT INTO users (id, email, password_hash) VALUES (?, ?, ?)',
+          [newUserId, normalizedEmail, passwordHashToKeep]
+        );
+
+        // Retirer l'ancienne liaison du compte partagé
+        await connection.query('DELETE FROM user_profiles WHERE user_id = ? AND profile_id = ?', [primaryUserId, id]);
+
+        // Lier au nouveau compte indépendant en tant que primaire
+        await connection.query(
+          'INSERT INTO user_profiles (id, user_id, profile_id, is_primary) VALUES (?, ?, ?, 1)',
+          [crypto.randomUUID(), newUserId, id]
+        );
+
+        effectiveUserId = newUserId;
       } else if (primaryUserId) {
+        // Le compte n'est pas partagé : renommage classique
         await connection.query('UPDATE users SET email = ? WHERE id = ?', [normalizedEmail, primaryUserId]);
       }
     }
