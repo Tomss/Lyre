@@ -62,14 +62,28 @@ router.get('/', async (req, res) => {
             LIMIT 1
           ),
           0
-        ) as has_password
+        ) as has_password,
+        COALESCE(
+          (
+            SELECT (u.activation_token IS NOT NULL) 
+            FROM user_profiles up 
+            JOIN users u ON up.user_id = u.id 
+            WHERE up.profile_id = p.id 
+            ORDER BY up.is_primary DESC, up.created_at ASC 
+            LIMIT 1
+          ),
+          0
+        ) as is_invited
       FROM profiles p
       ORDER BY p.last_name, p.first_name
     `);
 
     // Récupérer toutes les liaisons pour construire la liste complète des emails de chaque profil
     const [allLinks]: any = await pool.query(`
-      SELECT up.profile_id, up.user_id, up.is_primary, u.email, (u.password_hash IS NOT NULL) as has_password, u.last_login
+      SELECT up.profile_id, up.user_id, up.is_primary, u.email, 
+             (u.password_hash IS NOT NULL) as has_password, 
+             (u.activation_token IS NOT NULL) as is_invited, 
+             u.last_login
       FROM user_profiles up
       JOIN users u ON up.user_id = u.id
       ORDER BY up.is_primary DESC, up.created_at ASC
@@ -95,6 +109,7 @@ router.get('/', async (req, res) => {
         email: link.email,
         isPrimary: Boolean(link.is_primary),
         hasPassword: Boolean(link.has_password),
+        isInvited: Boolean(link.is_invited),
         lastLogin: link.last_login
       });
     }
@@ -130,6 +145,7 @@ router.get('/', async (req, res) => {
         email: p.email,
         isPrimary: true,
         hasPassword: Boolean(p.has_password),
+        isInvited: Boolean(p.is_invited),
         lastLogin: p.last_login
       }] : []);
 
