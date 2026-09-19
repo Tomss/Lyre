@@ -115,6 +115,7 @@ const AdminUsers = () => {
     managedModules: [] as string[],
     status: 'Inactive' as 'Inactive' | 'Invited' | 'Active',
   });
+  const [secondaryEmails, setSecondaryEmails] = useState<string[]>([]);
 
   const availableModules = [
     { id: 'news', label: 'Actualités & Événements' },
@@ -401,17 +402,22 @@ const AdminUsers = () => {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          secondaryEmails: secondaryEmails.map(e => e.trim()).filter(e => e.length > 0),
+        }),
       });
 
       if (response.status === 409) {
         const errorData = await response.json();
-        if (errorData.code === 'EMAIL_ALREADY_EXISTS') {
+        if (errorData.code === 'EMAIL_EXISTS' || errorData.code === 'EMAIL_ALREADY_EXISTS') {
           setDuplicateEmailDialog({
             isOpen: true,
             email: formData.email,
             existingUserId: errorData.existingUserId,
-            existingProfiles: errorData.existingProfiles || [],
+            existingProfiles: (errorData.existingProfiles && errorData.existingProfiles.length > 0)
+              ? errorData.existingProfiles
+              : [{ id: errorData.existingUserId, firstName: errorData.existingUserName || 'Utilisateur', lastName: '' }],
           });
           setSubmitting(false);
           return;
@@ -448,6 +454,7 @@ const AdminUsers = () => {
         },
         body: JSON.stringify({
           ...formData,
+          secondaryEmails: secondaryEmails.map(e => e.trim()).filter(e => e.length > 0),
           linkToExistingUserId: duplicateEmailDialog.existingUserId,
         }),
       });
@@ -620,6 +627,7 @@ const AdminUsers = () => {
     const userInsts = userInstruments[user.id] || [];
     const userOrcs = userOrchestras[user.id] || [];
     setEditingUser(user);
+    setSecondaryEmails([]);
     setFormData({
       firstName: user.first_name,
       lastName: user.last_name,
@@ -637,6 +645,7 @@ const AdminUsers = () => {
   const cancelEdit = () => {
     setEditingUser(null);
     setShowAddForm(false);
+    setSecondaryEmails([]);
     setFormData({
       firstName: '',
       lastName: '',
@@ -1140,10 +1149,60 @@ const AdminUsers = () => {
                         </div>
                         <div>
                             <label className="flex items-center text-sm font-semibold text-slate-700 mb-1">
-                                <Mail size={14} className="mr-2 text-slate-400" /> Adresse Email *
+                                <Mail size={14} className="mr-2 text-slate-400" /> Adresse Email {!editingUser ? 'principale *' : '*'}
                             </label>
-                            <input type="email" name="email" value={formData.email} onChange={handleInputChange} placeholder="Email" required className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-slate-50/30 focus:bg-white text-sm" />
+                            <input type="email" name="email" value={formData.email} onChange={handleInputChange} placeholder="ex: jean.dupont@gmail.com" required className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-slate-50/30 focus:bg-white text-sm" />
                         </div>
+
+                        {!editingUser && (
+                          <div className="pt-3 border-t border-slate-100 space-y-2">
+                            <div className="flex items-center justify-between">
+                              <label className="flex items-center text-xs font-bold uppercase tracking-wider text-slate-600">
+                                <Mail size={13} className="mr-1.5 text-cyan-500" />
+                                2e adresse e-mail / parent (Multi-accès)
+                              </label>
+                              <button
+                                type="button"
+                                onClick={() => setSecondaryEmails(prev => [...prev, ''])}
+                                className="text-xs font-bold text-cyan-600 hover:text-cyan-800 bg-cyan-50 hover:bg-cyan-100 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
+                              >
+                                <Plus size={13} />
+                                + Ajouter une adresse
+                              </button>
+                            </div>
+
+                            {secondaryEmails.length > 0 ? (
+                              <div className="space-y-2">
+                                {secondaryEmails.map((secEmail, idx) => (
+                                  <div key={idx} className="flex items-center gap-2">
+                                    <input
+                                      type="email"
+                                      value={secEmail}
+                                      onChange={(e) => {
+                                        const val = e.target.value;
+                                        setSecondaryEmails(prev => prev.map((item, i) => i === idx ? val : item));
+                                      }}
+                                      placeholder="ex: autre.parent@gmail.com"
+                                      className="flex-1 px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition bg-slate-50/30 focus:bg-white text-sm"
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => setSecondaryEmails(prev => prev.filter((_, i) => i !== idx))}
+                                      title="Supprimer cette adresse"
+                                      className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition cursor-pointer"
+                                    >
+                                      <X size={16} />
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-[11px] text-slate-400 italic">
+                                Pour associer 2 adresses e-mails dès la création (ex: parents séparés), cliquez sur <strong>+ Ajouter une adresse</strong>.
+                              </p>
+                            )}
+                          </div>
+                        )}
                     </div>
                 </div>
 

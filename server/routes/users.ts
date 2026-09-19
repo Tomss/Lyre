@@ -207,7 +207,7 @@ router.post('/', async (req, res) => {
     return res.status(403).json({ message: 'Accès refusé.' });
   }
 
-  const { email, password, firstName, lastName, role, instruments, orchestras, managedModules, linkToExistingUserId } = req.body;
+  const { email, password, firstName, lastName, role, instruments, orchestras, managedModules, linkToExistingUserId, secondaryEmails } = req.body;
 
   if (!email || !firstName || !lastName || !role) {
     return res.status(400).json({ message: 'Les informations utilisateur de base sont requises.' });
@@ -221,6 +221,35 @@ router.post('/', async (req, res) => {
     await connection.beginTransaction();
 
     const newProfileId = crypto.randomUUID();
+
+    const attachSecondaryEmails = async () => {
+      if (Array.isArray(secondaryEmails) && secondaryEmails.length > 0) {
+        for (const rawSec of secondaryEmails) {
+          const sec = (typeof rawSec === 'string' ? rawSec : '').trim().toLowerCase();
+          if (!sec || sec === normalizedEmail) continue;
+
+          const [existingSec]: any = await connection.query('SELECT id FROM users WHERE LOWER(email) = ?', [sec]);
+          let secUserId = '';
+          if (existingSec.length > 0) {
+            secUserId = existingSec[0].id;
+          } else {
+            secUserId = crypto.randomUUID();
+            await connection.query('INSERT INTO users (id, email, password_hash) VALUES (?, ?, NULL)', [secUserId, sec]);
+          }
+
+          const [existingLink]: any = await connection.query(
+            'SELECT id FROM user_profiles WHERE user_id = ? AND profile_id = ?',
+            [secUserId, newProfileId]
+          );
+          if (existingLink.length === 0) {
+            await connection.query(
+              'INSERT INTO user_profiles (id, user_id, profile_id, is_primary) VALUES (?, ?, ?, 0)',
+              [crypto.randomUUID(), secUserId, newProfileId]
+            );
+          }
+        }
+      }
+    };
 
     // CAS 1 : Rattachement à un compte existant confirmé par l'administrateur
     if (linkToExistingUserId) {
@@ -243,6 +272,9 @@ router.post('/', async (req, res) => {
         'INSERT INTO user_profiles (id, user_id, profile_id, is_primary) VALUES (?, ?, ?, 0)',
         [crypto.randomUUID(), linkToExistingUserId, newProfileId]
       );
+
+      // Attacher les adresses secondaires s'il y en a
+      await attachSecondaryEmails();
 
       // Associer instruments et orchestres
       if (instruments && instruments.length > 0) {
@@ -275,7 +307,12 @@ router.post('/', async (req, res) => {
         code: 'EMAIL_EXISTS',
         message: `Cette adresse email est déjà associée au compte de ${existingNames || 'un utilisateur'}.`,
         existingUserId: dupUser[0].id,
-        existingUserName: existingNames || 'un utilisateur'
+        existingUserName: existingNames || 'un utilisateur',
+        existingProfiles: dupUser.filter((d: any) => d.first_name).map((d: any) => ({
+          id: d.id,
+          firstName: d.first_name,
+          lastName: d.last_name
+        }))
       });
     }
 
@@ -317,6 +354,9 @@ router.post('/', async (req, res) => {
       'INSERT INTO user_profiles (id, user_id, profile_id, is_primary) VALUES (?, ?, ?, 1)',
       [crypto.randomUUID(), newUserId, newProfileId]
     );
+
+    // Attacher les adresses secondaires s'il y en a
+    await attachSecondaryEmails();
 
     if (instruments && instruments.length > 0) {
       const instrumentValues = instruments.map((instId: string) => [crypto.randomUUID(), newProfileId, instId]);
