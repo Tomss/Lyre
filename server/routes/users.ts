@@ -496,17 +496,35 @@ router.post('/:profileId/add-email', async (req, res) => {
       WHERE LOWER(u.email) = ?
     `, [normalizedEmail]);
 
-    if (existingWithProfiles.length > 0 && !confirmShare) {
-      await connection.rollback();
-      return res.status(409).json({
-        code: 'EMAIL_ALREADY_USED',
-        message: 'Cet e-mail est déjà associé à un autre musicien.',
-        existingProfiles: existingWithProfiles.map((r: any) => ({
-          id: r.profile_id,
-          firstName: r.first_name,
-          lastName: r.last_name
-        }))
-      });
+    if (existingWithProfiles.length > 0) {
+      const existingProfileIds = existingWithProfiles.map((r: any) => r.profile_id);
+      const [delegationRows]: any = await connection.query(`
+        SELECT pd.id, p2.first_name, p2.last_name
+        FROM profile_delegations pd
+        JOIN profiles p2 ON (pd.child_profile_id = p2.id OR pd.parent_profile_id = p2.id)
+        WHERE (pd.parent_profile_id = ? AND pd.child_profile_id IN (?))
+           OR (pd.parent_profile_id IN (?) AND pd.child_profile_id = ?)
+      `, [profileId, existingProfileIds, existingProfileIds, profileId]);
+
+      if (delegationRows.length > 0) {
+        await connection.rollback();
+        return res.status(400).json({
+          message: `Impossible d'ajouter cet e-mail en compte partagé : ce profil est déjà lié par un Accès délégué avec ${delegationRows[0].first_name} ${delegationRows[0].last_name}. Vous ne pouvez pas cumuler Compte partagé et Accès délégué pour la même personne.`
+        });
+      }
+
+      if (!confirmShare) {
+        await connection.rollback();
+        return res.status(409).json({
+          code: 'EMAIL_ALREADY_USED',
+          message: 'Cet e-mail est déjà associé à un autre musicien.',
+          existingProfiles: existingWithProfiles.map((r: any) => ({
+            id: r.profile_id,
+            firstName: r.first_name,
+            lastName: r.last_name
+          }))
+        });
+      }
     }
 
     const [existingUsers]: any = await connection.query('SELECT id FROM users WHERE LOWER(email) = ?', [normalizedEmail]);
@@ -692,8 +710,18 @@ router.put('/:id', async (req, res) => {
     // Synchroniser les accès délégués (délégations unidirectionnelles accordées à ce profil)
     if (Array.isArray(delegatedProfileIds)) {
       await connection.query('DELETE FROM profile_delegations WHERE parent_profile_id = ?', [id]);
+
+      // Trouver les profils avec lesquels cet utilisateur partage déjà un compte (e-mail partagé)
+      const [sharedRows]: any = await connection.query(`
+        SELECT up2.profile_id
+        FROM user_profiles up1
+        JOIN user_profiles up2 ON up1.user_id = up2.user_id AND up1.profile_id != up2.profile_id
+        WHERE up1.profile_id = ?
+      `, [id]);
+      const sharedProfileIds = new Set(sharedRows.map((r: any) => r.profile_id));
+
       for (const childId of delegatedProfileIds) {
-        if (childId && childId !== id) {
+        if (childId && childId !== id && !sharedProfileIds.has(childId)) {
           await connection.query(
             'INSERT IGNORE INTO profile_delegations (id, parent_profile_id, child_profile_id) VALUES (?, ?, ?)',
             [crypto.randomUUID(), id, childId]

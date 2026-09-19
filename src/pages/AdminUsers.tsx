@@ -1607,6 +1607,7 @@ const AdminUsers = () => {
                                             .filter(u => {
                                                 if (editingUser && u.id === editingUser.id) return false;
                                                 if (delegatedProfileIds.includes(u.id)) return false;
+                                                if (editingUser?.sharedWith?.some(s => s.profileId === u.id)) return false;
                                                 if (!delegationSearch.trim()) return true;
                                                 const term = delegationSearch.toLowerCase();
                                                 return (
@@ -1649,6 +1650,7 @@ const AdminUsers = () => {
                                         {users.filter(u => {
                                             if (editingUser && u.id === editingUser.id) return false;
                                             if (delegatedProfileIds.includes(u.id)) return false;
+                                            if (editingUser?.sharedWith?.some(s => s.profileId === u.id)) return false;
                                             if (!delegationSearch.trim()) return true;
                                             const term = delegationSearch.toLowerCase();
                                             return (

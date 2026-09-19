@@ -459,6 +459,15 @@ dotenv.config();
           await pool.query(`ALTER TABLE profile_delegations CONVERT TO CHARACTER SET utf8mb4 COLLATE ${targetCollation}`);
         } catch (e) {}
       }
+
+      // Nettoyage des délégations redondantes (profils partageant déjà un même compte email)
+      try {
+        await pool.query(`
+          DELETE pd FROM profile_delegations pd
+          JOIN user_profiles up1 ON pd.parent_profile_id = up1.profile_id
+          JOIN user_profiles up2 ON pd.child_profile_id = up2.profile_id AND up1.user_id = up2.user_id
+        `);
+      } catch (cleanErr) {}
     } catch (delErr: any) {
       console.warn('[Migration Warning] profile_delegations:', delErr.message);
     }
