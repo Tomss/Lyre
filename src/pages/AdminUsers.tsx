@@ -1015,8 +1015,8 @@ const AdminUsers = () => {
             {Object.entries(usersByRole).map(([role, userList]) => {
               const style = getRoleStyle(role);
               return (
-              <div key={role} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden transition-all duration-300 hover:shadow-md">
-                <div onClick={() => toggleRoleExpansion(role)} className={`p-4 flex justify-between items-center cursor-pointer ${style.bg} hover:opacity-90 transition-all`}>
+              <div key={role} className="bg-white rounded-2xl shadow-sm border border-slate-200 transition-all duration-300 hover:shadow-md">
+                <div onClick={() => toggleRoleExpansion(role)} className={`p-4 flex justify-between items-center cursor-pointer ${style.bg} hover:opacity-90 transition-all ${expandedRoles.has(role) ? 'rounded-t-2xl' : 'rounded-2xl'}`}>
                   <div className="flex items-center">
                     <div className={`p-2 ${style.iconBg} rounded-xl ${style.icon} mr-4 shadow-sm`}>
                       {React.createElement(getRoleIcon(role), { size: 20 })}
@@ -1032,8 +1032,8 @@ const AdminUsers = () => {
                 </div>
                 {expandedRoles.has(role) && (
                   <div className="divide-y divide-slate-100">
-                    {userList.map(user => (
-                      <div key={user.id} className={`p-4 grid grid-cols-1 md:grid-cols-12 gap-4 items-start md:items-center hover:bg-slate-50/50 transition-colors duration-200`}>
+                    {userList.map((user, userIdx) => (
+                      <div key={user.id} className={`p-4 grid grid-cols-1 md:grid-cols-12 gap-4 items-start md:items-center hover:bg-slate-50/50 transition-colors duration-200 ${userIdx === userList.length - 1 ? 'rounded-b-2xl' : ''}`}>
                         <div className="md:col-span-6">
                           <div className="flex flex-wrap items-center gap-2 mb-2">
                             <p className="font-bold text-lg text-slate-800 uppercase leading-tight mr-1">{user.last_name} {user.first_name}</p>
@@ -1064,9 +1064,28 @@ const AdminUsers = () => {
                                       {em.isPrimary ? 'Principal' : 'Secondaire'}
                                     </span>
                                     {em.alsoUsedBy && em.alsoUsedBy.length > 0 && (
-                                      <span className="text-[11px] text-slate-500 font-normal italic">
-                                        (aussi : {em.alsoUsedBy.join(', ')})
-                                      </span>
+                                      <div className="relative group/shared inline-flex items-center">
+                                        <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200/90 shadow-xs cursor-pointer select-none hover:bg-amber-100 transition-colors">
+                                          <Users size={11} className="text-amber-600 flex-shrink-0" />
+                                          Partagé
+                                        </span>
+                                        {/* Tooltip au survol */}
+                                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover/shared:flex flex-col z-50 min-w-[190px] max-w-xs p-2.5 bg-slate-900/95 backdrop-blur-md text-white rounded-xl shadow-xl border border-slate-700/60 pointer-events-none transition-all duration-150 animate-in fade-in zoom-in-95">
+                                          <div className="flex items-center gap-1.5 font-bold text-amber-300 text-[11px] pb-1.5 mb-1.5 border-b border-slate-800">
+                                            <Users size={12} className="text-amber-400" />
+                                            <span>Donne aussi accès à :</span>
+                                          </div>
+                                          <div className="space-y-1">
+                                            {em.alsoUsedBy.map((name, idx) => (
+                                              <div key={idx} className="flex items-center gap-1.5 text-xs text-slate-100 font-medium">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0"></span>
+                                                <span className="truncate">{name}</span>
+                                              </div>
+                                            ))}
+                                          </div>
+                                          <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900/95"></div>
+                                        </div>
+                                      </div>
                                     )}
                                     {em.hasPassword ? (
                                       <span className="text-[10px] font-bold bg-green-100 text-green-800 px-1.5 py-0.5 rounded-full flex items-center gap-1">
@@ -1345,9 +1364,28 @@ const AdminUsers = () => {
                                       {em.isPrimary ? 'Principal' : 'Secondaire'}
                                     </span>
                                     {em.alsoUsedBy && em.alsoUsedBy.length > 0 && (
-                                      <span className="text-[11px] text-slate-500 font-normal italic">
-                                        (aussi : {em.alsoUsedBy.join(', ')})
-                                      </span>
+                                      <div className="relative group/shared inline-flex items-center">
+                                        <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200/90 shadow-xs cursor-pointer select-none hover:bg-amber-100 transition-colors">
+                                          <Users size={11} className="text-amber-600 flex-shrink-0" />
+                                          Partagé
+                                        </span>
+                                        {/* Tooltip au survol */}
+                                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover/shared:flex flex-col z-50 min-w-[190px] max-w-xs p-2.5 bg-slate-900/95 backdrop-blur-md text-white rounded-xl shadow-xl border border-slate-700/60 pointer-events-none transition-all duration-150 animate-in fade-in zoom-in-95">
+                                          <div className="flex items-center gap-1.5 font-bold text-amber-300 text-[11px] pb-1.5 mb-1.5 border-b border-slate-800">
+                                            <Users size={12} className="text-amber-400" />
+                                            <span>Donne aussi accès à :</span>
+                                          </div>
+                                          <div className="space-y-1">
+                                            {em.alsoUsedBy.map((name, idx) => (
+                                              <div key={idx} className="flex items-center gap-1.5 text-xs text-slate-100 font-medium">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0"></span>
+                                                <span className="truncate">{name}</span>
+                                              </div>
+                                            ))}
+                                          </div>
+                                          <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900/95"></div>
+                                        </div>
+                                      </div>
                                     )}
                                     {em.hasPassword ? (
                                       <span className="text-[10px] font-bold bg-green-100 text-green-800 px-2 py-0.5 rounded-full flex items-center gap-1">
