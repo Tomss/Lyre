@@ -2,6 +2,7 @@ import React, { useState, useEffect, FormEvent } from 'react';
 import { ChevronDown,  Edit, Trash2, Users, Mail, MailPlus, User, Shield, X, UserPlus, CheckCircle, Search, ArrowLeft, Power, Music, LayoutGrid, Plus, KeyRound, Eye, EyeOff, Copy, Sparkles } from "lucide-react";
 import { useAuth } from '../context/AuthContext';
 import { Navigate, Link } from 'react-router-dom';
+import { EmailAutocompleteInput } from '../components/EmailAutocompleteInput';
 
 import { API_URL } from '../config';
 
@@ -1277,7 +1278,16 @@ const AdminUsers = () => {
                             <label className="flex items-center text-sm font-semibold text-slate-700 mb-1">
                                 <Mail size={14} className="mr-2 text-slate-400" /> Adresse Email {!editingUser ? 'principale *' : '*'}
                             </label>
-                            <input type="email" name="email" value={formData.email} onChange={handleInputChange} placeholder="ex: jean.dupont@gmail.com" required className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-slate-50/30 focus:bg-white text-sm" />
+                            <EmailAutocompleteInput
+                              name="email"
+                              value={formData.email}
+                              onChange={(val) => setFormData(prev => ({ ...prev, email: val }))}
+                              users={users}
+                              excludeEmails={secondaryEmails}
+                              placeholder="Tapez un nom de membre ou ex: jean.dupont@gmail.com"
+                              required
+                              className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-slate-50/30 focus:bg-white text-sm"
+                            />
                         </div>
 
                         {!editingUser && (
@@ -1301,16 +1311,21 @@ const AdminUsers = () => {
                               <div className="space-y-2">
                                 {secondaryEmails.map((secEmail, idx) => (
                                   <div key={idx} className="flex items-center gap-2">
-                                    <input
-                                      type="email"
-                                      value={secEmail}
-                                      onChange={(e) => {
-                                        const val = e.target.value;
-                                        setSecondaryEmails(prev => prev.map((item, i) => i === idx ? val : item));
-                                      }}
-                                      placeholder="ex: deuxieme.adresse@email.com"
-                                      className="flex-1 px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition bg-slate-50/30 focus:bg-white text-sm"
-                                    />
+                                    <div className="flex-1">
+                                      <EmailAutocompleteInput
+                                        value={secEmail}
+                                        onChange={(val) => {
+                                          setSecondaryEmails(prev => prev.map((item, i) => i === idx ? val : item));
+                                        }}
+                                        users={users}
+                                        excludeEmails={[
+                                          formData.email,
+                                          ...secondaryEmails.filter((_, i) => i !== idx)
+                                        ]}
+                                        placeholder="Tapez un nom de membre ou une adresse e-mail..."
+                                        className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition bg-slate-50/30 focus:bg-white text-sm"
+                                      />
+                                    </div>
                                     <button
                                       type="button"
                                       onClick={() => setSecondaryEmails(prev => prev.filter((_, i) => i !== idx))}
@@ -1714,13 +1729,18 @@ const AdminUsers = () => {
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
                     Adresse e-mail supplémentaire *
                   </label>
-                  <input
-                    type="email"
-                    required
+                  <EmailAutocompleteInput
                     value={addEmailModal.email}
-                    onChange={(e) => setAddEmailModal(prev => ({ ...prev, email: e.target.value }))}
-                    placeholder="ex: deuxieme.adresse@email.com"
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition text-sm"
+                    onChange={(val) => setAddEmailModal(prev => ({ ...prev, email: val }))}
+                    users={users}
+                    excludeEmails={
+                      addEmailModal.profile?.emails?.map(e => e.email) ||
+                      (addEmailModal.profile?.email ? [addEmailModal.profile.email] : [])
+                    }
+                    placeholder="Tapez un nom de membre ou une adresse e-mail..."
+                    required
+                    autoFocus
+                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition text-sm bg-white"
                   />
                 </div>
 
