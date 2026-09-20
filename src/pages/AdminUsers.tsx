@@ -403,8 +403,32 @@ const AdminUsers = () => {
       }
     }
     
-    // Optimistic update
-    setUsers(prev => prev.map(u => u.id === user.id ? { ...u, status: newStatus } : u));
+    // Optimistic update : mise à jour instantanée du statut du profil ET de ses e-mails associés
+    setUsers(prev => {
+      const updatedStatuses = prev.map(u => u.id === user.id ? { ...u, status: newStatus } : u);
+
+      return updatedStatuses.map(u => {
+        const updatedEmails = (u.emails || []).map(em => {
+          // Un e-mail est Actif s'il a un mot de passe ET qu'au moins un profil utilisant cet e-mail est Actif
+          const hasActiveProfile = updatedStatuses.some(other =>
+            other.status === 'Active' &&
+            (other.emails || []).some(oEm => oEm.email.toLowerCase() === em.email.toLowerCase())
+          );
+          const isEmailActive = Boolean(em.hasPassword && hasActiveProfile);
+          const isEmailInvited = !isEmailActive && Boolean(em.isInvited);
+          return {
+            ...em,
+            isActive: isEmailActive,
+            isInvited: isEmailInvited
+          };
+        });
+
+        return {
+          ...u,
+          emails: updatedEmails
+        };
+      });
+    });
 
     try {
       const response = await fetch(`${API_URL}/users/${user.id}`, {
@@ -430,6 +454,7 @@ const AdminUsers = () => {
         throw new Error(errorData.message || 'Erreur lors du changement de statut');
       }
       showNotification(`Compte ${newStatus === 'Active' ? 'activé' : 'désactivé'} avec succès`);
+      await fetchUsers();
     } catch (err: any) {
       console.error(err);
       showNotification(err.message, 'error');
@@ -1183,15 +1208,6 @@ const AdminUsers = () => {
                                         <Mail size={12} />
                                       </button>
                                     )}
-                                    {currentUser?.role === 'Admin' && (
-                                      <button
-                                        onClick={() => handleOpenSetPasswordModal(user, em.userId, em.email)}
-                                        title={`Définir ou forcer le mot de passe pour ${em.email}`}
-                                        className="p-1 text-amber-600 hover:text-amber-800 hover:bg-amber-100 rounded-lg transition-colors cursor-pointer"
-                                      >
-                                        <KeyRound size={12} />
-                                      </button>
-                                    )}
                                     {!em.isPrimary && (
                                       <button
                                         onClick={() => handlePromptRemoveEmail(user.id, em.userId, em.email)}
@@ -1261,15 +1277,13 @@ const AdminUsers = () => {
                           >
                             <MailPlus size={18} />
                           </button>
-                          {user.role !== 'Admin' && (
+                          {user.role !== 'Admin' && (!user.emails || user.emails.length <= 1) && (
                             <button 
                               onClick={() => handleInvite(user.id)} 
                               title={
-                                user.emails && user.emails.length > 1
-                                  ? `Envoyer l'invitation à toutes les adresses associées (${user.emails.length} adresses)`
-                                  : user.status === 'Active' 
-                                    ? "Envoyer un lien de réinitialisation" 
-                                    : "Envoyer invitation d'activation"
+                                user.status === 'Active' 
+                                  ? "Envoyer un lien de réinitialisation" 
+                                  : "Envoyer invitation d'activation"
                               } 
                               className={`p-2 rounded-xl transition-all duration-300 hover:scale-110 cursor-pointer ${
                                 user.status === 'Active' 
@@ -1278,15 +1292,6 @@ const AdminUsers = () => {
                               }`}
                             >
                               <Mail size={18} />
-                            </button>
-                          )}
-                          {currentUser?.role === 'Admin' && (
-                            <button 
-                              onClick={() => handleOpenSetPasswordModal(user)} 
-                              title={user.has_password || user.status === 'Active' ? "Définir / forcer le mot de passe" : "Définir un mot de passe (activer directement)"} 
-                              className="p-2 text-amber-600 bg-amber-50 hover:bg-amber-100 rounded-xl transition-all duration-300 hover:scale-110 cursor-pointer"
-                            >
-                              <KeyRound size={18} />
                             </button>
                           )}
                           <button onClick={() => handleEdit(user)} title="Modifier" className="p-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-all duration-300 hover:scale-110"><Edit size={18} /></button>
