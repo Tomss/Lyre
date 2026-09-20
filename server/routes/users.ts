@@ -809,53 +809,60 @@ router.post('/:id/invite', async (req, res) => {
     }
     const profile = profiles[0];
 
-    let userRow: any = null;
+    let userRows: any[] = [];
     if (targetedUserId) {
       const [uRows]: any = await connection.query('SELECT id, email, password_hash FROM users WHERE id = ?', [targetedUserId]);
-      if (uRows.length > 0) userRow = uRows[0];
+      if (uRows.length > 0) userRows = uRows;
     } else {
       const [uRows]: any = await connection.query(`
         SELECT u.id, u.email, u.password_hash 
         FROM user_profiles up
         JOIN users u ON up.user_id = u.id
         WHERE up.profile_id = ?
-        ORDER BY up.is_primary DESC
-        LIMIT 1
+        ORDER BY up.is_primary DESC, up.created_at ASC
       `, [id]);
-      if (uRows.length > 0) userRow = uRows[0];
+      userRows = uRows;
     }
 
-    if (!userRow) {
+    if (userRows.length === 0) {
       await connection.rollback();
       return res.status(404).json({ message: 'Aucun compte email associé trouvé pour ce profil.' });
     }
 
-    const isReset = Boolean(userRow.password_hash);
-    const token = crypto.randomBytes(32).toString('hex');
-    const expiresAt = new Date();
-    expiresAt.setHours(expiresAt.getHours() + 48);
+    const sentEmails: string[] = [];
+    for (const userRow of userRows) {
+      const isReset = Boolean(userRow.password_hash);
+      const token = crypto.randomBytes(32).toString('hex');
+      const expiresAt = new Date();
+      expiresAt.setHours(expiresAt.getHours() + 48);
 
-    await connection.query('UPDATE users SET activation_token = ?, token_expires_at = ? WHERE id = ?', [
-      token,
-      expiresAt,
-      userRow.id
-    ]);
+      await connection.query('UPDATE users SET activation_token = ?, token_expires_at = ? WHERE id = ?', [
+        token,
+        expiresAt,
+        userRow.id
+      ]);
 
-    console.log(`[API] Envoi email invitation/reset à ${userRow.email} pour le profil ${profile.first_name} ${profile.last_name}`);
-    const emailSent = await sendActivationEmail(userRow.email, profile.first_name, token, isReset, req);
-
-    if (!emailSent) {
-      await connection.rollback();
-      return res.status(500).json({ message: "Échec de l'envoi de l'email via Resend." });
+      console.log(`[API] Envoi email invitation/reset à ${userRow.email} pour le profil ${profile.first_name} ${profile.last_name}`);
+      const emailSent = await sendActivationEmail(userRow.email, profile.first_name, token, isReset, req);
+      if (emailSent) {
+        sentEmails.push(userRow.email);
+      }
     }
 
-    if (!isReset && profile.status !== 'Active') {
+    if (sentEmails.length === 0) {
+      await connection.rollback();
+      return res.status(500).json({ message: "Échec de l'envoi des e-mails via Resend." });
+    }
+
+    if (profile.status !== 'Active') {
       await connection.query('UPDATE profiles SET status = ? WHERE id = ?', ['Invited', id]);
     }
 
     await connection.commit();
-    const successMsg = isReset ? 'Lien de réinitialisation envoyé avec succès' : 'Invitation envoyée avec succès';
-    res.status(200).json({ message: `${successMsg} sur ${userRow.email}` });
+    const successMsg = sentEmails.length > 1
+      ? `Invitations envoyées avec succès (${sentEmails.length}) à : ${sentEmails.join(', ')}`
+      : `Invitation envoyée avec succès sur ${sentEmails[0]}`;
+    res.status(200).json({ message: successMsg });
 
   } catch (error) {
     if (connection) await connection.rollback();

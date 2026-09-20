@@ -1200,8 +1200,14 @@ const AdminUsers = () => {
                           {user.role !== 'Admin' && (
                             <button 
                               onClick={() => handleInvite(user.id)} 
-                              title={user.status === 'Active' ? "Envoyer un lien de réinitialisation" : "Envoyer invitation d'activation"} 
-                              className={`p-2 rounded-xl transition-all duration-300 hover:scale-110 ${
+                              title={
+                                user.emails && user.emails.length > 1
+                                  ? `Envoyer l'invitation à toutes les adresses associées (${user.emails.length} adresses)`
+                                  : user.status === 'Active' 
+                                    ? "Envoyer un lien de réinitialisation" 
+                                    : "Envoyer invitation d'activation"
+                              } 
+                              className={`p-2 rounded-xl transition-all duration-300 hover:scale-110 cursor-pointer ${
                                 user.status === 'Active' 
                                   ? 'text-amber-600 bg-amber-50 hover:bg-amber-100' 
                                   : 'text-indigo-600 bg-indigo-50 hover:bg-indigo-100'
