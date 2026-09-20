@@ -857,21 +857,41 @@ const AdminUsers = () => {
     }
   };
 
+  // Normalisation du texte pour recherche insensible aux accents et à la casse
+  const normalizeSearchText = (str: string = '') =>
+    str
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim();
+
   // Filtrer les utilisateurs selon le terme de recherche
+  const searchTerms = normalizeSearchText(searchTerm).split(/\s+/).filter(Boolean);
+
   const filteredUsers = users.filter(user => {
-    const searchLower = searchTerm.toLowerCase();
-    const matchesSearch = (
-      (user.first_name || '').toLowerCase().includes(searchLower) ||
-      (user.last_name || '').toLowerCase().includes(searchLower) ||
-      (user.email || '').toLowerCase().includes(searchLower) ||
-      (user.role || '').toLowerCase().includes(searchLower) ||
-      (userInstruments[user.id] && userInstruments[user.id].some(inst =>
-        (inst.name || '').toLowerCase().includes(searchLower)
-      )) ||
-      (userOrchestras[user.id] && userOrchestras[user.id].some(orc =>
-        (orc.name || '').toLowerCase().includes(searchLower)
-      ))
-    );
+    // Tous les e-mails associés (principal et secondaires)
+    const userEmails = (user.emails || []).map(e => e.email).join(' ');
+    // Profils partagés associés
+    const userAlsoUsedBy = (user.emails || []).flatMap(e => e.alsoUsedBy || []).join(' ');
+    // Instruments et orchestres
+    const instruments = (userInstruments[user.id] || []).map(i => i.name).join(' ');
+    const orchestras = (userOrchestras[user.id] || []).map(o => o.name).join(' ');
+
+    const searchableText = normalizeSearchText(`
+      ${user.first_name || ''} 
+      ${user.last_name || ''} 
+      ${user.first_name || ''} ${user.last_name || ''} 
+      ${user.last_name || ''} ${user.first_name || ''} 
+      ${user.email || ''} 
+      ${userEmails} 
+      ${userAlsoUsedBy} 
+      ${user.role || ''} 
+      ${instruments} 
+      ${orchestras}
+    `);
+
+    // Tous les mots saisis dans la barre de recherche doivent être présents
+    const matchesSearch = searchTerms.length === 0 || searchTerms.every(term => searchableText.includes(term));
 
     const matchesRole = roleFilter.includes(user.role);
     const userStatus = user.status || 'Inactive';
