@@ -11,6 +11,7 @@ export interface AssociatedEmail {
   email: string;
   isPrimary: boolean;
   hasPassword: boolean;
+  isActive?: boolean;
   isInvited?: boolean;
   lastLogin: string | null;
   alsoUsedBy?: string[];
@@ -796,7 +797,7 @@ const AdminUsers = () => {
       case 'Invited': {
         let badgeLabel = 'Invité';
         if (user.emails && user.emails.length > 1) {
-          const invitedCount = user.emails.filter(e => e.isInvited || e.hasPassword).length;
+          const invitedCount = user.emails.filter(e => e.isInvited || e.isActive).length;
           badgeLabel = `Invité (${invitedCount}/${user.emails.length})`;
         }
         return (
@@ -1131,7 +1132,7 @@ const AdminUsers = () => {
                                         </div>
                                       </div>
                                     )}
-                                    {em.hasPassword ? (
+                                    {em.isActive ? (
                                       <span className="text-[10px] font-bold bg-green-100 text-green-800 px-1.5 py-0.5 rounded-full flex items-center gap-1">
                                         <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
                                         Actif
@@ -1151,7 +1152,7 @@ const AdminUsers = () => {
                                       <button
                                         onClick={() => handleInvite(user.id, em.userId)}
                                         title={
-                                          em.hasPassword
+                                          em.isActive
                                             ? `Envoyer un lien de réinitialisation à ${em.email}`
                                             : em.isInvited
                                               ? `Renvoyer l'invitation d'activation à ${em.email}`
@@ -1464,7 +1465,7 @@ const AdminUsers = () => {
                                         </div>
                                       </div>
                                     )}
-                                    {em.hasPassword ? (
+                                    {em.isActive ? (
                                       <span className="text-[10px] font-bold bg-green-100 text-green-800 px-2 py-0.5 rounded-full flex items-center gap-1">
                                         <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
                                         Actif
@@ -1505,7 +1506,7 @@ const AdminUsers = () => {
                                     type="button"
                                     onClick={() => handleInvite(editingUser.id, em.userId)}
                                     title={
-                                      em.hasPassword 
+                                      em.isActive 
                                         ? `Envoyer un lien de réinitialisation à ${em.email}` 
                                         : em.isInvited 
                                           ? `Renvoyer l'invitation à ${em.email}` 
@@ -1514,7 +1515,7 @@ const AdminUsers = () => {
                                     className="h-8 px-3 text-xs font-semibold text-indigo-600 hover:text-indigo-800 bg-white hover:bg-slate-50 border border-slate-200 hover:border-indigo-300 rounded-lg shadow-sm transition-colors inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"
                                   >
                                     <Mail size={13} />
-                                    {em.hasPassword ? 'Réinitialiser' : em.isInvited ? 'Relancer' : 'Inviter'}
+                                    {em.isActive ? 'Réinitialiser' : em.isInvited ? 'Relancer' : 'Inviter'}
                                   </button>
                                   {currentUser?.role === 'Admin' && (
                                     <button

@@ -451,13 +451,13 @@ router.post('/activate', async (req, res) => {
       UPDATE profiles p
       JOIN user_profiles up ON p.id = up.profile_id
       SET p.status = 'Active' 
-      WHERE up.user_id = ?
+      WHERE up.user_id = ? AND p.status = 'Invited'
     `, [user.id]);
 
     await connection.query(`
       UPDATE profiles 
       SET status = 'Active' 
-      WHERE id = ?
+      WHERE id = ? AND status = 'Invited'
     `, [user.id]);
 
     await connection.commit();

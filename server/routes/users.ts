@@ -84,7 +84,7 @@ router.get('/', async (req, res) => {
              (u.password_hash IS NOT NULL) as has_password, 
              (u.activation_token IS NOT NULL) as is_invited, 
              u.last_login,
-             p.first_name, p.last_name
+             p.first_name, p.last_name, p.status as profile_status
       FROM user_profiles up
       JOIN users u ON up.user_id = u.id
       JOIN profiles p ON up.profile_id = p.id
@@ -102,12 +102,23 @@ router.get('/', async (req, res) => {
         .map((l: any) => `${l.first_name} ${l.last_name}`);
       const alsoUsedBy = Array.from(new Set(otherNames));
 
+      // Vérifier le statut de l'e-mail par rapport à l'ensemble de ses profils associés :
+      // L'e-mail n'est considéré Actif que s'il a un mot de passe ET qu'au moins un profil associé est Actif.
+      // S'il n'est associé qu'à des profils inactifs, l'e-mail passe Inactif (ou Invité si invitation en cours).
+      const userLinks = allLinks.filter((l: any) => l.user_id === link.user_id);
+      const hasActiveProfile = userLinks.some((l: any) => l.profile_status === 'Active');
+      const hasInvitedProfile = userLinks.some((l: any) => l.profile_status === 'Invited');
+
+      const isEmailActive = Boolean(link.has_password && hasActiveProfile);
+      const isEmailInvited = !isEmailActive && Boolean(link.is_invited || hasInvitedProfile);
+
       linksByProfile.get(link.profile_id)!.push({
         userId: link.user_id,
         email: link.email,
         isPrimary: Boolean(link.is_primary),
         hasPassword: Boolean(link.has_password),
-        isInvited: Boolean(link.is_invited),
+        isActive: isEmailActive,
+        isInvited: isEmailInvited,
         lastLogin: link.last_login,
         alsoUsedBy: alsoUsedBy.length > 0 ? alsoUsedBy : undefined
       });
@@ -128,7 +139,8 @@ router.get('/', async (req, res) => {
         email: p.email,
         isPrimary: true,
         hasPassword: Boolean(p.has_password),
-        isInvited: Boolean(p.is_invited),
+        isActive: Boolean(p.has_password && p.status === 'Active'),
+        isInvited: Boolean(!p.has_password && (p.is_invited || p.status === 'Invited')),
         lastLogin: p.last_login
       }] : []);
 
@@ -885,7 +897,14 @@ router.post('/:id/invite', async (req, res) => {
 
     const sentEmails: string[] = [];
     for (const userRow of userRows) {
-      const isReset = Boolean(userRow.password_hash);
+      // Si aucun profil associé à cet e-mail n'est actif, envoyer une invitation d'activation et non un reset
+      const [activeProfiles]: any = await connection.query(`
+        SELECT p.id FROM profiles p
+        JOIN user_profiles up ON p.id = up.profile_id
+        WHERE up.user_id = ? AND p.status = 'Active'
+      `, [userRow.id]);
+
+      const isReset = Boolean(userRow.password_hash && activeProfiles.length > 0);
       const token = crypto.randomBytes(32).toString('hex');
       const expiresAt = new Date();
       expiresAt.setHours(expiresAt.getHours() + 48);
