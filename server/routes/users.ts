@@ -723,11 +723,22 @@ router.put('/:id', async (req, res) => {
     }
 
     if (status === 'Active' && !password) {
-      const [userRows]: any = await connection.query('SELECT password_hash FROM users WHERE id = ?', [effectiveUserId]);
-      if (userRows.length > 0 && !userRows[0].password_hash) {
-        await connection.rollback();
-        connection.release();
-        return res.status(400).json({ message: "Impossible de passer en 'Actif' un utilisateur qui n'a pas encore de mot de passe. L'utilisateur doit d'abord l'activer via son mail ou vous devez lui en définir un." });
+      // Vérifier si au moins un des e-mails associés à ce profil possède un mot de passe
+      const [pwdRows]: any = await connection.query(`
+        SELECT COUNT(*) as count 
+        FROM user_profiles up
+        JOIN users u ON up.user_id = u.id
+        WHERE up.profile_id = ? AND u.password_hash IS NOT NULL
+      `, [id]);
+      
+      const hasAnyPassword = pwdRows.length > 0 && pwdRows[0].count > 0;
+      if (!hasAnyPassword) {
+        const [userRows]: any = await connection.query('SELECT password_hash FROM users WHERE id = ?', [effectiveUserId]);
+        if (userRows.length === 0 || !userRows[0].password_hash) {
+          await connection.rollback();
+          connection.release();
+          return res.status(400).json({ message: "Impossible de passer en 'Actif' un utilisateur qui n'a pas encore de mot de passe. L'utilisateur doit d'abord l'activer via son mail ou vous devez lui en définir un." });
+        }
       }
     }
 

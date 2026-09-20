@@ -947,13 +947,14 @@ const AdminUsers = () => {
             </button>
           );
         }
-        // Pour les autres, activation manuelle autorisée SI a un mot de passe (Option 1)
-        if (user.has_password) {
+        // Pour les autres, activation manuelle autorisée SI au moins une adresse e-mail a un mot de passe ou est active
+        const canDirectlyActivate = user.has_password || (user.emails || []).some(e => e.hasPassword || e.isActive);
+        if (canDirectlyActivate) {
           return (
             <button 
               onClick={() => handleToggleStatus(user)}
               title="Réactiver le compte"
-              className="group inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 hover:bg-green-100 hover:text-green-800 transition-colors"
+              className="group inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 hover:bg-green-100 hover:text-green-800 transition-colors cursor-pointer"
             >
               <Power className="w-3 h-3 mr-1 text-red-500 group-hover:text-green-500 transition-colors" /> Inactif
             </button>
@@ -962,7 +963,7 @@ const AdminUsers = () => {
         
         return (
           <span 
-            title="Activation par mail requise"
+            title="Activation par mail requise (aucun mot de passe défini)"
             className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200"
           >
             <Power className="w-3 h-3 mr-1" /> Inactif
