@@ -408,6 +408,20 @@ router.post('/activate', async (req, res) => {
       return res.status(400).json({ message: "Le lien d'activation a expiré." });
     }
 
+    // Vérifier les profils associés au compte : interdire l'activation si tous les profils sont Inactifs
+    const [profileRows]: any = await connection.query(`
+      SELECT p.id, p.status 
+      FROM profiles p
+      JOIN user_profiles up ON p.id = up.profile_id
+      WHERE up.user_id = ?
+    `, [user.id]);
+
+    const isAllInactive = profileRows.length > 0 && profileRows.every((p: any) => p.status === 'Inactive');
+    if (isAllInactive) {
+      await connection.rollback();
+      return res.status(403).json({ message: "Ce compte est actuellement inactif. Une invitation d'activation doit d'abord être envoyée par un administrateur." });
+    }
+
     // Password Policy Validation
     const isMinLength = password.length >= 8;
     const hasUppercase = /[A-Z]/.test(password);
@@ -468,7 +482,7 @@ router.post('/request-password-reset', async (req, res) => {
 
   try {
     const [userRows] = await pool.query<any[]>(`
-      SELECT u.id, u.email, COALESCE(p.first_name, '') as first_name 
+      SELECT u.id, u.email, u.password_hash, COALESCE(p.first_name, '') as first_name 
       FROM users u 
       LEFT JOIN user_profiles up ON u.id = up.user_id
       LEFT JOIN profiles p ON up.profile_id = p.id 
@@ -478,11 +492,35 @@ router.post('/request-password-reset', async (req, res) => {
     `, [email]);
 
     if (userRows.length === 0) {
-      // Return success message to prevent user enumeration
-      return res.json({ message: 'Si un compte existe avec cette adresse e-mail, vous recevrez un lien de réinitialisation.' });
+      // Return generic message to prevent user enumeration
+      return res.json({ message: 'Si un compte actif existe avec cette adresse e-mail, vous recevrez un lien de réinitialisation.' });
     }
 
     const user = userRows[0];
+
+    // Vérifier les profils associés à ce compte utilisateur
+    const [profileRows]: any = await pool.query(`
+      SELECT p.id, p.status 
+      FROM profiles p
+      JOIN user_profiles up ON p.id = up.profile_id
+      WHERE up.user_id = ?
+    `, [user.id]);
+
+    // Règle de sécurité stricte :
+    // Un utilisateur ne peut demander une réinitialisation QUE si son compte a déjà été activé (mot de passe défini)
+    // ET qu'au moins un de ses profils est actif (status === 'Active').
+    // Si le compte est inactif ou n'a jamais été activé (aucun mot de passe), l'accès autonome est strictement interdit :
+    // une invitation d'activation doit impérativement être envoyée manuellement par un administrateur.
+    const hasPassword = Boolean(user.password_hash);
+    const hasActiveProfile = profileRows.length > 0 && profileRows.some((p: any) => p.status === 'Active');
+
+    if (!hasPassword || !hasActiveProfile) {
+      console.warn(`[Auth] Réinitialisation refusée pour compte inactif/non activé : ${user.email}`);
+      return res.status(400).json({ 
+        message: "Ce compte n'est pas encore actif. Une invitation d'activation doit d'abord vous être envoyée par les administrateurs." 
+      });
+    }
+
     const crypto = await import('crypto');
     const token = crypto.randomBytes(32).toString('hex');
     const expiresAt = new Date();
@@ -497,7 +535,7 @@ router.post('/request-password-reset', async (req, res) => {
     const { sendActivationEmail } = await import('../utils/email');
     await sendActivationEmail(user.email, user.first_name, token, true, req);
 
-    return res.json({ message: 'Si un compte existe avec cette adresse e-mail, vous recevrez un lien de réinitialisation.' });
+    return res.json({ message: 'Si un compte actif existe avec cette adresse e-mail, vous recevrez un lien de réinitialisation.' });
   } catch (error) {
     console.error('[Auth] Password reset request error:', error);
     return res.status(500).json({ message: 'Erreur lors de la demande de réinitialisation.' });
