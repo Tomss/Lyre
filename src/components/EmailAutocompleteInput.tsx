@@ -38,6 +38,7 @@ export const EmailAutocompleteInput: React.FC<EmailAutocompleteInputProps> = ({
   const [highlightIndex, setHighlightIndex] = useState<number>(-1);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const justSelectedRef = useRef(false);
 
   // Regrouper toutes les adresses e-mails uniques avec les profils associés
   const uniqueEmailEntries = useMemo(() => {
@@ -111,16 +112,17 @@ export const EmailAutocompleteInput: React.FC<EmailAutocompleteInputProps> = ({
 
   // Ouvrir automatiquement le dropdown s'il y a des suggestions
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    justSelectedRef.current = false;
     onChange(e.target.value);
     setIsOpen(true);
     setHighlightIndex(-1);
   };
 
   const handleSelectSuggestion = (email: string) => {
+    justSelectedRef.current = true;
     onChange(email);
     setIsOpen(false);
     setHighlightIndex(-1);
-    inputRef.current?.focus();
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -159,7 +161,14 @@ export const EmailAutocompleteInput: React.FC<EmailAutocompleteInputProps> = ({
         value={value}
         onChange={handleInputChange}
         onFocus={() => {
-          if (suggestions.length > 0) setIsOpen(true);
+          if (justSelectedRef.current) {
+            justSelectedRef.current = false;
+            return;
+          }
+          const isSingleExact = suggestions.length === 1 && suggestions[0].email.toLowerCase() === value.trim().toLowerCase();
+          if (suggestions.length > 0 && !isSingleExact) {
+            setIsOpen(true);
+          }
         }}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
@@ -189,6 +198,7 @@ export const EmailAutocompleteInput: React.FC<EmailAutocompleteInputProps> = ({
               return (
                 <div
                   key={item.email}
+                  onMouseDown={(e) => e.preventDefault()}
                   onClick={() => handleSelectSuggestion(item.email)}
                   onMouseEnter={() => setHighlightIndex(idx)}
                   className={`px-3.5 py-2.5 cursor-pointer flex items-center justify-between gap-3 transition-colors ${
