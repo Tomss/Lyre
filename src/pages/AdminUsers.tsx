@@ -1,5 +1,5 @@
 import React, { useState, useEffect, FormEvent } from 'react';
-import { ChevronDown,  Edit, Trash2, Users, Mail, MailPlus, User, Shield, X, UserPlus, CheckCircle, Search, ArrowLeft, ChevronRight, Power, Lock, Music, LayoutGrid, AlertTriangle, Plus, KeyRound, Eye, EyeOff, Copy, Sparkles } from "lucide-react";
+import { ChevronDown,  Edit, Trash2, Users, Mail, MailPlus, User, Shield, X, UserPlus, CheckCircle, Search, ArrowLeft, Power, Music, LayoutGrid, Plus, KeyRound, Eye, EyeOff, Copy, Sparkles } from "lucide-react";
 import { useAuth } from '../context/AuthContext';
 import { Navigate, Link } from 'react-router-dom';
 
@@ -79,7 +79,7 @@ const getPasswordRules = (pwd: string) => {
 };
 
 const AdminUsers = () => {
-  const { user: currentUser, token } = useAuth();
+  const { currentUser, token, isAuthenticated } = useAuth();
   const [users, setUsers] = useState<UserData[]>([]);
   const [instruments, setInstruments] = useState<Instrument[]>([]);
   const [orchestras, setOrchestras] = useState<Orchestra[]>([]);
@@ -87,10 +87,8 @@ const AdminUsers = () => {
   const [userOrchestras, setUserOrchestras] = useState<{ [key: string]: Orchestra[] }>({});
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedRole, setSelectedRole] = useState<string>('Tous');
-  const [selectedStatus, setSelectedStatus] = useState<string>('Tous');
-  const [selectedInstrument, setSelectedInstrument] = useState<string>('Tous');
-  const [selectedOrchestra, setSelectedOrchestra] = useState<string>('Tous');
+  const [roleFilter, setRoleFilter] = useState<string[]>(['Admin', 'Gestionnaire', 'Membre']);
+  const [statusFilter, setStatusFilter] = useState<string[]>(['Active', 'Invited', 'Inactive']);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingUser, setEditingUser] = useState<UserData | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -124,7 +122,6 @@ const AdminUsers = () => {
     submitting: false
   });
   const [showPasswordInForm, setShowPasswordInForm] = useState(false);
-  const [copiedPassword, setCopiedPassword] = useState(false);
 
   const [setPasswordModal, setSetPasswordModal] = useState<{
     isOpen: boolean;
@@ -700,7 +697,6 @@ const AdminUsers = () => {
     setEditingUser(user);
     setSecondaryEmails([]);
     setShowPasswordInForm(false);
-    setCopiedPassword(false);
     setFormData({
       firstName: user.first_name,
       lastName: user.last_name,
@@ -720,7 +716,6 @@ const AdminUsers = () => {
     setShowAddForm(false);
     setSecondaryEmails([]);
     setShowPasswordInForm(false);
-    setCopiedPassword(false);
     setFormData({
       firstName: '',
       lastName: '',
