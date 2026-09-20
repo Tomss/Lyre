@@ -10,28 +10,46 @@ import { attachModalSmoothScroll } from './utils/modalScroll';
 // Direct import for the critical landing page for instant first paint
 import Home from './pages/Home';
 
+const lazyWithRetry = (componentImport: () => Promise<any>) =>
+  lazy(async () => {
+    try {
+      const module = await componentImport();
+      window.sessionStorage.removeItem('chunk_failed_refreshed');
+      return module;
+    } catch (error: any) {
+      console.warn('[App] Chunk load failed, reloading to get latest version:', error);
+      const isRefreshed = window.sessionStorage.getItem('chunk_failed_refreshed');
+      if (!isRefreshed) {
+        window.sessionStorage.setItem('chunk_failed_refreshed', 'true');
+        window.location.reload();
+        return { default: () => null };
+      }
+      throw error;
+    }
+  });
+
 // Lazy loading for all other pages to achieve massive bundle reduction and 0-delay load
-const NewsArchive = lazy(() => import('./pages/NewsArchive'));
-const School = lazy(() => import('./pages/School'));
-const Orchestras = lazy(() => import('./pages/Orchestras'));
-const Media = lazy(() => import('./pages/Media'));
-const Contact = lazy(() => import('./pages/Contact'));
-const Connexion = lazy(() => import('./pages/Connexion'));
-const Activation = lazy(() => import('./pages/Activation'));
-const Dashboard = lazy(() => import('./pages/Dashboard'));
+const NewsArchive = lazyWithRetry(() => import('./pages/NewsArchive'));
+const School = lazyWithRetry(() => import('./pages/School'));
+const Orchestras = lazyWithRetry(() => import('./pages/Orchestras'));
+const Media = lazyWithRetry(() => import('./pages/Media'));
+const Contact = lazyWithRetry(() => import('./pages/Contact'));
+const Connexion = lazyWithRetry(() => import('./pages/Connexion'));
+const Activation = lazyWithRetry(() => import('./pages/Activation'));
+const Dashboard = lazyWithRetry(() => import('./pages/Dashboard'));
 
 // Lazy loading for all heavy Admin panels
-const AdminUsers = lazy(() => import('./pages/AdminUsers'));
-const AdminInstruments = lazy(() => import('./pages/AdminInstruments'));
-const AdminOrchestras = lazy(() => import('./pages/AdminOrchestras'));
-const AdminEvents = lazy(() => import('./pages/AdminEvents'));
-const AdminMedia = lazy(() => import('./pages/AdminMedia'));
-const AdminTheme = lazy(() => import('./pages/AdminTheme'));
-const AdminPartners = lazy(() => import('./pages/AdminPartners'));
-const AdminMorceaux = lazy(() => import('./pages/AdminMorceaux'));
-const AdminPartitions = lazy(() => import('./pages/AdminPartitions'));
-const AdminNews = lazy(() => import('./pages/AdminNews'));
-const AdminCommunication = lazy(() => import('./pages/AdminCommunication'));
+const AdminUsers = lazyWithRetry(() => import('./pages/AdminUsers'));
+const AdminInstruments = lazyWithRetry(() => import('./pages/AdminInstruments'));
+const AdminOrchestras = lazyWithRetry(() => import('./pages/AdminOrchestras'));
+const AdminEvents = lazyWithRetry(() => import('./pages/AdminEvents'));
+const AdminMedia = lazyWithRetry(() => import('./pages/AdminMedia'));
+const AdminTheme = lazyWithRetry(() => import('./pages/AdminTheme'));
+const AdminPartners = lazyWithRetry(() => import('./pages/AdminPartners'));
+const AdminMorceaux = lazyWithRetry(() => import('./pages/AdminMorceaux'));
+const AdminPartitions = lazyWithRetry(() => import('./pages/AdminPartitions'));
+const AdminNews = lazyWithRetry(() => import('./pages/AdminNews'));
+const AdminCommunication = lazyWithRetry(() => import('./pages/AdminCommunication'));
 
 // Minimal elegant page loader
 const PageFallback = () => (

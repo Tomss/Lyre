@@ -1008,15 +1008,15 @@ const AdminUsers = () => {
   const filteredUsers = users.filter(user => {
     const searchLower = searchTerm.toLowerCase();
     const matchesSearch = (
-      user.first_name.toLowerCase().includes(searchLower) ||
-      user.last_name.toLowerCase().includes(searchLower) ||
-      user.email.toLowerCase().includes(searchLower) ||
-      user.role.toLowerCase().includes(searchLower) ||
+      (user.first_name || '').toLowerCase().includes(searchLower) ||
+      (user.last_name || '').toLowerCase().includes(searchLower) ||
+      (user.email || '').toLowerCase().includes(searchLower) ||
+      (user.role || '').toLowerCase().includes(searchLower) ||
       (userInstruments[user.id] && userInstruments[user.id].some(inst =>
-        inst.name.toLowerCase().includes(searchLower)
+        (inst.name || '').toLowerCase().includes(searchLower)
       )) ||
       (userOrchestras[user.id] && userOrchestras[user.id].some(orc =>
-        orc.name.toLowerCase().includes(searchLower)
+        (orc.name || '').toLowerCase().includes(searchLower)
       ))
     );
 
@@ -1085,9 +1085,9 @@ const AdminUsers = () => {
 
   const usersByRole = filteredUsers
     .sort((a, b) => {
-      const lastNameCompare = a.last_name.localeCompare(b.last_name);
+      const lastNameCompare = (a.last_name || '').localeCompare(b.last_name || '');
       if (lastNameCompare !== 0) return lastNameCompare;
-      return a.first_name.localeCompare(b.first_name);
+      return (a.first_name || '').localeCompare(b.first_name || '');
     })
     .reduce((acc, user) => {
       if (!acc[user.role]) {
@@ -1618,42 +1618,42 @@ const AdminUsers = () => {
                               </div>
 
                               <div className="flex items-center gap-2 self-end sm:self-center">
-                                <button
-                                  type="button"
-                                  onClick={() => handleInvite(editingUser.id, em.userId)}
-                                  title={
-                                    em.hasPassword 
-                                      ? `Envoyer un lien de réinitialisation à ${em.email}` 
-                                      : em.isInvited 
-                                        ? `Renvoyer l'invitation à ${em.email}` 
-                                        : `Envoyer l'invitation à ${em.email}`
-                                  }
-                                  className="px-2.5 py-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-800 bg-white border border-slate-200 hover:border-indigo-300 rounded-lg shadow-sm transition-colors flex items-center gap-1.5 cursor-pointer"
-                                >
-                                  <Mail size={13} />
-                                  {em.hasPassword ? 'Réinitialiser' : em.isInvited ? 'Relancer' : 'Inviter'}
-                                </button>
-                                {currentUser?.role === 'Admin' && (
                                   <button
                                     type="button"
-                                    onClick={() => handleOpenSetPasswordModal(editingUser, em.userId, em.email)}
-                                    title={`Définir ou modifier directement le mot de passe pour ${em.email}`}
-                                    className="px-2.5 py-1.5 text-xs font-semibold text-amber-700 hover:text-amber-900 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg shadow-sm transition-colors flex items-center gap-1.5 cursor-pointer"
+                                    onClick={() => handleInvite(editingUser.id, em.userId)}
+                                    title={
+                                      em.hasPassword 
+                                        ? `Envoyer un lien de réinitialisation à ${em.email}` 
+                                        : em.isInvited 
+                                          ? `Renvoyer l'invitation à ${em.email}` 
+                                          : `Envoyer l'invitation à ${em.email}`
+                                    }
+                                    className="h-8 px-3 text-xs font-semibold text-indigo-600 hover:text-indigo-800 bg-white hover:bg-slate-50 border border-slate-200 hover:border-indigo-300 rounded-lg shadow-sm transition-colors inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"
                                   >
-                                    <KeyRound size={13} className="text-amber-600" />
-                                    Mot de passe
+                                    <Mail size={13} />
+                                    {em.hasPassword ? 'Réinitialiser' : em.isInvited ? 'Relancer' : 'Inviter'}
                                   </button>
-                                )}
-                                {!em.isPrimary && (
-                                  <button
-                                    type="button"
-                                    onClick={() => handlePromptRemoveEmail(editingUser.id, em.userId, em.email)}
-                                    title="Dissocier cet e-mail"
-                                    className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
-                                  >
-                                    <Trash2 size={15} />
-                                  </button>
-                                )}
+                                  {currentUser?.role === 'Admin' && (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleOpenSetPasswordModal(editingUser, em.userId, em.email)}
+                                      title={`Définir ou modifier directement le mot de passe pour ${em.email}`}
+                                      className="h-8 px-3 text-xs font-semibold text-slate-700 hover:text-indigo-600 bg-white hover:bg-slate-50 border border-slate-200 hover:border-indigo-300 rounded-lg shadow-sm transition-colors inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"
+                                    >
+                                      <KeyRound size={13} className="text-amber-500" />
+                                      Mot de passe
+                                    </button>
+                                  )}
+                                  {!em.isPrimary && (
+                                    <button
+                                      type="button"
+                                      onClick={() => handlePromptRemoveEmail(editingUser.id, em.userId, em.email)}
+                                      title="Dissocier cet e-mail"
+                                      className="h-8 w-8 inline-flex items-center justify-center text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors cursor-pointer border border-transparent hover:border-red-100"
+                                    >
+                                      <Trash2 size={15} />
+                                    </button>
+                                  )}
                               </div>
                             </div>
                           );
@@ -1821,7 +1821,7 @@ const AdminUsers = () => {
                     </div>
 
                     <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-4">
-                        <div className="grid grid-cols-1 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label className="flex items-center text-sm font-semibold text-slate-700 mb-1">
                                     <LayoutGrid size={14} className="mr-2 text-slate-400" /> Rôle
@@ -1835,101 +1835,46 @@ const AdminUsers = () => {
                                     <ChevronDown className="text-slate-400" />
                                 </div>
                             </div>
-                        </div>
-
-                        {currentUser?.role === 'Admin' && (
-                            <div className="p-4 rounded-2xl border border-amber-200 bg-amber-50/40 space-y-3">
-                                <div className="flex items-center justify-between">
-                                    <label className="flex items-center text-sm font-bold text-slate-800">
-                                        <KeyRound size={15} className="mr-2 text-amber-600" />
-                                        {editingUser ? 'Changer / Forcer le mot de passe' : 'Définir un mot de passe manuellement'}
-                                        <span className="ml-2 text-xs font-normal text-slate-500 hidden sm:inline">
-                                            {editingUser ? '(Optionnel - laisser vide pour conserver l\'actuel)' : '(Optionnel - active immédiatement)'}
-                                        </span>
-                                    </label>
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            const gen = generateSecurePassword();
-                                            setFormData(prev => ({ ...prev, password: gen }));
-                                            setShowPasswordInForm(true);
-                                        }}
-                                        className="text-xs font-bold text-amber-800 hover:text-amber-900 bg-amber-100/80 hover:bg-amber-100 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
-                                        title="Générer un mot de passe sécurisé respectant toutes les exigences"
-                                    >
-                                        <Sparkles size={12} />
-                                        Générer
-                                    </button>
-                                </div>
-
-                                <div className="relative">
-                                    <input
-                                        type={showPasswordInForm ? "text" : "password"}
-                                        name="password"
-                                        value={formData.password}
-                                        onChange={handleInputChange}
-                                        placeholder={editingUser ? "Nouveau mot de passe (laisser vide pour ne pas changer)" : "Saisir un mot de passe (ou laisser vide pour invitation email)"}
-                                        className="w-full pl-4 pr-20 py-2 rounded-xl border border-amber-200 focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none transition bg-white text-sm"
-                                    />
-                                    <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                                        {formData.password && (
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    navigator.clipboard.writeText(formData.password);
-                                                    setCopiedPassword(true);
-                                                    setTimeout(() => setCopiedPassword(false), 2000);
-                                                }}
-                                                title="Copier le mot de passe"
-                                                className="p-1 text-slate-400 hover:text-slate-600 rounded transition cursor-pointer"
-                                            >
-                                                {copiedPassword ? <CheckCircle size={15} className="text-green-500" /> : <Copy size={15} />}
-                                            </button>
-                                        )}
+                            {currentUser?.role === 'Admin' && (
+                                <div>
+                                    <div className="flex items-center justify-between mb-1">
+                                        <label className="flex items-center text-sm font-semibold text-slate-700">
+                                            <KeyRound size={14} className="mr-2 text-slate-400" /> Mot de passe
+                                        </label>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                const gen = generateSecurePassword();
+                                                setFormData(prev => ({ ...prev, password: gen }));
+                                                setShowPasswordInForm(true);
+                                            }}
+                                            className="text-[11px] font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-2 py-0.5 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
+                                            title="Générer un mot de passe sécurisé"
+                                        >
+                                            <Sparkles size={11} />
+                                            Générer
+                                        </button>
+                                    </div>
+                                    <div className="relative">
+                                        <input
+                                            type={showPasswordInForm ? "text" : "password"}
+                                            name="password"
+                                            value={formData.password}
+                                            onChange={handleInputChange}
+                                            placeholder={editingUser ? "Laisser vide pour ne pas changer" : "Laisser vide pour inviter"}
+                                            className="w-full pl-4 pr-10 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-slate-50/30 focus:bg-white text-sm"
+                                        />
                                         <button
                                             type="button"
                                             onClick={() => setShowPasswordInForm(!showPasswordInForm)}
-                                            className="p-1 text-slate-400 hover:text-slate-600 rounded transition cursor-pointer"
+                                            className="p-1 text-slate-400 hover:text-slate-600 rounded transition cursor-pointer absolute right-3 top-1/2 -translate-y-1/2"
                                         >
                                             {showPasswordInForm ? <EyeOff size={15} /> : <Eye size={15} />}
                                         </button>
                                     </div>
                                 </div>
-
-                                {formData.password && (
-                                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5 pt-1 text-[11px]">
-                                        {(() => {
-                                            const rules = getPasswordRules(formData.password);
-                                            return (
-                                                <>
-                                                    <span className={`px-2 py-0.5 rounded-md flex items-center gap-1 font-medium ${rules.minLength ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>
-                                                        {rules.minLength ? '✓' : '•'} 8+ car.
-                                                    </span>
-                                                    <span className={`px-2 py-0.5 rounded-md flex items-center gap-1 font-medium ${rules.hasUpper ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>
-                                                        {rules.hasUpper ? '✓' : '•'} Majuscule
-                                                    </span>
-                                                    <span className={`px-2 py-0.5 rounded-md flex items-center gap-1 font-medium ${rules.hasLower ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>
-                                                        {rules.hasLower ? '✓' : '•'} Minuscule
-                                                    </span>
-                                                    <span className={`px-2 py-0.5 rounded-md flex items-center gap-1 font-medium ${rules.hasDigit ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>
-                                                        {rules.hasDigit ? '✓' : '•'} Chiffre
-                                                    </span>
-                                                    <span className={`px-2 py-0.5 rounded-md flex items-center gap-1 font-medium ${rules.hasSpecial ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>
-                                                        {rules.hasSpecial ? '✓' : '•'} Spécial
-                                                    </span>
-                                                </>
-                                            );
-                                        })()}
-                                    </div>
-                                )}
-
-                                <p className="text-xs text-slate-500">
-                                    💡 {editingUser 
-                                        ? "Si vous définissez un nouveau mot de passe, l'ancien token d'invitation est révoqué et le compte passe immédiatement à l'état Actif." 
-                                        : "Par défaut, laissez vide pour que l'utilisateur reçoive une invitation d'activation par email. Si vous saisissez un mot de passe, son compte sera directement Actif."}
-                                </p>
-                            </div>
-                        )}
+                            )}
+                        </div>
 
                         {formData.role === 'Gestionnaire' && (
                             <div className="animate-in fade-in slide-in-from-top-2">
