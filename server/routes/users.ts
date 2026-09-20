@@ -468,6 +468,60 @@ router.delete('/:profileId/emails/:userId', async (req, res) => {
   }
 });
 
+// PUT /api/users/:profileId/emails/:userId/primary - Définir cette adresse e-mail comme principale
+router.put('/:profileId/emails/:userId/primary', async (req, res) => {
+  // @ts-ignore
+  const userRole = (req as any).user.role;
+  if (userRole !== 'Admin' && (!(req as any).user.managedModules || !(req as any).user.managedModules.includes('users'))) {
+    return res.status(403).json({ message: 'Accès refusé.' });
+  }
+
+  const { profileId, userId } = req.params;
+  const connection = await pool.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    // 1. Vérifier que ce lien existe bien
+    const [links]: any = await connection.query(
+      'SELECT id, is_primary FROM user_profiles WHERE profile_id = ? AND user_id = ?',
+      [profileId, userId]
+    );
+
+    if (links.length === 0) {
+      await connection.rollback();
+      return res.status(404).json({ message: 'Compte e-mail non associé à ce profil.' });
+    }
+
+    // 2. Récupérer l'adresse e-mail correspondante
+    const [userRows]: any = await connection.query('SELECT email FROM users WHERE id = ?', [userId]);
+    if (userRows.length === 0) {
+      await connection.rollback();
+      return res.status(404).json({ message: 'Compte e-mail introuvable.' });
+    }
+    const newPrimaryEmail = userRows[0].email;
+
+    // 3. Passer tous les liens de ce profil à is_primary = 0
+    await connection.query('UPDATE user_profiles SET is_primary = 0 WHERE profile_id = ?', [profileId]);
+
+    // 4. Passer le lien sélectionné à is_primary = 1
+    await connection.query('UPDATE user_profiles SET is_primary = 1 WHERE profile_id = ? AND user_id = ?', [profileId, userId]);
+
+    // 5. Mettre à jour l'e-mail dans profiles
+    await connection.query('UPDATE profiles SET email = ? WHERE id = ?', [newPrimaryEmail, profileId]);
+
+    await connection.commit();
+    res.json({ message: `${newPrimaryEmail} est désormais l'adresse e-mail principale.` });
+
+  } catch (error) {
+    await connection.rollback();
+    console.error('Error setting primary email:', error);
+    res.status(500).json({ message: 'Erreur lors du changement d\'adresse principale.' });
+  } finally {
+    connection.release();
+  }
+});
+
 // PUT /api/users/:id - Mettre à jour un musicien
 router.put('/:id', async (req, res) => {
   // @ts-ignore

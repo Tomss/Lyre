@@ -1,5 +1,5 @@
 import React, { useState, useEffect, FormEvent } from 'react';
-import { ChevronDown,  Edit, Trash2, Users, Mail, MailPlus, User, Shield, X, UserPlus, CheckCircle, Search, ArrowLeft, Power, Music, LayoutGrid, Plus, KeyRound, Eye, EyeOff, Copy, Sparkles } from "lucide-react";
+import { ChevronDown,  Edit, Trash2, Users, Mail, MailPlus, User, Shield, X, UserPlus, CheckCircle, Search, ArrowLeft, Power, Music, LayoutGrid, Plus, KeyRound, Eye, EyeOff, Copy, Sparkles, Star, ArrowUpDown } from "lucide-react";
 import { useAuth } from '../context/AuthContext';
 import { Navigate, Link } from 'react-router-dom';
 import { EmailAutocompleteInput } from '../components/EmailAutocompleteInput';
@@ -562,6 +562,38 @@ const AdminUsers = () => {
     }
   };
 
+  const handleSetPrimaryEmail = async (profileId: string, userId: string, email: string) => {
+    if (!token) return;
+    try {
+      const response = await fetch(`${API_URL}/users/${profileId}/emails/${userId}/primary`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Erreur lors de la modification de l\'e-mail principal');
+      }
+
+      const result = await response.json();
+      showNotification(result.message || `${email} est désormais l'adresse principale.`);
+      await fetchUsers();
+      if (editingUser && editingUser.id === profileId) {
+        const res = await fetch(`${API_URL}/users`, { headers: { 'Authorization': `Bearer ${token}` } });
+        if (res.ok) {
+          const freshUsers: UserData[] = await res.json();
+          const freshEditing = freshUsers.find(u => u.id === editingUser.id);
+          if (freshEditing) setEditingUser(freshEditing);
+        }
+      }
+    } catch (err: any) {
+      console.error('Erreur set-primary-email:', err);
+      showNotification(err.message, 'error');
+    }
+  };
+
   const handleOpenSetPasswordModal = (user: UserData, targetedUserId?: string, targetEmail?: string) => {
     const email = targetEmail || user.email;
     const userId = targetedUserId || '';
@@ -1059,11 +1091,22 @@ const AdminUsers = () => {
                                   <div key={em.userId} className="flex flex-wrap items-center text-xs text-slate-600 gap-2 px-2.5 py-1 rounded-xl border max-w-fit bg-slate-50/80 border-slate-100">
                                     <Mail size={12} className={em.isPrimary ? "text-indigo-500" : "text-cyan-500"} />
                                     <span className="font-semibold text-slate-700">{em.email}</span>
-                                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
-                                      em.isPrimary ? 'bg-indigo-100 text-indigo-700' : 'bg-cyan-100 text-cyan-700'
-                                    }`}>
-                                      {em.isPrimary ? 'Principal' : 'Secondaire'}
-                                    </span>
+                                    {em.isPrimary ? (
+                                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-indigo-100 text-indigo-700 flex items-center gap-1">
+                                        <Star size={10} className="fill-indigo-600 text-indigo-600" />
+                                        Principal
+                                      </span>
+                                    ) : (
+                                      <button
+                                        type="button"
+                                        onClick={() => handleSetPrimaryEmail(user.id, em.userId, em.email)}
+                                        title={`Cliquer pour définir ${em.email} comme adresse principale`}
+                                        className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-cyan-100 text-cyan-700 hover:bg-cyan-200 hover:text-cyan-900 transition-colors flex items-center gap-1 cursor-pointer group/sec"
+                                      >
+                                        <ArrowUpDown size={10} className="group-hover/sec:scale-125 transition-transform" />
+                                        Secondaire
+                                      </button>
+                                    )}
                                     {em.alsoUsedBy && em.alsoUsedBy.length > 0 && (
                                       <div className="relative group/shared inline-flex items-center">
                                         <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200/90 shadow-xs cursor-pointer select-none hover:bg-amber-100 transition-colors">
@@ -1381,9 +1424,22 @@ const AdminUsers = () => {
                                 <div className="min-w-0">
                                   <div className="flex items-center gap-2 flex-wrap">
                                     <span className="font-semibold text-sm text-slate-800 break-all">{em.email}</span>
-                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${em.isPrimary ? 'bg-indigo-100 text-indigo-700' : 'bg-cyan-100 text-cyan-700'}`}>
-                                      {em.isPrimary ? 'Principal' : 'Secondaire'}
-                                    </span>
+                                     {em.isPrimary ? (
+                                       <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 flex items-center gap-1">
+                                         <Star size={10} className="fill-indigo-600 text-indigo-600" />
+                                         Principal
+                                       </span>
+                                     ) : (
+                                       <button
+                                         type="button"
+                                         onClick={() => handleSetPrimaryEmail(editingUser.id, em.userId, em.email)}
+                                         title={`Cliquer pour définir ${em.email} comme adresse principale`}
+                                         className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-100 text-cyan-700 hover:bg-cyan-200 hover:text-cyan-900 transition-colors flex items-center gap-1 cursor-pointer group/sec"
+                                       >
+                                         <ArrowUpDown size={10} className="group-hover/sec:scale-125 transition-transform" />
+                                         Secondaire
+                                       </button>
+                                     )}
                                     {em.alsoUsedBy && em.alsoUsedBy.length > 0 && (
                                       <div className="relative group/shared inline-flex items-center">
                                         <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200/90 shadow-xs cursor-pointer select-none hover:bg-amber-100 transition-colors">
@@ -1434,6 +1490,17 @@ const AdminUsers = () => {
                               </div>
 
                               <div className="flex items-center gap-2 self-end sm:self-center">
+                                  {!em.isPrimary && (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleSetPrimaryEmail(editingUser.id, em.userId, em.email)}
+                                      title={`Passer ${em.email} en adresse principale`}
+                                      className="h-8 px-3 text-xs font-semibold text-cyan-700 hover:text-cyan-900 bg-cyan-50 hover:bg-cyan-100 border border-cyan-200 hover:border-cyan-300 rounded-lg shadow-sm transition-colors inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"
+                                    >
+                                      <ArrowUpDown size={13} className="text-cyan-600" />
+                                      Passer en principale
+                                    </button>
+                                  )}
                                   <button
                                     type="button"
                                     onClick={() => handleInvite(editingUser.id, em.userId)}
