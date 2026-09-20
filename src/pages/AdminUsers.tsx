@@ -12,20 +12,7 @@ export interface AssociatedEmail {
   hasPassword: boolean;
   isInvited?: boolean;
   lastLogin: string | null;
-}
-
-export interface SharedProfile {
-  profileId: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-}
-
-export interface DelegatedProfile {
-  id: string;
-  firstName: string;
-  lastName: string;
-  role: string;
+  alsoUsedBy?: string[];
 }
 
 interface UserData {
@@ -39,8 +26,6 @@ interface UserData {
   has_password: boolean;
   last_login?: string | null;
   emails?: AssociatedEmail[];
-  sharedWith?: SharedProfile[];
-  delegatedProfiles?: DelegatedProfile[];
 }
 
 interface Instrument {
@@ -94,34 +79,25 @@ const getPasswordRules = (pwd: string) => {
 };
 
 const AdminUsers = () => {
-  const { currentUser, token, isAuthenticated } = useAuth();
+  const { user: currentUser, token } = useAuth();
   const [users, setUsers] = useState<UserData[]>([]);
   const [instruments, setInstruments] = useState<Instrument[]>([]);
   const [orchestras, setOrchestras] = useState<Orchestra[]>([]);
   const [userInstruments, setUserInstruments] = useState<{ [key: string]: Instrument[] }>({});
   const [userOrchestras, setUserOrchestras] = useState<{ [key: string]: Orchestra[] }>({});
-  const [searchTerm, setSearchTerm] = useState('');
-  const [roleFilter, setRoleFilter] = useState<string[]>(['Admin', 'Gestionnaire', 'Membre']);
-  const [statusFilter, setStatusFilter] = useState<string[]>(['Active', 'Invited', 'Inactive']);
   const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedRole, setSelectedRole] = useState<string>('Tous');
+  const [selectedStatus, setSelectedStatus] = useState<string>('Tous');
+  const [selectedInstrument, setSelectedInstrument] = useState<string>('Tous');
+  const [selectedOrchestra, setSelectedOrchestra] = useState<string>('Tous');
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingUser, setEditingUser] = useState<UserData | null>(null);
+  const [submitting, setSubmitting] = useState(false);
   const [expandedRoles, setExpandedRoles] = useState<Set<string>>(new Set(['Admin', 'Gestionnaire', 'Membre']));
   const [deleteConfirmation, setDeleteConfirmation] = useState<DeleteConfirmation>({
     isOpen: false,
     user: null,
-  });
-  const [duplicateEmailDialog, setDuplicateEmailDialog] = useState<{
-    isOpen: boolean;
-    email: string;
-    existingUserId: string;
-    existingProfiles: { id: string; firstName: string; lastName: string }[];
-  }>({
-    isOpen: false,
-    email: '',
-    existingUserId: '',
-    existingProfiles: []
   });
   const [addEmailModal, setAddEmailModal] = useState<{
     isOpen: boolean;
@@ -134,17 +110,6 @@ const AdminUsers = () => {
     email: '',
     submitting: false
   });
-  const [shareEmailConfirmModal, setShareEmailConfirmModal] = useState<{
-    isOpen: boolean;
-    targetProfile: UserData | null;
-    email: string;
-    existingProfiles: { id: string; firstName: string; lastName: string }[];
-  }>({
-    isOpen: false,
-    targetProfile: null,
-    email: '',
-    existingProfiles: [],
-  });
   const [removeEmailConfirmation, setRemoveEmailConfirmation] = useState<{
     isOpen: boolean;
     profileId: string;
@@ -156,19 +121,6 @@ const AdminUsers = () => {
     profileId: '',
     userId: '',
     email: '',
-    submitting: false
-  });
-  const [removeDelegationConfirmation, setRemoveDelegationConfirmation] = useState<{
-    isOpen: boolean;
-    parentProfileId: string;
-    childProfileId: string;
-    childName: string;
-    submitting: boolean;
-  }>({
-    isOpen: false,
-    parentProfileId: '',
-    childProfileId: '',
-    childName: '',
     submitting: false
   });
   const [showPasswordInForm, setShowPasswordInForm] = useState(false);
@@ -213,9 +165,6 @@ const AdminUsers = () => {
     status: 'Inactive' as 'Inactive' | 'Invited' | 'Active',
   });
   const [secondaryEmails, setSecondaryEmails] = useState<string[]>([]);
-  const [delegatedProfileIds, setDelegatedProfileIds] = useState<string[]>([]);
-  const [delegationSearch, setDelegationSearch] = useState('');
-  const [showDelegationDropdown, setShowDelegationDropdown] = useState(false);
 
   const availableModules = [
     { id: 'news', label: 'Actualités & Événements' },
@@ -230,7 +179,7 @@ const AdminUsers = () => {
   ];
 
   useEffect(() => {
-    if (showAddForm || deleteConfirmation.isOpen || duplicateEmailDialog.isOpen || addEmailModal.isOpen || shareEmailConfirmModal.isOpen || removeEmailConfirmation.isOpen || removeDelegationConfirmation.isOpen || setPasswordModal.isOpen) {
+    if (showAddForm || deleteConfirmation.isOpen || addEmailModal.isOpen || removeEmailConfirmation.isOpen || setPasswordModal.isOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
@@ -238,7 +187,7 @@ const AdminUsers = () => {
     return () => {
       document.body.style.overflow = 'unset';
     };
-  }, [showAddForm, deleteConfirmation.isOpen, duplicateEmailDialog.isOpen, addEmailModal.isOpen, shareEmailConfirmModal.isOpen, removeEmailConfirmation.isOpen, removeDelegationConfirmation.isOpen, setPasswordModal.isOpen]);
+  }, [showAddForm, deleteConfirmation.isOpen, addEmailModal.isOpen, removeEmailConfirmation.isOpen, setPasswordModal.isOpen]);
 
   const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
     setNotification({ show: true, message, type });
@@ -505,26 +454,8 @@ const AdminUsers = () => {
         body: JSON.stringify({
           ...formData,
           secondaryEmails: secondaryEmails.map(e => e.trim()).filter(e => e.length > 0),
-          delegatedProfileIds,
         }),
       });
-
-      if (response.status === 409) {
-        const errorData = await response.json();
-        if (errorData.code === 'EMAIL_EXISTS' || errorData.code === 'EMAIL_ALREADY_EXISTS') {
-          setDuplicateEmailDialog({
-            isOpen: true,
-            email: formData.email,
-            existingUserId: errorData.existingUserId,
-            existingProfiles: (errorData.existingProfiles && errorData.existingProfiles.length > 0)
-              ? errorData.existingProfiles
-              : [{ id: errorData.existingUserId, firstName: errorData.existingUserName || 'Utilisateur', lastName: '' }],
-          });
-          setSubmitting(false);
-          return;
-        }
-        throw new Error(errorData.message || 'Erreur de création');
-      }
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -543,47 +474,6 @@ const AdminUsers = () => {
     setSubmitting(false);
   };
 
-  const handleConfirmLinkProfile = async () => {
-    if (!duplicateEmailDialog.existingUserId || !token) return;
-    setSubmitting(true);
-    try {
-      const response = await fetch(`${API_URL}/users`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...formData,
-          secondaryEmails: secondaryEmails.map(e => e.trim()).filter(e => e.length > 0),
-          linkToExistingUserId: duplicateEmailDialog.existingUserId,
-          delegatedProfileIds,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Erreur lors du rattachement');
-      }
-
-      const result = await response.json();
-      showNotification(result.message || 'Profil rattaché avec succès');
-      setDuplicateEmailDialog({ isOpen: false, email: '', existingUserId: '', existingProfiles: [] });
-      cancelEdit();
-      fetchUsers();
-      fetchAllUserAssociations();
-    } catch (err: any) {
-      console.error('Erreur rattachement:', err);
-      showNotification(err.message, 'error');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const handleCancelLinkProfile = () => {
-    setDuplicateEmailDialog({ isOpen: false, email: '', existingUserId: '', existingProfiles: [] });
-  };
-
   const handleOpenAddEmail = (user: UserData) => {
     setAddEmailModal({
       isOpen: true,
@@ -593,12 +483,10 @@ const AdminUsers = () => {
     });
   };
 
-  const handleSubmitAddEmail = async (e?: FormEvent, forceConfirm: boolean = false) => {
+  const handleSubmitAddEmail = async (e?: FormEvent) => {
     if (e) e.preventDefault();
-    const profile = shareEmailConfirmModal.isOpen && shareEmailConfirmModal.targetProfile 
-      ? shareEmailConfirmModal.targetProfile 
-      : addEmailModal.profile;
-    const emailToSubmit = (shareEmailConfirmModal.isOpen ? shareEmailConfirmModal.email : addEmailModal.email).trim();
+    const profile = addEmailModal.profile;
+    const emailToSubmit = addEmailModal.email.trim();
 
     if (!profile || !token || !emailToSubmit) return;
     setAddEmailModal(prev => ({ ...prev, submitting: true }));
@@ -612,24 +500,8 @@ const AdminUsers = () => {
         },
         body: JSON.stringify({
           email: emailToSubmit,
-          confirmShare: forceConfirm,
         }),
       });
-
-      if (response.status === 409) {
-        const errorData = await response.json();
-        if (errorData.code === 'EMAIL_ALREADY_USED') {
-          setShareEmailConfirmModal({
-            isOpen: true,
-            targetProfile: profile,
-            email: emailToSubmit,
-            existingProfiles: errorData.existingProfiles || [],
-          });
-          setAddEmailModal(prev => ({ ...prev, submitting: false }));
-          return;
-        }
-        throw new Error(errorData.message || 'Erreur lors de l\'ajout de l\'e-mail');
-      }
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -639,7 +511,6 @@ const AdminUsers = () => {
       const result = await response.json();
       showNotification(result.message || 'Adresse e-mail rattachée avec succès');
       setAddEmailModal({ isOpen: false, profile: null, email: '', submitting: false });
-      setShareEmailConfirmModal({ isOpen: false, targetProfile: null, email: '', existingProfiles: [] });
       await fetchUsers();
       if (editingUser && editingUser.id === profile.id) {
         const res = await fetch(`${API_URL}/users`, { headers: { 'Authorization': `Bearer ${token}` } });
@@ -690,46 +561,6 @@ const AdminUsers = () => {
       console.error('Erreur remove-email:', err);
       showNotification(err.message, 'error');
       setRemoveEmailConfirmation(prev => ({ ...prev, submitting: false }));
-    }
-  };
-
-  const handlePromptRemoveDelegation = (parentProfileId: string, childProfileId: string, childName: string) => {
-    setRemoveDelegationConfirmation({
-      isOpen: true,
-      parentProfileId,
-      childProfileId,
-      childName,
-      submitting: false,
-    });
-  };
-
-  const handleConfirmRemoveDelegation = async () => {
-    if (!token || !removeDelegationConfirmation.parentProfileId || !removeDelegationConfirmation.childProfileId) return;
-    setRemoveDelegationConfirmation(prev => ({ ...prev, submitting: true }));
-    try {
-      const response = await fetch(`${API_URL}/users/${removeDelegationConfirmation.parentProfileId}/delegations/${removeDelegationConfirmation.childProfileId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Erreur lors du retrait de l\'accès délégué');
-      }
-
-      const result = await response.json();
-      showNotification(result.message || 'Accès délégué retiré');
-      setRemoveDelegationConfirmation({ isOpen: false, parentProfileId: '', childProfileId: '', childName: '', submitting: false });
-      await fetchUsers();
-      if (editingUser && editingUser.id === removeDelegationConfirmation.parentProfileId) {
-        setDelegatedProfileIds(prev => prev.filter(id => id !== removeDelegationConfirmation.childProfileId));
-      }
-    } catch (err: any) {
-      console.error('Erreur remove-delegation:', err);
-      showNotification(err.message, 'error');
-      setRemoveDelegationConfirmation(prev => ({ ...prev, submitting: false }));
     }
   };
 
@@ -804,7 +635,6 @@ const AdminUsers = () => {
         },
         body: JSON.stringify({
           ...formData,
-          delegatedProfileIds,
         }),
       });
 
@@ -869,9 +699,6 @@ const AdminUsers = () => {
     const userOrcs = userOrchestras[user.id] || [];
     setEditingUser(user);
     setSecondaryEmails([]);
-    setDelegatedProfileIds(user.delegatedProfiles ? user.delegatedProfiles.map(d => d.id) : []);
-    setDelegationSearch('');
-    setShowDelegationDropdown(false);
     setShowPasswordInForm(false);
     setCopiedPassword(false);
     setFormData({
@@ -892,9 +719,6 @@ const AdminUsers = () => {
     setEditingUser(null);
     setShowAddForm(false);
     setSecondaryEmails([]);
-    setDelegatedProfileIds([]);
-    setDelegationSearch('');
-    setShowDelegationDropdown(false);
     setShowPasswordInForm(false);
     setCopiedPassword(false);
     setFormData({
@@ -1222,141 +1046,88 @@ const AdminUsers = () => {
                             <div>
                               {getStatusBadge(user)}
                             </div>
-                            {user.sharedWith && user.sharedWith.length > 0 && (
-                              <span 
-                                className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-200 shadow-sm"
-                                title={`Compte partagé avec : ${user.sharedWith.map(s => `${s.firstName} ${s.lastName}`).join(', ')}`}
-                              >
-                                <Users size={12} className="text-purple-500" />
-                                Partagé
-                              </span>
-                            )}
                             {user.emails && user.emails.length > 1 && (
                               <span 
                                 className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-cyan-50 text-cyan-700 border border-cyan-200 shadow-sm"
                                 title={user.emails.map(e => e.email).join(', ')}
                               >
                                 <Mail size={12} className="text-cyan-500" />
-                                Multi-accès
-                              </span>
-                            )}
-                            {user.delegatedProfiles && user.delegatedProfiles.length > 0 && (
-                              <span 
-                                className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 shadow-sm"
-                                title={`Accès délégué à : ${user.delegatedProfiles.map(d => `${d.firstName} ${d.lastName}`).join(', ')}`}
-                              >
-                                <Shield size={12} className="text-amber-500" />
-                                Accès délégué
+                                Multi-accès ({user.emails.length})
                               </span>
                             )}
                           </div>
                           <div className="flex flex-col space-y-1">
-                            {user.emails && (user.emails.length > 1 || (user.sharedWith && user.sharedWith.length > 0)) ? (
+                            {user.emails && user.emails.length > 0 ? (
                               <div className="space-y-1.5 my-1">
-                                {user.emails.map(em => {
-                                  const sharedWithUsers = user.sharedWith?.filter(s => s.email.toLowerCase() === em.email.toLowerCase()) || [];
-                                  const isShared = sharedWithUsers.length > 0;
-                                  return (
-                                    <div key={em.userId} className={`flex flex-wrap items-center text-xs text-slate-600 gap-2 px-2.5 py-1 rounded-xl border max-w-fit ${
-                                      isShared ? 'bg-purple-50/80 border-purple-200/80 shadow-xs' : 'bg-slate-50/80 border-slate-100'
+                                {user.emails.map(em => (
+                                  <div key={em.userId} className="flex flex-wrap items-center text-xs text-slate-600 gap-2 px-2.5 py-1 rounded-xl border max-w-fit bg-slate-50/80 border-slate-100">
+                                    <Mail size={12} className={em.isPrimary ? "text-indigo-500" : "text-cyan-500"} />
+                                    <span className="font-semibold text-slate-700">{em.email}</span>
+                                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                                      em.isPrimary ? 'bg-indigo-100 text-indigo-700' : 'bg-cyan-100 text-cyan-700'
                                     }`}>
-                                      {isShared ? (
-                                        <Users size={12} className="text-purple-600" />
-                                      ) : (
-                                        <Mail size={12} className={em.isPrimary ? "text-indigo-500" : "text-cyan-500"} />
-                                      )}
-                                      <span className={`font-semibold ${isShared ? 'text-purple-950' : 'text-slate-700'}`}>{em.email}</span>
-                                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
-                                        em.isPrimary ? 'bg-indigo-100 text-indigo-700' : 'bg-cyan-100 text-cyan-700'
-                                      }`}>
-                                        {em.isPrimary ? 'Principal' : 'Secondaire'}
+                                      {em.isPrimary ? 'Principal' : 'Secondaire'}
+                                    </span>
+                                    {em.alsoUsedBy && em.alsoUsedBy.length > 0 && (
+                                      <span className="text-[11px] text-slate-500 font-normal italic">
+                                        (aussi : {em.alsoUsedBy.join(', ')})
                                       </span>
-                                      {isShared && (
-                                        <span 
-                                          className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-800 border border-purple-200 flex items-center gap-1"
-                                          title={`Compte partagé avec : ${sharedWithUsers.map(s => `${s.firstName} ${s.lastName}`).join(', ')}`}
-                                        >
-                                          <Users size={11} className="text-purple-600" />
-                                          Partagé avec {sharedWithUsers.map(s => `${s.firstName} ${s.lastName}`).join(', ')}
-                                        </span>
-                                      )}
-                                      {em.hasPassword ? (
-                                        <span className="text-[10px] font-bold bg-green-100 text-green-800 px-1.5 py-0.5 rounded-full flex items-center gap-1">
-                                          <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
-                                          Actif
-                                        </span>
-                                      ) : em.isInvited ? (
-                                        <span className="text-[10px] font-bold bg-yellow-100 text-yellow-800 px-1.5 py-0.5 rounded-full flex items-center gap-1">
-                                          <span className="w-1.5 h-1.5 rounded-full bg-yellow-500"></span>
-                                          Invité
-                                        </span>
-                                      ) : (
-                                        <span className="text-[10px] font-bold bg-red-100 text-red-800 px-1.5 py-0.5 rounded-full flex items-center gap-1">
-                                          <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>
-                                          Inactif
-                                        </span>
-                                      )}
-                                      {user.role !== 'Admin' && (
-                                        <button
-                                          onClick={() => handleInvite(user.id, em.userId)}
-                                          title={
-                                            em.hasPassword
-                                              ? `Envoyer un lien de réinitialisation à ${em.email}`
-                                              : em.isInvited
-                                                ? `Renvoyer l'invitation d'activation à ${em.email}`
-                                                : `Envoyer l'invitation d'activation à ${em.email}`
-                                          }
-                                          className="p-1 text-indigo-600 hover:text-indigo-800 hover:bg-indigo-100 rounded-lg transition-colors cursor-pointer"
-                                        >
-                                          <Mail size={12} />
-                                        </button>
-                                      )}
-                                      {currentUser?.role === 'Admin' && (
-                                        <button
-                                          onClick={() => handleOpenSetPasswordModal(user, em.userId, em.email)}
-                                          title={`Définir ou forcer le mot de passe pour ${em.email}`}
-                                          className="p-1 text-amber-600 hover:text-amber-800 hover:bg-amber-100 rounded-lg transition-colors cursor-pointer"
-                                        >
-                                          <KeyRound size={12} />
-                                        </button>
-                                      )}
-                                      {!em.isPrimary && (
-                                        <button
-                                          onClick={() => handlePromptRemoveEmail(user.id, em.userId, em.email)}
-                                          title={`Dissocier l'email ${em.email}`}
-                                          className="p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
-                                        >
-                                          <X size={12} />
-                                        </button>
-                                      )}
-                                    </div>
-                                  );
-                                })}
+                                    )}
+                                    {em.hasPassword ? (
+                                      <span className="text-[10px] font-bold bg-green-100 text-green-800 px-1.5 py-0.5 rounded-full flex items-center gap-1">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                                        Actif
+                                      </span>
+                                    ) : em.isInvited ? (
+                                      <span className="text-[10px] font-bold bg-yellow-100 text-yellow-800 px-1.5 py-0.5 rounded-full flex items-center gap-1">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-yellow-500"></span>
+                                        Invité
+                                      </span>
+                                    ) : (
+                                      <span className="text-[10px] font-bold bg-red-100 text-red-800 px-1.5 py-0.5 rounded-full flex items-center gap-1">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                                        Inactif
+                                      </span>
+                                    )}
+                                    {user.role !== 'Admin' && (
+                                      <button
+                                        onClick={() => handleInvite(user.id, em.userId)}
+                                        title={
+                                          em.hasPassword
+                                            ? `Envoyer un lien de réinitialisation à ${em.email}`
+                                            : em.isInvited
+                                              ? `Renvoyer l'invitation d'activation à ${em.email}`
+                                              : `Envoyer l'invitation d'activation à ${em.email}`
+                                        }
+                                        className="p-1 text-indigo-600 hover:text-indigo-800 hover:bg-indigo-100 rounded-lg transition-colors cursor-pointer"
+                                      >
+                                        <Mail size={12} />
+                                      </button>
+                                    )}
+                                    {currentUser?.role === 'Admin' && (
+                                      <button
+                                        onClick={() => handleOpenSetPasswordModal(user, em.userId, em.email)}
+                                        title={`Définir ou forcer le mot de passe pour ${em.email}`}
+                                        className="p-1 text-amber-600 hover:text-amber-800 hover:bg-amber-100 rounded-lg transition-colors cursor-pointer"
+                                      >
+                                        <KeyRound size={12} />
+                                      </button>
+                                    )}
+                                    {!em.isPrimary && (
+                                      <button
+                                        onClick={() => handlePromptRemoveEmail(user.id, em.userId, em.email)}
+                                        title={`Dissocier l'email ${em.email}`}
+                                        className="p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                                      >
+                                        <X size={12} />
+                                      </button>
+                                    )}
+                                  </div>
+                                ))}
                               </div>
                             ) : (
                               <div className="flex items-center text-gray-600 text-sm">
                                 <Mail size={14} className="mr-2 text-indigo-400" /> {user.email}
-                              </div>
-                            )}
-                            {user.delegatedProfiles && user.delegatedProfiles.length > 0 && (
-                              <div className="flex flex-wrap items-center gap-1.5 my-1">
-                                {user.delegatedProfiles.map(dp => (
-                                  <div key={dp.id} className="flex items-center text-xs text-amber-800 gap-1.5 bg-amber-50/80 px-2.5 py-1 rounded-xl border border-amber-200/80 max-w-fit shadow-xs">
-                                    <Shield size={12} className="text-amber-600" />
-                                    <span className="font-semibold text-slate-700">{dp.firstName} {dp.lastName}</span>
-                                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800">
-                                      {dp.role}
-                                    </span>
-                                    <button
-                                      type="button"
-                                      onClick={() => handlePromptRemoveDelegation(user.id, dp.id, `${dp.firstName} ${dp.lastName}`)}
-                                      title={`Retirer l'accès délégué à ${dp.firstName} ${dp.lastName}`}
-                                      className="p-0.5 text-amber-600 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors cursor-pointer ml-0.5"
-                                    >
-                                      <X size={12} />
-                                    </button>
-                                  </div>
-                                ))}
                               </div>
                             )}
                             <div className="flex items-center text-[10px] font-bold uppercase tracking-wider">
@@ -1564,18 +1335,13 @@ const AdminUsers = () => {
                     <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-3">
                       {editingUser.emails && editingUser.emails.length > 0 ? (
                         <div className="space-y-2">
-                          {editingUser.emails.map((em) => {
-                            const sharedWithUsers = editingUser.sharedWith?.filter(s => s.email.toLowerCase() === em.email.toLowerCase()) || [];
-                            const isShared = sharedWithUsers.length > 0;
-                            return (
-                            <div key={em.userId} className={`flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-xl border gap-2 ${
-                              isShared ? 'border-purple-200 bg-purple-50/40' : 'border-slate-100 bg-slate-50/50'
-                            }`}>
+                          {editingUser.emails.map((em) => (
+                            <div key={em.userId} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-xl border gap-2 border-slate-100 bg-slate-50/50">
                               <div className="flex items-center gap-3">
                                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                                  isShared ? 'bg-purple-100 text-purple-600' : em.isPrimary ? 'bg-indigo-100 text-indigo-600' : 'bg-cyan-100 text-cyan-600'
+                                  em.isPrimary ? 'bg-indigo-100 text-indigo-600' : 'bg-cyan-100 text-cyan-600'
                                 }`}>
-                                  {isShared ? <Users size={16} /> : <Mail size={16} />}
+                                  <Mail size={16} />
                                 </div>
                                 <div className="min-w-0">
                                   <div className="flex items-center gap-2 flex-wrap">
@@ -1583,13 +1349,9 @@ const AdminUsers = () => {
                                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${em.isPrimary ? 'bg-indigo-100 text-indigo-700' : 'bg-cyan-100 text-cyan-700'}`}>
                                       {em.isPrimary ? 'Principal' : 'Secondaire'}
                                     </span>
-                                    {isShared && (
-                                      <span 
-                                        className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 border border-purple-200 flex items-center gap-1"
-                                        title={`Compte partagé avec : ${sharedWithUsers.map(s => `${s.firstName} ${s.lastName}`).join(', ')}`}
-                                      >
-                                        <Users size={11} className="text-purple-600" />
-                                        Partagé avec {sharedWithUsers.map(s => `${s.firstName} ${s.lastName}`).join(', ')}
+                                    {em.alsoUsedBy && em.alsoUsedBy.length > 0 && (
+                                      <span className="text-[11px] text-slate-500 font-normal italic">
+                                        (aussi : {em.alsoUsedBy.join(', ')})
                                       </span>
                                     )}
                                     {em.hasPassword ? (
@@ -1656,162 +1418,14 @@ const AdminUsers = () => {
                                   )}
                               </div>
                             </div>
-                          );
-                        })}
+                          ))}
                         </div>
                       ) : (
                         <p className="text-xs text-slate-400 italic">Aucun e-mail supplémentaire associé.</p>
                       )}
-
-                      {editingUser.sharedWith && editingUser.sharedWith.length > 0 && (
-                        <div className="p-3 bg-purple-50/70 border border-purple-200/60 rounded-xl text-xs text-purple-900 mt-2">
-                          <p className="font-bold flex items-center gap-1.5">
-                            <Users size={14} className="text-purple-600" />
-                            Compte partagé avec :
-                          </p>
-                          <p className="mt-1 text-purple-700 font-semibold">
-                            {editingUser.sharedWith.map(s => `${s.firstName} ${s.lastName}`).join(', ')}
-                          </p>
-                        </div>
-                      )}
                     </div>
                   </div>
                 )}
-
-                {/* Section: Accès délégués */}
-                <div className="space-y-4">
-                    <div className="flex items-center space-x-2 text-indigo-600 mb-1">
-                        <Shield size={16} />
-                        <h3 className="text-xs font-bold uppercase tracking-wider">Accès délégués</h3>
-                    </div>
-
-                    <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-3">
-                        {/* Selected profiles tags */}
-                        {delegatedProfileIds.length > 0 && (
-                            <div className="flex flex-wrap gap-2 mb-2">
-                                {delegatedProfileIds.map(childId => {
-                                    const childUser = users.find(u => u.id === childId);
-                                    return (
-                                        <span key={childId} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 shadow-sm">
-                                            <User size={12} className="text-indigo-500" />
-                                            {childUser ? `${childUser.first_name} ${childUser.last_name} (${childUser.role})` : childId}
-                                            <button
-                                                type="button"
-                                                onClick={() => setDelegatedProfileIds(prev => prev.filter(id => id !== childId))}
-                                                className="hover:bg-indigo-200 text-indigo-500 hover:text-indigo-800 rounded-full p-0.5 transition cursor-pointer"
-                                            >
-                                                <X size={13} />
-                                            </button>
-                                        </span>
-                                    );
-                                })}
-                            </div>
-                        )}
-
-                        {/* Search input for delegation */}
-                        <div className="relative">
-                            <div className="relative">
-                                <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                                <input
-                                    type="text"
-                                    value={delegationSearch}
-                                    onChange={(e) => {
-                                        setDelegationSearch(e.target.value);
-                                        setShowDelegationDropdown(true);
-                                    }}
-                                    onFocus={() => setShowDelegationDropdown(true)}
-                                    placeholder="Rechercher un musicien (nom, prénom...)"
-                                    className="w-full pl-9 pr-8 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-slate-50/30 focus:bg-white text-sm"
-                                />
-                                {delegationSearch && (
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            setDelegationSearch('');
-                                            setShowDelegationDropdown(false);
-                                        }}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
-                                    >
-                                        <X size={14} />
-                                    </button>
-                                )}
-                            </div>
-
-                            {/* Dropdown list */}
-                            {showDelegationDropdown && (
-                                <>
-                                    <div 
-                                        className="fixed inset-0 z-10" 
-                                        onClick={() => setShowDelegationDropdown(false)}
-                                    />
-                                    <div className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-2xl shadow-xl max-h-48 overflow-y-auto z-20 divide-y divide-slate-100">
-                                        {users
-                                            .filter(u => {
-                                                if (editingUser && u.id === editingUser.id) return false;
-                                                if (delegatedProfileIds.includes(u.id)) return false;
-                                                if (editingUser?.sharedWith?.some(s => s.profileId === u.id)) return false;
-                                                if (!delegationSearch.trim()) return true;
-                                                const term = delegationSearch.toLowerCase();
-                                                return (
-                                                    u.first_name.toLowerCase().includes(term) ||
-                                                    u.last_name.toLowerCase().includes(term) ||
-                                                    u.email.toLowerCase().includes(term) ||
-                                                    u.role.toLowerCase().includes(term)
-                                                );
-                                            })
-                                            .slice(0, 10)
-                                            .map(candidate => (
-                                                <button
-                                                    key={candidate.id}
-                                                    type="button"
-                                                    onClick={() => {
-                                                        setDelegatedProfileIds(prev => [...prev, candidate.id]);
-                                                        setDelegationSearch('');
-                                                        setShowDelegationDropdown(false);
-                                                    }}
-                                                    className="w-full px-4 py-2.5 text-left flex items-center justify-between hover:bg-indigo-50/60 transition group cursor-pointer"
-                                                >
-                                                    <div className="flex items-center gap-2">
-                                                        <div className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-slate-600 group-hover:bg-indigo-100 group-hover:text-indigo-600 transition">
-                                                            <User size={14} />
-                                                        </div>
-                                                        <div>
-                                                            <p className="text-xs font-bold text-slate-800 group-hover:text-indigo-950">
-                                                                {candidate.first_name} {candidate.last_name}
-                                                            </p>
-                                                            <p className="text-[11px] text-slate-400">
-                                                                {candidate.email}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 group-hover:bg-indigo-100 group-hover:text-indigo-700">
-                                                        {candidate.role}
-                                                    </span>
-                                                </button>
-                                            ))}
-                                        {users.filter(u => {
-                                            if (editingUser && u.id === editingUser.id) return false;
-                                            if (delegatedProfileIds.includes(u.id)) return false;
-                                            if (editingUser?.sharedWith?.some(s => s.profileId === u.id)) return false;
-                                            if (!delegationSearch.trim()) return true;
-                                            const term = delegationSearch.toLowerCase();
-                                            return (
-                                                u.first_name.toLowerCase().includes(term) ||
-                                                u.last_name.toLowerCase().includes(term) ||
-                                                u.email.toLowerCase().includes(term) ||
-                                                u.role.toLowerCase().includes(term)
-                                            );
-                                        }).length === 0 && (
-                                            <div className="p-3 text-center text-xs text-slate-400 italic">
-                                                Aucun profil disponible ou trouvé
-                                            </div>
-                                        )}
-                                    </div>
-                                </>
-                            )}
-                        </div>
-                    </div>
-                </div>
 
                 {/* Section: Rôle & Permissions */}
                 <div className="space-y-4">
@@ -2039,95 +1653,6 @@ const AdminUsers = () => {
           </div>
         )}
 
-        {/* Remove Delegation Confirmation Modal */}
-        {removeDelegationConfirmation.isOpen && (
-          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-center items-center p-4 animate-in fade-in duration-200">
-            <div className="bg-white rounded-3xl shadow-2xl p-6 sm:p-8 max-w-md w-full border border-slate-100">
-              <div className="flex items-center gap-3 text-amber-600 mb-4">
-                <div className="w-12 h-12 rounded-2xl bg-amber-100 flex items-center justify-center flex-shrink-0">
-                  <Shield className="w-6 h-6" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-black text-slate-800">Retirer l'accès délégué</h3>
-                  <p className="text-xs text-slate-500">Délégation de profil</p>
-                </div>
-              </div>
-              <p className="text-sm text-slate-600 mb-6">
-                Êtes-vous sûr de vouloir retirer l'accès délégué au profil de <strong className="text-slate-800">{removeDelegationConfirmation.childName}</strong> ?
-              </p>
-              <div className="flex justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setRemoveDelegationConfirmation({ isOpen: false, parentProfileId: '', childProfileId: '', childName: '', submitting: false })}
-                  className="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 font-bold text-sm transition cursor-pointer"
-                >
-                  Annuler
-                </button>
-                <button
-                  type="button"
-                  onClick={handleConfirmRemoveDelegation}
-                  disabled={removeDelegationConfirmation.submitting}
-                  className="px-6 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-sm shadow-lg shadow-amber-200 transition flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  {removeDelegationConfirmation.submitting ? 'Suppression...' : 'Retirer l\'accès'}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Duplicate Email Confirmation Modal */}
-        {duplicateEmailDialog.isOpen && (
-          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-center items-center p-4 animate-in fade-in duration-200">
-            <div className="bg-white rounded-3xl shadow-2xl p-6 sm:p-8 max-w-lg w-full border border-slate-100">
-              <div className="flex items-center gap-3 text-amber-600 mb-4">
-                <div className="w-12 h-12 rounded-2xl bg-amber-100 flex items-center justify-center flex-shrink-0">
-                  <AlertTriangle className="w-6 h-6" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-black text-slate-800">Email déjà utilisé</h3>
-                  <p className="text-xs text-slate-500">Compte existant détecté</p>
-                </div>
-              </div>
-
-              <div className="space-y-4 text-sm text-slate-600 mb-6">
-                <p>
-                  L'adresse email <strong className="text-slate-800">{duplicateEmailDialog.email}</strong> est déjà associée au compte de :
-                </p>
-                <div className="p-3 bg-amber-50/70 border border-amber-200/60 rounded-2xl space-y-1.5">
-                  {duplicateEmailDialog.existingProfiles.map(p => (
-                    <div key={p.id} className="font-bold text-amber-900 flex items-center gap-2">
-                      <User size={15} className="text-amber-600" />
-                      <span>{p.firstName} {p.lastName}</span>
-                    </div>
-                  ))}
-                </div>
-                <p>
-                  Souhaitez-vous <strong className="text-indigo-600">rattacher ce nouveau profil ({formData.firstName} {formData.lastName}) à ce même compte</strong> ?
-                </p>
-              </div>
-
-              <div className="flex flex-col sm:flex-row justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={handleCancelLinkProfile}
-                  className="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 font-bold text-sm transition cursor-pointer"
-                >
-                  Non, modifier l'e-mail
-                </button>
-                <button
-                  type="button"
-                  onClick={handleConfirmLinkProfile}
-                  disabled={submitting}
-                  className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-lg shadow-indigo-200 transition flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  {submitting ? 'Rattachement...' : 'Oui, rattacher à ce compte'}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Add Secondary Email Modal */}
         {addEmailModal.isOpen && addEmailModal.profile && (
           <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-center items-center p-4 animate-in fade-in duration-200">
@@ -2183,58 +1708,6 @@ const AdminUsers = () => {
                   </button>
                 </div>
               </form>
-            </div>
-          </div>
-        )}
-
-        {/* Confirm Share Email Modal */}
-        {shareEmailConfirmModal.isOpen && shareEmailConfirmModal.targetProfile && (
-          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-center items-center p-4 animate-in fade-in duration-200">
-            <div className="bg-white rounded-3xl shadow-2xl p-6 sm:p-8 max-w-lg w-full border border-slate-100">
-              <div className="flex items-center gap-3 text-purple-600 mb-4">
-                <div className="w-12 h-12 rounded-2xl bg-purple-100 flex items-center justify-center flex-shrink-0">
-                  <Users className="w-6 h-6" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-black text-slate-800">Partager ce compte ?</h3>
-                  <p className="text-xs text-slate-500 font-medium">{shareEmailConfirmModal.email}</p>
-                </div>
-              </div>
-
-              <div className="space-y-4 text-sm text-slate-600 mb-6">
-                <p>
-                  Cette adresse e-mail est déjà utilisée par :
-                </p>
-                <div className="p-3 bg-purple-50/70 border border-purple-200/60 rounded-2xl space-y-1.5">
-                  {shareEmailConfirmModal.existingProfiles.map(p => (
-                    <div key={p.id} className="font-bold text-purple-900 flex items-center gap-2">
-                      <User size={15} className="text-purple-600" />
-                      <span>{p.firstName} {p.lastName}</span>
-                    </div>
-                  ))}
-                </div>
-                <p>
-                  Souhaitez-vous partager l'accès de ce compte avec <strong className="text-slate-800">{shareEmailConfirmModal.targetProfile.first_name} {shareEmailConfirmModal.targetProfile.last_name}</strong> ?
-                </p>
-              </div>
-
-              <div className="flex flex-col sm:flex-row justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setShareEmailConfirmModal({ isOpen: false, targetProfile: null, email: '', existingProfiles: [] })}
-                  className="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 font-bold text-sm transition cursor-pointer"
-                >
-                  Annuler
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleSubmitAddEmail(undefined, true)}
-                  disabled={addEmailModal.submitting}
-                  className="px-6 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-sm shadow-lg shadow-purple-200 transition flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  {addEmailModal.submitting ? 'Partage...' : 'Oui, partager le compte'}
-                </button>
-              </div>
             </div>
           </div>
         )}

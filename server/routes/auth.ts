@@ -27,7 +27,7 @@ setInterval(() => {
   }
 }, LOCKOUT_WINDOW);
 
-// Helper pour récupérer tous les profils accessibles (directs + délégués) pour un compte
+// Helper pour récupérer tous les profils accessibles pour un compte utilisateur (liaisons user_profiles)
 const getAccessibleProfilesForAccount = async (accountUserId: string) => {
   let directProfiles: any[] = [];
   try {
@@ -58,33 +58,7 @@ const getAccessibleProfilesForAccount = async (accountUserId: string) => {
     }
   }
 
-  const directIds = directProfiles.map((p: any) => p.id);
-  let delegatedProfiles: any[] = [];
-  if (directIds.length > 0) {
-    try {
-      const [delRows]: any = await pool.query(`
-        SELECT p.id, p.first_name, p.last_name, p.role, p.managed_modules, p.status, 0 as is_primary,
-               (SELECT GROUP_CONCAT(i.name SEPARATOR ', ') FROM user_instruments ui JOIN instruments i ON ui.instrument_id = i.id WHERE ui.user_id = p.id) AS instruments
-        FROM profile_delegations pd
-        JOIN profiles p ON pd.child_profile_id = p.id
-        WHERE pd.parent_profile_id IN (?) AND p.status = 'Active'
-        ORDER BY p.last_name ASC, p.first_name ASC
-      `, [directIds]);
-      delegatedProfiles = delRows;
-    } catch (delErr: any) {
-      console.warn('[Auth Warning] Erreur récupération délégations (table en cours de migration):', delErr.message);
-    }
-  }
-
-  const seen = new Set<string>();
-  const combined: any[] = [];
-  for (const p of [...directProfiles, ...delegatedProfiles]) {
-    if (!seen.has(p.id)) {
-      seen.add(p.id);
-      combined.push(p);
-    }
-  }
-  return combined;
+  return directProfiles;
 };
 
 router.post('/login', async (req: Request, res: Response) => {
