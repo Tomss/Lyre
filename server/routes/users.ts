@@ -111,7 +111,9 @@ router.get('/', async (req, res) => {
       const isEmailActive = link.user_status 
         ? link.user_status === 'Active'
         : Boolean(link.has_password && hasActiveProfile);
-      const isEmailInvited = !isEmailActive && Boolean(link.user_status === 'Invited' || link.is_invited || hasInvitedProfile);
+      const isEmailInvited = link.user_status
+        ? link.user_status === 'Invited'
+        : (!isEmailActive && !link.has_password && Boolean(link.is_invited || hasInvitedProfile));
 
       linksByProfile.get(link.profile_id)!.push({
         userId: link.user_id,
@@ -1044,9 +1046,10 @@ router.post('/:id/invite', async (req, res) => {
       const expiresAt = new Date();
       expiresAt.setHours(expiresAt.getHours() + 48);
 
-      await connection.query('UPDATE users SET activation_token = ?, token_expires_at = ? WHERE id = ?', [
+      await connection.query('UPDATE users SET activation_token = ?, token_expires_at = ?, status = ? WHERE id = ?', [
         token,
         expiresAt,
+        isReset ? (userRow.status || 'Active') : 'Invited',
         userRow.id
       ]);
 

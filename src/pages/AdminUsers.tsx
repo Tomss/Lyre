@@ -487,7 +487,7 @@ const AdminUsers = () => {
           const updatedEmails = (u.emails || []).map(em => ({
             ...em,
             isActive: newStatus === 'Active',
-            isInvited: newStatus === 'Active' ? false : em.isInvited
+            isInvited: newStatus === 'Invited'
           }));
           return { ...u, status: newStatus, emails: updatedEmails };
         }
@@ -499,7 +499,7 @@ const AdminUsers = () => {
               return {
                 ...em,
                 isActive: newStatus === 'Active',
-                isInvited: newStatus === 'Active' ? false : em.isInvited
+                isInvited: newStatus === 'Invited'
               };
             }
             return em;
