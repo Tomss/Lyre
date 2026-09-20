@@ -994,8 +994,6 @@ const AdminUsers = () => {
   const filteredUsers = users.filter(user => {
     // Tous les e-mails associés (principal et secondaires)
     const userEmails = (user.emails || []).map(e => e.email).join(' ');
-    // Profils partagés associés
-    const userAlsoUsedBy = (user.emails || []).flatMap(e => e.alsoUsedBy || []).join(' ');
     // Instruments et orchestres
     const instruments = (userInstruments[user.id] || []).map(i => i.name).join(' ');
     const orchestras = (userOrchestras[user.id] || []).map(o => o.name).join(' ');
@@ -1007,7 +1005,6 @@ const AdminUsers = () => {
       ${user.last_name || ''} ${user.first_name || ''} 
       ${user.email || ''} 
       ${userEmails} 
-      ${userAlsoUsedBy} 
       ${user.role || ''} 
       ${instruments} 
       ${orchestras}
