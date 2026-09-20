@@ -53,6 +53,28 @@ dotenv.config();
       console.log('[Migration] Succès : colonne last_login ajoutée.');
     }
 
+    // Migration: Ajout de la colonne status à la table users
+    const [userStatusCols]: any = await pool.query(`
+      SELECT COUNT(*) as count 
+      FROM information_schema.COLUMNS 
+      WHERE TABLE_SCHEMA = DATABASE() 
+      AND TABLE_NAME = 'users' 
+      AND COLUMN_NAME = 'status'
+    `);
+    if (userStatusCols[0].count === 0) {
+      console.log('[Migration] Ajout de la colonne status à la table users...');
+      await pool.query("ALTER TABLE users ADD COLUMN status ENUM('Inactive', 'Invited', 'Active') DEFAULT 'Inactive'");
+      await pool.query(`
+        UPDATE users 
+        SET status = CASE 
+          WHEN password_hash IS NOT NULL THEN 'Active'
+          WHEN activation_token IS NOT NULL THEN 'Invited'
+          ELSE 'Inactive'
+        END
+      `);
+      console.log('[Migration] Succès : colonne status ajoutée et initialisée sur users.');
+    }
+
     // Migration: Ajout de la colonne is_active à la table morceaux
     const [morceauxCols]: any = await pool.query(`
       SELECT COUNT(*) as count 

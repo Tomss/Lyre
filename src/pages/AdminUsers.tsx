@@ -380,6 +380,77 @@ const AdminUsers = () => {
     setLoading(false);
   };
 
+  // Activer ou désactiver directement une adresse e-mail
+  const handleToggleEmailStatus = async (user: UserData, emailItem: AssociatedEmail) => {
+    if (!token) return;
+
+    if (!emailItem.isActive && !emailItem.hasPassword) {
+      showNotification("L'activation de cette adresse nécessite l'envoi d'une invitation par e-mail.", "info");
+      return;
+    }
+
+    const newActive = !emailItem.isActive;
+    const newStatusStr = newActive ? 'Active' : 'Inactive';
+    const targetEmailLower = emailItem.email.toLowerCase();
+
+    // 1. Mise à jour instantanée (0 ms) dans toute l'interface React
+    setUsers(prev => {
+      // Étape A: mettre à jour cet email dans tous les profils qui le partagent
+      const usersWithUpdatedEmail = prev.map(u => {
+        const updatedEmails = (u.emails || []).map(em => {
+          if (em.email.toLowerCase() === targetEmailLower) {
+            return {
+              ...em,
+              isActive: newActive,
+              isInvited: false
+            };
+          }
+          return em;
+        });
+        return { ...u, emails: updatedEmails };
+      });
+
+      // Étape B: recalculer le statut de chaque profil selon ses e-mails actifs
+      return usersWithUpdatedEmail.map(u => {
+        if (u.role === 'Admin') return u;
+
+        const hasActiveEmail = (u.emails || []).some(em => em.isActive);
+        if (!hasActiveEmail && u.status === 'Active') {
+          return { ...u, status: 'Inactive' };
+        } else if (hasActiveEmail && u.status === 'Inactive' && newActive) {
+          const hasThisEmail = (u.emails || []).some(em => em.email.toLowerCase() === targetEmailLower);
+          if (hasThisEmail) {
+            return { ...u, status: 'Active' };
+          }
+        }
+        return u;
+      });
+    });
+
+    try {
+      const response = await fetch(`${API_URL}/users/emails/${emailItem.userId}/status`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: newStatusStr }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Erreur lors de la modification du statut de l'adresse");
+      }
+
+      showNotification(`Adresse ${emailItem.email} ${newActive ? 'activée' : 'désactivée'} avec succès`);
+      await fetchUsers();
+    } catch (err: any) {
+      console.error(err);
+      showNotification(err.message, 'error');
+      fetchUsers();
+    }
+  };
+
   const handleToggleStatus = async (user: UserData) => {
     if (!token) return;
     
@@ -393,8 +464,9 @@ const AdminUsers = () => {
       } else if (user.status === 'Invited') {
         newStatus = 'Inactive';
       } else {
-        // Inactif -> Activable direct SI a un mot de passe (Option 1)
-        if (user.has_password) {
+        // Inactif -> Activable direct SI a un mot de passe
+        const hasAnyPassword = user.has_password || (user.emails || []).some(e => e.hasPassword);
+        if (hasAnyPassword) {
           newStatus = 'Active';
         } else {
           showNotification("L'activation nécessite l'envoi d'un mail", "error");
@@ -403,30 +475,55 @@ const AdminUsers = () => {
       }
     }
     
-    // Optimistic update : mise à jour instantanée du statut du profil ET de ses e-mails associés
+    // Identifier l'adresse e-mail principale du profil
+    const primaryEmailObj = (user.emails || []).find(e => e.isPrimary) || (user.emails && user.emails[0]);
+    const primaryEmailLower = primaryEmailObj?.email?.toLowerCase();
+
+    // Optimistic update : mise à jour instantanée du statut du profil ET cascade sur ses e-mails et profils liés
     setUsers(prev => {
-      const updatedStatuses = prev.map(u => u.id === user.id ? { ...u, status: newStatus } : u);
-
-      return updatedStatuses.map(u => {
-        const updatedEmails = (u.emails || []).map(em => {
-          // Un e-mail est Actif s'il a un mot de passe ET qu'au moins un profil utilisant cet e-mail est Actif
-          const hasActiveProfile = updatedStatuses.some(other =>
-            other.status === 'Active' &&
-            (other.emails || []).some(oEm => oEm.email.toLowerCase() === em.email.toLowerCase())
-          );
-          const isEmailActive = Boolean(em.hasPassword && hasActiveProfile);
-          const isEmailInvited = !isEmailActive && Boolean(em.isInvited);
-          return {
+      // 1. Mettre à jour l'e-mail principal et le statut du profil
+      const updatedList = prev.map(u => {
+        if (u.id === user.id) {
+          const updatedEmails = (u.emails || []).map(em => ({
             ...em,
-            isActive: isEmailActive,
-            isInvited: isEmailInvited
-          };
-        });
+            isActive: newStatus === 'Active',
+            isInvited: newStatus === 'Active' ? false : em.isInvited
+          }));
+          return { ...u, status: newStatus, emails: updatedEmails };
+        }
 
-        return {
-          ...u,
-          emails: updatedEmails
-        };
+        // Si un autre profil partage l'e-mail principal de ce profil
+        if (primaryEmailLower && (u.emails || []).some(e => e.email.toLowerCase() === primaryEmailLower)) {
+          const updatedEmails = (u.emails || []).map(em => {
+            if (em.email.toLowerCase() === primaryEmailLower) {
+              return {
+                ...em,
+                isActive: newStatus === 'Active',
+                isInvited: newStatus === 'Active' ? false : em.isInvited
+              };
+            }
+            return em;
+          });
+          return { ...u, emails: updatedEmails };
+        }
+
+        return u;
+      });
+
+      // 2. Cascade : si un profil n'a plus d'e-mail actif, le passer en Inactive
+      return updatedList.map(u => {
+        if (u.role === 'Admin') return u;
+        const hasActiveEmail = (u.emails || []).some(e => e.isActive);
+        if (!hasActiveEmail && u.status === 'Active') {
+          return { ...u, status: 'Inactive' };
+        }
+        if (hasActiveEmail && u.status === 'Inactive' && newStatus === 'Active') {
+          // Si on vient d'activer et qu'il partage cet email
+          if (primaryEmailLower && (u.emails || []).some(e => e.email.toLowerCase() === primaryEmailLower)) {
+            return { ...u, status: 'Active' };
+          }
+        }
+        return u;
       });
     });
 
@@ -1177,22 +1274,27 @@ const AdminUsers = () => {
                                         </div>
                                       </div>
                                     )}
-                                    {em.isActive ? (
-                                      <span className="text-[10px] font-bold bg-green-100 text-green-800 px-1.5 py-0.5 rounded-full flex items-center gap-1">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
-                                        Actif
-                                      </span>
-                                    ) : em.isInvited ? (
-                                      <span className="text-[10px] font-bold bg-yellow-100 text-yellow-800 px-1.5 py-0.5 rounded-full flex items-center gap-1">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-yellow-500"></span>
-                                        Invité
-                                      </span>
-                                    ) : (
-                                      <span className="text-[10px] font-bold bg-red-100 text-red-800 px-1.5 py-0.5 rounded-full flex items-center gap-1">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>
-                                        Inactif
-                                      </span>
-                                    )}
+                                    <button
+                                      type="button"
+                                      onClick={() => handleToggleEmailStatus(user, em)}
+                                      title={
+                                        em.isActive
+                                          ? `Cliquer pour désactiver l'adresse ${em.email}`
+                                          : em.hasPassword
+                                            ? `Cliquer pour réactiver l'adresse ${em.email}`
+                                            : `Adresse non activée (invitation requise)`
+                                      }
+                                      className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-1 transition-all cursor-pointer ${
+                                        em.isActive
+                                          ? 'bg-green-100 text-green-800 hover:bg-red-100 hover:text-red-800'
+                                          : em.isInvited
+                                            ? 'bg-yellow-100 text-yellow-800 hover:bg-green-100 hover:text-green-800'
+                                            : 'bg-red-100 text-red-800 hover:bg-green-100 hover:text-green-800'
+                                      }`}
+                                    >
+                                      <span className={`w-1.5 h-1.5 rounded-full ${em.isActive ? 'bg-green-500' : em.isInvited ? 'bg-yellow-500' : 'bg-red-500'}`}></span>
+                                      {em.isActive ? 'Actif' : em.isInvited ? 'Invité' : 'Inactif'}
+                                    </button>
                                     {user.role !== 'Admin' && (
                                       <button
                                         onClick={() => handleInvite(user.id, em.userId)}
@@ -1490,22 +1592,27 @@ const AdminUsers = () => {
                                         </div>
                                       </div>
                                     )}
-                                    {em.isActive ? (
-                                      <span className="text-[10px] font-bold bg-green-100 text-green-800 px-2 py-0.5 rounded-full flex items-center gap-1">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
-                                        Actif
-                                      </span>
-                                    ) : em.isInvited ? (
-                                      <span className="text-[10px] font-bold bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full flex items-center gap-1">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-yellow-500"></span>
-                                        Invité
-                                      </span>
-                                    ) : (
-                                      <span className="text-[10px] font-bold bg-red-100 text-red-800 px-2 py-0.5 rounded-full flex items-center gap-1">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>
-                                        Inactif
-                                      </span>
-                                    )}
+                                    <button
+                                      type="button"
+                                      onClick={() => handleToggleEmailStatus(editingUser, em)}
+                                      title={
+                                        em.isActive
+                                          ? `Cliquer pour désactiver l'adresse ${em.email}`
+                                          : em.hasPassword
+                                            ? `Cliquer pour réactiver l'adresse ${em.email}`
+                                            : `Adresse non activée (invitation requise)`
+                                      }
+                                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 transition-all cursor-pointer ${
+                                        em.isActive
+                                          ? 'bg-green-100 text-green-800 hover:bg-red-100 hover:text-red-800'
+                                          : em.isInvited
+                                            ? 'bg-yellow-100 text-yellow-800 hover:bg-green-100 hover:text-green-800'
+                                            : 'bg-red-100 text-red-800 hover:bg-green-100 hover:text-green-800'
+                                      }`}
+                                    >
+                                      <span className={`w-1.5 h-1.5 rounded-full ${em.isActive ? 'bg-green-500' : em.isInvited ? 'bg-yellow-500' : 'bg-red-500'}`}></span>
+                                      {em.isActive ? 'Actif' : em.isInvited ? 'Invité' : 'Inactif'}
+                                    </button>
                                   </div>
                                   {em.lastLogin && (
                                     <p className="text-[11px] text-slate-400 mt-0.5">

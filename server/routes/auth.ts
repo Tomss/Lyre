@@ -114,6 +114,11 @@ router.post('/login', async (req: Request, res: Response) => {
       return res.status(401).json({ message: 'Compte non activé. Veuillez utiliser le lien reçu par email.' });
     }
 
+    if (user.status === 'Inactive') {
+      console.log(`[Login] Échec: Compte e-mail inactif pour ${normalizedEmail}`);
+      return res.status(403).json({ message: 'Ce compte est actuellement inactif. Veuillez contacter un administrateur.' });
+    }
+
     // 3. Vérifier le mot de passe
     const isMatch = await bcrypt.compare(password, user.password_hash);
     if (!isMatch) {
@@ -134,28 +139,8 @@ router.post('/login', async (req: Request, res: Response) => {
 
     let activeProfiles = profileRows.filter(p => p.status === 'Active');
     if (activeProfiles.length === 0) {
-      // Auto-activation si le compte possède un mot de passe valide
-      if (user.password_hash) {
-        await pool.query(`
-          UPDATE profiles p
-          JOIN user_profiles up ON p.id = up.profile_id
-          SET p.status = 'Active'
-          WHERE up.user_id = ?
-        `, [user.id]);
-        await pool.query('UPDATE profiles SET status = \'Active\' WHERE id = ?', [user.id]);
-
-        for (const p of profileRows) {
-          if (p.access_type === 'direct') {
-            p.status = 'Active';
-          }
-        }
-        activeProfiles = profileRows.filter(p => p.status === 'Active');
-      }
-
-      if (activeProfiles.length === 0) {
-        console.log(`[Login] Échec: Aucun profil actif pour ${email}`);
-        return res.status(403).json({ message: 'Compte inactif ou en attente d\'activation.' });
-      }
+      console.log(`[Login] Échec: Aucun profil actif pour ${email}`);
+      return res.status(403).json({ message: "Compte inactif ou aucun profil actif n'est associé à cette adresse." });
     }
 
     // Sélection du profil par défaut (le primaire ou le premier actif)
@@ -439,10 +424,10 @@ router.post('/activate', async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const password_hash = await bcrypt.hash(password, salt);
 
-    // Update the user: set password, clear token
+    // Update the user: set password, clear token, set status to Active
     await connection.query(`
       UPDATE users 
-      SET password_hash = ?, activation_token = NULL, token_expires_at = NULL 
+      SET password_hash = ?, status = 'Active', activation_token = NULL, token_expires_at = NULL 
       WHERE id = ?
     `, [password_hash, user.id]);
 
@@ -451,13 +436,13 @@ router.post('/activate', async (req, res) => {
       UPDATE profiles p
       JOIN user_profiles up ON p.id = up.profile_id
       SET p.status = 'Active' 
-      WHERE up.user_id = ? AND p.status = 'Invited'
+      WHERE up.user_id = ? AND p.status IN ('Invited', 'Inactive')
     `, [user.id]);
 
     await connection.query(`
       UPDATE profiles 
       SET status = 'Active' 
-      WHERE id = ? AND status = 'Invited'
+      WHERE id = ? AND status IN ('Invited', 'Inactive')
     `, [user.id]);
 
     await connection.commit();

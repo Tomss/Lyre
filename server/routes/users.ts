@@ -83,6 +83,7 @@ router.get('/', async (req, res) => {
       SELECT up.profile_id, up.user_id, up.is_primary, u.email, 
              (u.password_hash IS NOT NULL) as has_password, 
              (u.activation_token IS NOT NULL) as is_invited, 
+             u.status as user_status,
              u.last_login,
              p.first_name, p.last_name, p.status as profile_status
       FROM user_profiles up
@@ -102,15 +103,15 @@ router.get('/', async (req, res) => {
         .map((l: any) => `${l.first_name} ${l.last_name}`);
       const alsoUsedBy = Array.from(new Set(otherNames));
 
-      // Vérifier le statut de l'e-mail par rapport à l'ensemble de ses profils associés :
-      // L'e-mail n'est considéré Actif que s'il a un mot de passe ET qu'au moins un profil associé est Actif.
-      // S'il n'est associé qu'à des profils inactifs, l'e-mail passe Inactif (ou Invité si invitation en cours).
+      // Statut de l'e-mail : basé sur la colonne status de users (avec fallback sur profil actif)
       const userLinks = allLinks.filter((l: any) => l.user_id === link.user_id);
       const hasActiveProfile = userLinks.some((l: any) => l.profile_status === 'Active');
       const hasInvitedProfile = userLinks.some((l: any) => l.profile_status === 'Invited');
 
-      const isEmailActive = Boolean(link.has_password && hasActiveProfile);
-      const isEmailInvited = !isEmailActive && Boolean(link.is_invited || hasInvitedProfile);
+      const isEmailActive = link.user_status 
+        ? link.user_status === 'Active'
+        : Boolean(link.has_password && hasActiveProfile);
+      const isEmailInvited = !isEmailActive && Boolean(link.user_status === 'Invited' || link.is_invited || hasInvitedProfile);
 
       linksByProfile.get(link.profile_id)!.push({
         userId: link.user_id,
@@ -144,8 +145,15 @@ router.get('/', async (req, res) => {
         lastLogin: p.last_login
       }] : []);
 
+      // Si un profil n'a aucune adresse active et n'est pas Admin, son statut effectif est Inactif
+      const hasAnyActiveEmail = emails.some((e: any) => e.isActive);
+      const effectiveStatus = (p.role !== 'Admin' && emails.length > 0 && !hasAnyActiveEmail && p.status === 'Active')
+        ? 'Inactive'
+        : p.status;
+
       return {
         ...p,
+        status: effectiveStatus,
         has_password: Boolean(p.has_password),
         managed_modules: parsedModules,
         emails
@@ -534,6 +542,85 @@ router.put('/:profileId/emails/:userId/primary', async (req, res) => {
   }
 });
 
+// PUT /api/users/emails/:userId/status - Activer ou désactiver directement une adresse e-mail
+router.put('/emails/:userId/status', async (req, res) => {
+  // @ts-ignore
+  const userRole = (req as any).user.role;
+  if (userRole !== 'Admin' && (!(req as any).user.managedModules || !(req as any).user.managedModules.includes('users'))) {
+    return res.status(403).json({ message: 'Accès refusé.' });
+  }
+
+  const { userId } = req.params;
+  const { status } = req.body; // 'Active' | 'Inactive'
+
+  if (!status || !['Active', 'Inactive'].includes(status)) {
+    return res.status(400).json({ message: 'Statut invalide.' });
+  }
+
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+
+    const [userRows]: any = await connection.query('SELECT id, email, password_hash FROM users WHERE id = ?', [userId]);
+    if (userRows.length === 0) {
+      await connection.rollback();
+      return res.status(404).json({ message: 'Adresse e-mail introuvable.' });
+    }
+    const targetUser = userRows[0];
+
+    if (status === 'Active' && !targetUser.password_hash) {
+      await connection.rollback();
+      return res.status(400).json({ message: "Impossible d'activer une adresse sans mot de passe. Envoyez d'abord une invitation." });
+    }
+
+    // 1. Mettre à jour le statut de l'adresse e-mail
+    await connection.query('UPDATE users SET status = ? WHERE id = ?', [status, userId]);
+
+    // 2. Trouver tous les profils associés à cette adresse
+    const [linkedProfiles]: any = await connection.query(`
+      SELECT p.id, p.role, p.status 
+      FROM profiles p
+      JOIN user_profiles up ON p.id = up.profile_id
+      WHERE up.user_id = ?
+    `, [userId]);
+
+    if (status === 'Inactive') {
+      // Pour chaque profil associé : s'il n'a PLUS AUCUNE adresse e-mail active, passer le profil en Inactive
+      for (const prof of linkedProfiles) {
+        if (prof.role === 'Admin') continue; // Les admins peuvent rester actifs
+        const [activeCountRow]: any = await connection.query(`
+          SELECT COUNT(*) as count
+          FROM user_profiles up
+          JOIN users u ON up.user_id = u.id
+          WHERE up.profile_id = ? AND u.status = 'Active'
+        `, [prof.id]);
+
+        if (activeCountRow[0].count === 0) {
+          await connection.query('UPDATE profiles SET status = ? WHERE id = ?', ['Inactive', prof.id]);
+        }
+      }
+    } else {
+      // status === 'Active' : passer en Active les profils associés qui étaient Inactifs
+      for (const prof of linkedProfiles) {
+        if (prof.status === 'Inactive') {
+          await connection.query('UPDATE profiles SET status = ? WHERE id = ?', ['Active', prof.id]);
+        }
+      }
+    }
+
+    await connection.commit();
+    res.status(200).json({ 
+      message: `Adresse e-mail ${status === 'Active' ? 'activée' : 'désactivée'} avec succès.` 
+    });
+  } catch (error) {
+    if (connection) await connection.rollback();
+    console.error('Error toggling email status:', error);
+    res.status(500).json({ message: "Erreur lors de la modification du statut de l'e-mail." });
+  } finally {
+    if (connection) connection.release();
+  }
+});
+
 // PUT /api/users/:id - Mettre à jour un musicien
 router.put('/:id', async (req, res) => {
   // @ts-ignore
@@ -649,6 +736,43 @@ router.put('/:id', async (req, res) => {
       'UPDATE profiles SET first_name = ?, last_name = ?, role = ?, managed_modules = ?, status = ? WHERE id = ?',
       [firstName, lastName, role, modulesJson, status || 'Inactive', id]
     );
+
+    // Cascades lors du changement de statut d'un profil
+    if (status === 'Inactive' && effectiveUserId) {
+      // Désactiver le compte e-mail principal associé
+      await connection.query('UPDATE users SET status = ? WHERE id = ?', ['Inactive', effectiveUserId]);
+
+      // Vérifier les autres profils partageant cet e-mail : s'ils n'ont plus d'autre e-mail actif, les passer en Inactive
+      const [sharedProfiles]: any = await connection.query(`
+        SELECT p.id, p.role 
+        FROM profiles p
+        JOIN user_profiles up ON p.id = up.profile_id
+        WHERE up.user_id = ? AND p.id != ?
+      `, [effectiveUserId, id]);
+
+      for (const sp of sharedProfiles) {
+        if (sp.role === 'Admin') continue;
+        const [actCount]: any = await connection.query(`
+          SELECT COUNT(*) as count 
+          FROM user_profiles up
+          JOIN users u ON up.user_id = u.id
+          WHERE up.profile_id = ? AND u.status = 'Active'
+        `, [sp.id]);
+        if (actCount[0].count === 0) {
+          await connection.query('UPDATE profiles SET status = ? WHERE id = ?', ['Inactive', sp.id]);
+        }
+      }
+    } else if (status === 'Active' && effectiveUserId) {
+      await connection.query('UPDATE users SET status = ? WHERE id = ? AND password_hash IS NOT NULL', ['Active', effectiveUserId]);
+
+      // Passer en Active les profils partageant cet e-mail qui étaient Inactifs
+      await connection.query(`
+        UPDATE profiles p
+        JOIN user_profiles up ON p.id = up.profile_id
+        SET p.status = 'Active'
+        WHERE up.user_id = ? AND p.status = 'Inactive'
+      `, [effectiveUserId]);
+    }
 
     if (password) {
       if (userRole !== 'Admin') {

@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS users (
     activation_token VARCHAR(255) NULL,
     token_expires_at DATETIME NULL,
     last_login DATETIME DEFAULT NULL,
+    status ENUM('Inactive', 'Invited', 'Active') DEFAULT 'Inactive',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
