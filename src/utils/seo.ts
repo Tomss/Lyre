@@ -36,10 +36,13 @@ export function useSEO({ title, description, url }: SEOProps) {
       const fullUrl = url.startsWith('http') ? url : `https://lalyre.fr${url}`;
       setMeta('property', 'og:url', fullUrl);
       setMeta('name', 'twitter:url', fullUrl);
-      const canonical = document.querySelector('link[rel="canonical"]');
-      if (canonical) {
-        canonical.setAttribute('href', fullUrl);
+      let canonical = document.querySelector('link[rel="canonical"]');
+      if (!canonical) {
+        canonical = document.createElement('link');
+        canonical.setAttribute('rel', 'canonical');
+        document.head.appendChild(canonical);
       }
+      canonical.setAttribute('href', fullUrl);
     }
   }, [title, description, url]);
 }

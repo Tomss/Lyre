@@ -771,9 +771,26 @@ app.use('/api/contact', contactRouter);
 const distPath = path.resolve(process.cwd(), 'dist');
 app.use(express.static(distPath));
 
-app.get('/', (req, res) => {
-  res.sendFile(path.join(distPath, 'index.html'));
-});
+const serveIndexHtml = (req: express.Request, res: express.Response) => {
+  const filePath = path.join(distPath, 'index.html');
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).send('Not Found');
+  }
+
+  try {
+    const rawHtml = fs.readFileSync(filePath, 'utf8');
+    const cleanPath = req.path === '/' ? '' : req.path.replace(/\/$/, '');
+    const canonicalUrl = `https://lalyre.fr${cleanPath || '/'}`;
+    const canonicalTag = `<link rel="canonical" href="${canonicalUrl}" />`;
+    const finalHtml = rawHtml.replace('<!-- CANONICAL_PLACEHOLDER -->', canonicalTag);
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.send(finalHtml);
+  } catch (err) {
+    res.sendFile(filePath);
+  }
+};
+
+app.get('/', serveIndexHtml);
 
 app.get('/api/test-db', authenticateToken, async (req, res) => {
   if ((req as any).user?.role !== 'Admin') {
@@ -845,7 +862,7 @@ app.use((req: express.Request, res: express.Response, next: express.NextFunction
   if (req.path.startsWith('/api')) {
     return next();
   }
-  res.sendFile(path.join(distPath, 'index.html'));
+  serveIndexHtml(req, res);
 });
 
 app.listen(port, () => {
