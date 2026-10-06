@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guide Officiel Espace Membre - La Lyre de Chalindrey</title>
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap');
+
+    :root {
+      --primary: #4f46e5;
+      --primary-dark: #3730a3;
+      --primary-light: #e0e7ff;
+      --secondary: #0d9488;
+      --accent: #f59e0b;
+      --danger: #ef4444;
+      --success: #10b981;
+      --dark: #0f172a;
+      --slate: #334155;
+      --slate-light: #f8fafc;
+      --border: #e2e8f0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--slate);
+      background-color: #f1f5f9;
+      line-height: 1.6;
+      padding: 30px 15px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: #ffffff;
+      border-radius: 24px;
+      box-shadow: 0 20px 40px -15px rgba(0,0,0,0.07);
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    /* HEADER */
+    .header {
+      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%);
+      color: #ffffff;
+      padding: 45px 40px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header::after {
+      content: "🎵";
+      position: absolute;
+      right: 30px;
+      bottom: -15px;
+      font-size: 140px;
+      opacity: 0.08;
+      pointer-events: none;
+    }
+
+    .header-badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(8px);
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #a5b4fc;
+      margin-bottom: 15px;
+    }
+
+    .header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 34px;
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 10px;
+      color: #ffffff;
+    }
+
+    .header p {
+      font-size: 16px;
+      color: #cbd5e1;
+      max-width: 650px;
+    }
+
+    .actions-bar {
+      background: #f8fafc;
+      padding: 12px 40px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .btn-print {
+      background: var(--primary);
+      color: #ffffff;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .btn-print:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+    }
+
+    /* CONTENT */
+    .content {
+      padding: 40px;
+    }
+
+    .step-card {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 26px;
+      margin-bottom: 28px;
+      position: relative;
+      transition: border-color 0.2s;
+    }
+
+    .step-card:hover {
+      border-color: #cbd5e1;
+    }
+
+    .step-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .step-num {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: var(--primary-light);
+      color: var(--primary);
+      font-weight: 800;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .step-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--dark);
+    }
+
+    /* MOCKUP SCREENS */
+    .mockup {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 20px;
+      margin: 18px 0;
+      font-family: inherit;
+    }
+
+    .email-preview {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 22px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    }
+
+    .email-meta {
+      font-size: 13px;
+      color: #64748b;
+      border-bottom: 1px solid #f1f5f9;
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+    }
+
+    .btn-activation {
+      display: inline-block;
+      background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+      color: #ffffff !important;
+      text-decoration: none;
+      font-weight: 700;
+      padding: 12px 28px;
+      border-radius: 10px;
+      margin: 16px 0;
+      box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
+    }
+
+    .dashboard-preview {
+      background: #0f172a;
+      color: #ffffff;
+      border-radius: 16px;
+      padding: 24px;
+    }
+
+    .dash-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #1e293b;
+      padding-bottom: 14px;
+      margin-bottom: 20px;
+    }
+
+    .dash-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .dash-box {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 18px;
+    }
+
+    .dash-box h4 {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #94a3b8;
+      margin-bottom: 12px;
+    }
+
+    .tag-present {
+      background: rgba(16, 185, 129, 0.2);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      padding: 5px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .tag-absent {
+      background: rgba(239, 68, 68, 0.2);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      padding: 5px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .partition-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255,255,255,0.03);
+      padding: 8px 12px;
+      border-radius: 8px;
+      margin-bottom: 6px;
+      font-size: 13px;
+    }
+
+    .btn-dl {
+      background: #3b82f6;
+      color: #fff;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .tip-box {
+      background: #eff6ff;
+      border-left: 4px solid #3b82f6;
+      border-radius: 0 12px 12px 0;
+      padding: 14px 18px;
+      margin: 14px 0;
+      font-size: 14px;
+      color: #1e40af;
+    }
+
+    .tip-box strong {
+      color: #1d4ed8;
+    }
+
+    /* FAQ */
+    .faq-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 14px;
+    }
+
+    .faq-table th, .faq-table td {
+      border: 1px solid #e2e8f0;
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    .faq-table th {
+      background: #f8fafc;
+      color: var(--dark);
+      font-weight: 700;
+    }
+
+    /* FOOTER */
+    .footer {
+      background: #f8fafc;
+      border-top: 1px solid var(--border);
+      padding: 24px 40px;
+      text-align: center;
+      color: #64748b;
+      font-size: 13px;
+    }
+
+    @media print {
+      body {
+        background: #ffffff;
+        padding: 0;
+      }
+      .container {
+        border: none;
+        box-shadow: none;
+        max-width: 100%;
+      }
+      .actions-bar {
+        display: none;
+      }
+      .step-card {
+        page-break-inside: avoid;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .dash-grid {
+        grid-template-columns: 1fr;
+      }
+      .header h1 {
+        font-size: 26px;
+      }
+      .content {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="header">
+      <div class="header-badge">Société Musicale La Lyre • Chalindrey</div>
+      <h1>Guide Pratique de l'Espace Membre</h1>
+      <p>Tutoriel officiel pour activer votre compte, retrouver vos partitions, indiquer vos présences aux répétitions et profiter pleinement du nouvel espace associatif.</p>
+    </div>
+
+    <div class="actions-bar">
+      <span style="font-size: 13px; color: #64748b;">📅 Octobre 2026 • Document officiel pour tous les membres et familles</span>
+      <button class="btn-print" onclick="window.print()">🖨️ Imprimer / Enregistrer en PDF</button>
+    </div>
+
+    <div class="content">
+
+      <!-- ETAPE 1 -->
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-num">1</div>
+          <div class="step-title">Réception de votre invitation par e-mail</div>
+        </div>
+        <p>Un e-mail officiel d'activation est envoyé à chaque musicien (ou responsable légal) depuis l'adresse <strong>communication@lalyre.fr</strong>.</p>
+        
+        <div class="mockup">
+          <div class="email-preview">
+            <div class="email-meta">
+              <strong>De :</strong> La Lyre - Communication &lt;communication@lalyre.fr&gt;<br>
+              <strong>Objet :</strong> Activation de votre compte - La Lyre
+            </div>
+            <p>Bonjour <strong>[Prénom]</strong>,</p>
+            <p style="margin-top: 8px;">Un compte vous a été créé sur le nouvel espace membre de La Lyre de Chalindrey ! Cliquez sur le bouton ci-dessous pour choisir votre mot de passe et finaliser votre accès :</p>
+            <div style="text-align: center; margin: 16px 0;">
+              <span class="btn-activation">Activer mon compte</span>
+            </div>
+            <p style="font-size: 12px; color: #64748b;">Ce lien d'activation sécurisé est valable pendant 48 heures.</p>
+          </div>
+        </div>
+
+        <div class="tip-box">
+          <strong>Astuce :</strong> Si vous ne trouvez pas l'e-mail dans votre boîte de réception, vérifiez votre dossier <strong>Spams / Courriers indésirables</strong> ou l'onglet <strong>Promotions</strong> sur Gmail.
+        </div>
+      </div>
+
+      <!-- ETAPE 2 -->
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-num">2</div>
+          <div class="step-title">Création de votre mot de passe personnel</div>
+        </div>
+        <p>En cliquant sur le bouton d'activation, une page sécurisée s'ouvre pour vous permettre de choisir votre mot de passe :</p>
+
+        <div class="mockup" style="max-width: 500px; margin: 16px auto;">
+          <h4 style="color: #0f172a; margin-bottom: 12px; font-size: 16px;">Définir votre mot de passe</h4>
+          <div style="margin-bottom: 10px;">
+            <label style="font-size: 12px; font-weight: 600; color: #475569;">Nouveau mot de passe :</label>
+            <div style="background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 12px; font-size: 14px;">••••••••••••</div>
+          </div>
+          <div style="margin-bottom: 14px;">
+            <label style="font-size: 12px; font-weight: 600; color: #475569;">Confirmer le mot de passe :</label>
+            <div style="background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 12px; font-size: 14px;">••••••••••••</div>
+          </div>
+          <div style="background: #f1f5f9; padding: 10px; border-radius: 8px; font-size: 12px; color: #475569; margin-bottom: 14px;">
+            🔒 <strong>Critères obligatoires :</strong> 8 caractères min., au moins 1 majuscule, 1 minuscule, 1 chiffre et 1 symbole (!@#$...).
+          </div>
+          <div style="text-align: center;">
+            <span class="btn-activation" style="padding: 9px 20px; font-size: 13px;">Valider et activer mon compte</span>
+          </div>
+        </div>
+        <p>Une fois validé, votre compte est instantanément activé et vous accédez directement à l'espace membre !</p>
+      </div>
+
+      <!-- ETAPE 3 -->
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-num">3</div>
+          <div class="step-title">Connexion à tout moment sur lalyre.fr</div>
+        </div>
+        <p>Pour vous connecter lors de vos prochaines visites :</p>
+        <ol style="margin-left: 20px; margin-top: 8px; margin-bottom: 12px; font-size: 14px;">
+          <li>Rendez-vous sur <strong><a href="https://lalyre.fr" style="color: var(--primary);">https://lalyre.fr</a></strong></li>
+          <li>Cliquez sur le bouton <strong>« Espace Membre »</strong> en haut à droite (ou sur <strong><a href="https://lalyre.fr/connexion" style="color: var(--primary);">lalyre.fr/connexion</a></strong>)</li>
+          <li>Renseignez votre adresse e-mail et votre mot de passe.</li>
+        </ol>
+        <div class="tip-box">
+          <strong>Mot de passe oublié ?</strong> Cliquez simplement sur « Mot de passe oublié ? » sur l'écran de connexion pour recevoir un lien immédiat de réinitialisation.
+        </div>
+      </div>
+
+      <!-- ETAPE 4 -->
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-num">4</div>
+          <div class="step-title">Découverte de votre Tableau de Bord (Dashboard)</div>
+        </div>
+        <p>Votre tableau de bord réunit tout ce dont vous avez besoin pour vos activités musicales :</p>
+
+        <div class="mockup">
+          <div class="dashboard-preview">
+            <div class="dash-nav">
+              <div>
+                <strong style="font-size: 18px; color: #fff;">Bonjour, Pierre BOISSELIER 👋</strong><br>
+                <span style="font-size: 12px; color: #94a3b8;">Clarinette • Saxophone | Harmonie • Grand Orchestre</span>
+              </div>
+              <div style="display: flex; gap: 10px; align-items: center;">
+                <span style="background: #334155; padding: 6px 12px; border-radius: 8px; font-size: 12px;">🔔 3 nouveautés</span>
+                <span style="background: var(--primary); padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 700;">👤 Pierre ▾</span>
+              </div>
+            </div>
+
+            <div class="dash-grid">
+              <!-- Colonne Agenda -->
+              <div class="dash-box">
+                <h4>📅 Vos Prochains Événements</h4>
+                <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; margin-bottom: 10px;">
+                  <strong style="color: #60a5fa; font-size: 14px;">Répétition - Grand Orchestre</strong><br>
+                  <span style="font-size: 12px; color: #cbd5e1;">📆 Samedi 18 Octobre à 15h00 • Salle de musique</span>
+                  <div style="margin-top: 10px; display: flex; gap: 8px;">
+                    <span class="tag-present">✓ Présent</span>
+                    <span class="tag-absent">✗ Absent</span>
+                  </div>
+                </div>
+                <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px;">
+                  <strong style="color: #f59e0b; font-size: 14px;">Concert d'Automne</strong><br>
+                  <span style="font-size: 12px; color: #cbd5e1;">📆 Dimanche 8 Novembre à 16h30 • Salle des Fêtes</span>
+                  <div style="margin-top: 10px; display: flex; gap: 8px;">
+                    <span class="tag-present">✓ Présent</span>
+                    <span class="tag-absent">✗ Absent</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Colonne Partitions -->
+              <div class="dash-box">
+                <h4>🎼 Vos Partitions Numériques</h4>
+                <div style="font-size: 11px; color: #94a3b8; margin-bottom: 8px;">HARMONIE (12 partitions)</div>
+                <div class="partition-row">
+                  <span>Carmen Suite (Bizet) - Clarinette 1</span>
+                  <span class="btn-dl">⬇ PDF</span>
+                </div>
+                <div class="partition-row">
+                  <span>Pilatus Mountain - Clarinette 1</span>
+                  <span class="btn-dl">⬇ PDF</span>
+                </div>
+                <div style="font-size: 11px; color: #94a3b8; margin-top: 12px; margin-bottom: 8px;">GRAND ORCHESTRE (8 partitions)</div>
+                <div class="partition-row">
+                  <span>Santana Portrait - Saxophone 1</span>
+                  <span class="btn-dl">⬇ PDF</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ETAPE 5 -->
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-num">5</div>
+          <div class="step-title">Indiquer vos présences en un clic</div>
+        </div>
+        <p>Les chefs d'orchestre comptent sur votre retour pour équilibrer les répétitions et organiser les pupitres :</p>
+        <ul style="margin-left: 20px; font-size: 14px; margin-top: 8px;">
+          <li>Cliquez sur <strong>« Présent »</strong> ou <strong>« Absent »</strong> directement sur la carte de l'événement.</li>
+          <li>Votre choix est enregistré en temps réel.</li>
+          <li>Vous pouvez modifier votre statut à tout moment si vous avez un imprévu.</li>
+          <li>Cliquez sur la flèche pour consulter les <strong>infos pratiques</strong> (horaires précis, tenue de concert, morceaux travaillés).</li>
+        </ul>
+      </div>
+
+      <!-- ETAPE 6 -->
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-num">6</div>
+          <div class="step-title">Familles & Multi-profils (1 seul compte pour plusieurs musiciens)</div>
+        </div>
+        <p>Si vous êtes parent d'un ou plusieurs enfants musiciens inscrits avec la même adresse e-mail :</p>
+        <div style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 12px; padding: 18px; margin: 12px 0;">
+          <p style="font-weight: 700; color: #1e293b; margin-bottom: 6px;">👉 Vous n'avez pas besoin de créer plusieurs adresses e-mail !</p>
+          <p style="font-size: 14px; color: #475569;">
+            Il vous suffit de cliquer sur votre nom en haut à droite du tableau de bord. Un menu déroulant vous permet de passer instantanément d'un profil à un autre (ex : Maman ➔ Lucas ➔ Chloé) sans avoir à vous reconnecter !
+          </p>
+        </div>
+      </div>
+
+      <!-- FAQ -->
+      <div class="step-card" style="margin-bottom: 0;">
+        <div class="step-header">
+          <div class="step-num">?</div>
+          <div class="step-title">Foire Aux Questions</div>
+        </div>
+
+        <table class="faq-table">
+          <tr>
+            <th style="width: 40%;">Question</th>
+            <th>Réponse</th>
+          </tr>
+          <tr>
+            <td><strong>Je n'ai pas reçu le mail d'activation</strong></td>
+            <td>Vérifiez vos spams / courriers indésirables. Si besoin, signalez-le lors d'une répétition ou écrivez à <em>communication@lalyre.fr</em> pour recevoir un nouveau lien.</td>
+          </tr>
+          <tr>
+            <td><strong>Le lien d'activation a expiré</strong></td>
+            <td>Par sécurité, les liens sont valables 48h. Rendez-vous sur <em>lalyre.fr/connexion</em>, cliquez sur « Mot de passe oublié ? » pour en recevoir un nouveau immédiatement.</td>
+          </tr>
+          <tr>
+            <td><strong>Je ne vois pas les partitions de mon pupitre</strong></td>
+            <td>Vérifiez que votre instrument et vos orchestres sont bien configurés. Si un instrument manque, prévenez votre chef de pupitre ou un responsable.</td>
+          </tr>
+        </table>
+      </div>
+
+    </div>
+
+    <div class="footer">
+      <strong>Société Musicale La Lyre de Chalindrey</strong><br>
+      E-mail : communication@lalyre.fr • Site officiel : https://lalyre.fr
+    </div>
+  </div>
+
+</body>
+</html>
