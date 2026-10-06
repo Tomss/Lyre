@@ -246,7 +246,7 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-// POST /api/events/:id/attendance - Enregistrer ou modifier sa présence (Membre/Admin/Gestionnaire)
+// POST /api/events/:id/attendance - Enregistrer, modifier ou réinitialiser sa présence (Membre/Admin/Gestionnaire)
 router.post('/:id/attendance', async (req, res) => {
   // @ts-ignore
   const userId = (req as any).user?.id;
@@ -257,11 +257,21 @@ router.post('/:id/attendance', async (req, res) => {
     return res.status(401).json({ message: 'Utilisateur non authentifié.' });
   }
 
-  if (!['present', 'absent'].includes(status)) {
-    return res.status(400).json({ message: 'Statut invalide. Utilisez "present" ou "absent".' });
-  }
-
   try {
+    // Si statut null, 'none' ou vide : suppression de la réponse (déselection)
+    if (status === null || status === 'none' || status === '') {
+      await pool.query('DELETE FROM event_attendances WHERE event_id = ? AND user_id = ?', [eventId, userId]);
+      return res.json({ 
+        success: true, 
+        status: null, 
+        message: 'Votre réponse de présence a été réinitialisée.' 
+      });
+    }
+
+    if (!['present', 'absent'].includes(status)) {
+      return res.status(400).json({ message: 'Statut invalide. Utilisez "present", "absent" ou null.' });
+    }
+
     const attendanceId = crypto.randomUUID();
     const cleanComment = comment && typeof comment === 'string' ? comment.trim().slice(0, 255) : null;
 
@@ -283,6 +293,25 @@ router.post('/:id/attendance', async (req, res) => {
   } catch (error: any) {
     console.error('Error recording attendance:', error);
     res.status(500).json({ message: 'Erreur lors de l\'enregistrement de votre présence.' });
+  }
+});
+
+// DELETE /api/events/:id/attendance - Supprimer sa présence
+router.delete('/:id/attendance', async (req, res) => {
+  // @ts-ignore
+  const userId = (req as any).user?.id;
+  const { id: eventId } = req.params;
+
+  if (!userId) {
+    return res.status(401).json({ message: 'Utilisateur non authentifié.' });
+  }
+
+  try {
+    await pool.query('DELETE FROM event_attendances WHERE event_id = ? AND user_id = ?', [eventId, userId]);
+    res.json({ success: true, status: null, message: 'Présence réinitialisée.' });
+  } catch (error: any) {
+    console.error('Error resetting attendance:', error);
+    res.status(500).json({ message: 'Erreur lors de la réinitialisation de votre présence.' });
   }
 });
 

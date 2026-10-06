@@ -103,15 +103,19 @@ const Dashboard = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isNotificationsOpen, isProfileSwitcherOpen]);
 
-  const handleSetAttendance = async (eventId: string, status: 'present' | 'absent') => {
+  const handleSetAttendance = async (eventId: string, targetStatus: 'present' | 'absent') => {
     if (!token) return;
 
-    // Optimistic UI update
+    // Détermine le nouveau statut : si on reclique sur le même bouton, on réinitialise (null)
+    const currentEvent = userEvents.find(ev => ev.id === eventId);
+    const newStatus = currentEvent?.user_attendance_status === targetStatus ? null : targetStatus;
+
+    // Mise à jour optimiste immédiate dans l'interface
     setUserEvents(prev => prev.map(ev => {
       if (ev.id === eventId) {
         return {
           ...ev,
-          user_attendance_status: status
+          user_attendance_status: newStatus
         };
       }
       return ev;
@@ -126,7 +130,7 @@ const Dashboard = () => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ status })
+        body: JSON.stringify({ status: newStatus })
       });
 
       if (!response.ok) {
@@ -1039,54 +1043,45 @@ const Dashboard = () => {
                                       </div>
                                     )}
 
-                                    {/* Widget de Présence du Musicien (RSVP 1-Clic) */}
-                                    <div className="mt-4 pt-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                                      <div className="flex items-center gap-2">
-                                        <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                                          Votre présence :
-                                        </span>
-                                        {event.user_attendance_status && (
-                                          <span className={`text-[11px] px-2.5 py-0.5 rounded-full font-bold inline-flex items-center gap-1 ${
-                                            event.user_attendance_status === 'present' 
-                                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/80' 
-                                              : 'bg-rose-50 text-rose-700 border border-rose-200/80'
-                                          }`}>
-                                            {event.user_attendance_status === 'present' ? '✓ Confirmé présent' : '✕ Déclaré absent'}
-                                          </span>
+                                    {/* Boutons de Présence 1-Clic (Présent / Absent) avec désélection au re-clic */}
+                                    <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-end gap-2.5">
+                                      <button
+                                        type="button"
+                                        onClick={() => handleSetAttendance(event.id, 'present')}
+                                        disabled={savingAttendance[event.id]}
+                                        className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer select-none active:scale-95 ${
+                                          event.user_attendance_status === 'present'
+                                            ? 'bg-emerald-600 text-white shadow-sm ring-2 ring-emerald-300 scale-100'
+                                            : 'bg-emerald-50/70 text-emerald-700 hover:bg-emerald-100/80 border border-emerald-200/80'
+                                        }`}
+                                        title={event.user_attendance_status === 'present' ? 'Cliquer à nouveau pour retirer votre choix' : 'Marquer présent'}
+                                      >
+                                        {savingAttendance[event.id] ? (
+                                          <Loader2 size={13} className="animate-spin" />
+                                        ) : (
+                                          <CheckCircle2 size={14} className={event.user_attendance_status === 'present' ? 'text-white' : 'text-emerald-600'} />
                                         )}
-                                      </div>
+                                        <span>Présent</span>
+                                      </button>
 
-                                      <div className="flex items-center gap-2">
-                                        <button
-                                          onClick={() => handleSetAttendance(event.id, 'present')}
-                                          disabled={savingAttendance[event.id]}
-                                          className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer select-none active:scale-95 ${
-                                            event.user_attendance_status === 'present'
-                                              ? 'bg-emerald-600 text-white shadow-xs scale-100 ring-2 ring-emerald-300'
-                                              : 'bg-emerald-50/80 text-emerald-700 hover:bg-emerald-100 border border-emerald-200/80'
-                                          }`}
-                                        >
-                                          {savingAttendance[event.id] ? (
-                                            <Loader2 size={13} className="animate-spin" />
-                                          ) : (
-                                            <CheckCircle2 size={14} className={event.user_attendance_status === 'present' ? 'text-white' : 'text-emerald-600'} />
-                                          )}
-                                          <span>Présent</span>
-                                        </button>
-
-                                        <button
-                                          onClick={() => handleSetAttendance(event.id, 'absent')}
-                                          disabled={savingAttendance[event.id]}
-                                          className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer select-none active:scale-95 ${
-                                            event.user_attendance_status === 'absent'
-                                              ? 'bg-rose-600 text-white shadow-xs scale-100 ring-2 ring-rose-300'
-                                              : 'bg-rose-50/80 text-rose-700 hover:bg-rose-100 border border-rose-200/80'
-                                          }`}
-                                        >
+                                      <button
+                                        type="button"
+                                        onClick={() => handleSetAttendance(event.id, 'absent')}
+                                        disabled={savingAttendance[event.id]}
+                                        className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer select-none active:scale-95 ${
+                                          event.user_attendance_status === 'absent'
+                                            ? 'bg-rose-600 text-white shadow-sm ring-2 ring-rose-300 scale-100'
+                                            : 'bg-rose-50/70 text-rose-700 hover:bg-rose-100 border border-rose-200/80'
+                                        }`}
+                                        title={event.user_attendance_status === 'absent' ? 'Cliquer à nouveau pour retirer votre choix' : 'Marquer absent'}
+                                      >
+                                        {savingAttendance[event.id] ? (
+                                          <Loader2 size={13} className="animate-spin" />
+                                        ) : (
                                           <XCircle size={14} className={event.user_attendance_status === 'absent' ? 'text-white' : 'text-rose-600'} />
-                                          <span>Absent</span>
-                                        </button>
-                                      </div>
+                                        )}
+                                        <span>Absent</span>
+                                      </button>
                                     </div>
                                   </div>
                                 </div>
