@@ -27,7 +27,7 @@ export const sendActivationEmail = async (
     }
     frontendUrl = frontendUrl.replace(/\/$/, '');
 
-    const logoUrl = `${frontendUrl}/uploads/site/logo_lyre.png`;
+    const logoUrl = `${frontendUrl}/logo_lyre.png`;
     const activationLink = `${frontendUrl}/activer-compte?token=${token}`;
 
     const subject = isReset ? '[La Lyre] Réinitialisation de votre mot de passe' : '[La Lyre] Accès à votre Espace Membre';
@@ -54,7 +54,7 @@ export const sendActivationEmail = async (
                   <!-- Real Logo & Clean Header -->
                   <tr>
                     <td style="background-color: #ffffff; padding: 28px 36px; text-align: center; border-bottom: 3px solid #4f46e5;">
-                      <img src="${logoUrl}" alt="La Lyre" style="height: 56px; width: auto; max-width: 200px; margin-bottom: 6px; display: inline-block; object-fit: contain;" />
+                      <img src="${logoUrl}" alt="La Lyre" height="56" style="height: 56px; width: auto; max-width: 200px; margin-bottom: 6px; display: inline-block; border: 0; outline: none; text-decoration: none;" />
                       <h1 style="margin: 0; color: #0f172a; font-size: 22px; font-weight: 800; letter-spacing: -0.3px;">
                         La Lyre
                       </h1>
@@ -150,7 +150,7 @@ export const sendContactNotificationEmail = async ({
     frontendUrl = process.env.NODE_ENV === 'production' ? 'https://lalyre.fr' : 'http://localhost:5173';
   }
   frontendUrl = frontendUrl.replace(/\/$/, '');
-  const logoUrl = `${frontendUrl}/uploads/site/logo_lyre.png`;
+  const logoUrl = `${frontendUrl}/logo_lyre.png`;
 
   const formattedDate = new Date().toLocaleString('fr-FR', {
     timeZone: 'Europe/Paris',
@@ -175,7 +175,7 @@ export const sendContactNotificationEmail = async ({
               <!-- Header -->
               <tr>
                 <td style="background-color: #0f172a; padding: 24px 32px; text-align: center; border-bottom: 3px solid #0d9488;">
-                  <img src="${logoUrl}" alt="La Lyre" style="height: 48px; width: auto; margin-bottom: 8px; display: inline-block; object-fit: contain;" />
+                  <img src="${logoUrl}" alt="La Lyre" height="48" style="height: 48px; width: auto; margin-bottom: 8px; display: inline-block; border: 0; outline: none; text-decoration: none;" />
                   <h1 style="margin: 0; color: #ffffff; font-size: 20px; font-weight: 800;">
                     Nouveau Message de Contact
                   </h1>
