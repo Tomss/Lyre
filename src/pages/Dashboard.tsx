@@ -26,7 +26,6 @@ const Dashboard = () => {
   const [expandedOrchestras, setExpandedOrchestras] = React.useState<Set<string>>(new Set());
   const [expandedMorceaux, setExpandedMorceaux] = React.useState<Set<string>>(new Set());
   const [expandedEventTypes, setExpandedEventTypes] = React.useState<Set<string>>(new Set());
-  const [expandedPracticalInfo, setExpandedPracticalInfo] = React.useState<Set<string>>(new Set());
   const [isNotificationsOpen, setIsNotificationsOpen] = React.useState(false);
   const [lastSeenId, setLastSeenId] = React.useState<string | null>(localStorage.getItem('lastSeenActivityId'));
   const [eventFilter, setEventFilter] = React.useState<string>('all');
@@ -334,28 +333,10 @@ const Dashboard = () => {
     const newSet = new Set(expandedEventTypes);
     if (newSet.has(type)) {
       newSet.delete(type);
-      const typeEvents = eventsByType[type] || [];
-      const newInfoSet = new Set(expandedPracticalInfo);
-      typeEvents.forEach((ev: any) => {
-        newInfoSet.delete(ev.id);
-      });
-      setExpandedPracticalInfo(newInfoSet);
     } else {
       newSet.add(type);
     }
     setExpandedEventTypes(newSet);
-    restore();
-  };
-
-  const togglePracticalInfo = (eventId: string, e?: React.MouseEvent) => {
-    const restore = stabilizeElementScroll(e);
-    const newSet = new Set(expandedPracticalInfo);
-    if (newSet.has(eventId)) {
-      newSet.delete(eventId);
-    } else {
-      newSet.add(eventId);
-    }
-    setExpandedPracticalInfo(newSet);
     restore();
   };
 
@@ -396,7 +377,6 @@ const Dashboard = () => {
 
   const collapseAllEvents = () => {
     setExpandedEventTypes(new Set());
-    setExpandedPracticalInfo(new Set());
   };
 
   const expandAllOrchestras = () => {
@@ -958,7 +938,6 @@ const Dashboard = () => {
                         <div className="border-t border-slate-200/60 bg-white/30 p-5">
                           <ul className="space-y-4">
                           {events.map((event: any) => {
-                            const isPracticalInfoExpanded = expandedPracticalInfo.has(event.id);
                             const isNextEvent = event.id === nextEventId;
                             return (
                               <li 
@@ -1015,15 +994,8 @@ const Dashboard = () => {
                                       </span>
                                     </div>
 
-                                    {/* Description concise directement dans la carte si présente */}
-                                    {event.description && (
-                                      <p className="mt-2.5 text-sm text-slate-600 leading-relaxed line-clamp-2">
-                                        {event.description}
-                                      </p>
-                                    )}
-
                                     {event.orchestras && event.orchestras.length > 0 && (
-                                      <div className="mt-4 flex flex-wrap gap-2">
+                                      <div className="mt-3 flex flex-wrap gap-2">
                                         {event.orchestras.map((o: any) => {
                                           const oColor = getOrchestraColor(o.name);
                                           return (
@@ -1036,108 +1008,34 @@ const Dashboard = () => {
                                       </div>
                                     )}
 
-                                    {/* Bloc Détails & Infos pratiques avec Infobulle au survol (Tooltip) et dépliant au clic */}
+                                    {/* Description et Infos pratiques directement affichées côte à côte */}
                                     {(event.description || event.practical_info) && (
                                       <div className="mt-4">
-                                        <div className="relative inline-block group/tooltip">
-                                          <button 
-                                            type="button"
-                                            onClick={(e) => togglePracticalInfo(event.id, e)} 
-                                            className={`group/info flex items-center gap-2 text-xs font-bold ${
-                                              isPracticalInfoExpanded
-                                                ? 'bg-indigo-600 text-white shadow-sm ring-2 ring-indigo-200'
-                                                : `${styles.tagText} hover:bg-white bg-gray-50/80 border border-slate-200/80 hover:border-indigo-200 shadow-xs`
-                                            } p-2 px-3 rounded-xl transition-all cursor-pointer select-none`}
-                                            title="Survoler pour voir l'infobulle ou cliquer pour déplier"
-                                          >
-                                            <Info className={`h-4 w-4 ${isPracticalInfoExpanded ? 'text-white' : 'text-indigo-500'}`} />
-                                            <span>Détails &amp; Infos pratiques</span>
-                                            {event.practical_info && (
-                                              <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" title="Consignes pratiques disponibles" />
-                                            )}
-                                            <ChevronDown size={14} className={`transition-transform duration-300 ${isPracticalInfoExpanded ? 'rotate-180' : ''}`} />
-                                          </button>
-
-                                          {/* Infobulle moderne au survol de la souris (Tooltip) : s'ouvre vers le bas */}
-                                          <div className="pointer-events-none group-hover/tooltip:pointer-events-auto opacity-0 group-hover/tooltip:opacity-100 transition-all duration-200 invisible group-hover/tooltip:visible absolute left-0 top-full mt-2.5 w-80 sm:w-96 max-w-[calc(100vw-3rem)] p-4 bg-slate-900/95 backdrop-blur-md text-white rounded-2xl shadow-2xl border border-slate-700/80 z-50 transform translate-y-1 group-hover/tooltip:translate-y-0 text-left">
-                                            <div className="flex items-center gap-2 pb-2.5 mb-2.5 border-b border-slate-800">
-                                              <div className="p-1 rounded-lg bg-indigo-500/20 text-indigo-400">
-                                                <Info className="h-4 w-4" />
+                                        <div className={`grid gap-3 ${event.description && event.practical_info ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1'}`}>
+                                          {event.description && (
+                                            <div className="p-3.5 bg-slate-50/70 rounded-2xl border border-slate-200/80 flex flex-col">
+                                              <div className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5 flex items-center gap-1.5">
+                                                <FileText className="h-3.5 w-3.5 text-indigo-600" />
+                                                <span>Description</span>
                                               </div>
-                                              <div className="min-w-0 flex-1">
-                                                <h5 className="font-bold text-xs uppercase tracking-wider text-slate-200 truncate">
-                                                  {event.title}
-                                                </h5>
-                                                <p className="text-[10px] text-slate-400">
-                                                  {event.event_type.toUpperCase()} • {event.location || 'Lieu non précisé'}
-                                                </p>
+                                              <div className="text-sm text-slate-700 whitespace-pre-line leading-relaxed bg-white p-3 rounded-xl border border-slate-100 shadow-xs flex-grow">
+                                                {event.description}
                                               </div>
                                             </div>
+                                          )}
 
-                                            <div className="space-y-3 text-xs leading-relaxed max-h-64 overflow-y-auto pr-1">
-                                              {event.description && (
-                                                <div>
-                                                  <div className="text-[10px] font-bold uppercase tracking-wider text-indigo-300 mb-1 flex items-center gap-1.5">
-                                                    <FileText className="h-3.5 w-3.5" />
-                                                    <span>Description</span>
-                                                  </div>
-                                                  <div className="text-slate-200 whitespace-pre-line bg-slate-800/80 p-2.5 rounded-xl border border-slate-700/50 leading-relaxed text-xs">
-                                                    {event.description}
-                                                  </div>
-                                                </div>
-                                              )}
-
-                                              {event.practical_info && (
-                                                <div>
-                                                  <div className="text-[10px] font-bold uppercase tracking-wider text-amber-300 mb-1 flex items-center gap-1.5">
-                                                    <AlertCircle className="h-3.5 w-3.5 text-amber-400" />
-                                                    <span>Infos pratiques &amp; Consignes</span>
-                                                  </div>
-                                                  <div className="text-amber-100 whitespace-pre-line bg-amber-950/40 p-2.5 rounded-xl border border-amber-500/40 leading-relaxed text-xs shadow-inner font-medium">
-                                                    {event.practical_info}
-                                                  </div>
-                                                </div>
-                                              )}
+                                          {event.practical_info && (
+                                            <div className="p-3.5 bg-amber-50/50 rounded-2xl border border-amber-200/80 flex flex-col">
+                                              <div className="text-xs font-bold uppercase tracking-wider text-amber-900 mb-1.5 flex items-center gap-1.5">
+                                                <AlertCircle className="h-3.5 w-3.5 text-amber-600" />
+                                                <span>Infos pratiques &amp; Consignes</span>
+                                              </div>
+                                              <div className="text-sm text-amber-950 whitespace-pre-line leading-relaxed bg-white p-3 rounded-xl border border-amber-100 shadow-xs font-medium flex-grow">
+                                                {event.practical_info}
+                                              </div>
                                             </div>
-
-                                            <div className="mt-2.5 pt-2 border-t border-slate-800/80 text-[10px] text-slate-400 flex items-center justify-between">
-                                              <span className="italic">💡 Cliquez pour garder affiché</span>
-                                              <span className="text-indigo-300 font-semibold">{event.end_time ? 'Fin : ' + event.end_time.slice(0, 5) : ''}</span>
-                                            </div>
-                                            
-                                            {/* Flèche pointeur vers le haut */}
-                                            <div className="absolute bottom-full left-6 -mb-1 border-4 border-transparent border-b-slate-900"></div>
-                                          </div>
+                                          )}
                                         </div>
-
-                                        {/* Bloc Déplié au clic / mobile */}
-                                        {isPracticalInfoExpanded && (
-                                          <div className="mt-3 p-4 bg-gradient-to-br from-indigo-50/40 via-white to-slate-50/60 rounded-2xl border border-indigo-100 shadow-inner space-y-3">
-                                            {event.description && (
-                                              <div>
-                                                <div className="text-xs font-bold uppercase tracking-wider text-indigo-900 mb-1.5 flex items-center gap-1.5">
-                                                  <FileText className="h-3.5 w-3.5 text-indigo-600" />
-                                                  <span>Description :</span>
-                                                </div>
-                                                <div className="text-sm text-slate-700 whitespace-pre-line leading-relaxed bg-white/90 p-3 rounded-xl border border-indigo-50 shadow-xs">
-                                                  {event.description}
-                                                </div>
-                                              </div>
-                                            )}
-
-                                            {event.practical_info && (
-                                              <div>
-                                                <div className="text-xs font-bold uppercase tracking-wider text-amber-900 mb-1.5 flex items-center gap-1.5">
-                                                  <AlertCircle className="h-3.5 w-3.5 text-amber-600" />
-                                                  <span>Infos pratiques &amp; Consignes :</span>
-                                                </div>
-                                                <div className="text-sm text-amber-950 whitespace-pre-line leading-relaxed bg-amber-50/90 p-3 rounded-xl border border-amber-200/80 shadow-xs font-medium">
-                                                  {event.practical_info}
-                                                </div>
-                                              </div>
-                                            )}
-                                          </div>
-                                        )}
                                       </div>
                                     )}
 
