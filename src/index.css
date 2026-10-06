@@ -4,6 +4,10 @@
 
 
 @layer base {
+  html, body {
+    overflow-anchor: none;
+  }
+
   body {
     @apply font-sans;
     -webkit-font-smoothing: antialiased;

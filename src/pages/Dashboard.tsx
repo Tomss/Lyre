@@ -6,6 +6,12 @@ import { useAuth } from '../context/AuthContext';
 
 import { API_URL } from '../config';
 
+const EVENT_TYPE_LABELS: Record<string, string> = {
+  concert: 'Concerts',
+  repetition: 'Répétitions',
+  divers: 'Divers'
+};
+
 const Dashboard = () => {
   const { currentUser, logout, token, switchProfile, loading: authLoading } = useAuth();
   const [isProfileSwitcherOpen, setIsProfileSwitcherOpen] = React.useState(false);
@@ -274,7 +280,24 @@ const Dashboard = () => {
     }, {} as Record<string, { partitions: any[], created_at: string }>);
   };
 
-  const toggleOrchestra = (orchestraName: string) => {
+  const stabilizeElementScroll = (e?: React.MouseEvent) => {
+    if (!e) return () => {};
+    const target = (e.currentTarget as HTMLElement) || null;
+    if (!target) return () => {};
+    const initialTop = target.getBoundingClientRect().top;
+    return () => {
+      requestAnimationFrame(() => {
+        const currentTop = target.getBoundingClientRect().top;
+        const diff = currentTop - initialTop;
+        if (Math.abs(diff) > 0.5) {
+          window.scrollBy({ top: diff, behavior: 'instant' });
+        }
+      });
+    };
+  };
+
+  const toggleOrchestra = (orchestraName: string, e?: React.MouseEvent) => {
+    const restore = stabilizeElementScroll(e);
     const newSet = new Set(expandedOrchestras);
     if (newSet.has(orchestraName)) {
       newSet.delete(orchestraName);
@@ -291,9 +314,11 @@ const Dashboard = () => {
       newSet.add(orchestraName);
     }
     setExpandedOrchestras(newSet);
+    restore();
   };
 
-  const toggleMorceau = (morceauName: string) => {
+  const toggleMorceau = (morceauName: string, e?: React.MouseEvent) => {
+    const restore = stabilizeElementScroll(e);
     const newSet = new Set(expandedMorceaux);
     if (newSet.has(morceauName)) {
       newSet.delete(morceauName);
@@ -301,9 +326,11 @@ const Dashboard = () => {
       newSet.add(morceauName);
     }
     setExpandedMorceaux(newSet);
+    restore();
   };
 
-  const toggleEventType = (type: string) => {
+  const toggleEventType = (type: string, e?: React.MouseEvent) => {
+    const restore = stabilizeElementScroll(e);
     const newSet = new Set(expandedEventTypes);
     if (newSet.has(type)) {
       newSet.delete(type);
@@ -317,9 +344,11 @@ const Dashboard = () => {
       newSet.add(type);
     }
     setExpandedEventTypes(newSet);
+    restore();
   };
 
-  const togglePracticalInfo = (eventId: string) => {
+  const togglePracticalInfo = (eventId: string, e?: React.MouseEvent) => {
+    const restore = stabilizeElementScroll(e);
     const newSet = new Set(expandedPracticalInfo);
     if (newSet.has(eventId)) {
       newSet.delete(eventId);
@@ -327,6 +356,7 @@ const Dashboard = () => {
       newSet.add(eventId);
     }
     setExpandedPracticalInfo(newSet);
+    restore();
   };
 
   const filteredEvents = React.useMemo(() => {
@@ -891,8 +921,7 @@ const Dashboard = () => {
               <div className="space-y-5">
                 {Object.entries(eventsByType)
                   .sort(([a], [b]) => {
-                    const translated = { concert: 'Concerts', divers: 'Divers', repetition: 'Répétitions' };
-                    return (translated[a as keyof typeof translated] || a).localeCompare((translated[b as keyof typeof translated] || b));
+                    return (EVENT_TYPE_LABELS[a] || a).localeCompare(EVENT_TYPE_LABELS[b] || b);
                   })
                   .map(([type, eventsList]) => {
                   const events = eventsList as any[];
@@ -909,6 +938,7 @@ const Dashboard = () => {
                   return (
                     <div key={type} className="bg-slate-50/70 rounded-2xl shadow-xs border border-slate-200/80 overflow-hidden transition-colors duration-200 hover:border-indigo-200 [overflow-anchor:none]">
                       <button 
+                        type="button"
                         onClick={(e) => toggleEventType(type, e)} 
                         className={`w-full flex items-center justify-between p-5 bg-gradient-to-r ${styles.lightGradient} hover:opacity-90 transition-colors cursor-pointer`}
                       >
@@ -916,7 +946,7 @@ const Dashboard = () => {
                           <div className={`p-2 rounded-lg bg-gradient-to-br ${styles.gradient} text-white mr-4 shadow-sm group-hover:scale-110 transition-transform`}>
                             <TypeIcon className="h-5 w-5" />
                           </div>
-                          {type.charAt(0).toUpperCase() + type.slice(1)}s
+                          {EVENT_TYPE_LABELS[type] || (type.charAt(0).toUpperCase() + type.slice(1))}
                           <span className="ml-3 text-xs font-medium px-2 py-0.5 bg-white/50 rounded-full border border-gray-100 text-slate-500">
                             {events.length}
                           </span>
@@ -1028,8 +1058,8 @@ const Dashboard = () => {
                                             <ChevronDown size={14} className={`transition-transform duration-300 ${isPracticalInfoExpanded ? 'rotate-180' : ''}`} />
                                           </button>
 
-                                          {/* Infobulle moderne au survol de la souris (Tooltip) */}
-                                          <div className="pointer-events-none group-hover/tooltip:pointer-events-auto opacity-0 group-hover/tooltip:opacity-100 transition-all duration-200 invisible group-hover/tooltip:visible absolute left-0 bottom-full mb-2.5 w-80 sm:w-96 max-w-[calc(100vw-3rem)] p-4 bg-slate-900/95 backdrop-blur-md text-white rounded-2xl shadow-2xl border border-slate-700/80 z-50 transform -translate-y-1 group-hover/tooltip:translate-y-0 text-left">
+                                          {/* Infobulle moderne au survol de la souris (Tooltip) : s'ouvre vers le bas */}
+                                          <div className="pointer-events-none group-hover/tooltip:pointer-events-auto opacity-0 group-hover/tooltip:opacity-100 transition-all duration-200 invisible group-hover/tooltip:visible absolute left-0 top-full mt-2.5 w-80 sm:w-96 max-w-[calc(100vw-3rem)] p-4 bg-slate-900/95 backdrop-blur-md text-white rounded-2xl shadow-2xl border border-slate-700/80 z-50 transform translate-y-1 group-hover/tooltip:translate-y-0 text-left">
                                             <div className="flex items-center gap-2 pb-2.5 mb-2.5 border-b border-slate-800">
                                               <div className="p-1 rounded-lg bg-indigo-500/20 text-indigo-400">
                                                 <Info className="h-4 w-4" />
@@ -1075,8 +1105,8 @@ const Dashboard = () => {
                                               <span className="text-indigo-300 font-semibold">{event.end_time ? 'Fin : ' + event.end_time.slice(0, 5) : ''}</span>
                                             </div>
                                             
-                                            {/* Flèche pointeur vers le bas */}
-                                            <div className="absolute top-full left-6 -mt-1 border-4 border-transparent border-t-slate-900"></div>
+                                            {/* Flèche pointeur vers le haut */}
+                                            <div className="absolute bottom-full left-6 -mb-1 border-4 border-transparent border-b-slate-900"></div>
                                           </div>
                                         </div>
 
@@ -1244,6 +1274,7 @@ const Dashboard = () => {
                   return (
                     <div key={orchestraName} className="bg-white rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden transition-colors duration-200 hover:shadow-md [overflow-anchor:none]">
                       <button 
+                        type="button"
                         onClick={(e) => toggleOrchestra(orchestraName, e)} 
                         className="w-full flex items-center justify-between p-5 bg-gradient-to-r from-purple-50 to-white hover:opacity-90 transition-colors cursor-pointer"
                       >
@@ -1267,6 +1298,7 @@ const Dashboard = () => {
                             return (
                               <div key={morceauName} className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden [overflow-anchor:none]">
                                 <button 
+                                  type="button"
                                   onClick={(e) => toggleMorceau(morceauName, e)} 
                                   className={`w-full text-left flex items-center justify-between p-4 transition-colors duration-200 group/item cursor-pointer ${isMorceauExpanded ? 'bg-emerald-50/50' : 'hover:bg-slate-50'}`}
                                 >
