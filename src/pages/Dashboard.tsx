@@ -7,7 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import { API_URL } from '../config';
 
 const Dashboard = () => {
-  const { currentUser, logout, token, switchProfile } = useAuth();
+  const { currentUser, logout, token, switchProfile, loading: authLoading } = useAuth();
   const [isProfileSwitcherOpen, setIsProfileSwitcherOpen] = React.useState(false);
   const [switchingProfile, setSwitchingProfile] = React.useState(false);
   const [userInstruments, setUserInstruments] = React.useState<any[]>([]);
@@ -431,8 +431,16 @@ const Dashboard = () => {
   };
 
 
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <Loader2 className="w-8 h-8 text-teal-600 animate-spin" />
+      </div>
+    );
+  }
+
   if (!currentUser) {
-    return <Navigate to="/connexion" />;
+    return <Navigate to="/connexion" replace />;
   }
 
   return (

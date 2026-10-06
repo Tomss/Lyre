@@ -4,6 +4,7 @@ import pool from '../db';
 import crypto from 'crypto';
 import { logActivity } from '../utils/activity';
 import { sendMail } from '../utils/emailSender';
+import { getLogoAttachment } from '../utils/email';
 
 const router = Router();
 
@@ -375,7 +376,8 @@ router.post('/send', async (req, res) => {
       frontendUrl = process.env.NODE_ENV === 'production' ? 'https://lalyre.fr' : 'http://localhost:5173';
     }
     frontendUrl = frontendUrl.replace(/\/$/, '');
-    const logoUrl = `${frontendUrl}/logo_lyre.png`;
+    const attachments = getLogoAttachment();
+    const logoSrc = attachments.length > 0 ? 'cid:lyre-site-logo' : `${frontendUrl}/site-logo.png`;
     const subject = customSubject || (
       (type === 'event' || type === 'schedule') ? '[La Lyre] Programme / Planning' : '[La Lyre] Communication'
     );
@@ -492,10 +494,10 @@ router.post('/send', async (req, res) => {
               <td align="center" style="width: 100%; padding: 0;">
                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="width: 100%; background-color: #ffffff;">
                   
-                  <!-- Real Logo & Clean Header -->
+                  <!-- Real Official Site Logo & Clean Header -->
                   <tr>
                     <td style="background-color: #ffffff; padding: 28px 36px; text-align: center; border-bottom: 3px solid #4f46e5;">
-                      <img src="${logoUrl}" alt="La Lyre" height="56" style="height: 56px; width: auto; max-width: 200px; margin-bottom: 6px; display: inline-block; border: 0; outline: none; text-decoration: none;" />
+                      <img src="${logoSrc}" alt="La Lyre" height="56" style="height: 56px; width: auto; max-width: 200px; margin-bottom: 6px; display: inline-block; border: 0; outline: none; text-decoration: none;" />
                       <h1 style="margin: 0; color: #0f172a; font-size: 22px; font-weight: 800; letter-spacing: -0.3px;">
                         La Lyre
                       </h1>
@@ -548,7 +550,8 @@ router.post('/send', async (req, res) => {
         from: 'La Lyre - Communication <communication@lalyre.fr>',
         to: recipient.email,
         subject,
-        html: htmlContent
+        html: htmlContent,
+        attachments
       });
 
       if (sendResult.success) {

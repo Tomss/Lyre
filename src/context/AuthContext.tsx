@@ -77,18 +77,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setTimeout(() => setInactivityMessage(null), 8000);
     }
 
+    try {
+      localStorage.removeItem('lyre_last_activity');
+    } catch (e) {}
+
     if (shouldNavigate) {
       navigate('/');
     }
   }, [navigate]);
 
+  // Synchronized activity timestamp updater (across memory and localStorage)
+  const updateActivityTimestamp = useCallback((ts = Date.now()) => {
+    lastActivityRef.current = ts;
+    try {
+      localStorage.setItem('lyre_last_activity', ts.toString());
+    } catch (e) {}
+  }, []);
+
   // Reset activity timestamp
   const resetInactivityTimer = useCallback(() => {
-    lastActivityRef.current = Date.now();
+    updateActivityTimestamp();
     if (showWarningModal) {
       setShowWarningModal(false);
     }
-  }, [showWarningModal]);
+  }, [showWarningModal, updateActivityTimestamp]);
 
   // 1. INITIALIZE BROADCAST CHANNEL & STORAGE LISTENER FOR INTER-TAB SYNC
   useEffect(() => {
@@ -110,7 +122,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           const storedToken = localStorage.getItem('token');
           if (storedUser && storedToken) {
             setToken(storedToken);
-            setCurrentUser(JSON.parse(storedUser));
+            try {
+              setCurrentUser(JSON.parse(storedUser));
+            } catch (e) {}
+            updateActivityTimestamp();
           }
         }
       };
@@ -132,7 +147,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           const storedUser = localStorage.getItem('user');
           if (storedUser) {
             setToken(e.newValue);
-            setCurrentUser(JSON.parse(storedUser));
+            try {
+              setCurrentUser(JSON.parse(storedUser));
+            } catch (e) {}
+            updateActivityTimestamp();
           }
         }
       }
@@ -144,36 +162,53 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       broadcastChannelRef.current?.close();
       window.removeEventListener('storage', handleStorageChange);
     };
-  }, [navigate]);
+  }, [navigate, updateActivityTimestamp]);
 
-  // 2. INITIALIZE AUTH ON MOUNT
+  // 2. INITIALIZE AUTH ON MOUNT (Once only)
   useEffect(() => {
+    let isCancelled = false;
     const initAuth = async () => {
       const storedUser = localStorage.getItem('user');
       const storedToken = localStorage.getItem('token');
 
       if (storedUser && storedToken) {
         setToken(storedToken);
-        setCurrentUser(JSON.parse(storedUser));
+        try {
+          setCurrentUser(JSON.parse(storedUser));
+        } catch (e) {}
+        updateActivityTimestamp();
 
         try {
           const response = await fetch(`${API_URL}/auth/me`, {
             headers: { 'Authorization': `Bearer ${storedToken}` }
           });
 
-          if (!response.ok) {
-            throw new Error('Token invalid');
+          if (isCancelled) return;
+
+          if (response.status === 401 || response.status === 403) {
+            console.warn('[AuthContext] Session expired or invalid on server');
+            logout(false);
+          } else if (response.ok) {
+            const data = await response.json();
+            if (data.user) {
+              setCurrentUser(data.user);
+              localStorage.setItem('user', JSON.stringify(data.user));
+            }
           }
         } catch (error) {
-          console.error("Session expired or invalid:", error);
-          logout(true);
+          console.warn("[AuthContext] Transient network error verifying session:", error);
         }
       }
-      setLoading(false);
+      if (!isCancelled) {
+        setLoading(false);
+      }
     };
 
     initAuth();
-  }, [logout]);
+    return () => {
+      isCancelled = true;
+    };
+  }, [logout, updateActivityTimestamp]);
 
   // 3. LISTEN FOR USER ACTIVITY (Mouse, Keyboard, Scroll, Touch)
   useEffect(() => {
@@ -186,7 +221,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           throttleTimer = null;
           // Only update activity if warning modal is not currently open
           if (!showWarningModal) {
-            lastActivityRef.current = Date.now();
+            updateActivityTimestamp();
           }
         }, 1000);
       }
@@ -199,7 +234,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (throttleTimer) clearTimeout(throttleTimer);
       activityEvents.forEach(evt => window.removeEventListener(evt, handleUserActivity));
     };
-  }, [token, showWarningModal]);
+  }, [token, showWarningModal, updateActivityTimestamp]);
 
   // 4. INACTIVITY CHECKER INTERVAL (Runs every second when logged in)
   useEffect(() => {
@@ -210,7 +245,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const interval = setInterval(() => {
       const now = Date.now();
-      const elapsed = now - lastActivityRef.current;
+      const storedLastActivity = parseInt(localStorage.getItem('lyre_last_activity') || '0', 10);
+      const effectiveLastActivity = Math.max(lastActivityRef.current || 0, storedLastActivity || 0);
+
+      if (!effectiveLastActivity || effectiveLastActivity > now) {
+        updateActivityTimestamp(now);
+        return;
+      }
+
+      const elapsed = now - effectiveLastActivity;
+
+      // Grace period: never timeout within 2 minutes of logging in or recent activity
+      if (elapsed < 120000) {
+        return;
+      }
 
       if (elapsed >= INACTIVITY_TIMEOUT_MS) {
         console.log('[AuthContext] 30 minutes of inactivity reached. Logging out.');
@@ -228,7 +276,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [token, logout, showWarningModal]);
+  }, [token, logout, showWarningModal, updateActivityTimestamp]);
 
   // Login handler
   const login = async (email: string, password: string): Promise<LoginResult> => {
@@ -258,7 +306,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setToken(token);
       localStorage.setItem('user', JSON.stringify(user));
       localStorage.setItem('token', token);
-      lastActivityRef.current = Date.now();
+      updateActivityTimestamp();
       setShowWarningModal(false);
 
       // Notify other tabs
@@ -307,7 +355,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setToken(newToken);
       localStorage.setItem('user', JSON.stringify(user));
       localStorage.setItem('token', newToken);
-      lastActivityRef.current = Date.now();
+      updateActivityTimestamp();
 
       try {
         broadcastChannelRef.current?.postMessage({ type: 'PROFILE_SWITCHED' });

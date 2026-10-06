@@ -6,9 +6,10 @@ interface SendMailParams {
   replyTo?: string | string[];
   subject: string;
   html: string;
+  attachments?: any[];
 }
 
-export const sendMail = async ({ from, to, replyTo, subject, html }: SendMailParams): Promise<{ success: boolean; id?: string; error?: any }> => {
+export const sendMail = async ({ from, to, replyTo, subject, html, attachments }: SendMailParams): Promise<{ success: boolean; id?: string; error?: any }> => {
   const defaultFrom = 'La Lyre - Communication <communication@lalyre.fr>';
   const finalFrom = from || defaultFrom;
   const recipients = Array.isArray(to) ? to : [to];
@@ -41,6 +42,7 @@ export const sendMail = async ({ from, to, replyTo, subject, html }: SendMailPar
         replyTo: replyTo || undefined,
         subject,
         html,
+        attachments: attachments || undefined,
       });
 
       console.log(`[EmailSender] Success via OVH SMTP! MessageId: ${info.messageId}`);
