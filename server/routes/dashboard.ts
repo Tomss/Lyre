@@ -46,7 +46,7 @@ router.get('/', authenticateToken, async (req, res) => {
     try {
       const [resEvents] = await pool.query(`
         SELECT 
-          e.id, e.title, 
+          e.id, e.title, e.description,
           DATE_FORMAT(e.event_date, '%Y-%m-%dT%H:%i:%s') as event_date,
           TIME_FORMAT(e.end_time, '%H:%i') as end_time,
           e.location, e.practical_info, e.event_type,
@@ -71,7 +71,7 @@ router.get('/', authenticateToken, async (req, res) => {
           )
           OR NOT EXISTS (SELECT 1 FROM event_orchestras eo3 WHERE eo3.event_id = e.id)
         )
-        GROUP BY e.id, e.title, e.event_date, e.end_time, e.location, e.practical_info, e.event_type, ea.status, ea.comment
+        GROUP BY e.id, e.title, e.description, e.event_date, e.end_time, e.location, e.practical_info, e.event_type, ea.status, ea.comment
         ORDER BY e.event_date ASC
       `, [userId, userId]);
       userEvents = resEvents as RowDataPacket[];
@@ -80,7 +80,7 @@ router.get('/', authenticateToken, async (req, res) => {
       try {
         const [fallbackEvents] = await pool.query(`
           SELECT 
-            e.id, e.title, 
+            e.id, e.title, e.description,
             DATE_FORMAT(e.event_date, '%Y-%m-%dT%H:%i:%s') as event_date,
             TIME_FORMAT(e.end_time, '%H:%i') as end_time,
             e.location, e.practical_info, e.event_type,
@@ -104,7 +104,7 @@ router.get('/', authenticateToken, async (req, res) => {
             )
             OR NOT EXISTS (SELECT 1 FROM event_orchestras eo3 WHERE eo3.event_id = e.id)
           )
-          GROUP BY e.id, e.title, e.event_date, e.end_time, e.location, e.practical_info, e.event_type
+          GROUP BY e.id, e.title, e.description, e.event_date, e.end_time, e.location, e.practical_info, e.event_type
           ORDER BY e.event_date ASC
         `, [userId]);
         userEvents = fallbackEvents as RowDataPacket[];

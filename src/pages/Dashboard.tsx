@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, Navigate } from 'react-router-dom';
-import { ChevronUp,  LogOut, Users, Music, Music2, Calendar, Image, FileText, Download, ChevronRight, ChevronDown, User, UserCircle, Mail, MapPin, Info, Clock, Palette, Building2, Bell, Newspaper, Search, X, CheckCircle2, XCircle, MessageSquare, Loader2 } from "lucide-react";
+import { ChevronUp,  LogOut, Users, Music, Music2, Calendar, Image, FileText, Download, ChevronRight, ChevronDown, User, UserCircle, Mail, MapPin, Info, Clock, Palette, Building2, Bell, Newspaper, Search, X, CheckCircle2, XCircle, MessageSquare, Loader2, AlertCircle } from "lucide-react";
 import ActivityFeed, { Activity } from '../components/ActivityFeed';
 import { useAuth } from '../context/AuthContext';
 
@@ -934,7 +934,7 @@ const Dashboard = () => {
                               <li 
                                 key={event.id} 
                                 id={`event-${event.id}`}
-                                className={`p-6 rounded-2xl border transition-colors duration-200 relative group overflow-hidden ${
+                                className={`p-6 rounded-2xl border transition-colors duration-200 relative group ${
                                   isNextEvent 
                                     ? `bg-white border-indigo-200 shadow-md ring-1 ring-indigo-50` 
                                     : 'bg-white/80 border-gray-100 shadow-sm'
@@ -942,12 +942,12 @@ const Dashboard = () => {
                               >
                                 {isNextEvent && (
                                   <div className="absolute top-0 right-0">
-                                    <div className="bg-indigo-600 text-white text-[9px] font-black px-3 py-1 rounded-bl-xl shadow-sm tracking-widest animate-pulse">
+                                    <div className="bg-indigo-600 text-white text-[9px] font-black px-3 py-1 rounded-tr-2xl rounded-bl-xl shadow-sm tracking-widest animate-pulse">
                                       PROCHAIN
                                     </div>
                                   </div>
                                 )}
-                                <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b opacity-10 group-hover:opacity-100 transition-opacity" style={{ backgroundImage: `linear-gradient(to bottom, var(--tw-gradient-from), var(--tw-gradient-to))` }}></div>
+                                <div className="absolute top-0 left-0 w-1.5 h-full rounded-l-2xl bg-gradient-to-b opacity-10 group-hover:opacity-100 transition-opacity" style={{ backgroundImage: `linear-gradient(to bottom, var(--tw-gradient-from), var(--tw-gradient-to))` }}></div>
                                 <div className="flex items-start gap-5">
                                   <div className={`flex-shrink-0 h-14 w-14 bg-gradient-to-br ${styles.gradient} rounded-2xl flex items-center justify-center shadow-lg transform group-hover:rotate-3 transition-transform`}>
                                     <TypeIcon className="h-7 w-7 text-white" />
@@ -985,6 +985,13 @@ const Dashboard = () => {
                                       </span>
                                     </div>
 
+                                    {/* Description concise directement dans la carte si présente */}
+                                    {event.description && (
+                                      <p className="mt-2.5 text-sm text-slate-600 leading-relaxed line-clamp-2">
+                                        {event.description}
+                                      </p>
+                                    )}
+
                                     {event.orchestras && event.orchestras.length > 0 && (
                                       <div className="mt-4 flex flex-wrap gap-2">
                                         {event.orchestras.map((o: any) => {
@@ -999,22 +1006,106 @@ const Dashboard = () => {
                                       </div>
                                     )}
 
-                                    {event.practical_info && (
+                                    {/* Bloc Détails & Infos pratiques avec Infobulle au survol (Tooltip) et dépliant au clic */}
+                                    {(event.description || event.practical_info) && (
                                       <div className="mt-4">
-                                        <button 
-                                          onClick={(e) => togglePracticalInfo(event.id, e)} 
-                                          className={`group/info flex items-center gap-2 text-xs font-bold ${styles.tagText} hover:bg-white p-2 rounded-lg transition-colors border border-transparent hover:border-gray-100 shadow-sm bg-gray-50/50 cursor-pointer`}
-                                        >
-                                          <Info className="h-4 w-4" />
-                                          Plus d'infos
-                                          <ChevronDown size={14} className={`transition-transform duration-300 ${isPracticalInfoExpanded ? 'rotate-180' : ''}`} />
-                                        </button>
-                                        
-                                        {isPracticalInfoExpanded && (
-                                          <div className={`mt-3 p-4 bg-white rounded-xl border-t-4 ${styles.infoBoxBorder} shadow-inner`}>
-                                            <div className="prose prose-sm max-w-none text-slate-700">
-                                              {event.practical_info}
+                                        <div className="relative inline-block group/tooltip">
+                                          <button 
+                                            type="button"
+                                            onClick={(e) => togglePracticalInfo(event.id, e)} 
+                                            className={`group/info flex items-center gap-2 text-xs font-bold ${
+                                              isPracticalInfoExpanded
+                                                ? 'bg-indigo-600 text-white shadow-sm ring-2 ring-indigo-200'
+                                                : `${styles.tagText} hover:bg-white bg-gray-50/80 border border-slate-200/80 hover:border-indigo-200 shadow-xs`
+                                            } p-2 px-3 rounded-xl transition-all cursor-pointer select-none`}
+                                            title="Survoler pour voir l'infobulle ou cliquer pour déplier"
+                                          >
+                                            <Info className={`h-4 w-4 ${isPracticalInfoExpanded ? 'text-white' : 'text-indigo-500'}`} />
+                                            <span>Détails &amp; Infos pratiques</span>
+                                            {event.practical_info && (
+                                              <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" title="Consignes pratiques disponibles" />
+                                            )}
+                                            <ChevronDown size={14} className={`transition-transform duration-300 ${isPracticalInfoExpanded ? 'rotate-180' : ''}`} />
+                                          </button>
+
+                                          {/* Infobulle moderne au survol de la souris (Tooltip) */}
+                                          <div className="pointer-events-none group-hover/tooltip:pointer-events-auto opacity-0 group-hover/tooltip:opacity-100 transition-all duration-200 invisible group-hover/tooltip:visible absolute left-0 bottom-full mb-2.5 w-80 sm:w-96 max-w-[calc(100vw-3rem)] p-4 bg-slate-900/95 backdrop-blur-md text-white rounded-2xl shadow-2xl border border-slate-700/80 z-50 transform -translate-y-1 group-hover/tooltip:translate-y-0 text-left">
+                                            <div className="flex items-center gap-2 pb-2.5 mb-2.5 border-b border-slate-800">
+                                              <div className="p-1 rounded-lg bg-indigo-500/20 text-indigo-400">
+                                                <Info className="h-4 w-4" />
+                                              </div>
+                                              <div className="min-w-0 flex-1">
+                                                <h5 className="font-bold text-xs uppercase tracking-wider text-slate-200 truncate">
+                                                  {event.title}
+                                                </h5>
+                                                <p className="text-[10px] text-slate-400">
+                                                  {event.event_type.toUpperCase()} • {event.location || 'Lieu non précisé'}
+                                                </p>
+                                              </div>
                                             </div>
+
+                                            <div className="space-y-3 text-xs leading-relaxed max-h-64 overflow-y-auto pr-1">
+                                              {event.description && (
+                                                <div>
+                                                  <div className="text-[10px] font-bold uppercase tracking-wider text-indigo-300 mb-1 flex items-center gap-1.5">
+                                                    <FileText className="h-3.5 w-3.5" />
+                                                    <span>Description</span>
+                                                  </div>
+                                                  <div className="text-slate-200 whitespace-pre-line bg-slate-800/80 p-2.5 rounded-xl border border-slate-700/50 leading-relaxed text-xs">
+                                                    {event.description}
+                                                  </div>
+                                                </div>
+                                              )}
+
+                                              {event.practical_info && (
+                                                <div>
+                                                  <div className="text-[10px] font-bold uppercase tracking-wider text-amber-300 mb-1 flex items-center gap-1.5">
+                                                    <AlertCircle className="h-3.5 w-3.5 text-amber-400" />
+                                                    <span>Infos pratiques &amp; Consignes</span>
+                                                  </div>
+                                                  <div className="text-amber-100 whitespace-pre-line bg-amber-950/40 p-2.5 rounded-xl border border-amber-500/40 leading-relaxed text-xs shadow-inner font-medium">
+                                                    {event.practical_info}
+                                                  </div>
+                                                </div>
+                                              )}
+                                            </div>
+
+                                            <div className="mt-2.5 pt-2 border-t border-slate-800/80 text-[10px] text-slate-400 flex items-center justify-between">
+                                              <span className="italic">💡 Cliquez pour garder affiché</span>
+                                              <span className="text-indigo-300 font-semibold">{event.end_time ? 'Fin : ' + event.end_time.slice(0, 5) : ''}</span>
+                                            </div>
+                                            
+                                            {/* Flèche pointeur vers le bas */}
+                                            <div className="absolute top-full left-6 -mt-1 border-4 border-transparent border-t-slate-900"></div>
+                                          </div>
+                                        </div>
+
+                                        {/* Bloc Déplié au clic / mobile */}
+                                        {isPracticalInfoExpanded && (
+                                          <div className="mt-3 p-4 bg-gradient-to-br from-indigo-50/40 via-white to-slate-50/60 rounded-2xl border border-indigo-100 shadow-inner space-y-3">
+                                            {event.description && (
+                                              <div>
+                                                <div className="text-xs font-bold uppercase tracking-wider text-indigo-900 mb-1.5 flex items-center gap-1.5">
+                                                  <FileText className="h-3.5 w-3.5 text-indigo-600" />
+                                                  <span>Description :</span>
+                                                </div>
+                                                <div className="text-sm text-slate-700 whitespace-pre-line leading-relaxed bg-white/90 p-3 rounded-xl border border-indigo-50 shadow-xs">
+                                                  {event.description}
+                                                </div>
+                                              </div>
+                                            )}
+
+                                            {event.practical_info && (
+                                              <div>
+                                                <div className="text-xs font-bold uppercase tracking-wider text-amber-900 mb-1.5 flex items-center gap-1.5">
+                                                  <AlertCircle className="h-3.5 w-3.5 text-amber-600" />
+                                                  <span>Infos pratiques &amp; Consignes :</span>
+                                                </div>
+                                                <div className="text-sm text-amber-950 whitespace-pre-line leading-relaxed bg-amber-50/90 p-3 rounded-xl border border-amber-200/80 shadow-xs font-medium">
+                                                  {event.practical_info}
+                                                </div>
+                                              </div>
+                                            )}
                                           </div>
                                         )}
                                       </div>
