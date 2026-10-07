@@ -29,12 +29,15 @@ router.get('/', async (req, res) => {
             LIMIT 1
           )
         ) AS fallback_image_url,
-        CASE 
-          WHEN COUNT(DISTINCT o.id) > 0 THEN 
-            JSON_ARRAYAGG(JSON_OBJECT('id', o.id, 'name', o.name, 'photo_url', o.photo_url))
-          ELSE 
-            JSON_ARRAY()
-        END AS orchestras,
+        COALESCE(
+          (
+            SELECT JSON_ARRAYAGG(JSON_OBJECT('id', o_sub.id, 'name', o_sub.name, 'photo_url', o_sub.photo_url))
+            FROM event_orchestras eo_sub
+            JOIN orchestras o_sub ON eo_sub.orchestra_id = o_sub.id
+            WHERE eo_sub.event_id = e.id
+          ),
+          JSON_ARRAY()
+        ) AS orchestras,
         COUNT(DISTINCT CASE WHEN ea.status = 'present' THEN ea.user_id END) AS attendance_present,
         COUNT(DISTINCT CASE WHEN ea.status = 'absent' THEN ea.user_id END) AS attendance_absent,
         COALESCE(
@@ -47,8 +50,6 @@ router.get('/', async (req, res) => {
           (SELECT COUNT(*) FROM profiles)
         ) AS attendance_total_target
       FROM events e
-      LEFT JOIN event_orchestras eo ON e.id = eo.event_id
-      LEFT JOIN orchestras o ON eo.orchestra_id = o.id
       LEFT JOIN event_attendances ea ON e.id = ea.event_id
       GROUP BY e.id
       ORDER BY e.event_date DESC

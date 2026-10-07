@@ -368,7 +368,7 @@ const AdminEvents = () => {
       location: event.location || '',
       is_public: event.is_public !== undefined ? event.is_public : (event.event_type === 'concert' || event.event_type === 'divers'),
       image_url: event.image_url || '',
-      orchestra_ids: event.orchestras?.map(o => o.id) || [],
+      orchestra_ids: Array.from(new Set(event.orchestras?.filter(o => o && o.id).map(o => o.id) || [])),
     });
     setPhotoFile(null);
     setPhotoPreview(event.image_url || null);
@@ -675,15 +675,22 @@ const AdminEvents = () => {
 
                           <div className="flex-1 md:max-w-xs mb-2 md:mb-0">
                             <h4 className="font-semibold text-gray-600 text-xs uppercase tracking-wider mb-1">Orchestres</h4>
-                            {event.orchestras && event.orchestras.length > 0 ? (
-                              <div className="flex flex-wrap gap-1">
-                                {event.orchestras.map(orc => (
+                            {(() => {
+                              const uniqueOrchestras = event.orchestras
+                                ? Array.from(new Map(event.orchestras.filter(o => o && o.id).map(o => [o.id, o])).values())
+                                : [];
+                              return uniqueOrchestras.length > 0 ? (
+                                <div className="flex flex-wrap gap-1">
+                                  {uniqueOrchestras.map(orc => (
                                     <span key={orc.id} className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded">
-                                        {orc.name}
+                                      {orc.name}
                                     </span>
-                                ))}
-                              </div>
-                            ) : <p className="text-gray-400 text-xs italic">Tous / Aucun</p>}
+                                  ))}
+                                </div>
+                              ) : (
+                                <p className="text-gray-400 text-xs italic">Tous / Aucun</p>
+                              );
+                            })()}
                           </div>
 
                           {/* Indicateur Synthétique de Présence avec Info-Bulle survol */}
