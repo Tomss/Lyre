@@ -508,6 +508,24 @@ dotenv.config();
       console.warn('[Migration Warning] Harmonisation statuts:', actErr.message);
     }
 
+    // Migration: Ajout d'index sur activation_token pour accélérer la recherche et éviter les verrous de table
+    try {
+      const [tokenIdx]: any = await pool.query(`
+        SELECT COUNT(*) as count 
+        FROM information_schema.STATISTICS 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = 'users' 
+        AND INDEX_NAME = 'idx_users_activation_token'
+      `);
+      if (tokenIdx[0].count === 0) {
+        console.log('[Migration] Ajout de l index idx_users_activation_token sur users...');
+        await pool.query('ALTER TABLE users ADD INDEX idx_users_activation_token (activation_token)');
+        console.log('[Migration] Index idx_users_activation_token ajouté.');
+      }
+    } catch (idxErr: any) {
+      console.warn('[Migration Warning] Index activation_token:', idxErr.message);
+    }
+
   } catch (e) {
     console.error('[Emergency/Migration] Erreur:', e);
   }

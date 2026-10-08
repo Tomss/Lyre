@@ -1032,7 +1032,8 @@ router.post('/:id/invite', async (req, res) => {
       return res.status(404).json({ message: 'Aucun compte email associé trouvé pour ce profil.' });
     }
 
-    const sentEmails: string[] = [];
+    const invitationsToEmail: { email: string; firstName: string; token: string; isReset: boolean }[] = [];
+
     for (const userRow of userRows) {
       // Si aucun profil associé à cet e-mail n'est actif, envoyer une invitation d'activation et non un reset
       const [activeProfiles]: any = await connection.query(`
@@ -1053,34 +1054,51 @@ router.post('/:id/invite', async (req, res) => {
         userRow.id
       ]);
 
-      console.log(`[API] Envoi email invitation/reset à ${userRow.email} pour le profil ${profile.first_name} ${profile.last_name}`);
-      const emailSent = await sendActivationEmail(userRow.email, profile.first_name, token, isReset, req);
-      if (emailSent) {
-        sentEmails.push(userRow.email);
-      }
-    }
-
-    if (sentEmails.length === 0) {
-      await connection.rollback();
-      return res.status(500).json({ message: "Échec de l'envoi des e-mails via Resend." });
+      invitationsToEmail.push({
+        email: userRow.email,
+        firstName: profile.first_name,
+        token,
+        isReset
+      });
     }
 
     if (profile.status !== 'Active') {
       await connection.query('UPDATE profiles SET status = ? WHERE id = ?', ['Invited', id]);
     }
 
+    // Valider et libérer immédiatement la transaction DB avant tout appel réseau e-mail
     await connection.commit();
+    connection.release();
+
+    // 2. Envoi des e-mails en dehors de la transaction SQL (aucun verrou résiduel)
+    const sentEmails: string[] = [];
+    for (const item of invitationsToEmail) {
+      console.log(`[API] Envoi email invitation/reset à ${item.email} pour le profil ${item.firstName}`);
+      const emailSent = await sendActivationEmail(item.email, item.firstName, item.token, item.isReset, req);
+      if (emailSent) {
+        sentEmails.push(item.email);
+      }
+    }
+
+    if (sentEmails.length === 0) {
+      return res.status(500).json({ message: "Échec de l'envoi des e-mails via le service de messagerie." });
+    }
+
     const successMsg = sentEmails.length > 1
       ? `Invitations envoyées avec succès (${sentEmails.length}) à : ${sentEmails.join(', ')}`
       : `Invitation envoyée avec succès sur ${sentEmails[0]}`;
     res.status(200).json({ message: successMsg });
 
   } catch (error) {
-    if (connection) await connection.rollback();
+    if (connection) {
+      try { await connection.rollback(); } catch (_) {}
+    }
     console.error('Error sending invite:', error);
     res.status(500).json({ message: 'Erreur lors de l\'envoi de l\'invitation.' });
   } finally {
-    if (connection) connection.release();
+    if (connection) {
+      try { connection.release(); } catch (_) {}
+    }
   }
 });
 

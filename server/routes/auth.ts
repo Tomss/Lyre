@@ -146,8 +146,12 @@ router.post('/login', async (req: Request, res: Response) => {
     // Sélection du profil par défaut (le primaire ou le premier actif)
     const activeProfile = activeProfiles.find(p => p.is_primary) || activeProfiles[0];
 
-    // 5. Mettre à jour la date de dernière connexion
-    await pool.query('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?', [user.id]);
+    // 5. Mettre à jour la date de dernière connexion (non-bloquant pour la session utilisateur)
+    try {
+      await pool.query('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?', [user.id]);
+    } catch (loginUpdateErr) {
+      console.warn('[Login] Avertissement: échec temporaire mise à jour last_login:', loginUpdateErr);
+    }
 
     console.log(`[Login] Succès pour ${email} (${activeProfile.role} - Profil: ${activeProfile.first_name} ${activeProfile.last_name})`);
 
@@ -204,6 +208,11 @@ router.post('/login', async (req: Request, res: Response) => {
 
   } catch (error: any) {
     console.error('Login error:', error);
+    if (error?.code === 'ER_LOCK_WAIT_TIMEOUT' || (error?.message && error.message.includes('Lock wait timeout'))) {
+      return res.status(503).json({ 
+        message: 'Le service est momentanément très sollicité. Veuillez patienter quelques secondes et réessayer.' 
+      });
+    }
     res.status(500).json({ message: error?.message || 'Erreur interne du serveur.' });
   }
 });
@@ -368,6 +377,19 @@ router.post('/activate', async (req, res) => {
     return res.status(400).json({ message: 'Token et mot de passe sont requis.' });
   }
 
+  // 1. Password Policy Validation AVANT d'ouvrir toute connexion ou transaction DB
+  const isMinLength = password.length >= 8;
+  const hasUppercase = /[A-Z]/.test(password);
+  const hasLowercase = /[a-z]/.test(password);
+  const hasDigit = /[0-9]/.test(password);
+  const hasSpecialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/.test(password);
+
+  if (!isMinLength || !hasUppercase || !hasLowercase || !hasDigit || !hasSpecialChar) {
+    return res.status(400).json({ 
+      message: 'Le mot de passe ne respecte pas les exigences de sécurité : au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial.' 
+    });
+  }
+
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
@@ -384,12 +406,14 @@ router.post('/activate', async (req, res) => {
 
     if (userRows.length === 0) {
       console.warn(`[Auth] Token non trouvé dans la base pour: ${token ? token.substring(0, 8) + '...' : '???'}`);
+      await connection.rollback();
       return res.status(400).json({ message: 'Lien invalide ou expiré.' });
     }
 
     const user = userRows[0];
     
     if (new Date(user.token_expires_at) < new Date()) {
+      await connection.rollback();
       return res.status(400).json({ message: "Le lien d'activation a expiré." });
     }
 
@@ -405,19 +429,6 @@ router.post('/activate', async (req, res) => {
     if (isAllInactive) {
       await connection.rollback();
       return res.status(403).json({ message: "Ce compte est actuellement inactif. Une invitation d'activation doit d'abord être envoyée par un administrateur." });
-    }
-
-    // Password Policy Validation
-    const isMinLength = password.length >= 8;
-    const hasUppercase = /[A-Z]/.test(password);
-    const hasLowercase = /[a-z]/.test(password);
-    const hasDigit = /[0-9]/.test(password);
-    const hasSpecialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/.test(password);
-
-    if (!isMinLength || !hasUppercase || !hasLowercase || !hasDigit || !hasSpecialChar) {
-      return res.status(400).json({ 
-        message: 'Le mot de passe ne respecte pas les exigences de sécurité : au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial.' 
-      });
     }
 
     // Hash the new password
@@ -448,12 +459,17 @@ router.post('/activate', async (req, res) => {
     await connection.commit();
     res.json({ message: 'Compte activé avec succès.' });
 
-  } catch (error) {
-    await connection.rollback();
+  } catch (error: any) {
+    if (connection) await connection.rollback();
     console.error('Activation error:', error);
+    if (error?.code === 'ER_LOCK_WAIT_TIMEOUT' || (error?.message && error.message.includes('Lock wait timeout'))) {
+      return res.status(503).json({ 
+        message: 'Le service est momentanément très sollicité. Veuillez patienter quelques secondes et réessayer.' 
+      });
+    }
     res.status(500).json({ message: 'Erreur interne du serveur.' });
   } finally {
-    connection.release();
+    if (connection) connection.release();
   }
 });
 

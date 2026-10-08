@@ -31,6 +31,9 @@ export const sendMail = async ({ from, to, replyTo, subject, html, attachments }
           user: smtpUser,
           pass: smtpPass,
         },
+        connectionTimeout: 10000, // 10s max
+        greetingTimeout: 10000,   // 10s max
+        socketTimeout: 15000,     // 15s max
         tls: {
           rejectUnauthorized: false
         }

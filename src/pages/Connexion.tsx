@@ -57,7 +57,10 @@ const Connexion = () => {
       }
     } catch (err: any) {
       console.error('[Connexion.tsx] Login failed:', err);
-      const msg = err.message || 'Une erreur est survenue lors de la connexion.';
+      let msg = err.message || 'Une erreur est survenue lors de la connexion.';
+      if (typeof msg === 'string' && (msg.includes('Lock wait timeout') || msg.includes('restarting transaction') || msg.includes('ECONNRESET') || msg.includes('ETIMEDOUT'))) {
+        msg = 'Le service est momentanément très sollicité. Veuillez patienter quelques secondes et réessayer.';
+      }
       setError(msg);
     } finally {
       setLoading(false);
