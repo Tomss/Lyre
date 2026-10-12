@@ -527,7 +527,7 @@ router.post('/request-password-reset', async (req, res) => {
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + 48);
 
-    await pool.query('UPDATE users SET activation_token = ?, token_expires_at = ? WHERE id = ?', [
+    await pool.query('UPDATE users SET activation_token = ?, token_expires_at = ?, invitation_sent_at = NOW() WHERE id = ?', [
       token,
       expiresAt,
       user.id

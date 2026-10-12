@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS users (
     password_hash VARCHAR(255) NULL,
     activation_token VARCHAR(255) NULL,
     token_expires_at DATETIME NULL,
+    invitation_sent_at DATETIME DEFAULT NULL,
     last_login DATETIME DEFAULT NULL,
     status ENUM('Inactive', 'Invited', 'Active') DEFAULT 'Inactive',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

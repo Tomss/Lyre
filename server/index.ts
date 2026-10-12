@@ -526,6 +526,29 @@ dotenv.config();
       console.warn('[Migration Warning] Index activation_token:', idxErr.message);
     }
 
+    // Migration: Ajout de la colonne invitation_sent_at à la table users
+    try {
+      const [invitCols]: any = await pool.query(`
+        SELECT COUNT(*) as count 
+        FROM information_schema.COLUMNS 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = 'users' 
+        AND COLUMN_NAME = 'invitation_sent_at'
+      `);
+      if (invitCols[0].count === 0) {
+        console.log('[Migration] Ajout de la colonne invitation_sent_at à la table users...');
+        await pool.query('ALTER TABLE users ADD COLUMN invitation_sent_at DATETIME DEFAULT NULL');
+        await pool.query(`
+          UPDATE users 
+          SET invitation_sent_at = DATE_SUB(token_expires_at, INTERVAL 48 HOUR)
+          WHERE token_expires_at IS NOT NULL AND invitation_sent_at IS NULL
+        `);
+        console.log('[Migration] Succès : colonne invitation_sent_at ajoutée et rétro-remplie.');
+      }
+    } catch (invitErr: any) {
+      console.warn('[Migration Warning] invitation_sent_at:', invitErr.message);
+    }
+
   } catch (e) {
     console.error('[Emergency/Migration] Erreur:', e);
   }

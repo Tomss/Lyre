@@ -13,6 +13,9 @@ export interface AssociatedEmail {
   hasPassword: boolean;
   isActive?: boolean;
   isInvited?: boolean;
+  isExpired?: boolean;
+  invitationSentAt?: string | null;
+  tokenExpiresAt?: string | null;
   lastLogin: string | null;
   alsoUsedBy?: string[];
 }
@@ -24,9 +27,11 @@ interface UserData {
   email: string;
   role: 'Membre' | 'Gestionnaire' | 'Admin';
   managed_modules?: string[];
-  status?: 'Inactive' | 'Invited' | 'Active';
+  status?: 'Inactive' | 'Invited' | 'Expired' | 'Active';
   has_password: boolean;
   last_login?: string | null;
+  invitation_sent_at?: string | null;
+  token_expires_at?: string | null;
   emails?: AssociatedEmail[];
 }
 
@@ -80,6 +85,18 @@ const getPasswordRules = (pwd: string) => {
   };
 };
 
+const pad2 = (n: number) => String(n).padStart(2, '0');
+const formatFrDateTime = (dateStr: string | null | undefined) => {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return '';
+  const day = pad2(d.getDate());
+  const month = pad2(d.getMonth() + 1);
+  const hours = pad2(d.getHours());
+  const minutes = pad2(d.getMinutes());
+  return `${day}/${month} à ${hours}h${minutes}`;
+};
+
 const AdminUsers = () => {
   const { currentUser, token, isAuthenticated } = useAuth();
   const [users, setUsers] = useState<UserData[]>([]);
@@ -90,7 +107,7 @@ const AdminUsers = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<string[]>(['Admin', 'Gestionnaire', 'Membre']);
-  const [statusFilter, setStatusFilter] = useState<string[]>(['Active', 'Invited', 'Inactive']);
+  const [statusFilter, setStatusFilter] = useState<string[]>(['Active', 'Invited', 'Expired', 'Inactive']);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingUser, setEditingUser] = useState<UserData | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -461,7 +478,7 @@ const AdminUsers = () => {
     } else {
       if (user.status === 'Active') {
         newStatus = 'Inactive';
-      } else if (user.status === 'Invited') {
+      } else if (user.status === 'Invited' || user.status === 'Expired') {
         newStatus = 'Inactive';
       } else {
         // Inactif -> Activable direct SI a un mot de passe
@@ -934,6 +951,24 @@ const AdminUsers = () => {
           </div>
         );
       }
+      case 'Expired': {
+        let badgeLabel = 'Expiré';
+        if (user.emails && user.emails.length > 1) {
+          const expiredCount = user.emails.filter(e => e.isExpired).length;
+          badgeLabel = `Expiré (${expiredCount}/${user.emails.length})`;
+        }
+        return (
+          <div className="flex items-center space-x-2">
+            <button 
+              onClick={() => handleToggleStatus(user)}
+              title="Lien d'activation expiré (> 48h)"
+              className="group inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800 hover:bg-orange-100 hover:text-orange-900 transition-colors"
+            >
+              <span className="w-2 h-2 mr-1 bg-amber-500 rounded-full group-hover:bg-orange-500 transition-colors"></span> {badgeLabel}
+            </button>
+          </div>
+        );
+      }
       default:
         // Pour les Admins, on peut activer direct car pas de mail
         if (isAdmin) {
@@ -1049,7 +1084,7 @@ const AdminUsers = () => {
   };
 
   const selectAllStatuses = () => {
-    setStatusFilter(['Active', 'Invited', 'Inactive']);
+    setStatusFilter(['Active', 'Invited', 'Expired', 'Inactive']);
   };
 
   const clearAllStatuses = () => {
@@ -1155,10 +1190,11 @@ const AdminUsers = () => {
                 <CheckCircle className="w-4 h-4 mr-2 text-amber-500" /> Filtrer par statut
               </label>
               <div className="flex flex-wrap gap-2">
-                <button onClick={selectAllStatuses} className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${statusFilter.length === 3 ? 'bg-indigo-600 text-white shadow-md shadow-indigo-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>Tous</button>
+                <button onClick={selectAllStatuses} className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${statusFilter.length === 4 ? 'bg-indigo-600 text-white shadow-md shadow-indigo-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>Tous</button>
                 {[
                   { id: 'Active', label: 'Actif' },
                   { id: 'Invited', label: 'Invité' },
+                  { id: 'Expired', label: 'Expiré' },
                   { id: 'Inactive', label: 'Inactif' }
                 ].map(status => (
                   <button key={status.id} onClick={() => toggleStatusFilter(status.id)} className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${statusFilter.includes(status.id) ? 'bg-amber-500 text-white shadow-md shadow-amber-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
@@ -1280,18 +1316,22 @@ const AdminUsers = () => {
                                           ? `Cliquer pour désactiver l'adresse ${em.email}`
                                           : em.hasPassword
                                             ? `Cliquer pour réactiver l'adresse ${em.email}`
-                                            : `Adresse non activée (invitation requise)`
+                                            : em.isExpired
+                                              ? `Lien d'activation expiré (> 48h)`
+                                              : `Adresse non activée (invitation requise)`
                                       }
                                       className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-1 transition-all cursor-pointer ${
                                         em.isActive
                                           ? 'bg-green-100 text-green-800 hover:bg-red-100 hover:text-red-800'
-                                          : em.isInvited
-                                            ? 'bg-yellow-100 text-yellow-800 hover:bg-green-100 hover:text-green-800'
-                                            : 'bg-red-100 text-red-800 hover:bg-green-100 hover:text-green-800'
+                                          : em.isExpired
+                                            ? 'bg-amber-100 text-amber-800 hover:bg-orange-100 hover:text-orange-900'
+                                            : em.isInvited
+                                              ? 'bg-yellow-100 text-yellow-800 hover:bg-green-100 hover:text-green-800'
+                                              : 'bg-red-100 text-red-800 hover:bg-green-100 hover:text-green-800'
                                       }`}
                                     >
-                                      <span className={`w-1.5 h-1.5 rounded-full ${em.isActive ? 'bg-green-500' : em.isInvited ? 'bg-yellow-500' : 'bg-red-500'}`}></span>
-                                      {em.isActive ? 'Actif' : em.isInvited ? 'Invité' : 'Inactif'}
+                                      <span className={`w-1.5 h-1.5 rounded-full ${em.isActive ? 'bg-green-500' : em.isExpired ? 'bg-amber-500' : em.isInvited ? 'bg-yellow-500' : 'bg-red-500'}`}></span>
+                                      {em.isActive ? 'Actif' : em.isExpired ? 'Expiré' : em.isInvited ? 'Invité' : 'Inactif'}
                                     </button>
                                     {user.role !== 'Admin' && (
                                       <button
@@ -1299,9 +1339,11 @@ const AdminUsers = () => {
                                         title={
                                           em.isActive
                                             ? `Envoyer un lien de réinitialisation à ${em.email}`
-                                            : em.isInvited
-                                              ? `Renvoyer l'invitation d'activation à ${em.email}`
-                                              : `Envoyer l'invitation d'activation à ${em.email}`
+                                            : em.isExpired
+                                              ? `Relancer l'invitation d'activation à ${em.email}`
+                                              : em.isInvited
+                                                ? `Renvoyer l'invitation d'activation à ${em.email}`
+                                                : `Envoyer l'invitation d'activation à ${em.email}`
                                         }
                                         className="p-1 text-indigo-600 hover:text-indigo-800 hover:bg-indigo-100 rounded-lg transition-colors cursor-pointer"
                                       >
@@ -1325,16 +1367,24 @@ const AdminUsers = () => {
                                 <Mail size={14} className="mr-2 text-indigo-400" /> {user.email}
                               </div>
                             )}
-                            <div className="flex items-center text-[10px] font-bold uppercase tracking-wider">
-                              {user.last_login ? (
+                            <div className="flex items-center text-[10px] font-bold tracking-wider">
+                              {user.status === 'Invited' ? (
+                                <span className="text-amber-600 normal-case">
+                                  ✉️ Invitation envoyée{user.invitation_sent_at ? ` le ${formatFrDateTime(user.invitation_sent_at)}` : ''}
+                                </span>
+                              ) : user.status === 'Expired' ? (
+                                <span className="text-orange-600 normal-case">
+                                  ⚠️ Invitation expirée{user.invitation_sent_at ? ` (envoyée le ${formatFrDateTime(user.invitation_sent_at)})` : ''}
+                                </span>
+                              ) : user.last_login ? (
                                 <>
                                   <CheckCircle size={10} className="mr-1.5 text-teal-500" />
-                                  <span className="text-slate-500">Dernière connexion : {new Date(user.last_login).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })} à {new Date(user.last_login).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
+                                  <span className="text-slate-500 uppercase">Dernière connexion : {formatFrDateTime(user.last_login)}</span>
                                 </>
                               ) : (
                                 <>
                                   <div className="w-2 h-2 rounded-full bg-slate-200 mr-2"></div>
-                                  <span className="text-slate-400">Aucune connexion enregistrée</span>
+                                  <span className="text-slate-400 uppercase">Aucune connexion enregistrée</span>
                                 </>
                               )}
                             </div>
@@ -1383,12 +1433,18 @@ const AdminUsers = () => {
                               title={
                                 user.status === 'Active' 
                                   ? "Envoyer un lien de réinitialisation" 
-                                  : "Envoyer invitation d'activation"
+                                  : user.status === 'Expired'
+                                    ? "Relancer l'invitation d'activation"
+                                    : user.status === 'Invited'
+                                      ? "Renvoyer l'invitation d'activation"
+                                      : "Envoyer invitation d'activation"
                               } 
                               className={`p-2 rounded-xl transition-all duration-300 hover:scale-110 cursor-pointer ${
                                 user.status === 'Active' 
                                   ? 'text-amber-600 bg-amber-50 hover:bg-amber-100' 
-                                  : 'text-indigo-600 bg-indigo-50 hover:bg-indigo-100'
+                                  : user.status === 'Expired'
+                                    ? 'text-orange-600 bg-orange-50 hover:bg-orange-100'
+                                    : 'text-indigo-600 bg-indigo-50 hover:bg-indigo-100'
                               }`}
                             >
                               <Mail size={18} />
@@ -1598,18 +1654,22 @@ const AdminUsers = () => {
                                           ? `Cliquer pour désactiver l'adresse ${em.email}`
                                           : em.hasPassword
                                             ? `Cliquer pour réactiver l'adresse ${em.email}`
-                                            : `Adresse non activée (invitation requise)`
+                                            : em.isExpired
+                                              ? `Lien d'activation expiré (> 48h)`
+                                              : `Adresse non activée (invitation requise)`
                                       }
                                       className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 transition-all cursor-pointer ${
                                         em.isActive
                                           ? 'bg-green-100 text-green-800 hover:bg-red-100 hover:text-red-800'
-                                          : em.isInvited
-                                            ? 'bg-yellow-100 text-yellow-800 hover:bg-green-100 hover:text-green-800'
-                                            : 'bg-red-100 text-red-800 hover:bg-green-100 hover:text-green-800'
+                                          : em.isExpired
+                                            ? 'bg-amber-100 text-amber-800 hover:bg-orange-100 hover:text-orange-900'
+                                            : em.isInvited
+                                              ? 'bg-yellow-100 text-yellow-800 hover:bg-green-100 hover:text-green-800'
+                                              : 'bg-red-100 text-red-800 hover:bg-green-100 hover:text-green-800'
                                       }`}
                                     >
-                                      <span className={`w-1.5 h-1.5 rounded-full ${em.isActive ? 'bg-green-500' : em.isInvited ? 'bg-yellow-500' : 'bg-red-500'}`}></span>
-                                      {em.isActive ? 'Actif' : em.isInvited ? 'Invité' : 'Inactif'}
+                                      <span className={`w-1.5 h-1.5 rounded-full ${em.isActive ? 'bg-green-500' : em.isExpired ? 'bg-amber-500' : em.isInvited ? 'bg-yellow-500' : 'bg-red-500'}`}></span>
+                                      {em.isActive ? 'Actif' : em.isExpired ? 'Expiré' : em.isInvited ? 'Invité' : 'Inactif'}
                                     </button>
                                   </div>
                                   {em.lastLogin && (
@@ -1638,14 +1698,16 @@ const AdminUsers = () => {
                                     title={
                                       em.isActive 
                                         ? `Envoyer un lien de réinitialisation à ${em.email}` 
-                                        : em.isInvited 
-                                          ? `Renvoyer l'invitation à ${em.email}` 
-                                          : `Envoyer l'invitation à ${em.email}`
+                                        : em.isExpired
+                                          ? `Relancer l'invitation d'activation à ${em.email}`
+                                          : em.isInvited 
+                                            ? `Renvoyer l'invitation à ${em.email}` 
+                                            : `Envoyer l'invitation à ${em.email}`
                                     }
                                     className="h-8 px-3 text-xs font-semibold text-indigo-600 hover:text-indigo-800 bg-white hover:bg-slate-50 border border-slate-200 hover:border-indigo-300 rounded-lg shadow-sm transition-colors inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"
                                   >
                                     <Mail size={13} />
-                                    {em.isActive ? 'Réinitialiser' : em.isInvited ? 'Relancer' : 'Inviter'}
+                                    {em.isActive ? 'Réinitialiser' : (em.isInvited || em.isExpired) ? 'Relancer' : 'Inviter'}
                                   </button>
                                   {currentUser?.role === 'Admin' && (
                                     <button

@@ -52,6 +52,22 @@ router.get('/', async (req, res) => {
           ORDER BY up.is_primary DESC, up.created_at ASC 
           LIMIT 1
         ) as last_login,
+        (
+          SELECT u.token_expires_at 
+          FROM user_profiles up 
+          JOIN users u ON up.user_id = u.id 
+          WHERE up.profile_id = p.id 
+          ORDER BY up.is_primary DESC, up.created_at ASC 
+          LIMIT 1
+        ) as token_expires_at,
+        (
+          SELECT u.invitation_sent_at 
+          FROM user_profiles up 
+          JOIN users u ON up.user_id = u.id 
+          WHERE up.profile_id = p.id 
+          ORDER BY up.is_primary DESC, up.created_at ASC 
+          LIMIT 1
+        ) as invitation_sent_at,
         COALESCE(
           (
             SELECT (u.password_hash IS NOT NULL) 
@@ -83,6 +99,8 @@ router.get('/', async (req, res) => {
       SELECT up.profile_id, up.user_id, up.is_primary, u.email, 
              (u.password_hash IS NOT NULL) as has_password, 
              (u.activation_token IS NOT NULL) as is_invited, 
+             u.token_expires_at,
+             u.invitation_sent_at,
              u.status as user_status,
              u.last_login,
              p.first_name, p.last_name, p.status as profile_status
@@ -111,9 +129,18 @@ router.get('/', async (req, res) => {
       const isEmailActive = link.user_status 
         ? link.user_status === 'Active'
         : Boolean(link.has_password && hasActiveProfile);
-      const isEmailInvited = link.user_status
-        ? link.user_status === 'Invited'
-        : (!isEmailActive && !link.has_password && Boolean(link.is_invited || hasInvitedProfile));
+
+      // Expiration : si pas de mot de passe et token_expires_at dépassé (> 48h)
+      const isTokenExpired = Boolean(
+        !link.has_password &&
+        link.token_expires_at &&
+        new Date(link.token_expires_at).getTime() < Date.now()
+      );
+
+      const isEmailInvited = !isEmailActive && !link.has_password && !isTokenExpired && Boolean(link.is_invited || hasInvitedProfile);
+      const isEmailExpired = !isEmailActive && !link.has_password && isTokenExpired;
+
+      const effectiveSentAt = link.invitation_sent_at || (link.token_expires_at ? new Date(new Date(link.token_expires_at).getTime() - 48 * 3600 * 1000).toISOString() : null);
 
       linksByProfile.get(link.profile_id)!.push({
         userId: link.user_id,
@@ -122,6 +149,9 @@ router.get('/', async (req, res) => {
         hasPassword: Boolean(link.has_password),
         isActive: isEmailActive,
         isInvited: isEmailInvited,
+        isExpired: isEmailExpired,
+        invitationSentAt: effectiveSentAt,
+        tokenExpiresAt: link.token_expires_at,
         lastLogin: link.last_login,
         alsoUsedBy: alsoUsedBy.length > 0 ? alsoUsedBy : undefined
       });
@@ -144,21 +174,41 @@ router.get('/', async (req, res) => {
         hasPassword: Boolean(p.has_password),
         isActive: Boolean(p.has_password && p.status === 'Active'),
         isInvited: Boolean(!p.has_password && (p.is_invited || p.status === 'Invited')),
+        isExpired: Boolean(!p.has_password && p.token_expires_at && new Date(p.token_expires_at).getTime() < Date.now()),
+        invitationSentAt: p.invitation_sent_at || (p.token_expires_at ? new Date(new Date(p.token_expires_at).getTime() - 48 * 3600 * 1000).toISOString() : null),
+        tokenExpiresAt: p.token_expires_at,
         lastLogin: p.last_login
       }] : []);
 
-      // Si un profil n'a aucune adresse active et n'est pas Admin, son statut effectif est Inactif
-      const hasAnyActiveEmail = emails.some((e: any) => e.isActive);
-      const effectiveStatus = (p.role !== 'Admin' && emails.length > 0 && !hasAnyActiveEmail && p.status === 'Active')
-        ? 'Inactive'
-        : p.status;
+      // Statut effectif du profil
+      let effectiveStatus = p.status;
+      if (p.role !== 'Admin') {
+        const hasAnyActiveEmail = emails.some((e: any) => e.isActive);
+        const hasAnyInvitedEmail = emails.some((e: any) => e.isInvited);
+        const hasAnyExpiredEmail = emails.some((e: any) => e.isExpired);
+
+        if (hasAnyActiveEmail) {
+          effectiveStatus = 'Active';
+        } else if (hasAnyInvitedEmail) {
+          effectiveStatus = 'Invited';
+        } else if (hasAnyExpiredEmail) {
+          effectiveStatus = 'Expired';
+        } else {
+          effectiveStatus = 'Inactive';
+        }
+      }
+
+      const primaryEmail = emails.find((e: any) => e.isPrimary) || emails[0];
+      const effectiveInvitationSentAt = primaryEmail?.invitationSentAt || p.invitation_sent_at || (p.token_expires_at ? new Date(new Date(p.token_expires_at).getTime() - 48 * 3600 * 1000).toISOString() : null);
 
       return {
         ...p,
         status: effectiveStatus,
         has_password: Boolean(p.has_password),
         managed_modules: parsedModules,
-        emails
+        emails,
+        invitation_sent_at: effectiveInvitationSentAt,
+        token_expires_at: primaryEmail?.tokenExpiresAt || p.token_expires_at
       };
     });
 
@@ -1047,7 +1097,7 @@ router.post('/:id/invite', async (req, res) => {
       const expiresAt = new Date();
       expiresAt.setHours(expiresAt.getHours() + 48);
 
-      await connection.query('UPDATE users SET activation_token = ?, token_expires_at = ?, status = ? WHERE id = ?', [
+      await connection.query('UPDATE users SET activation_token = ?, token_expires_at = ?, invitation_sent_at = NOW(), status = ? WHERE id = ?', [
         token,
         expiresAt,
         isReset ? (userRow.status || 'Active') : 'Invited',
