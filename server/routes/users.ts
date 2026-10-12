@@ -130,15 +130,27 @@ router.get('/', async (req, res) => {
         ? link.user_status === 'Active'
         : Boolean(link.has_password && hasActiveProfile);
 
-      // Expiration : si pas de mot de passe et token_expires_at dépassé (> 48h)
+      // Expiration : si un token existe et que token_expires_at est dépassé (> 48h)
       const isTokenExpired = Boolean(
-        !link.has_password &&
         link.token_expires_at &&
         new Date(link.token_expires_at).getTime() < Date.now()
       );
 
+      // Si le compte a un mot de passe (compte déjà activé/existant) et qu'une réinitialisation de mot de passe a expiré :
+      const isPasswordResetExpired = Boolean(
+        link.has_password &&
+        link.activation_token &&
+        isTokenExpired
+      );
+
+      // Si le compte n'a pas de mot de passe et que l'invitation est encore en cours (< 48h) :
       const isEmailInvited = !isEmailActive && !link.has_password && !isTokenExpired && Boolean(link.is_invited || hasInvitedProfile);
-      const isEmailExpired = !isEmailActive && !link.has_password && isTokenExpired;
+
+      // Le statut Expiré est réservé aux réinvitations / réinitialisations de mot de passe expirées sur compte existant :
+      const isEmailExpired = isPasswordResetExpired;
+
+      // Pour un compte sans mot de passe dont l'invitation a dépassé 48h, il redevient Inactif mais on mémorise l'expiration :
+      const isInvitationExpired = Boolean(!link.has_password && isTokenExpired);
 
       const effectiveSentAt = link.invitation_sent_at || (link.token_expires_at ? new Date(new Date(link.token_expires_at).getTime() - 48 * 3600 * 1000).toISOString() : null);
 
@@ -147,9 +159,10 @@ router.get('/', async (req, res) => {
         email: link.email,
         isPrimary: Boolean(link.is_primary),
         hasPassword: Boolean(link.has_password),
-        isActive: isEmailActive,
+        isActive: isEmailActive && !isPasswordResetExpired,
         isInvited: isEmailInvited,
         isExpired: isEmailExpired,
+        isInvitationExpired,
         invitationSentAt: effectiveSentAt,
         tokenExpiresAt: link.token_expires_at,
         lastLogin: link.last_login,
@@ -172,9 +185,10 @@ router.get('/', async (req, res) => {
         email: p.email,
         isPrimary: true,
         hasPassword: Boolean(p.has_password),
-        isActive: Boolean(p.has_password && p.status === 'Active'),
-        isInvited: Boolean(!p.has_password && (p.is_invited || p.status === 'Invited')),
-        isExpired: Boolean(!p.has_password && p.token_expires_at && new Date(p.token_expires_at).getTime() < Date.now()),
+        isActive: Boolean(p.has_password && p.status === 'Active' && !(p.activation_token && p.token_expires_at && new Date(p.token_expires_at).getTime() < Date.now())),
+        isInvited: Boolean(!p.has_password && (p.is_invited || p.status === 'Invited') && (!p.token_expires_at || new Date(p.token_expires_at).getTime() >= Date.now())),
+        isExpired: Boolean(p.has_password && p.activation_token && p.token_expires_at && new Date(p.token_expires_at).getTime() < Date.now()),
+        isInvitationExpired: Boolean(!p.has_password && p.token_expires_at && new Date(p.token_expires_at).getTime() < Date.now()),
         invitationSentAt: p.invitation_sent_at || (p.token_expires_at ? new Date(new Date(p.token_expires_at).getTime() - 48 * 3600 * 1000).toISOString() : null),
         tokenExpiresAt: p.token_expires_at,
         lastLogin: p.last_login
@@ -187,12 +201,12 @@ router.get('/', async (req, res) => {
         const hasAnyInvitedEmail = emails.some((e: any) => e.isInvited);
         const hasAnyExpiredEmail = emails.some((e: any) => e.isExpired);
 
-        if (hasAnyActiveEmail) {
+        if (hasAnyExpiredEmail) {
+          effectiveStatus = 'Expired';
+        } else if (hasAnyActiveEmail) {
           effectiveStatus = 'Active';
         } else if (hasAnyInvitedEmail) {
           effectiveStatus = 'Invited';
-        } else if (hasAnyExpiredEmail) {
-          effectiveStatus = 'Expired';
         } else {
           effectiveStatus = 'Inactive';
         }

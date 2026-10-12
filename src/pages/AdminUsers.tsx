@@ -14,6 +14,7 @@ export interface AssociatedEmail {
   isActive?: boolean;
   isInvited?: boolean;
   isExpired?: boolean;
+  isInvitationExpired?: boolean;
   invitationSentAt?: string | null;
   tokenExpiresAt?: string | null;
   lastLogin: string | null;
@@ -1317,8 +1318,10 @@ const AdminUsers = () => {
                                           : em.hasPassword
                                             ? `Cliquer pour réactiver l'adresse ${em.email}`
                                             : em.isExpired
-                                              ? `Lien d'activation expiré (> 48h)`
-                                              : `Adresse non activée (invitation requise)`
+                                              ? `Lien de mot de passe expiré (> 48h)`
+                                              : em.isInvitationExpired
+                                                ? `Lien d'activation expiré (> 48h)`
+                                                : `Adresse non activée (invitation requise)`
                                       }
                                       className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-1 transition-all cursor-pointer ${
                                         em.isActive
@@ -1340,10 +1343,12 @@ const AdminUsers = () => {
                                           em.isActive
                                             ? `Envoyer un lien de réinitialisation à ${em.email}`
                                             : em.isExpired
-                                              ? `Relancer l'invitation d'activation à ${em.email}`
-                                              : em.isInvited
-                                                ? `Renvoyer l'invitation d'activation à ${em.email}`
-                                                : `Envoyer l'invitation d'activation à ${em.email}`
+                                              ? `Relancer le lien de réinitialisation à ${em.email}`
+                                              : em.isInvitationExpired
+                                                ? `Relancer l'invitation d'activation à ${em.email}`
+                                                : em.isInvited
+                                                  ? `Renvoyer l'invitation d'activation à ${em.email}`
+                                                  : `Envoyer l'invitation d'activation à ${em.email}`
                                         }
                                         className="p-1 text-indigo-600 hover:text-indigo-800 hover:bg-indigo-100 rounded-lg transition-colors cursor-pointer"
                                       >
@@ -1372,7 +1377,7 @@ const AdminUsers = () => {
                                 <span className="text-amber-600 normal-case">
                                   ✉️ Invitation envoyée{user.invitation_sent_at ? ` le ${formatFrDateTime(user.invitation_sent_at)}` : ''}
                                 </span>
-                              ) : user.status === 'Expired' ? (
+                              ) : (user.status === 'Expired' || (user.status === 'Inactive' && user.invitation_sent_at)) ? (
                                 <span className="text-orange-600 normal-case">
                                   ⚠️ Invitation expirée{user.invitation_sent_at ? ` (envoyée le ${formatFrDateTime(user.invitation_sent_at)})` : ''}
                                 </span>
@@ -1434,10 +1439,12 @@ const AdminUsers = () => {
                                 user.status === 'Active' 
                                   ? "Envoyer un lien de réinitialisation" 
                                   : user.status === 'Expired'
-                                    ? "Relancer l'invitation d'activation"
-                                    : user.status === 'Invited'
-                                      ? "Renvoyer l'invitation d'activation"
-                                      : "Envoyer invitation d'activation"
+                                    ? "Relancer le lien de réinitialisation"
+                                    : (user.status === 'Inactive' && user.invitation_sent_at)
+                                      ? "Relancer l'invitation d'activation"
+                                      : user.status === 'Invited'
+                                        ? "Renvoyer l'invitation d'activation"
+                                        : "Envoyer invitation d'activation"
                               } 
                               className={`p-2 rounded-xl transition-all duration-300 hover:scale-110 cursor-pointer ${
                                 user.status === 'Active' 
@@ -1655,8 +1662,10 @@ const AdminUsers = () => {
                                           : em.hasPassword
                                             ? `Cliquer pour réactiver l'adresse ${em.email}`
                                             : em.isExpired
-                                              ? `Lien d'activation expiré (> 48h)`
-                                              : `Adresse non activée (invitation requise)`
+                                              ? `Lien de mot de passe expiré (> 48h)`
+                                              : em.isInvitationExpired
+                                                ? `Lien d'activation expiré (> 48h)`
+                                                : `Adresse non activée (invitation requise)`
                                       }
                                       className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 transition-all cursor-pointer ${
                                         em.isActive
@@ -1699,15 +1708,17 @@ const AdminUsers = () => {
                                       em.isActive 
                                         ? `Envoyer un lien de réinitialisation à ${em.email}` 
                                         : em.isExpired
-                                          ? `Relancer l'invitation d'activation à ${em.email}`
-                                          : em.isInvited 
-                                            ? `Renvoyer l'invitation à ${em.email}` 
-                                            : `Envoyer l'invitation à ${em.email}`
+                                          ? `Relancer le lien de réinitialisation à ${em.email}`
+                                          : em.isInvitationExpired
+                                            ? `Relancer l'invitation d'activation à ${em.email}`
+                                            : em.isInvited 
+                                              ? `Renvoyer l'invitation à ${em.email}` 
+                                              : `Envoyer l'invitation à ${em.email}`
                                     }
                                     className="h-8 px-3 text-xs font-semibold text-indigo-600 hover:text-indigo-800 bg-white hover:bg-slate-50 border border-slate-200 hover:border-indigo-300 rounded-lg shadow-sm transition-colors inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"
                                   >
                                     <Mail size={13} />
-                                    {em.isActive ? 'Réinitialiser' : (em.isInvited || em.isExpired) ? 'Relancer' : 'Inviter'}
+                                    {em.isActive ? 'Réinitialiser' : (em.isInvited || em.isExpired || em.isInvitationExpired) ? 'Relancer' : 'Inviter'}
                                   </button>
                                   {currentUser?.role === 'Admin' && (
                                     <button
