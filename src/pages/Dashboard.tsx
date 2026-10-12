@@ -855,23 +855,23 @@ const Dashboard = () => {
 
         <div className="space-y-8 [overflow-anchor:none]">
           {/* Section Agenda */}
-          <div className="bg-white rounded-2xl shadow-md border border-slate-100 p-6 [overflow-anchor:none]">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 text-dark border-b border-gray-100 pb-4">
-              <h2 className="font-bold text-2xl flex items-center gap-3">
-                <Calendar className="h-7 w-7 text-indigo-600" />
+          <div className="bg-white rounded-2xl shadow-md border border-slate-100 p-3.5 sm:p-6 [overflow-anchor:none]">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-4 text-dark border-b border-gray-100 pb-4">
+              <h2 className="font-bold text-xl sm:text-2xl flex items-center gap-2.5 sm:gap-3">
+                <Calendar className="h-6 w-6 sm:h-7 sm:w-7 text-indigo-600" />
                 Mon Agenda
               </h2>
               
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
                 <button 
                   onClick={expandAllEvents}
-                  className="bg-slate-100 text-slate-500 px-4 py-2 rounded-xl hover:bg-slate-200 transition text-[10px] font-bold uppercase tracking-widest cursor-pointer"
+                  className="bg-slate-100 text-slate-500 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl hover:bg-slate-200 transition text-[9px] sm:text-[10px] font-bold uppercase tracking-wider sm:tracking-widest cursor-pointer"
                 >
                   Tout déplier
                 </button>
                 <button 
                   onClick={collapseAllEvents}
-                  className="bg-slate-100 text-slate-500 px-4 py-2 rounded-xl hover:bg-slate-200 transition text-[10px] font-bold uppercase tracking-widest cursor-pointer"
+                  className="bg-slate-100 text-slate-500 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl hover:bg-slate-200 transition text-[9px] sm:text-[10px] font-bold uppercase tracking-wider sm:tracking-widest cursor-pointer"
                 >
                   Tout replier
                 </button>
@@ -879,7 +879,7 @@ const Dashboard = () => {
             </div>
 
             {/* Filtres Agenda */}
-            <div className="flex flex-wrap gap-2 mb-6">
+            <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-4 sm:mb-6">
               {[
                 { id: 'all', label: 'Tous', color: 'bg-slate-100 text-slate-600' },
                 { id: 'concert', label: 'Concerts', color: 'bg-indigo-100 text-indigo-700' },
@@ -889,7 +889,7 @@ const Dashboard = () => {
                 <button
                   key={filter.id}
                   onClick={() => setEventFilter(filter.id)}
-                  className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all border cursor-pointer ${
+                  className={`px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-xs font-bold transition-all border cursor-pointer ${
                     eventFilter === filter.id 
                       ? `${filter.color} border-transparent shadow-sm scale-105` 
                       : 'bg-white text-slate-400 border-gray-100 hover:border-gray-200'
@@ -902,7 +902,7 @@ const Dashboard = () => {
             {loading ? (
               <p className="text-dark">Chargement...</p>
             ) : userEvents.length > 0 ? (
-              <div className="space-y-5">
+              <div className="space-y-4 sm:space-y-5">
                 {Object.entries(eventsByType)
                   .sort(([a], [b]) => {
                     return (EVENT_TYPE_LABELS[a] || a).localeCompare(EVENT_TYPE_LABELS[b] || b);
@@ -924,55 +924,60 @@ const Dashboard = () => {
                       <button 
                         type="button"
                         onClick={(e) => toggleEventType(type, e)} 
-                        className={`w-full flex items-center justify-between p-5 bg-gradient-to-r ${styles.lightGradient} hover:opacity-90 transition-colors cursor-pointer`}
+                        className={`w-full flex items-center justify-between p-3.5 sm:p-5 bg-gradient-to-r ${styles.lightGradient} hover:opacity-90 transition-colors cursor-pointer`}
                       >
-                        <h3 className="font-bold text-lg text-slate-800 flex items-center group">
-                          <div className={`p-2 rounded-lg bg-gradient-to-br ${styles.gradient} text-white mr-4 shadow-sm group-hover:scale-110 transition-transform`}>
-                            <TypeIcon className="h-5 w-5" />
+                        <h3 className="font-bold text-base sm:text-lg text-slate-800 flex items-center group min-w-0 pr-2">
+                          <div className={`p-1.5 sm:p-2 rounded-lg bg-gradient-to-br ${styles.gradient} text-white mr-2.5 sm:mr-4 shadow-sm group-hover:scale-110 transition-transform flex-shrink-0`}>
+                            <TypeIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                           </div>
-                          {EVENT_TYPE_LABELS[type] || (type.charAt(0).toUpperCase() + type.slice(1))}
-                          <span className="ml-3 text-xs font-medium px-2 py-0.5 bg-white/50 rounded-full border border-gray-100 text-slate-500">
+                          <span className="truncate">{EVENT_TYPE_LABELS[type] || (type.charAt(0).toUpperCase() + type.slice(1))}</span>
+                          <span className="ml-2 sm:ml-3 text-[11px] sm:text-xs font-medium px-2 py-0.5 bg-white/60 rounded-full border border-gray-100 text-slate-500 flex-shrink-0">
                             {events.length}
                           </span>
                         </h3>
-                        <ChevronDown className={`text-slate-400 transition-transform duration-300 ${isExpanded ? 'rotate-180 text-indigo-600' : ''}`} />
+                        <ChevronDown className={`text-slate-400 transition-transform duration-300 flex-shrink-0 ml-2 ${isExpanded ? 'rotate-180 text-indigo-600' : ''}`} />
                       </button>
 
                       {isExpanded && (
-                        <div className="border-t border-slate-200/60 bg-white/30 p-5">
-                          <ul className="space-y-4">
+                        <div className="border-t border-slate-200/60 bg-white/30 p-2.5 sm:p-5">
+                          <ul className="space-y-3 sm:space-y-4">
                           {events.map((event: any) => {
                             const isNextEvent = event.id === nextEventId;
                             return (
                               <li 
                                 key={event.id} 
                                 id={`event-${event.id}`}
-                                className={`p-6 rounded-2xl border transition-colors duration-200 relative group ${
+                                className={`p-3.5 sm:p-6 rounded-2xl border transition-colors duration-200 relative group overflow-hidden ${
                                   isNextEvent 
                                     ? `bg-white border-indigo-200 shadow-md ring-1 ring-indigo-50` 
                                     : 'bg-white/80 border-gray-100 shadow-sm'
-                                } hover:shadow-xl hover:translate-x-1`}
+                                } hover:shadow-xl sm:hover:translate-x-1`}
                               >
                                 {isNextEvent && (
-                                  <div className="absolute top-0 right-0">
-                                    <div className="bg-indigo-600 text-white text-[9px] font-black px-3 py-1 rounded-tr-2xl rounded-bl-xl shadow-sm tracking-widest animate-pulse">
+                                  <div className="absolute top-0 right-0 z-10">
+                                    <div className="bg-indigo-600 text-white text-[8px] sm:text-[9px] font-black px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-tr-2xl rounded-bl-xl shadow-xs tracking-widest animate-pulse">
                                       PROCHAIN
                                     </div>
                                   </div>
                                 )}
                                 <div className="absolute top-0 left-0 w-1.5 h-full rounded-l-2xl bg-gradient-to-b opacity-10 group-hover:opacity-100 transition-opacity" style={{ backgroundImage: `linear-gradient(to bottom, var(--tw-gradient-from), var(--tw-gradient-to))` }}></div>
-                                <div className="flex items-start gap-5">
-                                  <div className={`flex-shrink-0 h-14 w-14 bg-gradient-to-br ${styles.gradient} rounded-2xl flex items-center justify-center shadow-lg transform group-hover:rotate-3 transition-transform`}>
-                                    <TypeIcon className="h-7 w-7 text-white" />
+                                <div className="flex items-start gap-3 sm:gap-5 w-full">
+                                  <div className={`flex-shrink-0 h-11 w-11 sm:h-14 sm:w-14 bg-gradient-to-br ${styles.gradient} rounded-xl sm:rounded-2xl flex items-center justify-center shadow-md transform sm:group-hover:rotate-3 transition-transform mt-0.5`}>
+                                    <TypeIcon className="h-5 w-5 sm:h-7 sm:w-7 text-white" />
                                   </div>
-                                  <div className="flex-grow">
-                                    <div className="flex items-start justify-between mb-2">
-                                      <div>
-                                        <h4 className="font-bold text-slate-900 text-xl leading-tight mb-1">{event.title}</h4>
-                                        <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500">
-                                          <div className="flex items-center">
-                                            <Calendar className="h-4 w-4 mr-2 text-indigo-400" />
-                                            <span className="font-medium text-slate-600">
+                                  <div className="flex-grow min-w-0 w-full">
+                                    <div className={`flex flex-col sm:flex-row sm:items-start justify-between gap-1.5 sm:gap-4 mb-2 ${isNextEvent ? 'pr-14 sm:pr-0' : ''}`}>
+                                      <div className="min-w-0 flex-1">
+                                        <div className="flex flex-wrap items-center gap-2 mb-1">
+                                          <h4 className="font-bold text-slate-900 text-base sm:text-xl leading-tight break-words">{event.title}</h4>
+                                          <span className={`sm:hidden inline-flex px-2 py-0.5 ${styles.tagBg} ${styles.tagText} text-[9px] font-bold uppercase tracking-wider rounded-full border ${styles.infoBoxBorder} flex-shrink-0`}>
+                                            {event.event_type}
+                                          </span>
+                                        </div>
+                                        <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-1.5 sm:gap-4 text-xs sm:text-sm text-slate-500">
+                                          <div className="flex items-center min-w-0">
+                                            <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 text-indigo-400 flex-shrink-0" />
+                                            <span className="font-medium text-slate-600 truncate">
                                               {(() => {
                                                 const d = new Date(event.event_date);
                                                 const datePart = d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
@@ -986,26 +991,26 @@ const Dashboard = () => {
                                             </span>
                                           </div>
                                           {event.location && (
-                                            <div className="flex items-center">
-                                              <MapPin className="h-4 w-4 mr-2 text-rose-400" />
-                                              <span className="truncate max-w-[200px]">{event.location}</span>
+                                            <div className="flex items-center min-w-0">
+                                              <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 text-rose-400 flex-shrink-0" />
+                                              <span className="truncate max-w-[200px] sm:max-w-none">{event.location}</span>
                                             </div>
                                           )}
                                         </div>
                                       </div>
-                                      <span className={`px-3 py-1 ${styles.tagBg} ${styles.tagText} text-[10px] font-bold uppercase tracking-widest rounded-full border ${styles.infoBoxBorder}`}>
+                                      <span className={`hidden sm:inline-flex px-3 py-1 ${styles.tagBg} ${styles.tagText} text-[10px] font-bold uppercase tracking-widest rounded-full border ${styles.infoBoxBorder} flex-shrink-0`}>
                                         {event.event_type}
                                       </span>
                                     </div>
 
                                     {event.orchestras && event.orchestras.length > 0 && (
-                                      <div className="mt-3 flex flex-wrap gap-2">
+                                      <div className="mt-2.5 sm:mt-3 flex flex-wrap gap-1.5 sm:gap-2">
                                         {event.orchestras.map((o: any) => {
                                           const oColor = getOrchestraColor(o.name);
                                           return (
-                                            <span key={o.id} className={`px-2.5 py-1 ${oColor.bg} ${oColor.text} text-[10px] font-bold rounded-lg border flex items-center gap-1.5 shadow-sm`}>
-                                              <Music2 className="h-3 w-3" />
-                                              {o.name}
+                                            <span key={o.id} className={`px-2 sm:px-2.5 py-0.5 sm:py-1 ${oColor.bg} ${oColor.text} text-[9px] sm:text-[10px] font-bold rounded-lg border flex items-center gap-1 sm:gap-1.5 shadow-xs`}>
+                                              <Music2 className="h-2.5 w-2.5 sm:h-3 sm:w-3 flex-shrink-0" />
+                                              <span className="truncate">{o.name}</span>
                                             </span>
                                           )
                                         })}
@@ -1014,27 +1019,27 @@ const Dashboard = () => {
 
                                     {/* Description et Infos pratiques directement affichées côte à côte */}
                                     {(event.description || event.practical_info) && (
-                                      <div className="mt-4">
-                                        <div className={`grid gap-3 ${event.description && event.practical_info ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1'}`}>
+                                      <div className="mt-3 sm:mt-4 w-full min-w-0">
+                                        <div className={`grid gap-2.5 sm:gap-3 ${event.description && event.practical_info ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1'}`}>
                                           {event.description && (
-                                            <div className="p-3.5 bg-slate-50/70 rounded-2xl border border-slate-200/80 flex flex-col">
-                                              <div className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5 flex items-center gap-1.5">
-                                                <FileText className="h-3.5 w-3.5 text-indigo-600" />
+                                            <div className="p-3 sm:p-3.5 bg-slate-50/70 rounded-xl sm:rounded-2xl border border-slate-200/80 flex flex-col min-w-0">
+                                              <div className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-700 mb-1 flex items-center gap-1.5">
+                                                <FileText className="h-3.5 w-3.5 text-indigo-600 flex-shrink-0" />
                                                 <span>Description</span>
                                               </div>
-                                              <div className="text-sm text-slate-700 whitespace-pre-line leading-relaxed bg-white p-3 rounded-xl border border-slate-100 shadow-xs flex-grow">
+                                              <div className="text-xs sm:text-sm text-slate-700 whitespace-pre-line leading-relaxed bg-white p-2.5 sm:p-3 rounded-lg sm:rounded-xl border border-slate-100 shadow-xs flex-grow break-words">
                                                 {event.description}
                                               </div>
                                             </div>
                                           )}
 
                                           {event.practical_info && (
-                                            <div className="p-3.5 bg-amber-50/50 rounded-2xl border border-amber-200/80 flex flex-col">
-                                              <div className="text-xs font-bold uppercase tracking-wider text-amber-900 mb-1.5 flex items-center gap-1.5">
-                                                <AlertCircle className="h-3.5 w-3.5 text-amber-600" />
+                                            <div className="p-3 sm:p-3.5 bg-amber-50/50 rounded-xl sm:rounded-2xl border border-amber-200/80 flex flex-col min-w-0">
+                                              <div className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-amber-900 mb-1 flex items-center gap-1.5">
+                                                <AlertCircle className="h-3.5 w-3.5 text-amber-600 flex-shrink-0" />
                                                 <span>Infos pratiques &amp; Consignes</span>
                                               </div>
-                                              <div className="text-sm text-amber-950 whitespace-pre-line leading-relaxed bg-white p-3 rounded-xl border border-amber-100 shadow-xs font-medium flex-grow">
+                                              <div className="text-xs sm:text-sm text-amber-950 whitespace-pre-line leading-relaxed bg-white p-2.5 sm:p-3 rounded-lg sm:rounded-xl border border-amber-100 shadow-xs font-medium flex-grow break-words">
                                                 {event.practical_info}
                                               </div>
                                             </div>
@@ -1044,44 +1049,49 @@ const Dashboard = () => {
                                     )}
 
                                     {/* Boutons de Présence 1-Clic (Présent / Absent) avec désélection au re-clic */}
-                                    <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-end gap-2.5">
-                                      <button
-                                        type="button"
-                                        onClick={() => handleSetAttendance(event.id, 'present')}
-                                        disabled={savingAttendance[event.id]}
-                                        className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer select-none active:scale-95 ${
-                                          event.user_attendance_status === 'present'
-                                            ? 'bg-emerald-600 text-white shadow-sm ring-2 ring-emerald-300 scale-100'
-                                            : 'bg-emerald-50/70 text-emerald-700 hover:bg-emerald-100/80 border border-emerald-200/80'
-                                        }`}
-                                        title={event.user_attendance_status === 'present' ? 'Cliquer à nouveau pour retirer votre choix' : 'Marquer présent'}
-                                      >
-                                        {savingAttendance[event.id] ? (
-                                          <Loader2 size={13} className="animate-spin" />
-                                        ) : (
-                                          <CheckCircle2 size={14} className={event.user_attendance_status === 'present' ? 'text-white' : 'text-emerald-600'} />
-                                        )}
-                                        <span>Présent</span>
-                                      </button>
+                                    <div className="mt-3 sm:mt-4 pt-2.5 sm:pt-3 border-t border-slate-100 flex flex-wrap sm:flex-nowrap items-center justify-between sm:justify-end gap-2 w-full">
+                                      <div className="text-[11px] text-slate-400 font-bold uppercase tracking-wider sm:hidden">
+                                        Présence :
+                                      </div>
+                                      <div className="flex items-center gap-2 w-full sm:w-auto">
+                                        <button
+                                          type="button"
+                                          onClick={() => handleSetAttendance(event.id, 'present')}
+                                          disabled={savingAttendance[event.id]}
+                                          className={`flex-1 sm:flex-none px-3.5 sm:px-4 py-1.5 rounded-full text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer select-none active:scale-95 ${
+                                            event.user_attendance_status === 'present'
+                                              ? 'bg-emerald-600 text-white shadow-sm ring-2 ring-emerald-300 scale-100'
+                                              : 'bg-emerald-50/70 text-emerald-700 hover:bg-emerald-100/80 border border-emerald-200/80'
+                                          }`}
+                                          title={event.user_attendance_status === 'present' ? 'Cliquer à nouveau pour retirer votre choix' : 'Marquer présent'}
+                                        >
+                                          {savingAttendance[event.id] ? (
+                                            <Loader2 size={13} className="animate-spin" />
+                                          ) : (
+                                            <CheckCircle2 size={14} className={event.user_attendance_status === 'present' ? 'text-white' : 'text-emerald-600'} />
+                                          )}
+                                          <span>Présent</span>
+                                        </button>
 
-                                      <button
-                                        type="button"
-                                        onClick={() => handleSetAttendance(event.id, 'absent')}
-                                        disabled={savingAttendance[event.id]}
-                                        className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer select-none active:scale-95 ${
-                                          event.user_attendance_status === 'absent'
-                                            ? 'bg-rose-600 text-white shadow-sm ring-2 ring-rose-300 scale-100'
-                                            : 'bg-rose-50/70 text-rose-700 hover:bg-rose-100 border border-rose-200/80'
-                                        }`}
-                                        title={event.user_attendance_status === 'absent' ? 'Cliquer à nouveau pour retirer votre choix' : 'Marquer absent'}
-                                      >
-                                        {savingAttendance[event.id] ? (
-                                          <Loader2 size={13} className="animate-spin" />
-                                        ) : (
-                                          <XCircle size={14} className={event.user_attendance_status === 'absent' ? 'text-white' : 'text-rose-600'} />
-                                        )}
-                                        <span>Absent</span>
-                                      </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => handleSetAttendance(event.id, 'absent')}
+                                          disabled={savingAttendance[event.id]}
+                                          className={`flex-1 sm:flex-none px-3.5 sm:px-4 py-1.5 rounded-full text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer select-none active:scale-95 ${
+                                            event.user_attendance_status === 'absent'
+                                              ? 'bg-rose-600 text-white shadow-sm ring-2 ring-rose-300 scale-100'
+                                              : 'bg-rose-50/70 text-rose-700 hover:bg-rose-100 border border-rose-200/80'
+                                          }`}
+                                          title={event.user_attendance_status === 'absent' ? 'Cliquer à nouveau pour retirer votre choix' : 'Marquer absent'}
+                                        >
+                                          {savingAttendance[event.id] ? (
+                                            <Loader2 size={13} className="animate-spin" />
+                                          ) : (
+                                            <XCircle size={14} className={event.user_attendance_status === 'absent' ? 'text-white' : 'text-rose-600'} />
+                                          )}
+                                          <span>Absent</span>
+                                        </button>
+                                      </div>
                                     </div>
                                   </div>
                                 </div>
