@@ -60,7 +60,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-const tempUploadDir = path.join(__dirname, '../../uploads/temp');
+const tempUploadDir = path.join(process.cwd(), 'uploads', 'temp');
 if (!fs.existsSync(tempUploadDir)) {
     fs.mkdirSync(tempUploadDir, { recursive: true });
 }
@@ -136,12 +136,20 @@ router.post('/batch-split', tempUpload.single('file'), async (req, res) => {
                 const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
                 const newFilename = `${uniqueSuffix}.pdf`;
                 
-                const localUploadDir = path.join(__dirname, '../../uploads');
+                const localUploadDir = path.join(process.cwd(), 'uploads');
                 if (!fs.existsSync(localUploadDir)) {
                     fs.mkdirSync(localUploadDir, { recursive: true });
                 }
                 const savePath = path.join(localUploadDir, newFilename);
                 fs.writeFileSync(savePath, newPdfBytes);
+
+                const publicDir = path.join(process.cwd(), 'public');
+                if (fs.existsSync(publicDir)) {
+                    try {
+                        fs.copyFileSync(savePath, path.join(publicDir, newFilename));
+                    } catch (e) {}
+                }
+
                 const finalFilePath = `/uploads/${newFilename}`;
 
                 for (const inst of insts) {

@@ -582,6 +582,36 @@ app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
+// Auto-rescue any legacy uploads saved in server/uploads/ to root uploads/ and public/
+try {
+  const legacyServerUploads = path.join(process.cwd(), 'server', 'uploads');
+  const rootUploads = path.join(process.cwd(), 'uploads');
+  const publicDir = path.join(process.cwd(), 'public');
+  if (!fs.existsSync(rootUploads)) fs.mkdirSync(rootUploads, { recursive: true });
+
+  if (fs.existsSync(legacyServerUploads)) {
+    const entries = fs.readdirSync(legacyServerUploads, { withFileTypes: true });
+    for (const entry of entries) {
+      if (entry.isFile()) {
+        const src = path.join(legacyServerUploads, entry.name);
+        const dstRoot = path.join(rootUploads, entry.name);
+        if (!fs.existsSync(dstRoot)) {
+          fs.copyFileSync(src, dstRoot);
+          console.log(`[Migration] Rescued file from server/uploads to uploads: ${entry.name}`);
+        }
+        if (fs.existsSync(publicDir)) {
+          const dstPublic = path.join(publicDir, entry.name);
+          if (!fs.existsSync(dstPublic)) {
+            try { fs.copyFileSync(src, dstPublic); } catch {}
+          }
+        }
+      }
+    }
+  }
+} catch (err) {
+  console.warn('[Migration Warning] Error migrating legacy server/uploads:', err);
+}
+
 // High-Speed Direct Streaming & Dynamic Compression Engine for PDF documents
 app.use('/uploads', async (req, res, next) => {
   if (req.method !== 'GET') return next();
@@ -592,9 +622,12 @@ app.use('/uploads', async (req, res, next) => {
   const filePath = path.join(process.cwd(), 'uploads', decodeURIComponent(rawPath));
   let actualFile = filePath;
   if (!fs.existsSync(actualFile)) {
+    const serverFallback = path.join(process.cwd(), 'server', 'uploads', decodeURIComponent(rawPath));
     const publicFallback = path.join(process.cwd(), 'public', decodeURIComponent(rawPath));
     const distFallback = path.join(process.cwd(), 'dist', decodeURIComponent(rawPath));
-    if (fs.existsSync(publicFallback)) {
+    if (fs.existsSync(serverFallback)) {
+      actualFile = serverFallback;
+    } else if (fs.existsSync(publicFallback)) {
       actualFile = publicFallback;
     } else if (fs.existsSync(distFallback)) {
       actualFile = distFallback;
@@ -670,9 +703,12 @@ app.use('/uploads', async (req, res, next) => {
 
     let actualFile = filePath;
     if (!fs.existsSync(actualFile)) {
+      const serverFallback = path.join(process.cwd(), 'server', 'uploads', decodeURIComponent(rawPath));
       const publicFallback = path.join(process.cwd(), 'public', decodeURIComponent(rawPath));
       const distFallback = path.join(process.cwd(), 'dist', decodeURIComponent(rawPath));
-      if (fs.existsSync(publicFallback)) {
+      if (fs.existsSync(serverFallback)) {
+        actualFile = serverFallback;
+      } else if (fs.existsSync(publicFallback)) {
         actualFile = publicFallback;
       } else if (fs.existsSync(distFallback)) {
         actualFile = distFallback;
@@ -755,6 +791,20 @@ app.use('/uploads', async (req, res, next) => {
 
 // Fallback static handlers for uploads, public, and dist assets
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads'), {
+  maxAge: '1y',
+  immutable: true,
+  dotfiles: 'allow',
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.pdf')) {
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'inline');
+      res.setHeader('Accept-Ranges', 'bytes');
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    }
+  }
+}));
+
+app.use('/uploads', express.static(path.join(process.cwd(), 'server', 'uploads'), {
   maxAge: '1y',
   immutable: true,
   dotfiles: 'allow',
@@ -900,8 +950,8 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 
 // Wildcard fallback for React Router SPA routes
 app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
-  if (req.path.startsWith('/api')) {
-    return next();
+  if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) {
+    return res.status(404).send('Fichier ou ressource non trouvé.');
   }
   serveIndexHtml(req, res);
 });
