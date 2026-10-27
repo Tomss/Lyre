@@ -720,13 +720,27 @@ const AdminUsers = () => {
 
       const result = await response.json();
       showNotification(result.message || `${email} est désormais l'adresse principale.`);
+      setFormData(prev => ({ ...prev, email }));
+      if (editingUser && editingUser.id === profileId) {
+        setEditingUser(prev => prev ? {
+          ...prev,
+          email,
+          emails: prev.emails?.map(e => ({
+            ...e,
+            isPrimary: e.userId === userId
+          }))
+        } : null);
+      }
       await fetchUsers();
       if (editingUser && editingUser.id === profileId) {
         const res = await fetch(`${API_URL}/users`, { headers: { 'Authorization': `Bearer ${token}` } });
         if (res.ok) {
           const freshUsers: UserData[] = await res.json();
           const freshEditing = freshUsers.find(u => u.id === editingUser.id);
-          if (freshEditing) setEditingUser(freshEditing);
+          if (freshEditing) {
+            setEditingUser(freshEditing);
+            setFormData(prev => ({ ...prev, email: freshEditing.email || email }));
+          }
         }
       }
     } catch (err: any) {
@@ -1475,7 +1489,7 @@ const AdminUsers = () => {
         {/* Add/Edit Form Modal */}
         {showAddForm && (
           <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 flex justify-center items-start p-4 pt-24">
-            <div className="bg-slate-50 rounded-3xl shadow-2xl w-full max-w-2xl flex flex-col overflow-hidden border border-white max-h-[calc(100vh-120px)] animate-in fade-in zoom-in duration-300">
+            <div className="bg-slate-50 rounded-3xl shadow-2xl w-full max-w-2xl lg:max-w-3xl flex flex-col overflow-hidden border border-white max-h-[calc(100vh-120px)] animate-in fade-in zoom-in duration-300">
               <div className="flex justify-between items-center p-5 bg-white border-b border-slate-100 flex-shrink-0">
                 <div className="flex items-center">
                     <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mr-4">
@@ -1603,104 +1617,115 @@ const AdminUsers = () => {
                       {editingUser.emails && editingUser.emails.length > 0 ? (
                         <div className="space-y-2">
                           {editingUser.emails.map((em) => (
-                            <div key={em.userId} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-xl border gap-2 border-slate-100 bg-slate-50/50">
-                              <div className="flex items-center gap-3">
-                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                                  em.isPrimary ? 'bg-indigo-100 text-indigo-600' : 'bg-cyan-100 text-cyan-600'
-                                }`}>
-                                  <Mail size={16} />
-                                </div>
-                                <div className="min-w-0">
-                                  <div className="flex items-center gap-2 flex-wrap">
-                                    <span className="font-semibold text-sm text-slate-800 break-all">{em.email}</span>
-                                     {em.isPrimary ? (
-                                       <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 flex items-center gap-1">
-                                         <Star size={10} className="fill-indigo-600 text-indigo-600" />
-                                         Principal
-                                       </span>
-                                     ) : (
-                                       <button
-                                         type="button"
-                                         onClick={() => handleSetPrimaryEmail(editingUser.id, em.userId, em.email)}
-                                         title={`Cliquer pour définir ${em.email} comme adresse principale`}
-                                         className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-100 text-cyan-700 hover:bg-cyan-200 hover:text-cyan-900 transition-colors flex items-center gap-1 cursor-pointer group/sec"
-                                       >
-                                         <ArrowUpDown size={10} className="group-hover/sec:scale-125 transition-transform" />
-                                         Secondaire
-                                       </button>
-                                     )}
-                                    {em.alsoUsedBy && em.alsoUsedBy.length > 0 && (
-                                      <div className="relative group/shared inline-flex items-center">
-                                        <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200/90 shadow-xs cursor-pointer select-none hover:bg-amber-100 transition-colors">
-                                          <Users size={11} className="text-amber-600 flex-shrink-0" />
-                                          Partagé
-                                        </span>
-                                        {/* Tooltip au survol */}
-                                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover/shared:flex flex-col z-50 min-w-[190px] max-w-xs p-2.5 bg-slate-900/95 backdrop-blur-md text-white rounded-xl shadow-xl border border-slate-700/60 pointer-events-none transition-all duration-150 animate-in fade-in zoom-in-95">
-                                          <div className="flex items-center gap-1.5 font-bold text-amber-300 text-[11px] pb-1.5 mb-1.5 border-b border-slate-800">
-                                            <Users size={12} className="text-amber-400" />
-                                            <span>Donne aussi accès à :</span>
-                                          </div>
-                                          <div className="space-y-1">
-                                            {em.alsoUsedBy.map((name, idx) => (
-                                              <div key={idx} className="flex items-center gap-1.5 text-xs text-slate-100 font-medium">
-                                                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0"></span>
-                                                <span className="truncate">{name}</span>
-                                              </div>
-                                            ))}
-                                          </div>
-                                          <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900/95"></div>
-                                        </div>
-                                      </div>
-                                    )}
-                                    <button
-                                      type="button"
-                                      onClick={() => handleToggleEmailStatus(editingUser, em)}
-                                      title={
-                                        em.isActive
-                                          ? `Cliquer pour désactiver l'adresse ${em.email}`
-                                          : em.hasPassword
-                                            ? `Cliquer pour réactiver l'adresse ${em.email}`
-                                            : em.isExpired
-                                              ? `Lien de mot de passe expiré (> 48h)`
-                                              : em.isInvitationExpired
-                                                ? `Lien d'activation expiré (> 48h)`
-                                                : `Adresse non activée (invitation requise)`
-                                      }
-                                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 transition-all cursor-pointer ${
-                                        em.isActive
-                                          ? 'bg-green-100 text-green-800 hover:bg-red-100 hover:text-red-800'
-                                          : em.isExpired
-                                            ? 'bg-amber-100 text-amber-800 hover:bg-orange-100 hover:text-orange-900'
-                                            : em.isInvited
-                                              ? 'bg-yellow-100 text-yellow-800 hover:bg-green-100 hover:text-green-800'
-                                              : 'bg-red-100 text-red-800 hover:bg-green-100 hover:text-green-800'
-                                      }`}
-                                    >
-                                      <span className={`w-1.5 h-1.5 rounded-full ${em.isActive ? 'bg-green-500' : em.isExpired ? 'bg-amber-500' : em.isInvited ? 'bg-yellow-500' : 'bg-red-500'}`}></span>
-                                      {em.isActive ? 'Actif' : em.isExpired ? 'Expiré' : em.isInvited ? 'Invité' : 'Inactif'}
-                                    </button>
+                            <div key={em.userId} className="p-3.5 rounded-2xl border border-slate-200/90 bg-slate-50/70 hover:bg-slate-50 transition-colors space-y-2.5">
+                              {/* Ligne 1 : Icone + Adresse Email (pleine largeur sans coupure) + Badges */}
+                              <div className="flex items-center justify-between gap-3 flex-wrap sm:flex-nowrap">
+                                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 shadow-xs ${
+                                    em.isPrimary ? 'bg-indigo-100 text-indigo-600' : 'bg-cyan-100 text-cyan-600'
+                                  }`}>
+                                    <Mail size={15} />
                                   </div>
-                                  {em.lastLogin && (
-                                    <p className="text-[11px] text-slate-400 mt-0.5">
-                                      Dernière connexion : {new Date(em.lastLogin).toLocaleDateString('fr-FR')}
-                                    </p>
+                                  <span className="font-semibold text-sm text-slate-800 break-normal truncate" title={em.email}>
+                                    {em.email}
+                                  </span>
+                                </div>
+
+                                {/* Badges d'état */}
+                                <div className="flex items-center gap-1.5 flex-shrink-0">
+                                  {em.isPrimary ? (
+                                    <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-700 flex items-center gap-1 shadow-xs border border-indigo-200/60">
+                                      <Star size={10} className="fill-indigo-600 text-indigo-600" />
+                                      Principal
+                                    </span>
+                                  ) : (
+                                    <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-cyan-50 text-cyan-700 flex items-center gap-1 border border-cyan-200/80 shadow-xs">
+                                      Secondaire
+                                    </span>
                                   )}
+
+                                  {em.alsoUsedBy && em.alsoUsedBy.length > 0 && (
+                                    <div className="relative group/shared inline-flex items-center">
+                                      <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200/90 shadow-xs cursor-pointer select-none hover:bg-amber-100 transition-colors">
+                                        <Users size={11} className="text-amber-600 flex-shrink-0" />
+                                        Partagé
+                                      </span>
+                                      <div className="absolute bottom-full right-0 mb-1.5 hidden group-hover/shared:flex flex-col z-50 min-w-[200px] max-w-xs p-2.5 bg-slate-900/95 backdrop-blur-md text-white rounded-xl shadow-xl border border-slate-700/60 pointer-events-none transition-all duration-150 animate-in fade-in zoom-in-95">
+                                        <div className="flex items-center gap-1.5 font-bold text-amber-300 text-[11px] pb-1.5 mb-1.5 border-b border-slate-800">
+                                          <Users size={12} className="text-amber-400" />
+                                          <span>Donne aussi accès à :</span>
+                                        </div>
+                                        <div className="space-y-1">
+                                          {em.alsoUsedBy.map((name, idx) => (
+                                            <div key={idx} className="flex items-center gap-1.5 text-xs text-slate-100 font-medium">
+                                              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0"></span>
+                                              <span className="truncate">{name}</span>
+                                            </div>
+                                          ))}
+                                        </div>
+                                        <div className="absolute top-full right-4 -mt-1 border-4 border-transparent border-t-slate-900/95"></div>
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  <button
+                                    type="button"
+                                    onClick={() => handleToggleEmailStatus(editingUser, em)}
+                                    title={
+                                      em.isActive
+                                        ? `Cliquer pour désactiver l'adresse ${em.email}`
+                                        : em.hasPassword
+                                          ? `Cliquer pour réactiver l'adresse ${em.email}`
+                                          : em.isExpired
+                                            ? `Lien de mot de passe expiré (> 48h)`
+                                            : em.isInvitationExpired
+                                              ? `Lien d'activation expiré (> 48h)`
+                                              : `Adresse non activée (invitation requise)`
+                                    }
+                                    className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1 transition-all cursor-pointer border shadow-xs ${
+                                      em.isActive
+                                        ? 'bg-green-100/80 text-green-800 border-green-200 hover:bg-red-50 hover:text-red-700 hover:border-red-200'
+                                        : em.isExpired
+                                          ? 'bg-amber-100/80 text-amber-800 border-amber-200 hover:bg-orange-100 hover:text-orange-900'
+                                          : em.isInvited
+                                            ? 'bg-yellow-100/80 text-yellow-800 border-yellow-200 hover:bg-green-100 hover:text-green-800'
+                                            : 'bg-red-100/80 text-red-800 border-red-200 hover:bg-green-100 hover:text-green-800'
+                                    }`}
+                                  >
+                                    <span className={`w-1.5 h-1.5 rounded-full ${em.isActive ? 'bg-green-500' : em.isExpired ? 'bg-amber-500' : em.isInvited ? 'bg-yellow-500' : 'bg-red-500'}`}></span>
+                                    {em.isActive ? 'Actif' : em.isExpired ? 'Expiré' : em.isInvited ? 'Invité' : 'Inactif'}
+                                  </button>
                                 </div>
                               </div>
 
-                              <div className="flex items-center gap-2 self-end sm:self-center">
+                              {/* Ligne 2 : Dernière connexion (gauche) + Boutons d'actions (droite) */}
+                              <div className="flex items-center justify-between gap-3 pt-2 border-t border-slate-200/60 flex-wrap sm:flex-nowrap">
+                                <div className="text-[11px] text-slate-500 min-w-0 flex items-center gap-1.5">
+                                  {em.lastLogin ? (
+                                    <>
+                                      <span className="text-slate-400">Dernière connexion :</span>
+                                      <span className="font-semibold text-slate-700">
+                                        {new Date(em.lastLogin).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })} à {new Date(em.lastLogin).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }).replace(':', 'h')}
+                                      </span>
+                                    </>
+                                  ) : (
+                                    <span className="italic text-slate-400">Aucune connexion enregistrée</span>
+                                  )}
+                                </div>
+
+                                <div className="flex items-center gap-1.5 flex-shrink-0 ml-auto">
                                   {!em.isPrimary && (
                                     <button
                                       type="button"
                                       onClick={() => handleSetPrimaryEmail(editingUser.id, em.userId, em.email)}
-                                      title={`Passer ${em.email} en adresse principale`}
-                                      className="h-8 px-3 text-xs font-semibold text-cyan-700 hover:text-cyan-900 bg-cyan-50 hover:bg-cyan-100 border border-cyan-200 hover:border-cyan-300 rounded-lg shadow-sm transition-colors inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"
+                                      title={`Définir ${em.email} comme adresse principale de ce musicien`}
+                                      className="h-7 px-2.5 text-[11px] font-semibold text-cyan-700 hover:text-cyan-900 bg-cyan-50 hover:bg-cyan-100 border border-cyan-200 hover:border-cyan-300 rounded-lg shadow-2xs transition-colors inline-flex items-center justify-center gap-1 whitespace-nowrap cursor-pointer"
                                     >
-                                      <ArrowUpDown size={13} className="text-cyan-600" />
+                                      <ArrowUpDown size={12} className="text-cyan-600" />
                                       Passer en principale
                                     </button>
                                   )}
+
                                   <button
                                     type="button"
                                     onClick={() => handleInvite(editingUser.id, em.userId)}
@@ -1715,32 +1740,35 @@ const AdminUsers = () => {
                                               ? `Renvoyer l'invitation à ${em.email}` 
                                               : `Envoyer l'invitation à ${em.email}`
                                     }
-                                    className="h-8 px-3 text-xs font-semibold text-indigo-600 hover:text-indigo-800 bg-white hover:bg-slate-50 border border-slate-200 hover:border-indigo-300 rounded-lg shadow-sm transition-colors inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"
+                                    className="h-7 px-2.5 text-[11px] font-semibold text-indigo-600 hover:text-indigo-800 bg-white hover:bg-indigo-50/50 border border-slate-200 hover:border-indigo-300 rounded-lg shadow-2xs transition-colors inline-flex items-center justify-center gap-1 whitespace-nowrap cursor-pointer"
                                   >
-                                    <Mail size={13} />
+                                    <Mail size={12} />
                                     {em.isActive ? 'Réinitialiser' : (em.isInvited || em.isExpired || em.isInvitationExpired) ? 'Relancer' : 'Inviter'}
                                   </button>
+
                                   {currentUser?.role === 'Admin' && (
                                     <button
                                       type="button"
                                       onClick={() => handleOpenSetPasswordModal(editingUser, em.userId, em.email)}
                                       title={`Définir ou modifier directement le mot de passe pour ${em.email}`}
-                                      className="h-8 px-3 text-xs font-semibold text-slate-700 hover:text-indigo-600 bg-white hover:bg-slate-50 border border-slate-200 hover:border-indigo-300 rounded-lg shadow-sm transition-colors inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"
+                                      className="h-7 px-2.5 text-[11px] font-semibold text-slate-700 hover:text-indigo-600 bg-white hover:bg-slate-50 border border-slate-200 hover:border-indigo-300 rounded-lg shadow-2xs transition-colors inline-flex items-center justify-center gap-1 whitespace-nowrap cursor-pointer"
                                     >
-                                      <KeyRound size={13} className="text-amber-500" />
+                                      <KeyRound size={12} className="text-amber-500" />
                                       Mot de passe
                                     </button>
                                   )}
+
                                   {!em.isPrimary && (
                                     <button
                                       type="button"
                                       onClick={() => handlePromptRemoveEmail(editingUser.id, em.userId, em.email)}
-                                      title="Dissocier cet e-mail"
-                                      className="h-8 w-8 inline-flex items-center justify-center text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors cursor-pointer border border-transparent hover:border-red-100"
+                                      title="Dissocier cet e-mail de ce profil"
+                                      className="h-7 w-7 inline-flex items-center justify-center text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors cursor-pointer border border-transparent hover:border-red-100"
                                     >
-                                      <Trash2 size={15} />
+                                      <Trash2 size={13} />
                                     </button>
                                   )}
+                                </div>
                               </div>
                             </div>
                           ))}

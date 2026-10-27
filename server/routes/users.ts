@@ -593,9 +593,6 @@ router.put('/:profileId/emails/:userId/primary', async (req, res) => {
     // 4. Passer le lien sélectionné à is_primary = 1
     await connection.query('UPDATE user_profiles SET is_primary = 1 WHERE profile_id = ? AND user_id = ?', [profileId, userId]);
 
-    // 5. Mettre à jour l'e-mail dans profiles
-    await connection.query('UPDATE profiles SET email = ? WHERE id = ?', [newPrimaryEmail, profileId]);
-
     await connection.commit();
     res.json({ message: `${newPrimaryEmail} est désormais l'adresse e-mail principale.` });
 
