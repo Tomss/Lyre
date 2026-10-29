@@ -1,5 +1,5 @@
 import React, { useState, useEffect, FormEvent } from 'react';
-import { ChevronDown, Edit, Trash2, Plus, Calendar, Search, X, ArrowLeft, Clock, MapPin, Globe, Users, Info, AlignLeft, LayoutGrid, EyeOff, FileText, Image as ImageIcon, Upload, Music, CheckCircle2, XCircle, HelpCircle, Copy, Check, Loader2 } from "lucide-react";
+import { ChevronDown, ChevronRight, Edit, Trash2, Plus, Calendar, Search, X, ArrowLeft, Clock, MapPin, Globe, Users, Info, AlignLeft, LayoutGrid, EyeOff, FileText, Image as ImageIcon, Upload, Music, CheckCircle2, XCircle, HelpCircle, Copy, Check, Loader2 } from "lucide-react";
 import { useAuth } from '../context/AuthContext';
 import { Navigate, Link } from 'react-router-dom';
 
