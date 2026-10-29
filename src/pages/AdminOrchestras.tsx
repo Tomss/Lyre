@@ -366,10 +366,10 @@ const AdminOrchestras = () => {
                 <div className="divide-y divide-gray-200/80">
                   {filteredOrchestras.map((orchestra) => (
                     <SortableItem key={orchestra.id} id={orchestra.id}>
-                      <div className={`p-4 flex items-start hover:bg-gray-50/50 transition-colors duration-200 bg-white`}>
-                        {/* Drag Handle Icon (Optional visual cue, using cursor-move usually suffices but icon is nice) */}
-                        <div className="mr-4 mt-2 cursor-grab text-gray-400 hover:text-gray-600">
-                          <svg viewBox="0 0 20 20" width="20" height="20" fill="currentColor"><path d="M7 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 2zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 14zm6-8a2 2 0 1 0-.001-4.001A2 2 0 0 0 13 6zm0 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 14z"></path></svg>
+                      <div className="p-3 sm:p-4 flex items-start sm:items-center hover:bg-gray-50/50 transition-colors duration-200 bg-white gap-3 sm:gap-4">
+                        {/* Drag Handle Icon */}
+                        <div className="mt-1 sm:mt-0 cursor-grab text-gray-400 hover:text-gray-600 flex-shrink-0">
+                          <svg viewBox="0 0 20 20" width="18" height="18" fill="currentColor"><path d="M7 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 2zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 14zm6-8a2 2 0 1 0-.001-4.001A2 2 0 0 0 13 6zm0 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 14z"></path></svg>
                         </div>
 
                         <img 
@@ -380,24 +380,24 @@ const AdminOrchestras = () => {
                           onError={(e) => {
                             (e.target as HTMLImageElement).src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="%2394a3b8" stroke-width="1.5"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>';
                           }}
-                          className="w-16 h-16 object-cover rounded-md mr-4 flex-shrink-0 bg-slate-100" 
+                          className="w-12 h-12 sm:w-16 sm:h-16 object-cover rounded-md flex-shrink-0 bg-slate-100" 
                         />
-                        <div className="flex-grow">
-                          <p className="font-bold text-lg text-gray-800">{orchestra.name}</p>
-                          <p className="text-gray-600 text-sm">
+                        <div className="flex-grow min-w-0">
+                          <p className="font-bold text-base sm:text-lg text-gray-800 truncate">{orchestra.name}</p>
+                          <p className="text-gray-600 text-xs sm:text-sm line-clamp-2">
                             {orchestra.description && orchestra.description.length > 100 && !expandedDescriptions.has(orchestra.id)
                               ? `${orchestra.description.substring(0, 100)}...`
                               : orchestra.description}
                           </p>
                           {orchestra.description && orchestra.description.length > 100 && (
-                            <button onClick={() => toggleDescription(orchestra.id)} className="text-blue-600 text-sm hover:underline mt-1 bg-transparent border-none cursor-pointer">
+                            <button onClick={() => toggleDescription(orchestra.id)} className="text-blue-600 text-xs sm:text-sm hover:underline mt-0.5 bg-transparent border-none cursor-pointer">
                               {expandedDescriptions.has(orchestra.id) ? 'Réduire' : 'Lire la suite'}
                             </button>
                           )}
                         </div>
-                        <div className="flex items-center space-x-3 flex-shrink-0 ml-4">
-                          <button onClick={() => handleEdit(orchestra)} className="p-2 text-blue-600 bg-blue-100 hover:bg-blue-200 rounded-full transition-colors duration-200"><Edit size={18} /></button>
-                          <button onClick={() => setDeleteConfirmation({ isOpen: true, orchestra })} className="p-2 text-red-600 bg-red-100 hover:bg-red-200 rounded-full transition-colors duration-200"><Trash2 size={18} /></button>
+                        <div className="flex items-center space-x-1.5 sm:space-x-3 flex-shrink-0">
+                          <button onClick={() => handleEdit(orchestra)} className="p-1.5 sm:p-2 text-blue-600 bg-blue-100 hover:bg-blue-200 rounded-full transition-colors duration-200"><Edit size={16} /></button>
+                          <button onClick={() => setDeleteConfirmation({ isOpen: true, orchestra })} className="p-1.5 sm:p-2 text-red-600 bg-red-100 hover:bg-red-200 rounded-full transition-colors duration-200"><Trash2 size={16} /></button>
                         </div>
                       </div>
                     </SortableItem>

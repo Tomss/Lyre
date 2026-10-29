@@ -364,9 +364,9 @@ const AdminPartners = () => {
                             <div className="space-y-4">
                                 {filteredPartners.map((partner) => (
                                     <SortableItem key={partner.id} id={partner.id}>
-                                        <div className="bg-white rounded-xl p-4 border border-slate-100 shadow-sm flex items-center pl-14 group hover:border-indigo-100 hover:shadow-md transition-all">
+                                        <div className="bg-white rounded-xl p-3 sm:p-4 border border-slate-100 shadow-sm flex items-center pl-12 sm:pl-14 group hover:border-indigo-100 hover:shadow-md transition-all gap-3 sm:gap-4">
                                             {/* Logo Preview */}
-                                            <div className="h-16 w-24 bg-slate-50 rounded-lg overflow-hidden flex-shrink-0 border border-slate-100 p-2 flex items-center justify-center text-slate-300">
+                                            <div className="h-12 w-16 sm:h-16 sm:w-24 bg-slate-50 rounded-lg overflow-hidden flex-shrink-0 border border-slate-100 p-1.5 sm:p-2 flex items-center justify-center text-slate-300">
                                                 {partner.logo_url ? (
                                                     <img
                                                         src={partner.logo_url}
@@ -374,36 +374,36 @@ const AdminPartners = () => {
                                                         className="w-full h-full object-contain"
                                                     />
                                                 ) : (
-                                                    <Building2 className="h-8 w-8" />
+                                                    <Building2 className="h-6 w-6 sm:h-8 sm:w-8" />
                                                 )}
                                             </div>
 
                                             {/* Info */}
-                                            <div className="ml-6 flex-grow">
-                                                <h3 className="font-bold text-slate-800 text-lg">{partner.name}</h3>
+                                            <div className="flex-grow min-w-0">
+                                                <h3 className="font-bold text-slate-800 text-sm sm:text-lg truncate">{partner.name}</h3>
                                                 {partner.website_url && (
-                                                    <a href={partner.website_url} target="_blank" rel="noreferrer" className="text-indigo-500 text-sm flex items-center mt-1 hover:underline">
-                                                        <Globe className="h-3 w-3 mr-1" />
-                                                        {partner.website_url.replace(/^https?:\/\//, '')}
+                                                    <a href={partner.website_url} target="_blank" rel="noreferrer" className="text-indigo-500 text-xs sm:text-sm flex items-center mt-0.5 hover:underline truncate">
+                                                        <Globe className="h-3 w-3 mr-1 flex-shrink-0" />
+                                                        <span className="truncate">{partner.website_url.replace(/^https?:\/\//, '')}</span>
                                                     </a>
                                                 )}
                                             </div>
 
                                             {/* Actions */}
-                                            <div className="flex items-center gap-2 transition-opacity">
+                                            <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
                                                 <button
                                                     onClick={() => openEdit(partner)}
-                                                    className="p-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-all duration-300 hover:scale-110"
+                                                    className="p-1.5 sm:p-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-all duration-300 hover:scale-110"
                                                     title="Modifier"
                                                 >
-                                                    <Edit2 size={18} />
+                                                    <Edit2 size={16} />
                                                 </button>
                                                 <button
                                                     onClick={() => setDeleteId(partner.id)}
-                                                    className="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-all duration-300 hover:scale-110"
+                                                    className="p-1.5 sm:p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-all duration-300 hover:scale-110"
                                                     title="Supprimer"
                                                 >
-                                                    <Trash2 size={18} />
+                                                    <Trash2 size={16} />
                                                 </button>
                                             </div>
                                         </div>

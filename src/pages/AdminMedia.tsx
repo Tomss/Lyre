@@ -440,21 +440,23 @@ const AdminMedia = () => {
   <div className="overflow-hidden">
     <div className="divide-y divide-slate-100">
       {items.map(item => (
-        <div key={item.id} className={`p-4 flex flex-col md:flex-row md:items-center md:justify-between hover:bg-slate-50/80 transition-colors duration-200`}>
-          <div className="flex items-center flex-1 mb-4 md:mb-0">
-            <div className="w-40 h-24 bg-slate-100 rounded-xl mr-6 flex-shrink-0 flex items-center justify-center overflow-hidden border border-slate-200 shadow-inner group relative">
+        <div key={item.id} className="p-3 sm:p-4 flex flex-col md:flex-row md:items-center md:justify-between hover:bg-slate-50/80 transition-colors duration-200 gap-3 md:gap-4">
+          <div className="flex items-start sm:items-center flex-1 min-w-0">
+            {/* Miniature / Aperçu média responsive */}
+            <div className="w-20 h-20 sm:w-28 sm:h-24 md:w-36 md:h-24 bg-slate-100 rounded-xl mr-3 sm:mr-4 md:mr-6 flex-shrink-0 flex items-center justify-center overflow-hidden border border-slate-200 shadow-inner group relative">
               <MediaPreview files={item.files} mediaType={item.media_type} width={200} />
               <div className="absolute top-1 right-1">
-                  {!!item.is_featured && <div className="bg-amber-100 text-amber-600 p-1 rounded-full border border-amber-200 shadow-sm"><Star size={12} fill="currentColor" /></div>}
+                  {!!item.is_featured && <div className="bg-amber-100 text-amber-600 p-0.5 sm:p-1 rounded-full border border-amber-200 shadow-sm"><Star size={11} fill="currentColor" /></div>}
               </div>
-              <div className="absolute bottom-1 left-1 px-1.5 py-0.5 bg-black/60 backdrop-blur-sm rounded text-[10px] font-bold text-white uppercase tracking-wider">
+              <div className="absolute bottom-1 left-1 px-1.5 py-0.5 bg-black/60 backdrop-blur-sm rounded text-[9px] sm:text-[10px] font-bold text-white uppercase tracking-wider">
                   {item.files.length} {item.files.length > 1 ? 'fichiers' : 'fichier'}
               </div>
             </div>
-            <div className="flex-grow">
-              <div className="flex items-center mb-1">
-                <p className="font-bold text-lg text-gray-800 leading-tight mr-3">{item.title}</p>
-                <div className="flex items-center space-x-2">
+
+            <div className="flex-grow min-w-0">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-2 mb-1">
+                <p className="font-bold text-base sm:text-lg text-gray-800 leading-snug break-words">{item.title}</p>
+                <div className="flex items-center flex-shrink-0">
                   <button 
                     onClick={() => handleTogglePublish(item)}
                     title={item.published ? "Passer en brouillon" : "Publier"}
@@ -464,13 +466,18 @@ const AdminMedia = () => {
                   </button>
                 </div>
               </div>
-              <p className="text-gray-600 text-sm line-clamp-2 max-w-xl mb-2">{item.description}</p>
+              {item.description && (
+                <p className="text-gray-600 text-xs sm:text-sm line-clamp-2 max-w-xl mb-1.5">{item.description}</p>
+              )}
               <div className="flex items-center text-xs text-slate-400 font-medium">
-                  <Calendar size={12} className="mr-1" /> {item.media_date ? new Date(item.media_date).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Date non définie'}
+                  <Calendar size={12} className="mr-1 flex-shrink-0" />
+                  <span className="truncate">{item.media_date ? new Date(item.media_date).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Date non définie'}</span>
               </div>
             </div>
           </div>
-          <div className="flex items-center space-x-3 flex-shrink-0">
+
+          {/* Action buttons */}
+          <div className="flex items-center gap-2 justify-end w-full md:w-auto pt-2 border-t border-slate-100 md:border-t-0 md:pt-0 flex-shrink-0">
             <button onClick={() => handleEdit(item)} title="Modifier" className="p-2 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition-all duration-300 hover:scale-110 shadow-sm"><Edit size={16} /></button>
             <button onClick={() => confirmDelete(item)} title="Supprimer" className="p-2 text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl transition-all duration-300 hover:scale-110 shadow-sm"><Trash2 size={16} /></button>
           </div>

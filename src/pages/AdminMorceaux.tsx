@@ -440,10 +440,10 @@ const AdminMorceaux = () => {
                     <div className="overflow-hidden">
                       <div className="divide-y divide-slate-100">
                         {orchestraMorceaux.map(morceau => (
-                          <div key={morceau.id} className="p-4 flex flex-col md:flex-row md:items-center md:justify-between hover:bg-slate-50/80 transition-colors duration-200">
-                            <div className="flex-1 mb-4 md:mb-0">
-                              <div className="flex items-center gap-3">
-                                <p className={`font-semibold ${morceau.is_active === 0 || morceau.is_active === false ? 'text-slate-500' : 'text-slate-800'}`}>
+                          <div key={morceau.id} className="p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between hover:bg-slate-50/80 transition-colors duration-200 gap-3">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                                <p className={`font-semibold text-base ${morceau.is_active === 0 || morceau.is_active === false ? 'text-slate-500' : 'text-slate-800'}`}>
                                   {morceau.nom}
                                 </p>
                                 {morceau.is_active !== 0 && morceau.is_active !== false ? (
@@ -456,13 +456,13 @@ const AdminMorceaux = () => {
                                   </button>
                                 )}
                               </div>
-                              <p className="text-sm text-slate-500 flex items-center mt-1">
-                                <Music className="w-3 h-3 mr-1.5 opacity-50" />
-                                {morceau.compositeur || 'Compositeur inconnu'}
-                                {morceau.arrangement && <span className="ml-2 text-slate-400">• Arr. {morceau.arrangement}</span>}
+                              <p className="text-sm text-slate-500 flex items-center mt-1 truncate">
+                                <Music className="w-3 h-3 mr-1.5 opacity-50 flex-shrink-0" />
+                                <span className="truncate">{morceau.compositeur || 'Compositeur inconnu'}</span>
+                                {morceau.arrangement && <span className="ml-2 text-slate-400 truncate">• Arr. {morceau.arrangement}</span>}
                               </p>
                             </div>
-                            <div className="flex items-center space-x-2 flex-shrink-0">
+                            <div className="flex items-center gap-2 justify-end pt-2 sm:pt-0 border-t border-slate-100 sm:border-t-0 flex-shrink-0">
                               <button onClick={() => handleEdit(morceau)} className="p-2 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition-all duration-300 hover:scale-110 shadow-sm" title="Modifier"><Edit size={16} /></button>
                               <button onClick={() => confirmDelete(morceau)} className="p-2 text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl transition-all duration-300 hover:scale-110 shadow-sm" title="Supprimer"><Trash2 size={16} /></button>
                             </div>

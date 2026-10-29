@@ -627,10 +627,10 @@ const AdminEvents = () => {
                   <div className={isExpanded ? 'overflow-visible' : 'overflow-hidden'}>
                     <div className="divide-y divide-slate-100">
                       {eventList.map(event => (
-                        <div key={event.id} className={`p-4 flex flex-col md:flex-row md:items-center md:justify-between hover:bg-slate-50/80 transition-colors duration-200 gap-4 relative ${hoveredAttendanceEventId === event.id ? 'z-40' : 'z-0'}`}>
-                          <div className="flex items-center gap-4 flex-1 min-w-0">
+                        <div key={event.id} className={`p-3 sm:p-4 flex flex-col md:flex-row md:items-center md:justify-between hover:bg-slate-50/80 transition-colors duration-200 gap-3 md:gap-4 relative ${hoveredAttendanceEventId === event.id ? 'z-40' : 'z-0'}`}>
+                          <div className="flex items-start sm:items-center gap-3 sm:gap-4 flex-1 min-w-0">
                             {/* Miniature Photo */}
-                            <div className="w-16 h-12 sm:w-20 sm:h-14 rounded-xl bg-slate-100 overflow-hidden flex-shrink-0 border border-slate-200/80 relative flex items-center justify-center shadow-sm">
+                            <div className="w-14 h-11 sm:w-20 sm:h-14 rounded-xl bg-slate-100 overflow-hidden flex-shrink-0 border border-slate-200/80 relative flex items-center justify-center shadow-sm">
                               {(event.image_url || event.fallback_image_url) ? (
                                 <img 
                                   src={getOptimizedImageUrl(event.image_url || event.fallback_image_url!, 200, 80)} 
@@ -638,7 +638,7 @@ const AdminEvents = () => {
                                   className="w-full h-full object-cover"
                                 />
                               ) : (
-                                <Music className="w-6 h-6 text-slate-300" />
+                                <Music className="w-5 h-5 sm:w-6 sm:h-6 text-slate-300" />
                               )}
                               {event.image_url && (
                                 <span className="absolute bottom-1 right-1 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white" title="Photo personnalisée"></span>
@@ -646,16 +646,16 @@ const AdminEvents = () => {
                             </div>
 
                             <div className="flex-1 min-w-0">
-                              <h3 className="font-bold text-slate-800 text-base sm:text-lg mb-1 truncate">{event.title}</h3>
-                              <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-slate-500">
-                                <span className="flex items-center text-indigo-600 font-medium bg-indigo-50 px-2.5 py-0.5 rounded-md">
-                                  <Calendar className="w-3.5 h-3.5 mr-1.5" />
-                                  {formatDate(event.event_date, event.end_time)}
+                              <h3 className="font-bold text-slate-800 text-base sm:text-lg mb-1 leading-snug break-words">{event.title}</h3>
+                              <div className="flex flex-wrap gap-x-3 gap-y-1.5 text-xs sm:text-sm text-slate-500">
+                                <span className="flex items-center text-indigo-600 font-medium bg-indigo-50 px-2 sm:px-2.5 py-0.5 rounded-md text-xs sm:text-sm">
+                                  <Calendar className="w-3.5 h-3.5 mr-1.5 flex-shrink-0" />
+                                  <span className="truncate">{formatDate(event.event_date, event.end_time)}</span>
                                 </span>
                                 {event.location && (
-                                  <span className="flex items-center">
-                                    <MapPin className="w-3.5 h-3.5 mr-1.5 opacity-70" />
-                                    {event.location}
+                                  <span className="flex items-center text-xs sm:text-sm">
+                                    <MapPin className="w-3.5 h-3.5 mr-1.5 opacity-70 flex-shrink-0" />
+                                    <span className="truncate">{event.location}</span>
                                   </span>
                                 )}
                                 {event.is_public ? (
@@ -673,7 +673,7 @@ const AdminEvents = () => {
                             </div>
                           </div>
 
-                          <div className="flex-1 md:max-w-xs mb-2 md:mb-0">
+                          <div className="w-full md:w-auto md:max-w-xs mb-1 md:mb-0">
                             <h4 className="font-semibold text-gray-600 text-xs uppercase tracking-wider mb-1">Orchestres</h4>
                             {(() => {
                               const uniqueOrchestras = event.orchestras
@@ -698,7 +698,7 @@ const AdminEvents = () => {
                             onClick={() => openAttendanceModal(event)}
                             onMouseEnter={() => handleAttendanceHover(event.id)}
                             onMouseLeave={handleAttendanceLeave}
-                            className="relative flex flex-col min-w-[155px] p-2.5 rounded-xl bg-slate-50/90 hover:bg-indigo-50/60 border border-slate-200/80 hover:border-indigo-200 transition-all cursor-pointer group/att shadow-2xs"
+                            className="relative flex flex-col w-full md:w-auto md:min-w-[155px] p-2.5 rounded-xl bg-slate-50/90 hover:bg-indigo-50/60 border border-slate-200/80 hover:border-indigo-200 transition-all cursor-pointer group/att shadow-2xs"
                           >
                             <div className="flex items-center justify-between text-xs mb-1">
                               <span className="font-bold text-slate-700 group-hover/att:text-indigo-700 flex items-center gap-1">
@@ -736,10 +736,10 @@ const AdminEvents = () => {
                               </span>
                             </div>
 
-                            {/* Info-Bulle compacte au survol (juste le nombre de présents et absents) */}
+                            {/* Info-Bulle compacte au survol (sur desktop uniquement) */}
                             {hoveredAttendanceEventId === event.id && (
                               <div 
-                                className="absolute top-full right-0 mt-2 w-56 bg-slate-900 text-white p-3 rounded-xl shadow-2xl border border-slate-700/80 z-[70] text-xs pointer-events-none animate-in fade-in zoom-in-95 duration-150"
+                                className="hidden md:block absolute top-full right-0 mt-2 w-56 bg-slate-900 text-white p-3 rounded-xl shadow-2xl border border-slate-700/80 z-[70] text-xs pointer-events-none animate-in fade-in zoom-in-95 duration-150"
                               >
                                 <div className="font-bold text-slate-100 border-b border-slate-700/80 pb-1.5 mb-2 flex items-center justify-between">
                                   <span className="truncate max-w-[140px]">{event.title}</span>
@@ -781,7 +781,7 @@ const AdminEvents = () => {
                             )}
                           </div>
 
-                          <div className="flex items-center space-x-2 flex-shrink-0">
+                          <div className="flex items-center gap-2 justify-end w-full md:w-auto pt-2 border-t border-slate-100 md:border-t-0 md:pt-0 flex-shrink-0">
                             <button 
                               onClick={() => openAttendanceModal(event)} 
                               title="Détail des présences" 

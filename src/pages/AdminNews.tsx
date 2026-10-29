@@ -290,14 +290,14 @@ const AdminNews = () => {
                     <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
                         <div className="divide-y divide-slate-50">
                             {filteredNews.map((news) => (
-                                <div key={news.id} className="p-4 sm:p-5 hover:bg-slate-50/50 transition-colors group flex items-start sm:items-center gap-4">
+                                <div key={news.id} className="p-3 sm:p-5 hover:bg-slate-50/50 transition-colors group flex items-center gap-3 sm:gap-4">
                                     {/* Thumbnail */}
-                                    <div className="flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden bg-slate-100 border border-slate-200/50">
+                                    <div className="flex-shrink-0 w-14 h-14 sm:w-20 sm:h-20 rounded-xl overflow-hidden bg-slate-100 border border-slate-200/50">
                                         {news.image_url ? (
                                             <img src={news.image_url} alt={news.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                                         ) : (
                                             <div className="flex items-center justify-center h-full text-slate-300">
-                                                <Newspaper className="h-8 w-8" />
+                                                <Newspaper className="h-6 w-6 sm:h-8 sm:w-8" />
                                             </div>
                                         )}
                                     </div>
@@ -305,35 +305,35 @@ const AdminNews = () => {
                                     {/* Content Info */}
                                     <div className="flex-grow min-w-0">
                                         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 mb-1">
-                                            <h3 className="font-bold text-slate-800 truncate">
+                                            <h3 className="font-bold text-slate-800 text-sm sm:text-base truncate">
                                                 {news.title}
                                             </h3>
                                             <span className="hidden sm:block text-slate-300">•</span>
-                                            <span className="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg flex items-center shadow-sm">
+                                            <span className="text-[11px] sm:text-xs font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg flex items-center shadow-sm w-fit">
                                                 <Calendar className="w-3 h-3 mr-1" />
                                                 {new Date(news.published_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}
                                             </span>
                                         </div>
-                                        <p className="text-slate-500 text-sm line-clamp-1 leading-relaxed">
+                                        <p className="text-slate-500 text-xs sm:text-sm line-clamp-1 leading-relaxed">
                                             {news.content}
                                         </p>
                                     </div>
 
                                     {/* Actions */}
-                                    <div className="flex items-center gap-1 sm:gap-2 sm:ml-4 flex-shrink-0">
+                                    <div className="flex items-center gap-1 sm:gap-2 ml-1 sm:ml-4 flex-shrink-0">
                                         <button 
                                             onClick={() => handleEdit(news)} 
-                                            className="p-2 sm:p-2.5 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition-all shadow-sm border border-indigo-100" 
+                                            className="p-1.5 sm:p-2.5 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition-all shadow-sm border border-indigo-100" 
                                             title="Modifier"
                                         >
-                                            <Edit size={18} />
+                                            <Edit size={16} />
                                         </button>
                                         <button 
                                             onClick={() => setDeleteConfirmation({ isOpen: true, news })} 
-                                            className="p-2 sm:p-2.5 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-all shadow-sm border border-red-100" 
+                                            className="p-1.5 sm:p-2.5 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-all shadow-sm border border-red-100" 
                                             title="Supprimer"
                                         >
-                                            <Trash2 size={18} />
+                                            <Trash2 size={16} />
                                         </button>
                                     </div>
                                 </div>

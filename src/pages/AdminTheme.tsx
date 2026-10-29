@@ -748,40 +748,40 @@ const AdminTheme = () => {
 
                 {/* Tabs */}
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-8">
-                    <div className="flex border-b border-slate-200">
+                    <div className="flex border-b border-slate-200 overflow-x-auto no-scrollbar scrollbar-none flex-nowrap">
                         <button
                             onClick={() => setActiveTab('general')}
-                            className={`flex items-center px-6 py-4 font-medium transition-colors ${activeTab === 'general' ? 'text-teal-600 border-b-2 border-teal-600 bg-teal-50/50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}
+                            className={`flex items-center px-4 sm:px-6 py-3.5 sm:py-4 font-medium transition-colors whitespace-nowrap text-sm sm:text-base ${activeTab === 'general' ? 'text-teal-600 border-b-2 border-teal-600 bg-teal-50/50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}
                         >
-                            <Palette className="h-5 w-5 mr-2" />
+                            <Palette className="h-4 w-4 sm:h-5 sm:w-5 mr-2 flex-shrink-0" />
                             Logo & Couleurs
                         </button>
                         <button
                             onClick={() => setActiveTab('carousel')}
-                            className={`flex items-center px-6 py-4 font-medium transition-colors ${activeTab === 'carousel' ? 'text-teal-600 border-b-2 border-teal-600 bg-teal-50/50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}
+                            className={`flex items-center px-4 sm:px-6 py-3.5 sm:py-4 font-medium transition-colors whitespace-nowrap text-sm sm:text-base ${activeTab === 'carousel' ? 'text-teal-600 border-b-2 border-teal-600 bg-teal-50/50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}
                         >
-                            <Layout className="h-5 w-5 mr-2" />
+                            <Layout className="h-4 w-4 sm:h-5 sm:w-5 mr-2 flex-shrink-0" />
                             Carrousel (Accueil)
                         </button>
                         <button
                             onClick={() => setActiveTab('headers')}
-                            className={`flex items-center px-6 py-4 font-medium transition-colors ${activeTab === 'headers' ? 'text-teal-600 border-b-2 border-teal-600 bg-teal-50/50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}
+                            className={`flex items-center px-4 sm:px-6 py-3.5 sm:py-4 font-medium transition-colors whitespace-nowrap text-sm sm:text-base ${activeTab === 'headers' ? 'text-teal-600 border-b-2 border-teal-600 bg-teal-50/50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}
                         >
-                            <ImageIcon className="h-5 w-5 mr-2" />
+                            <ImageIcon className="h-4 w-4 sm:h-5 sm:w-5 mr-2 flex-shrink-0" />
                             En-têtes de Pages
                         </button>
                         <button
                             onClick={() => setActiveTab('history')}
-                            className={`flex items-center px-6 py-4 font-medium transition-colors ${activeTab === 'history' ? 'text-teal-600 border-b-2 border-teal-600 bg-teal-50/50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}
+                            className={`flex items-center px-4 sm:px-6 py-3.5 sm:py-4 font-medium transition-colors whitespace-nowrap text-sm sm:text-base ${activeTab === 'history' ? 'text-teal-600 border-b-2 border-teal-600 bg-teal-50/50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}
                         >
-                            <BookOpen className="h-5 w-5 mr-2" />
+                            <BookOpen className="h-4 w-4 sm:h-5 sm:w-5 mr-2 flex-shrink-0" />
                             Notre Histoire
                         </button>
                         <button
                             onClick={() => setActiveTab('social')}
-                            className={`flex items-center px-6 py-4 font-medium transition-colors ${activeTab === 'social' ? 'text-teal-600 border-b-2 border-teal-600 bg-teal-50/50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}
+                            className={`flex items-center px-4 sm:px-6 py-3.5 sm:py-4 font-medium transition-colors whitespace-nowrap text-sm sm:text-base ${activeTab === 'social' ? 'text-teal-600 border-b-2 border-teal-600 bg-teal-50/50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}
                         >
-                            <Share2 className="h-5 w-5 mr-2" />
+                            <Share2 className="h-4 w-4 sm:h-5 sm:w-5 mr-2 flex-shrink-0" />
                             Réseaux Sociaux
                         </button>
                     </div>
