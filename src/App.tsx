@@ -183,12 +183,12 @@ function App() {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white w-full max-w-full overflow-x-hidden">
       {/* Global Wrapper for Ultra-Wide Resolutions - Conditional Limit */}
-      <div className={`${wrapperClass} mx-auto bg-white flex flex-col min-h-screen relative`}>
+      <div className={`${wrapperClass} mx-auto bg-white flex flex-col min-h-screen relative w-full max-w-full overflow-x-hidden`}>
         <ScrollToTop />
         <Header />
-        <main className="flex-grow">
+        <main className="flex-grow w-full max-w-full overflow-x-hidden">
           <Suspense fallback={<PageFallback />}>
             <Routes>
               <Route path="/" element={<Home />} />

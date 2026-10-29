@@ -505,25 +505,25 @@ const AdminEvents = () => {
   }
 
   return (
-    <div className="pt-8 lg:pt-12 pb-20 min-h-screen bg-gray-100">
-      <div className="w-full px-4 sm:px-10 lg:px-16">
+    <div className="pt-8 lg:pt-12 pb-20 min-h-screen bg-gray-100 w-full max-w-full overflow-x-hidden">
+      <div className="w-full max-w-full px-3 sm:px-6 lg:px-12">
 
         {/* Header */}
-        <div className="mb-8">
-          <Link to="/dashboard" className="text-slate-400 hover:text-indigo-600 transition flex items-center mb-2 group">
+        <div className="mb-6 sm:mb-8">
+          <Link to="/dashboard" className="text-slate-400 hover:text-indigo-600 transition flex items-center mb-2 group text-sm">
             <ArrowLeft className="h-4 w-4 mr-1 group-hover:-translate-x-1 transition-transform" />
             Retour au tableau de bord
           </Link>
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div className="flex items-center">
-              <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center mr-4 shadow-sm border border-indigo-50 flex-shrink-0">
-                <Calendar size={28} />
+            <div className="flex items-center min-w-0">
+              <div className="w-11 h-11 sm:w-12 sm:h-12 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center mr-3 sm:mr-4 shadow-sm border border-indigo-50 flex-shrink-0">
+                <Calendar size={26} />
               </div>
-              <h1 className="text-2xl md:text-3xl font-black text-slate-800">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-800 truncate">
                 Gestion des Événements
               </h1>
             </div>
-            <button onClick={() => { setEditingEvent(null); setShowAddForm(true); }} className="flex items-center px-5 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-200 mt-4 md:mt-0">
+            <button onClick={() => { setEditingEvent(null); setShowAddForm(true); }} className="flex items-center justify-center px-4 sm:px-5 py-2.5 sm:py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-200 mt-2 md:mt-0 text-sm font-bold flex-shrink-0">
               <Plus className="mr-2 h-5 w-5" />
               Ajouter un événement
             </button>
@@ -531,7 +531,7 @@ const AdminEvents = () => {
         </div>
 
         {/* Search and Filters */}
-        <div className="mb-6 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-6">
+        <div className="mb-6 bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-gray-100 space-y-4 sm:space-y-6">
           {/* Row 1: Search Bar */}
           <div>
             <label htmlFor="search" className="block text-sm font-semibold text-slate-700 mb-2">Rechercher un événement</label>
@@ -543,45 +543,43 @@ const AdminEvents = () => {
                 placeholder="Rechercher par titre, description, lieu ou orchestre..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none"
+                className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none text-sm"
               />
             </div>
           </div>
 
           {/* Row 2: Filters */}
-          <div className="flex flex-col lg:flex-row gap-6 pt-2 border-t border-slate-100">
+          <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 pt-2 border-t border-slate-100">
             <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-3 flex items-center">
+              <label className="block text-sm font-semibold text-slate-700 mb-2 flex items-center">
                 <Clock className="w-4 h-4 mr-2 text-indigo-500" /> Filtrer par type
               </label>
               <div className="flex flex-wrap gap-2">
-                <button onClick={() => setTypeFilter(['concert', 'repetition', 'divers'])} className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${typeFilter.length >= 3 ? 'bg-indigo-600 text-white shadow-md shadow-indigo-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>Tous</button>
-                <button onClick={() => setTypeFilter(['concert'])} className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${typeFilter.length === 1 && typeFilter[0] === 'concert' ? 'bg-green-500 text-white shadow-md shadow-green-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>Concerts</button>
-                <button onClick={() => setTypeFilter(['repetition'])} className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${typeFilter.length === 1 && typeFilter[0] === 'repetition' ? 'bg-blue-500 text-white shadow-md shadow-blue-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>Répétitions</button>
-                <button onClick={() => setTypeFilter(['divers'])} className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${typeFilter.length === 1 && typeFilter[0] === 'divers' ? 'bg-purple-500 text-white shadow-md shadow-purple-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>Divers</button>
+                <button onClick={() => setTypeFilter(['concert', 'repetition', 'divers'])} className={`px-3 sm:px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-all ${typeFilter.length >= 3 ? 'bg-indigo-600 text-white shadow-md shadow-indigo-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>Tous</button>
+                <button onClick={() => setTypeFilter(['concert'])} className={`px-3 sm:px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-all ${typeFilter.length === 1 && typeFilter[0] === 'concert' ? 'bg-green-500 text-white shadow-md shadow-green-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>Concerts</button>
+                <button onClick={() => setTypeFilter(['repetition'])} className={`px-3 sm:px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-all ${typeFilter.length === 1 && typeFilter[0] === 'repetition' ? 'bg-blue-500 text-white shadow-md shadow-blue-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>Répétitions</button>
+                <button onClick={() => setTypeFilter(['divers'])} className={`px-3 sm:px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-all ${typeFilter.length === 1 && typeFilter[0] === 'divers' ? 'bg-purple-500 text-white shadow-md shadow-purple-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>Divers</button>
               </div>
             </div>
             <div className="lg:border-l lg:pl-6 border-slate-100">
-              <label className="block text-sm font-semibold text-slate-700 mb-3 flex items-center">
+              <label className="block text-sm font-semibold text-slate-700 mb-2 flex items-center">
                 <Calendar className="w-4 h-4 mr-2 text-amber-500" /> Filtrer par date
               </label>
               <div className="flex flex-wrap gap-2">
-                <button onClick={() => setTimeFilter('all')} className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${timeFilter === 'all' ? 'bg-indigo-600 text-white shadow-md shadow-indigo-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>Tous</button>
-                <button onClick={() => setTimeFilter('upcoming')} className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${timeFilter === 'upcoming' ? 'bg-amber-500 text-white shadow-md shadow-amber-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>À venir</button>
-                <button onClick={() => setTimeFilter('past')} className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${timeFilter === 'past' ? 'bg-slate-500 text-white shadow-md shadow-slate-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>Passés</button>
+                <button onClick={() => setTimeFilter('all')} className={`px-3 sm:px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-all ${timeFilter === 'all' ? 'bg-indigo-600 text-white shadow-md shadow-indigo-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>Tous</button>
+                <button onClick={() => setTimeFilter('upcoming')} className={`px-3 sm:px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-all ${timeFilter === 'upcoming' ? 'bg-amber-500 text-white shadow-md shadow-amber-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>À venir</button>
+                <button onClick={() => setTimeFilter('past')} className={`px-3 sm:px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-all ${timeFilter === 'past' ? 'bg-slate-500 text-white shadow-md shadow-slate-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>Passés</button>
               </div>
             </div>
-            <div className="lg:border-l lg:pl-6 border-slate-100 flex flex-col justify-start gap-2 border-t lg:border-t-0 pt-4 lg:pt-0 min-w-[200px]">
-              <button onClick={clearAllFilters} className="text-sm font-medium text-slate-500 hover:text-indigo-600 transition-colors w-full text-left md:text-center block mb-2">Réinitialiser les filtres</button>
+            <div className="lg:border-l lg:pl-6 border-slate-100 flex flex-col justify-start gap-2 border-t lg:border-t-0 pt-3 lg:pt-0 min-w-0 lg:min-w-[200px]">
+              <button onClick={clearAllFilters} className="text-xs sm:text-sm font-medium text-slate-500 hover:text-indigo-600 transition-colors w-full text-left md:text-center block mb-1">Réinitialiser les filtres</button>
               <div className="flex items-center space-x-2">
-                <button onClick={expandAllTypes} className={`px-4 py-2 rounded-xl transition text-sm font-medium whitespace-nowrap w-full ${expandedTypes.size === 3 ? 'bg-indigo-600 text-white shadow-md shadow-indigo-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>Tout déplier</button>
-                <button onClick={collapseAllTypes} className={`px-4 py-2 rounded-xl transition text-sm font-medium whitespace-nowrap w-full ${expandedTypes.size === 0 ? 'bg-slate-600 text-white shadow-md shadow-slate-200' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>Tout replier</button>
+                <button onClick={expandAllTypes} className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl transition text-xs sm:text-sm font-medium whitespace-nowrap w-full ${expandedTypes.size === 3 ? 'bg-indigo-600 text-white shadow-md shadow-indigo-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>Tout déplier</button>
+                <button onClick={collapseAllTypes} className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl transition text-xs sm:text-sm font-medium whitespace-nowrap w-full ${expandedTypes.size === 0 ? 'bg-slate-600 text-white shadow-md shadow-slate-200' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>Tout replier</button>
               </div>
             </div>
           </div>
         </div>
-
-
 
         {/* Events List */}
         {loading ? (
@@ -596,7 +594,7 @@ const AdminEvents = () => {
             <p className="text-sm text-slate-400">Modifiez vos critères de recherche ou réinitialisez les filtres.</p>
           </div>
         ) : (
-          <div className="space-y-8">
+          <div className="space-y-6 sm:space-y-8">
             {Object.entries(eventsByType)
               .sort(([a], [b]) => {
                 const getLabel = (t: string) => t === 'concert' ? 'Concerts' : t === 'divers' ? 'Divers' : 'Répétitions';
@@ -606,75 +604,102 @@ const AdminEvents = () => {
               const color = getTypeColor(type);
               const isExpanded = expandedTypes.has(type);
               return (
-              <div key={type} className={`bg-white rounded-2xl shadow-sm border border-slate-200 transition-all duration-300 hover:shadow-md ${isExpanded ? 'overflow-visible' : 'overflow-hidden'}`}>
+              <div key={type} className="bg-white rounded-2xl shadow-sm border border-slate-200 transition-all duration-300 hover:shadow-md overflow-hidden">
                 <div onClick={() => toggleTypeExpansion(type)} className={`p-4 flex justify-between items-center cursor-pointer ${color.bg} hover:opacity-90 transition-all`}>
-                  <div className="flex items-center">
-                    <div className={`p-2 ${color.iconBg} rounded-xl ${color.icon} mr-4 shadow-sm`}>
+                  <div className="flex items-center min-w-0 pr-2">
+                    <div className={`p-2 ${color.iconBg} rounded-xl ${color.icon} mr-3 sm:mr-4 shadow-sm flex-shrink-0`}>
                       {React.createElement(getTypeIcon(type), { size: 20 })}
                     </div>
-                    <div className="flex items-center">
-                      <h2 className={`text-lg font-bold ${color.text}`}>
+                    <div className="flex items-center min-w-0">
+                      <h2 className={`text-base sm:text-lg font-bold ${color.text} truncate`}>
                         {type === 'concert' ? 'Concerts' : type === 'divers' ? 'Divers' : 'Répétitions'} 
                       </h2>
-                      <span className={`ml-3 px-2.5 py-0.5 rounded-full border text-xs font-bold ${color.badge}`}>
+                      <span className={`ml-2 sm:ml-3 px-2 sm:px-2.5 py-0.5 rounded-full border text-xs font-bold ${color.badge} flex-shrink-0`}>
                         {eventList.length}
                       </span>
                     </div>
                   </div>
-                  <ChevronDown className="text-slate-400" />
+                  <ChevronDown className="text-slate-400 flex-shrink-0" />
                 </div>
                 <div className={`grid transition-all duration-300 ease-in-out ${isExpanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
-                  <div className={isExpanded ? 'overflow-visible' : 'overflow-hidden'}>
+                  <div className="overflow-hidden">
                     <div className="divide-y divide-slate-100">
                       {eventList.map(event => (
-                        <div key={event.id} className={`p-3 sm:p-4 flex flex-col md:flex-row md:items-center md:justify-between hover:bg-slate-50/80 transition-colors duration-200 gap-3 md:gap-4 relative ${hoveredAttendanceEventId === event.id ? 'z-40' : 'z-0'}`}>
-                          <div className="flex items-start sm:items-center gap-3 sm:gap-4 flex-1 min-w-0">
-                            {/* Miniature Photo */}
-                            <div className="w-14 h-11 sm:w-20 sm:h-14 rounded-xl bg-slate-100 overflow-hidden flex-shrink-0 border border-slate-200/80 relative flex items-center justify-center shadow-sm">
-                              {(event.image_url || event.fallback_image_url) ? (
-                                <img 
-                                  src={getOptimizedImageUrl(event.image_url || event.fallback_image_url!, 200, 80)} 
-                                  alt={event.title}
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : (
-                                <Music className="w-5 h-5 sm:w-6 sm:h-6 text-slate-300" />
-                              )}
-                              {event.image_url && (
-                                <span className="absolute bottom-1 right-1 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white" title="Photo personnalisée"></span>
-                              )}
-                            </div>
+                        <div key={event.id} className="p-3.5 sm:p-4 hover:bg-slate-50/70 transition-colors duration-200 flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-4 relative">
+                          {/* Section Principale : Miniature + Titre + Badges + Boutons d'action sur mobile */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-2.5">
+                              {/* Photo + Titre/Date */}
+                              <div className="flex items-start gap-3 min-w-0 flex-1">
+                                {/* Miniature Photo */}
+                                <div className="w-13 h-11 sm:w-16 sm:h-13 rounded-xl bg-slate-100 overflow-hidden flex-shrink-0 border border-slate-200/80 relative flex items-center justify-center shadow-2xs mt-0.5">
+                                  {(event.image_url || event.fallback_image_url) ? (
+                                    <img 
+                                      src={getOptimizedImageUrl(event.image_url || event.fallback_image_url!, 200, 80)} 
+                                      alt={event.title}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  ) : (
+                                    <Music className="w-5 h-5 text-slate-300" />
+                                  )}
+                                  {event.image_url && (
+                                    <span className="absolute bottom-1 right-1 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-white" title="Photo personnalisée"></span>
+                                  )}
+                                </div>
 
-                            <div className="flex-1 min-w-0">
-                              <h3 className="font-bold text-slate-800 text-base sm:text-lg mb-1 leading-snug break-words">{event.title}</h3>
-                              <div className="flex flex-wrap gap-x-3 gap-y-1.5 text-xs sm:text-sm text-slate-500">
-                                <span className="flex items-center text-indigo-600 font-medium bg-indigo-50 px-2 sm:px-2.5 py-0.5 rounded-md text-xs sm:text-sm">
-                                  <Calendar className="w-3.5 h-3.5 mr-1.5 flex-shrink-0" />
-                                  <span className="truncate">{formatDate(event.event_date, event.end_time)}</span>
-                                </span>
-                                {event.location && (
-                                  <span className="flex items-center text-xs sm:text-sm">
-                                    <MapPin className="w-3.5 h-3.5 mr-1.5 opacity-70 flex-shrink-0" />
-                                    <span className="truncate">{event.location}</span>
-                                  </span>
-                                )}
-                                {event.is_public ? (
-                                  <span className="flex items-center text-emerald-600 bg-emerald-50 px-2 rounded-md font-medium text-xs border border-emerald-100">
-                                    <Globe className="w-3 h-3 mr-1" />
-                                    Public
-                                  </span>
-                                ) : (
-                                  <span className="flex items-center text-slate-500 bg-slate-100 px-2 rounded-md font-medium text-xs border border-slate-200">
-                                    <EyeOff className="w-3 h-3 mr-1" />
-                                    Privé
-                                  </span>
-                                )}
+                                <div className="min-w-0 flex-1">
+                                  <h3 className="font-bold text-slate-800 text-sm sm:text-base leading-snug break-words">
+                                    {event.title}
+                                  </h3>
+                                  <div className="flex flex-wrap gap-1.5 mt-1">
+                                    <span className="inline-flex items-center max-w-full text-indigo-700 font-semibold bg-indigo-50/90 px-2 py-0.5 rounded-md text-[11px] sm:text-xs">
+                                      <Calendar className="w-3 h-3 mr-1 flex-shrink-0 text-indigo-500" />
+                                      <span className="truncate">{formatDate(event.event_date, event.end_time)}</span>
+                                    </span>
+                                    {event.location && (
+                                      <span className="inline-flex items-center max-w-full text-slate-600 text-[11px] sm:text-xs bg-slate-50 px-2 py-0.5 rounded-md border border-slate-100">
+                                        <MapPin className="w-3 h-3 mr-1 opacity-60 flex-shrink-0" />
+                                        <span className="truncate">{event.location}</span>
+                                      </span>
+                                    )}
+                                    {event.is_public ? (
+                                      <span className="inline-flex items-center text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md font-semibold text-[11px] border border-emerald-100">
+                                        <Globe className="w-3 h-3 mr-1" />
+                                        Public
+                                      </span>
+                                    ) : (
+                                      <span className="inline-flex items-center text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md font-semibold text-[11px] border border-slate-200">
+                                        <EyeOff className="w-3 h-3 mr-1" />
+                                        Privé
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Actions Mobile ancrées EN HAUT À DROITE de l'événement */}
+                              <div className="flex items-center gap-1.5 flex-shrink-0 md:hidden">
+                                <button 
+                                  onClick={() => handleEdit(event)} 
+                                  title="Modifier" 
+                                  className="p-1.5 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-all shadow-2xs border border-indigo-100 active:scale-95"
+                                >
+                                  <Edit size={15} />
+                                </button>
+                                <button 
+                                  onClick={() => confirmDelete(event)} 
+                                  title="Supprimer" 
+                                  className="p-1.5 text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-lg transition-all shadow-2xs border border-rose-100 active:scale-95"
+                                >
+                                  <Trash2 size={15} />
+                                </button>
                               </div>
                             </div>
                           </div>
 
-                          <div className="w-full md:w-auto md:max-w-xs mb-1 md:mb-0">
-                            <h4 className="font-semibold text-gray-600 text-xs uppercase tracking-wider mb-1">Orchestres</h4>
+                          {/* Orchestres */}
+                          <div className="w-full md:w-auto md:max-w-xs">
+                            <h4 className="font-semibold text-gray-500 text-[11px] uppercase tracking-wider mb-1">Orchestres</h4>
                             {(() => {
                               const uniqueOrchestras = event.orchestras
                                 ? Array.from(new Map(event.orchestras.filter(o => o && o.id).map(o => [o.id, o])).values())
@@ -682,7 +707,7 @@ const AdminEvents = () => {
                               return uniqueOrchestras.length > 0 ? (
                                 <div className="flex flex-wrap gap-1">
                                   {uniqueOrchestras.map(orc => (
-                                    <span key={orc.id} className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded">
+                                    <span key={orc.id} className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md font-medium">
                                       {orc.name}
                                     </span>
                                   ))}
@@ -693,25 +718,30 @@ const AdminEvents = () => {
                             })()}
                           </div>
 
-                          {/* Indicateur Synthétique de Présence avec Info-Bulle survol */}
+                          {/* Bloc Présences avec bouton d'ouverture directement intégré */}
                           <div 
                             onClick={() => openAttendanceModal(event)}
                             onMouseEnter={() => handleAttendanceHover(event.id)}
                             onMouseLeave={handleAttendanceLeave}
-                            className="relative flex flex-col w-full md:w-auto md:min-w-[155px] p-2.5 rounded-xl bg-slate-50/90 hover:bg-indigo-50/60 border border-slate-200/80 hover:border-indigo-200 transition-all cursor-pointer group/att shadow-2xs"
+                            className="relative flex flex-col w-full md:w-auto md:min-w-[170px] p-2.5 rounded-xl bg-slate-50/90 hover:bg-indigo-50/70 border border-slate-200/90 hover:border-indigo-200 transition-all cursor-pointer group shadow-2xs"
                           >
-                            <div className="flex items-center justify-between text-xs mb-1">
-                              <span className="font-bold text-slate-700 group-hover/att:text-indigo-700 flex items-center gap-1">
-                                <Users size={13} className="text-slate-400 group-hover/att:text-indigo-600" />
+                            <div className="flex items-center justify-between text-xs mb-1.5">
+                              <span className="font-bold text-slate-700 group-hover:text-indigo-700 flex items-center gap-1.5">
+                                <Users size={13} className="text-indigo-600" />
                                 Présences
                               </span>
-                              <span className="text-[11px] font-bold text-slate-600">
-                                {event.attendance_present || 0} / {event.attendance_total_target || 0}
-                              </span>
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-[11px] font-bold text-slate-700">
+                                  {event.attendance_present || 0} / {event.attendance_total_target || 0}
+                                </span>
+                                <span className="text-[10px] font-bold text-indigo-600 bg-indigo-100/80 px-1.5 py-0.5 rounded flex items-center gap-0.5 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                                  Voir <ChevronRight size={10} />
+                                </span>
+                              </div>
                             </div>
 
                             {/* Mini jauge tricolore */}
-                            <div className="w-full bg-slate-200/70 rounded-full h-1.5 overflow-hidden flex mb-1.5">
+                            <div className="w-full bg-slate-200/80 rounded-full h-1.5 overflow-hidden flex mb-1.5">
                               <div 
                                 className="bg-emerald-500 h-full transition-all duration-300"
                                 style={{ width: `${event.attendance_total_target ? Math.min(100, Math.round(((event.attendance_present || 0) / event.attendance_total_target) * 100)) : 0}%` }}
@@ -781,7 +811,8 @@ const AdminEvents = () => {
                             )}
                           </div>
 
-                          <div className="flex items-center gap-2 justify-end w-full md:w-auto pt-2 border-t border-slate-100 md:border-t-0 md:pt-0 flex-shrink-0">
+                          {/* Desktop Actions Row */}
+                          <div className="hidden md:flex items-center gap-2 flex-shrink-0">
                             <button 
                               onClick={() => openAttendanceModal(event)} 
                               title="Détail des présences" 
