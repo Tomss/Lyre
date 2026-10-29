@@ -625,9 +625,9 @@ const AdminEvents = () => {
                   <div className="overflow-hidden">
                     <div className="divide-y divide-slate-100">
                       {eventList.map(event => (
-                        <div key={event.id} className="p-3.5 sm:p-4 hover:bg-slate-50/70 transition-colors duration-200 flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-4 relative">
+                        <div key={event.id} className="p-3.5 sm:p-4 hover:bg-slate-50/70 transition-colors duration-200 grid grid-cols-1 md:grid-cols-12 gap-3 md:gap-4 items-center relative">
                           {/* Section Principale : Miniature + Titre + Badges + Boutons d'action sur mobile */}
-                          <div className="flex-1 min-w-0">
+                          <div className="md:col-span-5 min-w-0">
                             <div className="flex items-start justify-between gap-2.5">
                               {/* Photo + Titre/Date */}
                               <div className="flex items-start gap-3 min-w-0 flex-1">
@@ -698,7 +698,7 @@ const AdminEvents = () => {
                           </div>
 
                           {/* Orchestres */}
-                          <div className="w-full md:w-auto md:max-w-xs">
+                          <div className="md:col-span-3 min-w-0">
                             <h4 className="font-semibold text-gray-500 text-[11px] uppercase tracking-wider mb-1">Orchestres</h4>
                             {(() => {
                               const uniqueOrchestras = event.orchestras
@@ -718,12 +718,14 @@ const AdminEvents = () => {
                             })()}
                           </div>
 
-                          {/* Bloc Présences avec bouton d'ouverture directement intégré */}
+                          {/* COL 3 & 4: Présences & Actions Desktop (4 cols) */}
+                          <div className="md:col-span-4 flex items-center justify-between md:justify-end gap-3 min-w-0">
+                            {/* Bloc Présences */}
                           <div 
                             onClick={() => openAttendanceModal(event)}
                             onMouseEnter={() => handleAttendanceHover(event.id)}
                             onMouseLeave={handleAttendanceLeave}
-                            className="relative flex flex-col w-full md:w-auto md:min-w-[170px] p-2.5 rounded-xl bg-slate-50/90 hover:bg-indigo-50/70 border border-slate-200/90 hover:border-indigo-200 transition-all cursor-pointer group shadow-2xs"
+                            className="relative flex flex-col flex-1 w-full md:max-w-[210px] p-2.5 rounded-xl bg-slate-50/90 hover:bg-indigo-50/70 border border-slate-200/90 hover:border-indigo-200 transition-all cursor-pointer group shadow-2xs"
                           >
                             <div className="flex items-center justify-between text-xs mb-1.5">
                               <span className="font-bold text-slate-700 group-hover:text-indigo-700 flex items-center gap-1.5">
@@ -824,7 +826,8 @@ const AdminEvents = () => {
                             <button onClick={() => confirmDelete(event)} title="Supprimer" className="p-2 text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl transition-all duration-300 hover:scale-110 shadow-sm"><Trash2 size={16} /></button>
                           </div>
                         </div>
-                      ))}
+                      </div>
+                    ))}
                     </div>
                   </div>
                 </div>
